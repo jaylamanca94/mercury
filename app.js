@@ -6,6 +6,8 @@ const marketPulse = [
     trend: "Up",
     tone: "up",
     icon: "fa-chart-line",
+    source: "Placeholder market provider",
+    cadence: "Delayed market cadence TBD",
     points: [24, 28, 27, 33, 35, 42, 46],
   },
   {
@@ -15,6 +17,8 @@ const marketPulse = [
     trend: "Mixed",
     tone: "mixed",
     icon: "fa-earth-americas",
+    source: "Placeholder market provider",
+    cadence: "Delayed market cadence TBD",
     points: [28, 31, 29, 30, 34, 32, 36],
   },
   {
@@ -24,6 +28,8 @@ const marketPulse = [
     trend: "Stable",
     tone: "stable",
     icon: "fa-scale-balanced",
+    source: "Placeholder market provider",
+    cadence: "Delayed market cadence TBD",
     points: [36, 35, 36, 34, 35, 34, 35],
   },
   {
@@ -33,6 +39,8 @@ const marketPulse = [
     trend: "Rising",
     tone: "caution",
     icon: "fa-gas-pump",
+    source: "Placeholder commodity provider",
+    cadence: "Delayed market cadence TBD",
     points: [18, 20, 22, 26, 31, 35, 39],
   },
 ];
@@ -45,6 +53,8 @@ const economicHealth = [
     trend: "Elevated",
     tone: "caution",
     icon: "fa-receipt",
+    source: "Candidate: BLS via FRED",
+    cadence: "Monthly release",
     points: [44, 42, 40, 39, 38, 37, 37],
   },
   {
@@ -54,6 +64,8 @@ const economicHealth = [
     trend: "Stable",
     tone: "stable",
     icon: "fa-percent",
+    source: "Candidate: Federal Reserve via FRED",
+    cadence: "Policy meeting cadence",
     points: [30, 30, 30, 30, 30, 30, 30],
   },
   {
@@ -63,6 +75,8 @@ const economicHealth = [
     trend: "Stable",
     tone: "stable",
     icon: "fa-briefcase",
+    source: "Candidate: BLS via FRED",
+    cadence: "Monthly release",
     points: [30, 29, 29, 30, 30, 31, 31],
   },
   {
@@ -72,6 +86,8 @@ const economicHealth = [
     trend: "Positive",
     tone: "up",
     icon: "fa-seedling",
+    source: "Candidate: BEA via FRED",
+    cadence: "Quarterly release",
     points: [24, 25, 27, 29, 30, 31, 32],
   },
 ];
@@ -83,6 +99,8 @@ const riskIndicators = [
     trend: "Contained",
     tone: "up",
     icon: "fa-wave-square",
+    source: "Candidate: market volatility provider",
+    cadence: "Delayed market cadence TBD",
   },
   {
     name: "Dollar strength",
@@ -90,6 +108,8 @@ const riskIndicators = [
     trend: "Stable",
     tone: "stable",
     icon: "fa-dollar-sign",
+    source: "Candidate: currency index provider",
+    cadence: "Delayed market cadence TBD",
   },
   {
     name: "Gold",
@@ -97,6 +117,8 @@ const riskIndicators = [
     trend: "Rising",
     tone: "caution",
     icon: "fa-coins",
+    source: "Candidate: commodity provider",
+    cadence: "Delayed market cadence TBD",
   },
 ];
 
@@ -106,29 +128,47 @@ const regions = [
     copy: "Growth positive, inflation still watched closely.",
     trend: "Steady",
     tone: "stable",
+    source: "Sample regional composite",
+    cadence: "Method pending",
   },
   {
     name: "Europe",
     copy: "Growth soft, rate pressure easing gradually.",
     trend: "Mixed",
     tone: "mixed",
+    source: "Sample regional composite",
+    cadence: "Method pending",
   },
   {
     name: "China",
     copy: "Demand signals remain uneven.",
     trend: "Caution",
     tone: "caution",
+    source: "Sample regional composite",
+    cadence: "Method pending",
   },
   {
     name: "Emerging markets",
     copy: "Conditions vary by currency and commodity exposure.",
     trend: "Mixed",
     tone: "mixed",
+    source: "Sample regional composite",
+    cadence: "Method pending",
   },
 ];
 
 function trendClass(tone) {
   return `trend-label trend-${tone}`;
+}
+
+function renderDataMeta(source, cadence) {
+  return `
+    <div class="data-meta" aria-label="Prototype data details">
+      <span><i class="fa-solid fa-flask" aria-hidden="true"></i> Sample</span>
+      <span><i class="fa-solid fa-database" aria-hidden="true"></i> ${source}</span>
+      <span><i class="fa-regular fa-calendar" aria-hidden="true"></i> ${cadence}</span>
+    </div>
+  `;
 }
 
 function renderSparkline(points, tone) {
@@ -167,6 +207,7 @@ function renderMetricCard(metric) {
         <p class="metric-value">${metric.value}</p>
         <span class="${trendClass(metric.tone)}">${metric.trend}</span>
       </div>
+      ${renderDataMeta(metric.source, metric.cadence)}
       ${renderSparkline(metric.points, metric.tone)}
     </article>
   `;
@@ -179,6 +220,7 @@ function renderIndicatorRow(indicator) {
       <div>
         <p class="row-title">${indicator.name}</p>
         <p class="row-copy">${indicator.copy}</p>
+        ${renderDataMeta(indicator.source, indicator.cadence)}
       </div>
       <span class="${trendClass(indicator.tone)}">${indicator.trend}</span>
     </article>
@@ -192,6 +234,7 @@ function renderRegionRow(region) {
       <div>
         <p class="row-title">${region.name}</p>
         <p class="row-copy">${region.copy}</p>
+        ${renderDataMeta(region.source, region.cadence)}
       </div>
       <span class="${trendClass(region.tone)}">${region.trend}</span>
     </article>

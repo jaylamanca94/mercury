@@ -162,6 +162,7 @@ Good utility candidates:
 Current prototype utilities:
 
 - Repeated metric cards use `8px` radius, compact labels, source context, status chips, and small sparklines.
+- Every sample indicator includes an inline metadata row for sample status, candidate source, and expected update cadence so users do not mistake prototype values for live data.
 - Region and risk rows use icon, title, short context, and a plain-language trend label.
 - Sample data must be visibly labeled in the header and source/freshness areas until live integrations exist.
 
