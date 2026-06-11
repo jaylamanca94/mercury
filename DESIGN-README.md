@@ -159,6 +159,12 @@ Good utility candidates:
 - Empty, loading, stale, fallback, and error state patterns
 - Light and dark mode helpers
 
+Current prototype utilities:
+
+- Repeated metric cards use `8px` radius, compact labels, source context, status chips, and small sparklines.
+- Region and risk rows use icon, title, short context, and a plain-language trend label.
+- Sample data must be visibly labeled in the header and source/freshness areas until live integrations exist.
+
 Avoid utilities for:
 
 - One-off dashboard experiments

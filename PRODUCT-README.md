@@ -84,7 +84,7 @@ A user should be able to open Mercury and immediately understand:
 
 ## Scope
 
-Current scope is a documentation-first product foundation for a live global economy dashboard MVP.
+Current scope is a static prototype foundation for a live global economy dashboard MVP.
 
 In scope for the MVP:
 
@@ -217,7 +217,7 @@ Future opportunities:
 
 ## Known Limitations
 
-- No app scaffold exists yet.
+- The first app scaffold uses static sample data.
 - No live data sources are configured yet.
 - No source scoring model exists yet.
 - Some economic indicators update monthly or quarterly, not in real time.

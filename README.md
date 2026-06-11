@@ -6,7 +6,7 @@ Tagline direction: The global economy at a glance.
 
 ## Product Status
 
-Mercury is currently in product foundation setup. No app scaffold or live data integrations exist yet.
+Mercury has an initial static dashboard prototype. Live data integrations do not exist yet.
 
 ## Tech Stack
 
@@ -42,15 +42,15 @@ Every source should be evaluated for trust, cost, licensing, rate limits, update
 
 ## Local Setup
 
-No local app setup is required yet.
+No install step is required for the first prototype.
 
-Once a scaffold exists, keep setup instructions here and include:
+Open `index.html` in a browser, or serve the folder with any static file server.
 
-- Install command
-- Local dev command
-- Test/check command
-- Required environment variables
-- Deployment notes
+Current files:
+
+- `index.html` - static dashboard entry
+- `styles.css` - Mercury dashboard styling
+- `app.js` - sample indicator data and rendering
 
 ## Environment Variables
 
@@ -67,14 +67,13 @@ Expected future variables may include API keys for market or economic data provi
 
 ## Deployment
 
-No deployment exists yet.
+Mercury can deploy as a static site on Vercel. Push to `main` to update the production deployment.
 
-Recommended first deployment path:
+Recommended next deployment path:
 
-1. Create a static dashboard prototype.
-2. Add sample data with clear sample/source labels.
-3. Deploy to Vercel.
-4. Add live serverless data routes one source at a time.
+1. Keep sample data clearly labeled until live sources are connected.
+2. Add live serverless data routes one source at a time.
+3. Add validation and fallback states for stale, missing, delayed, and unavailable data.
 
 ## Important Boundary
 
