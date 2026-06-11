@@ -96,6 +96,7 @@ In scope for the MVP:
 - Update timestamps
 - Visible sample snapshot dates before live refresh exists
 - Explainable sample score drivers
+- Visible previous-sample comparisons for prototype metrics
 - Plain-language labels and context
 - Neutral, non-advisory dashboard language
 - Responsive dashboard experience
@@ -224,6 +225,7 @@ Future opportunities:
 - No source scoring model exists yet.
 - The current economy score is illustrative and must stay labeled until a formal scoring model is defined.
 - Prototype sample values are illustrative and use a sample-set date, not a live refresh timestamp.
+- Previous-sample comparisons are illustrative and should be replaced by source-backed periods when live data exists.
 - Some economic indicators update monthly or quarterly, not in real time.
 - Market data licensing and rate limits may influence source choices.
 - Mercury must avoid language that sounds like financial advice.

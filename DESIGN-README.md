@@ -173,6 +173,7 @@ Good utility candidates:
 Current prototype utilities:
 
 - Repeated metric cards use `8px` radius, compact labels, source context, status chips, and small sparklines.
+- Metric cards include a compact previous-sample comparison so users can understand direction without relying only on the sparkline.
 - Every sample indicator includes an inline metadata row for sample status, candidate source, and expected update cadence so users do not mistake prototype values for live data.
 - Prototype source coverage uses a compact snapshot metadata block for sample-set date, live last-checked state, and refresh schedule.
 - Region and risk rows use icon, title, short context, and a plain-language trend label.

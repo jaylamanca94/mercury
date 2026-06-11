@@ -8,6 +8,8 @@ const marketPulse = [
     icon: "fa-chart-line",
     source: "Placeholder market provider",
     cadence: "Delayed market cadence TBD",
+    previous: "+0.1%",
+    change: "+0.5 pts",
     points: [24, 28, 27, 33, 35, 42, 46],
   },
   {
@@ -19,6 +21,8 @@ const marketPulse = [
     icon: "fa-earth-americas",
     source: "Placeholder market provider",
     cadence: "Delayed market cadence TBD",
+    previous: "-0.1%",
+    change: "+0.3 pts",
     points: [28, 31, 29, 30, 34, 32, 36],
   },
   {
@@ -30,6 +34,8 @@ const marketPulse = [
     icon: "fa-scale-balanced",
     source: "Placeholder market provider",
     cadence: "Delayed market cadence TBD",
+    previous: "0.0%",
+    change: "-0.1 pts",
     points: [36, 35, 36, 34, 35, 34, 35],
   },
   {
@@ -41,6 +47,8 @@ const marketPulse = [
     icon: "fa-gas-pump",
     source: "Placeholder commodity provider",
     cadence: "Delayed market cadence TBD",
+    previous: "+0.8%",
+    change: "+0.6 pts",
     points: [18, 20, 22, 26, 31, 35, 39],
   },
 ];
@@ -55,6 +63,8 @@ const economicHealth = [
     icon: "fa-receipt",
     source: "Candidate: BLS via FRED",
     cadence: "Monthly release",
+    previous: "3.4%",
+    change: "-0.2 pts",
     points: [44, 42, 40, 39, 38, 37, 37],
   },
   {
@@ -66,6 +76,8 @@ const economicHealth = [
     icon: "fa-percent",
     source: "Candidate: Federal Reserve via FRED",
     cadence: "Policy meeting cadence",
+    previous: "5.25%",
+    change: "No change",
     points: [30, 30, 30, 30, 30, 30, 30],
   },
   {
@@ -77,6 +89,8 @@ const economicHealth = [
     icon: "fa-briefcase",
     source: "Candidate: BLS via FRED",
     cadence: "Monthly release",
+    previous: "3.9%",
+    change: "+0.1 pts",
     points: [30, 29, 29, 30, 30, 31, 31],
   },
   {
@@ -88,6 +102,8 @@ const economicHealth = [
     icon: "fa-seedling",
     source: "Candidate: BEA via FRED",
     cadence: "Quarterly release",
+    previous: "1.8%",
+    change: "+0.3 pts",
     points: [24, 25, 27, 29, 30, 31, 32],
   },
 ];
@@ -207,6 +223,16 @@ function renderMetricCard(metric) {
         <p class="metric-value">${metric.value}</p>
         <span class="${trendClass(metric.tone)}">${metric.trend}</span>
       </div>
+      <dl class="metric-comparison" aria-label="Sample period comparison">
+        <div>
+          <dt>Previous sample</dt>
+          <dd>${metric.previous}</dd>
+        </div>
+        <div>
+          <dt>Change</dt>
+          <dd>${metric.change}</dd>
+        </div>
+      </dl>
       ${renderDataMeta(metric.source, metric.cadence)}
       ${renderSparkline(metric.points, metric.tone)}
     </article>
