@@ -119,6 +119,7 @@ Use `8px` or less for normal cards and repeated list items unless a larger conta
 - Prefer labels like `Rising`, `Falling`, `Mixed`, `Stable`, `Elevated risk`, or `Improving confidence`.
 - Do not use language like `buy signal`, `sell signal`, `undervalued`, or `overvalued`.
 - Make stale, delayed, sample, fallback, and unavailable data visually distinct.
+- Static sample dashboards must show both the sample-set date and the live refresh state so users do not confuse prototype values with current data.
 
 ## Icons
 
@@ -173,6 +174,7 @@ Current prototype utilities:
 
 - Repeated metric cards use `8px` radius, compact labels, source context, status chips, and small sparklines.
 - Every sample indicator includes an inline metadata row for sample status, candidate source, and expected update cadence so users do not mistake prototype values for live data.
+- Prototype source coverage uses a compact snapshot metadata block for sample-set date, live last-checked state, and refresh schedule.
 - Region and risk rows use icon, title, short context, and a plain-language trend label.
 - Sample data must be visibly labeled in the header and source/freshness areas until live integrations exist.
 - Summary scores must include concise visible drivers and stay explicitly illustrative until Mercury has a formal scoring model.

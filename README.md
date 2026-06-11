@@ -6,7 +6,8 @@ Tagline direction: The global economy at a glance.
 
 ## Product Status
 
-Mercury has an initial static dashboard prototype. Live data integrations do not exist yet.
+Mercury has an initial static dashboard prototype. Live data integrations do not exist yet, so
+the page labels its illustrative sample set separately from future live refresh timestamps.
 
 ## Tech Stack
 
