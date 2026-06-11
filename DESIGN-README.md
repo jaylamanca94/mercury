@@ -165,6 +165,7 @@ Current prototype utilities:
 - Every sample indicator includes an inline metadata row for sample status, candidate source, and expected update cadence so users do not mistake prototype values for live data.
 - Region and risk rows use icon, title, short context, and a plain-language trend label.
 - Sample data must be visibly labeled in the header and source/freshness areas until live integrations exist.
+- Summary scores must include concise visible drivers and stay explicitly illustrative until Mercury has a formal scoring model.
 
 Avoid utilities for:
 
