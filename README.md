@@ -6,10 +6,10 @@ Tagline direction: The global economy at a glance.
 
 ## Product Status
 
-Mercury has an initial static dashboard prototype with its first source-backed macro data bridge.
-The page starts from clearly labeled sample data, then upgrades the Economic Health section to
-public FRED releases when `/api/fred-snapshot` is available. Market, risk, and regional data remain
-sample placeholders.
+Mercury has a source-backed dashboard baseline. The page loads market pulse, economic health,
+risk, and regional growth from public data routes when `/api/live-snapshot` is available. If the
+route is unavailable, the UI shows loading or unavailable source states instead of fabricated
+figures.
 
 ## Tech Stack
 
@@ -19,7 +19,9 @@ Recommended starting stack:
 - Bootstrap 5 via CDN for layout and familiar UI patterns
 - Font Awesome Free via CDN for utility icons
 - Vercel Serverless Functions for live data proxies
-- Public FRED CSV releases for the first Economic Health source bridge
+- Yahoo Finance chart data for market pulse and daily risk proxies
+- Public FRED CSV releases for macro indicators and financial stress
+- World Bank API releases for regional annual GDP growth
 - Environment variables for future API keys
 
 Keep the first build simple until live source requirements are clearer.
@@ -48,19 +50,21 @@ Every source should be evaluated for trust, cost, licensing, rate limits, update
 
 No install step is required for the first prototype.
 
-Open `index.html` in a browser for the sample fallback, or run/deploy the site through Vercel to
-enable `/api/fred-snapshot`.
+Open `index.html` in a browser to see unavailable source states, or run/deploy the site through
+Vercel to enable `/api/live-snapshot`.
 
 Current files:
 
 - `index.html` - static dashboard entry
 - `styles.css` - Mercury dashboard styling
-- `app.js` - sample indicator data and rendering
-- `api/fred-snapshot.js` - Vercel Serverless Function for public FRED Economic Health releases
+- `app.js` - live snapshot loading, fallback states, and dashboard rendering
+- `api/live-snapshot.js` - Vercel Serverless Function for public Yahoo Finance, FRED, and World Bank releases
+- `api/fred-snapshot.js` - compatibility export for the live snapshot handler
 
 ## Environment Variables
 
-No environment variables are required yet. The current FRED source bridge uses public CSV downloads.
+No environment variables are required yet. Current source bridges use public Yahoo Finance chart
+responses, public FRED CSV downloads, and the World Bank API.
 
 Expected future variables may include API keys for market or economic data providers.
 
@@ -77,9 +81,9 @@ Mercury can deploy as a static site on Vercel. Push to `main` to update the prod
 
 Recommended next deployment path:
 
-1. Keep remaining sample data clearly labeled until live sources are connected.
-2. Expand source-backed coverage one route at a time.
-3. Add validation and fallback states for stale, missing, delayed, and unavailable data.
+1. Deploy the live snapshot route and confirm cache behavior in production.
+2. Add validation and fallback states for stale, missing, delayed, and unavailable data.
+3. Review market-data licensing before relying on any provider for a public production launch.
 
 ## Important Boundary
 

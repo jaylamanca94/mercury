@@ -1,176 +1,70 @@
-const marketPulse = [
-  {
-    name: "U.S. markets",
-    context: "Large-cap stocks",
-    value: "+0.6%",
-    trend: "Up",
-    tone: "up",
-    icon: "fa-chart-line",
-    source: "Placeholder market provider",
-    cadence: "Delayed market cadence TBD",
-    previous: "+0.1%",
-    change: "+0.5 pts",
-    points: [24, 28, 27, 33, 35, 42, 46],
-  },
-  {
-    name: "International",
-    context: "Developed markets",
-    value: "+0.2%",
-    trend: "Mixed",
-    tone: "mixed",
-    icon: "fa-earth-americas",
-    source: "Placeholder market provider",
-    cadence: "Delayed market cadence TBD",
-    previous: "-0.1%",
-    change: "+0.3 pts",
-    points: [28, 31, 29, 30, 34, 32, 36],
-  },
-  {
-    name: "Bonds",
-    context: "Broad bond index",
-    value: "-0.1%",
-    trend: "Stable",
+function pendingMetric(name, context, icon) {
+  return {
+    name,
+    context,
+    value: "Loading",
+    trend: "Pending",
     tone: "stable",
-    icon: "fa-scale-balanced",
-    source: "Placeholder market provider",
-    cadence: "Delayed market cadence TBD",
-    previous: "0.0%",
-    change: "-0.1 pts",
-    points: [36, 35, 36, 34, 35, 34, 35],
-  },
-  {
-    name: "Oil",
-    context: "Energy pressure",
-    value: "+1.4%",
-    trend: "Rising",
-    tone: "caution",
-    icon: "fa-gas-pump",
-    source: "Placeholder commodity provider",
-    cadence: "Delayed market cadence TBD",
-    previous: "+0.8%",
-    change: "+0.6 pts",
-    points: [18, 20, 22, 26, 31, 35, 39],
-  },
+    icon,
+    source: "Live public-data route",
+    cadence: "Loading source cadence",
+    previous: "Loading",
+    change: "Loading",
+    points: [],
+    sourceStatus: "Loading",
+  };
+}
+
+function pendingIndicator(name, icon) {
+  return {
+    name,
+    copy: "Loading the latest public data release.",
+    trend: "Pending",
+    tone: "stable",
+    icon,
+    source: "Live public-data route",
+    cadence: "Loading source cadence",
+    sourceStatus: "Loading",
+  };
+}
+
+function pendingRegion(name) {
+  return {
+    name,
+    copy: "Loading the latest public growth release.",
+    trend: "Pending",
+    tone: "stable",
+    source: "World Bank public data",
+    cadence: "Loading source cadence",
+    sourceStatus: "Loading",
+  };
+}
+
+let marketPulse = [
+  pendingMetric("U.S. equities", "S&P 500 daily close", "fa-chart-line"),
+  pendingMetric("Bonds", "7-10 year Treasury ETF", "fa-scale-balanced"),
+  pendingMetric("Dollar proxy", "U.S. dollar index ETF", "fa-dollar-sign"),
+  pendingMetric("Oil", "WTI crude futures", "fa-gas-pump"),
 ];
 
 let economicHealth = [
-  {
-    name: "Inflation",
-    context: "Consumer prices",
-    value: "3.2%",
-    trend: "Elevated",
-    tone: "caution",
-    icon: "fa-receipt",
-    source: "Candidate: BLS via FRED",
-    cadence: "Monthly release",
-    previous: "3.4%",
-    change: "-0.2 pts",
-    points: [44, 42, 40, 39, 38, 37, 37],
-  },
-  {
-    name: "Interest rates",
-    context: "Policy rate",
-    value: "5.25%",
-    trend: "Stable",
-    tone: "stable",
-    icon: "fa-percent",
-    source: "Candidate: Federal Reserve via FRED",
-    cadence: "Policy meeting cadence",
-    previous: "5.25%",
-    change: "No change",
-    points: [30, 30, 30, 30, 30, 30, 30],
-  },
-  {
-    name: "Unemployment",
-    context: "Labor market",
-    value: "4.0%",
-    trend: "Stable",
-    tone: "stable",
-    icon: "fa-briefcase",
-    source: "Candidate: BLS via FRED",
-    cadence: "Monthly release",
-    previous: "3.9%",
-    change: "+0.1 pts",
-    points: [30, 29, 29, 30, 30, 31, 31],
-  },
-  {
-    name: "GDP growth",
-    context: "Quarterly pace",
-    value: "2.1%",
-    trend: "Positive",
-    tone: "up",
-    icon: "fa-seedling",
-    source: "Candidate: BEA via FRED",
-    cadence: "Quarterly release",
-    previous: "1.8%",
-    change: "+0.3 pts",
-    points: [24, 25, 27, 29, 30, 31, 32],
-  },
+  pendingMetric("Inflation", "Consumer prices", "fa-receipt"),
+  pendingMetric("Interest rates", "Federal funds rate", "fa-percent"),
+  pendingMetric("Unemployment", "Labor market", "fa-briefcase"),
+  pendingMetric("GDP growth", "Quarterly pace", "fa-seedling"),
 ];
 
-const riskIndicators = [
-  {
-    name: "Volatility",
-    copy: "Market uncertainty is below recent stress levels.",
-    trend: "Contained",
-    tone: "up",
-    icon: "fa-wave-square",
-    source: "Candidate: market volatility provider",
-    cadence: "Delayed market cadence TBD",
-  },
-  {
-    name: "Dollar strength",
-    copy: "Currency pressure is steady against major peers.",
-    trend: "Stable",
-    tone: "stable",
-    icon: "fa-dollar-sign",
-    source: "Candidate: currency index provider",
-    cadence: "Delayed market cadence TBD",
-  },
-  {
-    name: "Gold",
-    copy: "Safe-haven demand is modestly higher.",
-    trend: "Rising",
-    tone: "caution",
-    icon: "fa-coins",
-    source: "Candidate: commodity provider",
-    cadence: "Delayed market cadence TBD",
-  },
+let riskIndicators = [
+  pendingIndicator("Volatility", "fa-wave-square"),
+  pendingIndicator("Credit stress", "fa-landmark"),
+  pendingIndicator("Financial stress", "fa-gauge-high"),
 ];
 
-const regions = [
-  {
-    name: "United States",
-    copy: "Growth positive, inflation still watched closely.",
-    trend: "Steady",
-    tone: "stable",
-    source: "Sample regional composite",
-    cadence: "Method pending",
-  },
-  {
-    name: "Europe",
-    copy: "Growth soft, rate pressure easing gradually.",
-    trend: "Mixed",
-    tone: "mixed",
-    source: "Sample regional composite",
-    cadence: "Method pending",
-  },
-  {
-    name: "China",
-    copy: "Demand signals remain uneven.",
-    trend: "Caution",
-    tone: "caution",
-    source: "Sample regional composite",
-    cadence: "Method pending",
-  },
-  {
-    name: "Emerging markets",
-    copy: "Conditions vary by currency and commodity exposure.",
-    trend: "Mixed",
-    tone: "mixed",
-    source: "Sample regional composite",
-    cadence: "Method pending",
-  },
+let regions = [
+  pendingRegion("United States"),
+  pendingRegion("European Union"),
+  pendingRegion("China"),
+  pendingRegion("Low and middle income"),
 ];
 
 function trendClass(tone) {
@@ -189,6 +83,10 @@ function escapeHtml(value) {
 function formatReleaseDate(value) {
   if (!value) {
     return null;
+  }
+
+  if (/^\d{4}$/.test(value)) {
+    return value;
   }
 
   const date = new Date(`${value}T00:00:00Z`);
@@ -233,15 +131,45 @@ function setHtml(selector, html) {
   }
 }
 
+function setScoreVisual(score) {
+  const element = document.querySelector(".summary-score");
+
+  if (element && Number.isFinite(score)) {
+    element.style.setProperty("--score", `${score}%`);
+    element.setAttribute("aria-label", `Live breadth score ${score} out of 100`);
+  }
+}
+
+function sourceStatusLabel(items, sourceName) {
+  if (!items?.length) {
+    return "Unavailable";
+  }
+
+  if (items.every((item) => item.sourceStatus === "Source-backed")) {
+    return sourceName;
+  }
+
+  if (items.some((item) => item.sourceStatus === "Source-backed")) {
+    return "Partial";
+  }
+
+  return "Unavailable";
+}
+
 function renderDataMeta(item) {
-  const status = item.sourceStatus || "Sample";
+  const status = item.sourceStatus || "Unavailable";
   const cadence = item.releaseDate
     ? `${item.cadence}; latest release ${formatReleaseDate(item.releaseDate)}`
     : item.cadence;
+  const icon = {
+    Loading: "fa-spinner",
+    "Source-backed": "fa-building-columns",
+    Unavailable: "fa-triangle-exclamation",
+  }[status] || "fa-circle-info";
 
   return `
     <div class="data-meta" aria-label="Indicator data details">
-      <span><i class="fa-solid ${status === "Sample" ? "fa-flask" : "fa-building-columns"}" aria-hidden="true"></i> ${escapeHtml(status)}</span>
+      <span><i class="fa-solid ${icon}" aria-hidden="true"></i> ${escapeHtml(status)}</span>
       <span><i class="fa-solid fa-database" aria-hidden="true"></i> ${escapeHtml(item.source)}</span>
       <span><i class="fa-regular fa-calendar" aria-hidden="true"></i> ${escapeHtml(cadence)}</span>
     </div>
@@ -249,6 +177,10 @@ function renderDataMeta(item) {
 }
 
 function renderSparkline(points, tone) {
+  if (!points?.length) {
+    return '<div class="sparkline sparkline-empty" aria-label="Trend line loading"></div>';
+  }
+
   const width = 180;
   const height = 42;
   const min = Math.min(...points);
@@ -264,7 +196,7 @@ function renderSparkline(points, tone) {
     .join(" ");
 
   return `
-    <svg class="sparkline trend-${tone}" viewBox="0 0 ${width} ${height}" role="img" aria-label="Sample trend line">
+    <svg class="sparkline trend-${tone}" viewBox="0 0 ${width} ${height}" role="img" aria-label="Recent trend line">
       <path d="${d}"></path>
     </svg>
   `;
@@ -284,9 +216,9 @@ function renderMetricCard(metric) {
         <p class="metric-value">${escapeHtml(metric.value)}</p>
         <span class="${trendClass(metric.tone)}">${escapeHtml(metric.trend)}</span>
       </div>
-      <dl class="metric-comparison" aria-label="Sample period comparison">
+      <dl class="metric-comparison" aria-label="Latest period comparison">
         <div>
-          <dt>${metric.sourceStatus === "Source-backed" ? "Previous release" : "Previous sample"}</dt>
+          <dt>Previous release</dt>
           <dd>${escapeHtml(metric.previous)}</dd>
         </div>
         <div>
@@ -335,73 +267,131 @@ function renderDashboard() {
   document.querySelector("#region-list").innerHTML = regions.map(renderRegionRow).join("");
 }
 
-function applyFredSnapshot(snapshot) {
-  if (!snapshot?.indicators?.length) {
+function renderSummaryDrivers(drivers) {
+  return drivers
+    .map(
+      (driver) => `
+        <div>
+          <dt>${escapeHtml(driver.label)}</dt>
+          <dd>${escapeHtml(driver.value)}</dd>
+        </div>
+      `,
+    )
+    .join("");
+}
+
+function applyLiveSnapshot(snapshot) {
+  if (!snapshot?.marketPulse?.length || !snapshot?.economicHealth?.length) {
     return;
   }
 
-  const macroPill = document.querySelector("#macro-connection-pill");
+  const sourcePill = document.querySelector("#macro-connection-pill");
 
-  economicHealth = snapshot.indicators;
+  marketPulse = snapshot.marketPulse;
+  economicHealth = snapshot.economicHealth;
+  riskIndicators = snapshot.riskIndicators;
+  regions = snapshot.regions;
   renderDashboard();
 
-  setText("#economic-health-title", "Official releases show uneven pressure");
-  setText("#source-coverage-title", "Source-backed macro releases");
-  setText(
-    "#source-coverage-copy",
-    "Economic Health now uses public FRED releases. Market, risk, and regional coverage remain sample placeholders until their own source routes are connected.",
-  );
+  setText("#global-status-title", snapshot.summary.title);
+  setText(".summary-copy p:last-child", snapshot.summary.copy);
+  setText(".score-value", snapshot.summary.score);
+  setText(".score-label", "Live breadth");
+  setScoreVisual(snapshot.summary.score);
+  setHtml(".score-drivers dl", renderSummaryDrivers(snapshot.summary.drivers));
+  setText(".score-drivers p", "Source drivers");
+  setText(".score-drivers small", "Computed from visible source-backed indicators.");
+  setText("#market-pulse-title", "Markets update from public releases");
+  setText("#economic-health-title", "Official releases show current pressure");
+  setText("#risk-title", "Risk indicators update from public releases");
+  setText("#global-title", "Regional growth uses World Bank releases");
+  setText("#source-coverage-title", "Source-backed snapshot");
+  setText("#source-coverage-copy", "Mercury loaded public releases for market pulse, economic health, risk, and regional growth. Each card shows its source and latest release date.");
   setText("#live-last-checked", formatCheckedAt(snapshot.checkedAt));
   setText("#refresh-schedule", "Checked on page load");
-  setText("#macro-source-status", "FRED");
-  setText(
-    "#macro-source-detail",
-    "Latest public FRED releases are loaded through Mercury's serverless source bridge",
-  );
+  setText("#market-source-status", sourceStatusLabel(snapshot.marketPulse, "Yahoo"));
+  setText("#market-source-detail", "Daily market series are loaded through Yahoo Finance charts");
+  setText("#macro-source-status", sourceStatusLabel(snapshot.economicHealth, "FRED"));
+  setText("#macro-source-detail", "Official macro releases are loaded through FRED");
+  setText("#risk-source-status", sourceStatusLabel(snapshot.riskIndicators, "Yahoo/FRED"));
+  setText("#risk-source-detail", "Risk indicators are loaded through Yahoo Finance and FRED");
+  setText("#regional-source-status", sourceStatusLabel(snapshot.regions, "World Bank"));
+  setText("#regional-source-detail", "Annual regional growth releases are loaded from the World Bank");
+  setText("#sample-set-date", "Latest releases");
   setHtml(
     "#macro-source-note",
-    '<i class="fa-solid fa-building-columns" aria-hidden="true"></i> FRED latest releases',
+    '<i class="fa-solid fa-building-columns" aria-hidden="true"></i> FRED official releases',
+  );
+  setHtml(
+    "#market-source-note",
+    '<i class="fa-solid fa-building-columns" aria-hidden="true"></i> Yahoo daily charts',
   );
   setHtml(
     "#macro-connection-pill",
-    '<i class="fa-solid fa-plug-circle-check" aria-hidden="true"></i> Macro releases connected',
+    '<i class="fa-solid fa-plug-circle-check" aria-hidden="true"></i> Live sources connected',
   );
 
-  if (macroPill) {
-    macroPill.classList.add("status-pill-live");
+  if (sourcePill) {
+    sourcePill.classList.add("status-pill-live");
   }
 }
 
-function applyFredFallback() {
-  setText("#macro-source-status", "Sample fallback");
-  setText(
-    "#macro-source-detail",
-    "FRED route unavailable in this view; sample macro indicators remain visible",
-  );
+function markUnavailable(items) {
+  return items.map((item) => ({
+    ...item,
+    value: item.value === "Loading" ? "Unavailable" : item.value,
+    trend: "Unavailable",
+    sourceStatus: "Unavailable",
+    previous: item.previous === "Loading" ? "Unavailable" : item.previous,
+    change: item.change === "Loading" ? "Unavailable" : item.change,
+    copy: item.copy?.replace("Loading", "Unable to load") || item.copy,
+    cadence: "Requires the serverless live-data route",
+  }));
 }
 
-async function loadFredSnapshot() {
+function applyLiveFallback() {
+  marketPulse = markUnavailable(marketPulse);
+  economicHealth = markUnavailable(economicHealth);
+  riskIndicators = markUnavailable(riskIndicators);
+  regions = markUnavailable(regions);
+  renderDashboard();
+
+  setText("#source-coverage-title", "Live data unavailable");
+  setText(
+    "#source-coverage-copy",
+    "Mercury could not reach the serverless live-data route in this view, so it is showing source status instead of sample figures.",
+  );
+  setText("#live-last-checked", "Unavailable");
+  setText("#refresh-schedule", "Route unavailable");
+  setText("#market-source-status", "Unavailable");
+  setText("#macro-source-status", "Unavailable");
+  setText("#risk-source-status", "Unavailable");
+  setText("#regional-source-status", "Unavailable");
+}
+
+async function loadLiveSnapshot() {
   if (window.location.protocol === "file:") {
+    applyLiveFallback();
     return;
   }
 
   try {
-    const response = await fetch("/api/fred-snapshot", {
+    const response = await fetch("/api/live-snapshot", {
       headers: {
         accept: "application/json",
       },
     });
 
     if (!response.ok) {
-      throw new Error("FRED snapshot route unavailable");
+      throw new Error("Live snapshot route unavailable");
     }
 
     const snapshot = await response.json();
-    applyFredSnapshot(snapshot);
+    applyLiveSnapshot(snapshot);
   } catch (error) {
-    applyFredFallback();
+    applyLiveFallback();
   }
 }
 
 renderDashboard();
-loadFredSnapshot();
+loadLiveSnapshot();

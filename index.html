@@ -24,22 +24,22 @@
 
     <header class="app-header">
       <div>
-        <p class="eyebrow mb-2">Sample dashboard</p>
+        <p class="eyebrow mb-2">Live dashboard</p>
         <h1>Mercury</h1>
         <p class="lead-copy mb-0">The global economy at a glance.</p>
       </div>
       <div class="header-actions" aria-label="Dashboard status">
-        <span class="status-pill status-pill-sample">
-          <i class="fa-solid fa-flask" aria-hidden="true"></i>
-          Prototype mode
-        </span>
         <span class="status-pill">
+          <i class="fa-solid fa-building-columns" aria-hidden="true"></i>
+          Public sources
+        </span>
+        <span id="sample-set-date" class="status-pill">
           <i class="fa-regular fa-clock" aria-hidden="true"></i>
-          Sample set: Jun 2026
+          Loading releases
         </span>
         <span id="macro-connection-pill" class="status-pill">
-          <i class="fa-solid fa-plug-circle-xmark" aria-hidden="true"></i>
-          No live refresh
+          <i class="fa-solid fa-plug-circle-bolt" aria-hidden="true"></i>
+          Connecting live sources
         </span>
       </div>
     </header>
@@ -48,36 +48,34 @@
       <section class="summary-band" aria-labelledby="global-status-title">
         <div class="summary-copy">
           <p class="eyebrow">Global economy status</p>
-          <h2 id="global-status-title">Mixed but steady</h2>
+          <h2 id="global-status-title">Loading source-backed snapshot</h2>
           <p>
-            Markets are firm, inflation pressure remains elevated, and risk indicators are calm.
-            This prototype starts from sample data and can upgrade Economic Health to source-backed
-            FRED releases when the serverless route is available. Sample and source-backed states
-            stay visibly separated.
+            Mercury is loading public market, macro, risk, and regional releases. If the live route
+            is unavailable, the dashboard shows source status rather than fabricated figures.
           </p>
         </div>
         <div class="summary-aside">
-          <div class="summary-score" aria-label="Sample economy score 64 out of 100">
-            <span class="score-value">64</span>
-            <span class="score-label">Sample score</span>
+          <div class="summary-score" aria-label="Live breadth score loading">
+            <span class="score-value">...</span>
+            <span class="score-label">Live breadth</span>
           </div>
-          <div class="score-drivers" aria-label="Sample score drivers">
-            <p>Illustrative drivers</p>
+          <div class="score-drivers" aria-label="Source-backed score drivers">
+            <p>Source drivers</p>
             <dl>
               <div>
                 <dt>Market pulse</dt>
-                <dd>Firm</dd>
+                <dd>Loading</dd>
               </div>
               <div>
                 <dt>Economic health</dt>
-                <dd>Uneven pressure</dd>
+                <dd>Loading</dd>
               </div>
               <div>
                 <dt>Risk tone</dt>
-                <dd>Calm</dd>
+                <dd>Loading</dd>
               </div>
             </dl>
-            <small>Not a live scoring model.</small>
+            <small>Computed from visible source-backed indicators.</small>
           </div>
         </div>
       </section>
@@ -86,11 +84,11 @@
         <div class="section-heading">
           <div>
             <p class="eyebrow">Market pulse</p>
-            <h2 id="market-pulse-title">Broad markets are mostly higher</h2>
+            <h2 id="market-pulse-title">Loading market releases</h2>
           </div>
-          <span class="source-note">
+          <span id="market-source-note" class="source-note">
             <i class="fa-solid fa-circle-info" aria-hidden="true"></i>
-            Placeholder market provider
+            Public market sources
           </span>
         </div>
         <div id="market-grid" class="metric-grid"></div>
@@ -100,11 +98,11 @@
         <div class="section-heading">
           <div>
             <p class="eyebrow">Economic health</p>
-            <h2 id="economic-health-title">Growth is positive, pressure is uneven</h2>
+            <h2 id="economic-health-title">Loading official releases</h2>
           </div>
           <span id="macro-source-note" class="source-note">
             <i class="fa-solid fa-building-columns" aria-hidden="true"></i>
-            Sample official-source candidates
+            FRED official releases
           </span>
         </div>
         <div id="health-grid" class="metric-grid"></div>
@@ -115,7 +113,7 @@
           <div class="section-heading">
             <div>
               <p class="eyebrow">Risk and confidence</p>
-              <h2 id="risk-title">Risk is contained</h2>
+              <h2 id="risk-title">Loading risk releases</h2>
             </div>
           </div>
           <div id="risk-list" class="indicator-list"></div>
@@ -125,7 +123,7 @@
           <div class="section-heading">
             <div>
               <p class="eyebrow">Global snapshot</p>
-              <h2 id="global-title">Regional conditions vary</h2>
+              <h2 id="global-title">Loading regional releases</h2>
             </div>
           </div>
           <div id="region-list" class="region-list"></div>
@@ -135,47 +133,54 @@
       <section class="freshness-band" aria-labelledby="source-coverage-title">
         <div>
           <p class="eyebrow">Source coverage and freshness</p>
-          <h2 id="source-coverage-title">Prototype mode</h2>
+          <h2 id="source-coverage-title">Loading source coverage</h2>
           <p id="source-coverage-copy">
-            Most integrations are not connected yet. Mercury is tracking source readiness by
-            dashboard area so sample indicators do not look like source-backed market or macro data.
+            Mercury is connecting to public data releases and will show the latest available source
+            timestamps when the snapshot loads.
           </p>
-          <dl class="snapshot-meta" aria-label="Prototype snapshot status">
+          <dl class="snapshot-meta" aria-label="Live snapshot status">
             <div>
-              <dt>Sample set date</dt>
-              <dd>Jun 2026</dd>
+              <dt>Coverage</dt>
+              <dd>Public releases</dd>
             </div>
             <div>
               <dt>Live last checked</dt>
-              <dd id="live-last-checked">Not connected</dd>
+              <dd id="live-last-checked">Loading</dd>
             </div>
             <div>
               <dt>Refresh schedule</dt>
-              <dd id="refresh-schedule">Not scheduled</dd>
+              <dd id="refresh-schedule">Loading</dd>
             </div>
           </dl>
         </div>
-        <ul class="freshness-list" aria-label="Prototype source status">
+        <ul class="freshness-list" aria-label="Live source status">
           <li>
             <span>
               Market data
-              <small>Provider selection and licensing still pending</small>
+              <small id="market-source-detail">Loading public market releases</small>
             </span>
-            <strong>Sample</strong>
+            <strong id="market-source-status">Loading</strong>
           </li>
           <li>
             <span>
               Macro indicators
-              <small id="macro-source-detail">Official source cadence identified before integration</small>
+              <small id="macro-source-detail">Loading official macro releases</small>
             </span>
-            <strong id="macro-source-status">Sample</strong>
+            <strong id="macro-source-status">Loading</strong>
+          </li>
+          <li>
+            <span>
+              Risk indicators
+              <small id="risk-source-detail">Loading public risk releases</small>
+            </span>
+            <strong id="risk-source-status">Loading</strong>
           </li>
           <li>
             <span>
               Regional coverage
-              <small>Composite method still needs definition</small>
+              <small id="regional-source-detail">Loading World Bank growth releases</small>
             </span>
-            <strong>Sample</strong>
+            <strong id="regional-source-status">Loading</strong>
           </li>
         </ul>
       </section>

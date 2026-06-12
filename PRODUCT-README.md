@@ -84,8 +84,8 @@ A user should be able to open Mercury and immediately understand:
 
 ## Scope
 
-Current scope is a static prototype foundation for a live global economy dashboard MVP with the
-first source-backed Economic Health bridge.
+Current scope is a live global economy dashboard MVP with public source-backed coverage for Market
+Pulse, Economic Health, Risk and Confidence, and Global Snapshot.
 
 In scope for the MVP:
 
@@ -95,10 +95,10 @@ In scope for the MVP:
 - Risk and Confidence
 - Clear source attribution
 - Update timestamps
-- Visible sample snapshot dates before live refresh exists
-- Explainable sample score drivers
-- Visible previous-sample comparisons for prototype metrics
-- First source-backed Economic Health route using public FRED releases
+- Visible source freshness and last-checked states
+- Explainable source-backed breadth score drivers
+- Visible previous-release comparisons for live metrics
+- Source-backed Economic Health route using public FRED releases
 - Plain-language labels and context
 - Neutral, non-advisory dashboard language
 - Responsive dashboard experience
@@ -200,12 +200,14 @@ Recently completed:
 
 - Created the first static dashboard scaffold with sample data and clear source/freshness placeholders.
 - Added the first serverless API route for source-backed Economic Health releases from FRED.
+- Replaced rendered placeholder values with a live snapshot route spanning Yahoo Finance, FRED, and
+  World Bank public data.
 
 Recommended next steps:
 
-1. Add stale, missing, delayed, and unavailable data states around source-backed routes.
-2. Select the first source-backed data provider for Market Pulse.
-3. Define the indicator scoring model for up/down, risk, confidence, and trend.
+1. Add stale and delayed-data detection for source-backed routes.
+2. Review production licensing and reliability for market-data providers.
+3. Refine the breadth score model for up/down, risk, confidence, and trend.
 4. Add source-backed period comparisons that match each indicator's real release cadence.
 
 Future opportunities:
@@ -226,13 +228,14 @@ Future opportunities:
 
 ## Known Limitations
 
-- The first app scaffold still uses static sample data outside Economic Health.
-- Economic Health can load source-backed public FRED releases through `/api/fred-snapshot`.
-- Market Pulse, Risk and Confidence, and Global Snapshot still use sample data.
-- No source scoring model exists yet.
-- The current economy score is illustrative and must stay labeled until a formal scoring model is defined.
-- Prototype sample values are illustrative and use a sample-set date, not a live refresh timestamp.
-- Previous-sample comparisons are illustrative and should be replaced by source-backed periods when live data exists.
+- Market Pulse uses Yahoo Finance chart data as a public market-data bridge; production licensing
+  should be reviewed before a public launch.
+- Economic Health loads source-backed public FRED releases through `/api/live-snapshot`.
+- Risk and Confidence combines Yahoo Finance daily proxies with the FRED Financial Stress Index.
+- Global Snapshot uses World Bank annual GDP growth releases, which update less frequently than
+  market or macro indicators.
+- The current breadth score is a simple visible-indicator aggregation and should be refined before
+  being treated as a formal economic scoring model.
 - Some economic indicators update monthly or quarterly, not in real time.
 - Market data licensing and rate limits may influence source choices.
 - Mercury must avoid language that sounds like financial advice.
