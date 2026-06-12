@@ -114,6 +114,7 @@ Use `8px` or less for normal cards and repeated list items unless a larger conta
 ## Chart And Indicator Guidance
 
 - Pair every numeric movement with direction, timeframe, source, and update time when possible.
+- Source-backed comparisons should show the latest and previous release periods when the data source provides them.
 - Use sparklines for recent direction, not detailed analysis.
 - Avoid chart types that require financial expertise to interpret.
 - Prefer labels like `Rising`, `Falling`, `Mixed`, `Stable`, `Elevated risk`, or `Improving confidence`.
@@ -175,6 +176,7 @@ Current prototype utilities:
 
 - Repeated metric cards use `8px` radius, compact labels, source context, status chips, and small sparklines.
 - Metric cards include a compact previous-sample comparison so users can understand direction without relying only on the sparkline.
+- Source-backed metric cards show the latest release period near the current value and the previous release period inside the comparison block.
 - Every sample indicator includes an inline metadata row for sample status, candidate source, and expected update cadence so users do not mistake prototype values for live data.
 - Source-backed indicators include inline freshness status, and unavailable source-backed indicators keep labeled sample fallback values in place.
 - Prototype source coverage uses a compact snapshot metadata block for sample-set date, live last-checked state, and refresh schedule.

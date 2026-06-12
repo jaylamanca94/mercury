@@ -100,6 +100,7 @@ In scope for the MVP:
 - Visible previous-sample comparisons for prototype metrics
 - First source-backed Economic Health route using public FRED releases
 - Partial, delayed, stale, and fallback states for source-backed Economic Health data
+- Source-backed macro cards show latest and previous release periods beside comparison values
 - Plain-language labels and context
 - Neutral, non-advisory dashboard language
 - Responsive dashboard experience
@@ -202,12 +203,13 @@ Recently completed:
 - Created the first static dashboard scaffold with sample data and clear source/freshness placeholders.
 - Added the first serverless API route for source-backed Economic Health releases from FRED.
 - Added per-indicator freshness and partial fallback states around the FRED Economic Health bridge.
+- Added release-period labels to source-backed Economic Health cards so previous-release comparisons show their time context.
 
 Recommended next steps:
 
 1. Select the first source-backed data provider for Market Pulse.
 2. Define the indicator scoring model for up/down, risk, confidence, and trend.
-3. Add source-backed period comparisons that match each indicator's real release cadence.
+3. Expand source-backed period comparisons to additional indicators as new source routes come online.
 4. Add manual fixtures for empty, partial, delayed, and stale source states.
 
 Future opportunities:
@@ -232,11 +234,12 @@ Future opportunities:
 - Economic Health can load source-backed public FRED releases through `/api/fred-snapshot`.
 - Economic Health keeps sample fallback cards visible when individual FRED indicators are unavailable.
 - FRED release freshness is classified with simple cadence thresholds and should be refined as source handling matures.
+- Source-backed Economic Health comparisons use the previous FRED observation period, not the static sample period.
 - Market Pulse, Risk and Confidence, and Global Snapshot still use sample data.
 - No source scoring model exists yet.
 - The current economy score is illustrative and must stay labeled until a formal scoring model is defined.
 - Prototype sample values are illustrative and use a sample-set date, not a live refresh timestamp.
-- Previous-sample comparisons are illustrative and should be replaced by source-backed periods when live data exists.
+- Previous-sample comparisons outside source-backed Economic Health remain illustrative until live data exists.
 - Some economic indicators update monthly or quarterly, not in real time.
 - Market data licensing and rate limits may influence source choices.
 - Mercury must avoid language that sounds like financial advice.

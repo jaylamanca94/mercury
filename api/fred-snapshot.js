@@ -208,19 +208,7 @@ function classifyTrend(seriesId, latest, previous) {
   return { trend: "Updated", tone: "stable" };
 }
 
-async function fetchSeries(series, checkedAt) {
-  const url = `${FRED_GRAPH_BASE_URL}?id=${series.seriesId}`;
-  const response = await fetch(url, {
-    headers: {
-      accept: "text/csv",
-    },
-  });
-
-  if (!response.ok) {
-    throw new Error(`FRED returned ${response.status} for ${series.seriesId}`);
-  }
-
-  const observations = parseFredCsv(await response.text());
+function buildSeriesIndicator(series, observations, checkedAt) {
   const values = buildValues(observations, series);
 
   if (values.length < 2) {
@@ -246,9 +234,27 @@ async function fetchSeries(series, checkedAt) {
     change: formatPointChange(latest.value - previous.value),
     points: values.slice(-7).map((point) => Number(point.value.toFixed(2))),
     releaseDate: latest.date,
+    previousReleaseDate: previous.date,
     sourceStatus: "Source-backed",
     ...freshness,
   };
+}
+
+async function fetchSeries(series, checkedAt) {
+  const url = `${FRED_GRAPH_BASE_URL}?id=${series.seriesId}`;
+  const response = await fetch(url, {
+    headers: {
+      accept: "text/csv",
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error(`FRED returned ${response.status} for ${series.seriesId}`);
+  }
+
+  const observations = parseFredCsv(await response.text());
+
+  return buildSeriesIndicator(series, observations, checkedAt);
 }
 
 function serializeIssue(series, error) {
@@ -373,6 +379,7 @@ async function handler(req, res) {
 module.exports = handler;
 module.exports._internals = {
   buildValues,
+  buildSeriesIndicator,
   classifyFreshness,
   classifyTrend,
   parseFredCsv,

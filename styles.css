@@ -383,6 +383,18 @@ body {
   margin: 0;
 }
 
+.metric-comparison small,
+.metric-period {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 16px;
+}
+
+.metric-period {
+  margin: 2px 0 8px;
+}
+
 .metric-value {
   font-size: 30px;
   font-weight: 800;

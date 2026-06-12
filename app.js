@@ -223,6 +223,14 @@ function formatCheckedAt(value) {
   }).format(date);
 }
 
+function renderMetricPeriod(metric) {
+  if (metric.sourceStatus !== "Source-backed" || !metric.releaseDate) {
+    return "";
+  }
+
+  return `<p class="metric-period">Latest release: ${escapeHtml(formatReleaseDate(metric.releaseDate))}</p>`;
+}
+
 function setText(selector, text) {
   const element = document.querySelector(selector);
 
@@ -301,6 +309,10 @@ function renderSparkline(points, tone) {
 }
 
 function renderMetricCard(metric) {
+  const previousPeriod = metric.previousReleaseDate
+    ? `<small>${escapeHtml(formatReleaseDate(metric.previousReleaseDate))}</small>`
+    : "";
+
   return `
     <article class="metric-card">
       <div class="metric-top">
@@ -312,12 +324,14 @@ function renderMetricCard(metric) {
       </div>
       <div>
         <p class="metric-value">${escapeHtml(metric.value)}</p>
+        ${renderMetricPeriod(metric)}
         <span class="${trendClass(metric.tone)}">${escapeHtml(metric.trend)}</span>
       </div>
-      <dl class="metric-comparison" aria-label="Sample period comparison">
+      <dl class="metric-comparison" aria-label="${metric.sourceStatus === "Source-backed" ? "Source release comparison" : "Sample period comparison"}">
         <div>
           <dt>${metric.sourceStatus === "Source-backed" ? "Previous release" : "Previous sample"}</dt>
           <dd>${escapeHtml(metric.previous)}</dd>
+          ${previousPeriod}
         </div>
         <div>
           <dt>Change</dt>
