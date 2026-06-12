@@ -44,6 +44,14 @@ const elements = new Map(
     "#region-list",
     "#source-coverage-title",
     "#source-coverage-copy",
+    "#economic-health-title",
+    "#macro-coverage-count",
+    "#macro-release-range",
+    "#macro-last-checked",
+    "#macro-source-status",
+    "#macro-source-detail",
+    "#macro-source-note",
+    "#macro-connection-pill",
     "#risk-title",
     "#risk-coverage-count",
     "#risk-release-range",
@@ -182,3 +190,18 @@ context.applyMarketFallback();
 
 assert.equal(elements.get("#market-source-status").textContent, "Sample fallback");
 assert.equal(elements.get("#source-coverage-title").textContent, "Source coverage updated");
+
+context.applyMarketFallback(new Error("Market snapshot route returned 503"));
+
+assert.match(elements.get("#market-source-detail").textContent, /Market Pulse route unavailable: Market snapshot route returned 503/);
+assert.match(elements.get("#market-grid").innerHTML, /Market Pulse route unavailable: Market snapshot route returned 503/);
+
+context.applyFredFallback(new Error("FRED snapshot route returned 502"));
+
+assert.match(elements.get("#macro-source-detail").textContent, /FRED route unavailable: FRED snapshot route returned 502/);
+assert.match(elements.get("#health-grid").innerHTML, /FRED route unavailable: FRED snapshot route returned 502/);
+
+context.applyRiskFallback(new Error("Failed to fetch"));
+
+assert.match(elements.get("#risk-source-detail").textContent, /Risk route unavailable: Failed to fetch/);
+assert.match(elements.get("#risk-list").innerHTML, /Risk route unavailable: Failed to fetch/);

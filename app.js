@@ -307,6 +307,28 @@ function summarizeSourceGaps(gaps = []) {
   return remainingCount > 0 ? `${visibleNames} + ${remainingCount} more` : visibleNames;
 }
 
+function routeFailureDetail(error) {
+  const rawMessage =
+    error && typeof error.message === "string" ? error.message : typeof error === "string" ? error : "";
+  const normalizedMessage = rawMessage.replace(/\s+/g, " ").trim();
+
+  if (!normalizedMessage) {
+    return null;
+  }
+
+  return normalizedMessage.length > 120 ? `${normalizedMessage.slice(0, 117)}...` : normalizedMessage;
+}
+
+function routeFallbackCopy(areaName, error) {
+  const detail = routeFailureDetail(error);
+
+  if (!detail) {
+    return `${areaName} route unavailable in this view`;
+  }
+
+  return `${areaName} route unavailable: ${detail}`;
+}
+
 function metricPeriodLabel(metric, previous = false) {
   if (metric.periodLabel) {
     return previous ? `Previous ${metric.periodLabel.toLowerCase()}` : metric.periodLabel;
@@ -617,13 +639,14 @@ function applyMarketSnapshot(snapshot) {
   }
 }
 
-function applyMarketFallback() {
+function applyMarketFallback(error = null) {
   const marketPill = document.querySelector("#market-connection-pill");
+  const fallbackCopy = routeFallbackCopy("Market Pulse", error);
 
   marketPulse = sampleMarketPulse.map((indicator) => ({
     ...indicator,
     sourceStatus: "Sample fallback",
-    sourceIssue: "Market Pulse route unavailable in this view, so Mercury kept the sample value visible.",
+    sourceIssue: `${fallbackCopy}, so Mercury kept the sample value visible.`,
   }));
   renderDashboard();
 
@@ -633,7 +656,7 @@ function applyMarketFallback() {
   setText("#market-gap-summary", "Market route unavailable");
   setText(
     "#market-source-detail",
-    "Market Pulse route unavailable in this view; sample market indicators remain visible",
+    `${fallbackCopy}; sample market indicators remain visible`,
   );
   setText("#market-source-status", "Sample fallback");
   setCoverageSummary();
@@ -723,13 +746,14 @@ function applyFredSnapshot(snapshot) {
   }
 }
 
-function applyFredFallback() {
+function applyFredFallback(error = null) {
   const macroPill = document.querySelector("#macro-connection-pill");
+  const fallbackCopy = routeFallbackCopy("FRED", error);
 
   economicHealth = sampleEconomicHealth.map((indicator) => ({
     ...indicator,
     sourceStatus: "Sample fallback",
-    sourceIssue: "FRED route unavailable in this view, so Mercury kept the sample value visible.",
+    sourceIssue: `${fallbackCopy}, so Mercury kept the sample value visible.`,
   }));
   renderDashboard();
 
@@ -739,7 +763,7 @@ function applyFredFallback() {
   setText("#macro-release-range", "Unavailable");
   setText(
     "#macro-source-detail",
-    "FRED route unavailable in this view; sample macro indicators remain visible",
+    `${fallbackCopy}; sample macro indicators remain visible`,
   );
   setCoverageSummary();
   setHtml(
@@ -826,13 +850,14 @@ function applyRiskSnapshot(snapshot) {
   }
 }
 
-function applyRiskFallback() {
+function applyRiskFallback(error = null) {
   const riskPill = document.querySelector("#risk-connection-pill");
+  const fallbackCopy = routeFallbackCopy("Risk", error);
 
   riskIndicators = sampleRiskIndicators.map((indicator) => ({
     ...indicator,
     sourceStatus: "Sample fallback",
-    sourceIssue: "Risk route unavailable in this view, so Mercury kept the sample value visible.",
+    sourceIssue: `${fallbackCopy}, so Mercury kept the sample value visible.`,
   }));
   renderDashboard();
 
@@ -842,7 +867,7 @@ function applyRiskFallback() {
   setText("#risk-release-range", "Unavailable");
   setText(
     "#risk-source-detail",
-    "Risk route unavailable in this view; sample risk indicators remain visible",
+    `${fallbackCopy}; sample risk indicators remain visible`,
   );
   setCoverageSummary();
   setHtml(
@@ -869,13 +894,13 @@ async function loadFredSnapshot() {
     });
 
     if (!response.ok) {
-      throw new Error("FRED snapshot route unavailable");
+      throw new Error(`FRED snapshot route returned ${response.status}`);
     }
 
     const snapshot = await response.json();
     applyFredSnapshot(snapshot);
   } catch (error) {
-    applyFredFallback();
+    applyFredFallback(error);
   }
 }
 
@@ -892,13 +917,13 @@ async function loadMarketSnapshot() {
     });
 
     if (!response.ok) {
-      throw new Error("Market snapshot route unavailable");
+      throw new Error(`Market snapshot route returned ${response.status}`);
     }
 
     const snapshot = await response.json();
     applyMarketSnapshot(snapshot);
   } catch (error) {
-    applyMarketFallback();
+    applyMarketFallback(error);
   }
 }
 
@@ -915,13 +940,13 @@ async function loadRiskSnapshot() {
     });
 
     if (!response.ok) {
-      throw new Error("Risk snapshot route unavailable");
+      throw new Error(`Risk snapshot route returned ${response.status}`);
     }
 
     const snapshot = await response.json();
     applyRiskSnapshot(snapshot);
   } catch (error) {
-    applyRiskFallback();
+    applyRiskFallback(error);
   }
 }
 

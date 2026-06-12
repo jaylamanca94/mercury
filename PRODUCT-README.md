@@ -112,6 +112,7 @@ In scope for the MVP:
 - Source-backed cards and rows show unit and frequency metadata from the source route when available
 - Source coverage distinguishes route-level last check times for Market Pulse, Economic Health, and Risk and Confidence
 - Source coverage keeps the shared live last checked time anchored to the newest valid route check, not async route completion order
+- Route-level fallback states include a short status or network failure reason when a source route cannot load
 - Market Pulse source audits summarize unresolved source gaps separately from loaded FRED observations
 - Header connection pills show Market Pulse, Risk and Confidence, and Economic Health source status as each bridge loads or falls back
 - Plain-language labels and context
@@ -226,6 +227,7 @@ Recently completed:
 - Added unit and frequency metadata to source-backed Market Pulse, Economic Health, and Risk and Confidence indicators so users can interpret the value basis without leaving the dashboard.
 - Kept the shared live last checked timestamp tied to the newest valid route check so route load order does not make freshness look older.
 - Added compact latest, previous, and change comparisons to source-backed Risk and Confidence rows.
+- Added route failure details to source fallback copy so unavailable source routes are easier to diagnose.
 
 Recommended next steps:
 

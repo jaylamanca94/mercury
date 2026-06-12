@@ -127,6 +127,7 @@ Use `8px` or less for normal cards and repeated list items unless a larger conta
 - Source-backed sections must update their own freshness labels without implying that unrelated sample sections are live.
 - First-viewport connection pills should represent every currently source-backed dashboard area so live, partial, and fallback states are visible before users reach the source coverage band.
 - Source-backed sections should expose compact audit metadata for coverage count, release or observation range, and route-level last check time when those fields exist.
+- Route-level fallback states should include a short sanitized status or network failure reason when available, while keeping sample fallback values visibly separated from source-backed data.
 - Source-backed indicators should expose compact unit and frequency metadata inline with source and freshness details when those fields exist.
 - Shared live freshness labels should use the newest valid route check timestamp, while each source-backed dashboard area keeps its own route-level check time.
 
@@ -189,6 +190,7 @@ Current prototype utilities:
 - The source coverage band shows compact source audit metadata for Market Pulse, Economic Health, and Risk and Confidence route check times, coverage counts, and period or observation ranges.
 - The shared live last checked field reflects the newest valid route check so source freshness is not affected by async route completion order.
 - Header connection pills mirror the current source-backed Market Pulse, Risk and Confidence, and Economic Health bridge states with live or warning styling.
+- Source fallback copy carries the route failure reason when a source route returns a status error or network failure, without changing sample fallback labels.
 - Market Pulse source coverage also shows a compact gap summary for unresolved or unavailable cards so partial coverage is not reduced to a loaded-count alone.
 - Every sample indicator includes an inline metadata row for sample status, candidate source, and expected update cadence so users do not mistake prototype values for live data.
 - Source-backed indicators include inline freshness status, and unavailable source-backed indicators keep labeled sample fallback values in place.
