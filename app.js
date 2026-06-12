@@ -497,8 +497,8 @@ function renderMetricCard(metric) {
           <dd>${escapeHtml(metric.change)}</dd>
         </div>
       </dl>
-      ${renderDataMeta(metric)}
       ${renderSparkline(metric.points, metric.tone)}
+      ${renderDataMeta(metric)}
     </article>
   `;
 }

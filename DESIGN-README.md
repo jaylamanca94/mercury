@@ -182,8 +182,9 @@ Good utility candidates:
 
 Current prototype utilities:
 
-- Repeated metric cards use `8px` radius, compact labels, source context, status chips, and small sparklines.
+- Repeated metric cards use `8px` radius, compact labels, source context, status chips, small sparklines, and subtle raised surfaces.
 - Metric cards include a compact previous-sample comparison so users can understand direction without relying only on the sparkline.
+- Metric card hierarchy should keep the value, comparison, and sparkline ahead of detailed source metadata.
 - Source-backed metric cards show the latest release period near the current value and the previous release period inside the comparison block.
 - Source-backed daily market metric cards show the latest observation date near the current value and the previous observation date inside the comparison block.
 - Source-backed daily risk rows use a compact comparison block for latest, previous, and change values before the source metadata.
@@ -192,7 +193,7 @@ Current prototype utilities:
 - Header connection pills mirror the current source-backed Market Pulse, Risk and Confidence, and Economic Health bridge states with live or warning styling.
 - Source fallback copy carries the route failure reason when a source route returns a status error or network failure, without changing sample fallback labels.
 - Market Pulse source coverage also shows a compact gap summary for unresolved or unavailable cards so partial coverage is not reduced to a loaded-count alone.
-- Every sample indicator includes an inline metadata row for sample status, candidate source, and expected update cadence so users do not mistake prototype values for live data.
+- Every sample indicator includes an inline metadata panel for sample status, candidate source, and expected update cadence so users do not mistake prototype values for live data.
 - Sample fallback indicators should preserve route-provided issue metadata inline when a source route names a specific unresolved card, pending source selection, unavailable unit, or cadence state.
 - Source-backed indicators include inline freshness status, and unavailable source-backed indicators keep labeled sample fallback values in place.
 - Source-backed indicators include inline unit and frequency metadata so values such as index levels, rates, and dollar prices are not ambiguous.
