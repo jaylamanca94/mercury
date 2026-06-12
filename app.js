@@ -478,6 +478,13 @@ function setCoverageSummary() {
   );
 }
 
+function applyRouteCheck(selector, checkedAt) {
+  const checkedLabel = formatCheckedAt(checkedAt);
+
+  setText(selector, checkedLabel);
+  setText("#live-last-checked", checkedLabel);
+}
+
 function applyMarketSnapshot(snapshot) {
   if (!snapshot?.indicators?.length) {
     applyMarketFallback();
@@ -529,7 +536,7 @@ function applyMarketSnapshot(snapshot) {
   setText("#market-coverage-count", `${sourceCoverage.loaded} of ${sourceCoverage.total} loaded`);
   setText("#market-release-range", formatObservationRange(observationRange));
   setText("#market-gap-summary", summarizeSourceGaps(marketGaps));
-  setText("#live-last-checked", formatCheckedAt(snapshot.checkedAt));
+  applyRouteCheck("#market-last-checked", snapshot.sourceAudit?.checkedAt || snapshot.checkedAt);
   setText("#refresh-schedule", "Checked on page load");
   setText("#market-source-status", sourceHealth.status === "ready" ? "FRED" : sourceHealth.label);
   setText(
@@ -564,6 +571,7 @@ function applyMarketFallback() {
   renderDashboard();
 
   setText("#market-coverage-count", "0 of 4 loaded");
+  setText("#market-last-checked", "Route unavailable");
   setText("#market-release-range", "Unavailable");
   setText("#market-gap-summary", "Market route unavailable");
   setText(
@@ -631,7 +639,7 @@ function applyFredSnapshot(snapshot) {
       ? "Official releases show uneven pressure"
       : "Official releases are partially connected",
   );
-  setText("#live-last-checked", formatCheckedAt(snapshot.checkedAt));
+  applyRouteCheck("#macro-last-checked", snapshot.sourceAudit?.checkedAt || snapshot.checkedAt);
   setText("#refresh-schedule", "Checked on page load");
   setText("#macro-coverage-count", `${sourceCoverage.loaded} of ${sourceCoverage.total} loaded`);
   setText("#macro-release-range", formatReleaseRange(releaseRange));
@@ -668,6 +676,7 @@ function applyFredFallback() {
   renderDashboard();
 
   setText("#macro-source-status", "Sample fallback");
+  setText("#macro-last-checked", "Route unavailable");
   setText("#macro-coverage-count", "0 of 4 loaded");
   setText("#macro-release-range", "Unavailable");
   setText(
@@ -692,6 +701,7 @@ function applyRiskSnapshot(snapshot) {
     return;
   }
 
+  const riskPill = document.querySelector("#risk-connection-pill");
   const indicatorsById = new Map(snapshot.indicators.map((indicator) => [indicator.id, indicator]));
   const issuesById = new Map((snapshot.issues || []).map((issue) => [issue.id, issue]));
   const loadedCount = indicatorsById.size;
@@ -734,7 +744,7 @@ function applyRiskSnapshot(snapshot) {
   );
   setText("#risk-coverage-count", `${sourceCoverage.loaded} of ${sourceCoverage.total} loaded`);
   setText("#risk-release-range", formatObservationRange(observationRange));
-  setText("#live-last-checked", formatCheckedAt(snapshot.checkedAt));
+  applyRouteCheck("#risk-last-checked", snapshot.sourceAudit?.checkedAt || snapshot.checkedAt);
   setText("#refresh-schedule", "Checked on page load");
   setText("#risk-source-status", sourceHealth.status === "ready" ? "FRED" : sourceHealth.label);
   setText(
@@ -747,9 +757,20 @@ function applyRiskSnapshot(snapshot) {
     "#risk-source-note",
     `<i class="fa-solid fa-shield-halved" aria-hidden="true"></i> ${escapeHtml(sourceHealth.label)}`,
   );
+  setHtml(
+    "#risk-connection-pill",
+    `<i class="fa-solid ${sourceHealth.status === "ready" ? "fa-plug-circle-check" : "fa-triangle-exclamation"}" aria-hidden="true"></i> ${escapeHtml(sourceHealth.label)}`,
+  );
+
+  if (riskPill) {
+    riskPill.classList.toggle("status-pill-live", sourceHealth.status === "ready");
+    riskPill.classList.toggle("status-pill-warning", sourceHealth.status !== "ready");
+  }
 }
 
 function applyRiskFallback() {
+  const riskPill = document.querySelector("#risk-connection-pill");
+
   riskIndicators = sampleRiskIndicators.map((indicator) => ({
     ...indicator,
     sourceStatus: "Sample fallback",
@@ -758,6 +779,7 @@ function applyRiskFallback() {
   renderDashboard();
 
   setText("#risk-source-status", "Sample fallback");
+  setText("#risk-last-checked", "Route unavailable");
   setText("#risk-coverage-count", "0 of 3 loaded");
   setText("#risk-release-range", "Unavailable");
   setText(
@@ -765,6 +787,15 @@ function applyRiskFallback() {
     "Risk route unavailable in this view; sample risk indicators remain visible",
   );
   setCoverageSummary();
+  setHtml(
+    "#risk-connection-pill",
+    '<i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i> Risk fallback visible',
+  );
+
+  if (riskPill) {
+    riskPill.classList.remove("status-pill-live");
+    riskPill.classList.add("status-pill-warning");
+  }
 }
 
 async function loadFredSnapshot() {

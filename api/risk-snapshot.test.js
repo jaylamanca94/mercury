@@ -50,8 +50,10 @@ const sourceAudit = buildSourceAudit(
     { releaseDate: "2026-06-08" },
   ],
   [{ id: "gold" }],
+  "2026-06-12T12:00:00.000Z",
 );
 
+assert.equal(sourceAudit.checkedAt, "2026-06-12T12:00:00.000Z");
 assert.deepEqual(sourceAudit.coverage, {
   area: "Risk and Confidence",
   loaded: 2,

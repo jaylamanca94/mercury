@@ -52,8 +52,10 @@ const sourceAudit = buildSourceAudit(
     { releaseDate: "2026-04-01" },
   ],
   [{ id: "gdp-growth" }],
+  "2026-06-10T12:00:00.000Z",
 );
 
+assert.equal(sourceAudit.checkedAt, "2026-06-10T12:00:00.000Z");
 assert.deepEqual(sourceAudit.coverage, {
   area: "Economic Health",
   loaded: 3,

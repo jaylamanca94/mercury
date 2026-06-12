@@ -46,8 +46,10 @@ const sourceAudit = buildSourceAudit(
     { releaseDate: "2026-06-11" },
   ],
   [{ id: "international", reason: "No source selected" }],
+  "2026-06-12T12:00:00.000Z",
 );
 
+assert.equal(sourceAudit.checkedAt, "2026-06-12T12:00:00.000Z");
 assert.deepEqual(sourceAudit.coverage, {
   area: "Market Pulse",
   loaded: 3,

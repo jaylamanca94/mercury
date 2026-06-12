@@ -107,8 +107,10 @@ In scope for the MVP:
 - Partial, delayed, stale, and fallback states for source-backed Risk and Confidence data
 - Source-backed macro cards show latest and previous release periods beside comparison values
 - Source-backed market cards show latest and previous observation dates beside comparison values
-- Source-backed Economic Health, Market Pulse, and Risk and Confidence show source audit metadata for loaded count, period or observation range, and last check time
+- Source-backed Economic Health, Market Pulse, and Risk and Confidence show source audit metadata for loaded count, period or observation range, and route-level last check time
+- Source coverage distinguishes route-level last check times for Market Pulse, Economic Health, and Risk and Confidence
 - Market Pulse source audits summarize unresolved source gaps separately from loaded FRED observations
+- Header connection pills show Market Pulse, Risk and Confidence, and Economic Health source status as each bridge loads or falls back
 - Plain-language labels and context
 - Neutral, non-advisory dashboard language
 - Responsive dashboard experience
@@ -216,6 +218,8 @@ Recently completed:
 - Added a partial Market Pulse FRED bridge for S&P 500, 10-year Treasury yield, and WTI oil observations while keeping unresolved market cards visibly labeled as sample fallback.
 - Added a compact Market Pulse gap summary so unresolved source selections stay visible beside loaded FRED coverage.
 - Added a Risk and Confidence FRED bridge for VIX, broad dollar index, and gold observations while keeping sample fallback behavior available.
+- Added route-level source check times to the coverage band so Market Pulse, Economic Health, and Risk and Confidence audits do not share one ambiguous timestamp.
+- Added a Risk and Confidence header status pill so all current FRED-backed dashboard areas expose connection state in the first viewport.
 
 Recommended next steps:
 
@@ -246,6 +250,7 @@ Future opportunities:
 - Economic Health can load source-backed public FRED releases through `/api/fred-snapshot`.
 - Market Pulse can load source-backed public FRED daily series through `/api/market-snapshot` for U.S. markets, the 10-year Treasury yield, and WTI oil.
 - Risk and Confidence can load source-backed public FRED daily series through `/api/risk-snapshot` for VIX, the nominal broad U.S. dollar index, and gold.
+- The header shows separate Market Pulse, Risk and Confidence, and Economic Health connection states, but regional coverage remains sample-only.
 - Economic Health keeps sample fallback cards visible when individual FRED indicators are unavailable.
 - Market Pulse keeps sample fallback cards visible when individual source-backed market indicators are unavailable or when no durable source has been selected for a card.
 - Risk and Confidence keeps sample fallback rows visible when individual FRED risk indicators are unavailable.

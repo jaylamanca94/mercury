@@ -13,8 +13,9 @@ and Risk and Confidence sections when `/api/market-snapshot`, `/api/fred-snapsho
 fall back to labeled sample values when a FRED series is unavailable, delayed, stale, or not selected
 yet. Source-backed market cards show latest and previous daily observation dates; source-backed macro
 cards show latest and previous FRED release periods; source-backed risk rows describe the latest daily
-reading against the previous observation. The source coverage band shows market, macro, and risk
-coverage counts, period or observation ranges, last check time, and unresolved Market Pulse source gaps.
+reading against the previous observation. The header shows separate Market Pulse, Risk and Confidence,
+and Economic Health connection states. The source coverage band shows market, macro, and risk route
+check times, coverage counts, period or observation ranges, and unresolved Market Pulse source gaps.
 Regional data remains sample placeholder content.
 
 ## Tech Stack
@@ -62,6 +63,7 @@ Current files:
 - `index.html` - static dashboard entry
 - `styles.css` - Mercury dashboard styling
 - `app.js` - sample indicator data and rendering
+- `app.test.js` - Node assertions for dashboard source-status rendering behavior
 - `api/market-snapshot.js` - Vercel Serverless Function for partial public FRED Market Pulse observations
 - `api/market-snapshot.test.js` - Node assertions for market source freshness, observation periods, source audit metadata, and partial coverage
 - `api/fred-snapshot.js` - Vercel Serverless Function for public FRED Economic Health releases

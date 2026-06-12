@@ -124,7 +124,8 @@ Use `8px` or less for normal cards and repeated list items unless a larger conta
 - Make stale, delayed, sample, fallback, and unavailable data visually distinct.
 - Static sample dashboards must show both the sample-set date and the live refresh state so users do not confuse prototype values with current data.
 - Source-backed sections must update their own freshness labels without implying that unrelated sample sections are live.
-- Source-backed sections should expose compact audit metadata for coverage count, release or observation range, and last check time when those fields exist.
+- First-viewport connection pills should represent every currently source-backed dashboard area so live, partial, and fallback states are visible before users reach the source coverage band.
+- Source-backed sections should expose compact audit metadata for coverage count, release or observation range, and route-level last check time when those fields exist.
 
 ## Icons
 
@@ -181,11 +182,12 @@ Current prototype utilities:
 - Metric cards include a compact previous-sample comparison so users can understand direction without relying only on the sparkline.
 - Source-backed metric cards show the latest release period near the current value and the previous release period inside the comparison block.
 - Source-backed daily market metric cards show the latest observation date near the current value and the previous observation date inside the comparison block.
-- The source coverage band shows compact source audit metadata for Market Pulse, Economic Health, and Risk and Confidence coverage counts, period or observation ranges, and last check time.
+- The source coverage band shows compact source audit metadata for Market Pulse, Economic Health, and Risk and Confidence route check times, coverage counts, and period or observation ranges.
+- Header connection pills mirror the current source-backed Market Pulse, Risk and Confidence, and Economic Health bridge states with live or warning styling.
 - Market Pulse source coverage also shows a compact gap summary for unresolved or unavailable cards so partial coverage is not reduced to a loaded-count alone.
 - Every sample indicator includes an inline metadata row for sample status, candidate source, and expected update cadence so users do not mistake prototype values for live data.
 - Source-backed indicators include inline freshness status, and unavailable source-backed indicators keep labeled sample fallback values in place.
-- Prototype source coverage uses a compact snapshot metadata block for sample-set date, live last-checked state, and refresh schedule.
+- Prototype source coverage uses a compact snapshot metadata block for sample-set date, latest live check, route-level check states, and refresh schedule.
 - Region and risk rows use icon, title, short context, and a plain-language trend label.
 - Sample data must be visibly labeled in the header and source/freshness areas until live integrations exist.
 - Mixed source states should use explicit labels such as `Sample`, `Sample fallback`, and `Source-backed` at the section or indicator level.

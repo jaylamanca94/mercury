@@ -37,6 +37,10 @@
           <i class="fa-solid fa-plug-circle-xmark" aria-hidden="true"></i>
           Market sample
         </span>
+        <span id="risk-connection-pill" class="status-pill">
+          <i class="fa-solid fa-plug-circle-xmark" aria-hidden="true"></i>
+          Risk sample
+        </span>
         <span class="status-pill">
           <i class="fa-regular fa-clock" aria-hidden="true"></i>
           Sample set: Jun 2026
@@ -55,9 +59,9 @@
           <h2 id="global-status-title">Mixed but steady</h2>
           <p>
             Markets are firm, inflation pressure remains elevated, and risk indicators are calm.
-            This prototype starts from sample data and can upgrade Market Pulse and Economic Health
-            to source-backed FRED observations when the serverless routes are available. Sample and
-            source-backed states stay visibly separated.
+            This prototype starts from sample data and can upgrade Market Pulse, Economic Health,
+            and Risk and Confidence to source-backed FRED observations when the serverless routes
+            are available. Sample and source-backed states stay visibly separated.
           </p>
         </div>
         <div class="summary-aside">
@@ -158,6 +162,10 @@
               <dd id="live-last-checked">Not connected</dd>
             </div>
             <div>
+              <dt>Market checked</dt>
+              <dd id="market-last-checked">Not connected</dd>
+            </div>
+            <div>
               <dt>Market coverage</dt>
               <dd id="market-coverage-count">0 of 4 loaded</dd>
             </div>
@@ -170,12 +178,20 @@
               <dd id="market-gap-summary">Not evaluated</dd>
             </div>
             <div>
+              <dt>Macro checked</dt>
+              <dd id="macro-last-checked">Not connected</dd>
+            </div>
+            <div>
               <dt>Macro coverage</dt>
               <dd id="macro-coverage-count">0 of 4 loaded</dd>
             </div>
             <div>
               <dt>Release range</dt>
               <dd id="macro-release-range">Unavailable</dd>
+            </div>
+            <div>
+              <dt>Risk checked</dt>
+              <dd id="risk-last-checked">Not connected</dd>
             </div>
             <div>
               <dt>Risk coverage</dt>

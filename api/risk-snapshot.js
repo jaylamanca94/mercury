@@ -298,10 +298,11 @@ function summarizeSourceHealth(indicators, issues) {
   };
 }
 
-function buildSourceAudit(indicators, issues) {
+function buildSourceAudit(indicators, issues, checkedAt = null) {
   const releaseDates = indicators.map((indicator) => indicator.releaseDate).sort();
 
   return {
+    checkedAt,
     coverage: {
       area: "Risk and Confidence",
       loaded: indicators.length,
@@ -340,7 +341,7 @@ async function handler(req, res) {
     }
 
     const sourceHealth = summarizeSourceHealth(indicators, issues);
-    const sourceAudit = buildSourceAudit(indicators, issues);
+    const sourceAudit = buildSourceAudit(indicators, issues, checkedAt);
 
     res.setHeader("Content-Type", "application/json; charset=utf-8");
     res.setHeader("Cache-Control", "s-maxage=900, stale-while-revalidate=3600");
