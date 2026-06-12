@@ -154,6 +154,7 @@ const sampleRiskIndicators = [
 ];
 
 let riskIndicators = sampleRiskIndicators.map((indicator) => ({ ...indicator }));
+let latestLiveCheckedAt = null;
 
 const regions = [
   {
@@ -249,6 +250,19 @@ function formatCheckedAt(value) {
     dateStyle: "medium",
     timeStyle: "short",
   }).format(date);
+}
+
+function updateLatestLiveChecked(checkedAt) {
+  const checkedDate = new Date(checkedAt);
+
+  if (Number.isNaN(checkedDate.getTime())) {
+    return;
+  }
+
+  if (!latestLiveCheckedAt || checkedDate > latestLiveCheckedAt) {
+    latestLiveCheckedAt = checkedDate;
+    setText("#live-last-checked", formatCheckedAt(checkedAt));
+  }
 }
 
 function formatReleaseRange(range) {
@@ -494,7 +508,7 @@ function applyRouteCheck(selector, checkedAt) {
   const checkedLabel = formatCheckedAt(checkedAt);
 
   setText(selector, checkedLabel);
-  setText("#live-last-checked", checkedLabel);
+  updateLatestLiveChecked(checkedAt);
 }
 
 function applyMarketSnapshot(snapshot) {

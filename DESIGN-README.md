@@ -128,6 +128,7 @@ Use `8px` or less for normal cards and repeated list items unless a larger conta
 - First-viewport connection pills should represent every currently source-backed dashboard area so live, partial, and fallback states are visible before users reach the source coverage band.
 - Source-backed sections should expose compact audit metadata for coverage count, release or observation range, and route-level last check time when those fields exist.
 - Source-backed indicators should expose compact unit and frequency metadata inline with source and freshness details when those fields exist.
+- Shared live freshness labels should use the newest valid route check timestamp, while each source-backed dashboard area keeps its own route-level check time.
 
 ## Icons
 
@@ -185,6 +186,7 @@ Current prototype utilities:
 - Source-backed metric cards show the latest release period near the current value and the previous release period inside the comparison block.
 - Source-backed daily market metric cards show the latest observation date near the current value and the previous observation date inside the comparison block.
 - The source coverage band shows compact source audit metadata for Market Pulse, Economic Health, and Risk and Confidence route check times, coverage counts, and period or observation ranges.
+- The shared live last checked field reflects the newest valid route check so source freshness is not affected by async route completion order.
 - Header connection pills mirror the current source-backed Market Pulse, Risk and Confidence, and Economic Health bridge states with live or warning styling.
 - Market Pulse source coverage also shows a compact gap summary for unresolved or unavailable cards so partial coverage is not reduced to a loaded-count alone.
 - Every sample indicator includes an inline metadata row for sample status, candidate source, and expected update cadence so users do not mistake prototype values for live data.

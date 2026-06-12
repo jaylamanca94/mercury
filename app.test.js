@@ -137,6 +137,13 @@ assert.match(elements.get("#live-last-checked").textContent, /Jun 12, 2026/);
 assert.match(elements.get("#risk-list").innerHTML, /Unit: Index level/);
 assert.match(elements.get("#risk-list").innerHTML, /Frequency: Daily/);
 
+context.applyRouteCheck("#risk-last-checked", "2026-06-11T12:00:00.000Z");
+assert.match(elements.get("#risk-last-checked").textContent, /Jun 11, 2026/);
+assert.match(elements.get("#live-last-checked").textContent, /Jun 12, 2026/);
+
+context.applyRouteCheck("#risk-last-checked", "2026-06-13T12:00:00.000Z");
+assert.match(elements.get("#live-last-checked").textContent, /Jun 13, 2026/);
+
 context.applyRiskFallback();
 
 assert.match(riskPill.innerHTML, /Risk fallback visible/);

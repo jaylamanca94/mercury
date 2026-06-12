@@ -15,7 +15,8 @@ yet. Source-backed market cards show latest and previous daily observation dates
 cards show latest and previous FRED release periods; source-backed risk rows describe the latest daily
 reading against the previous observation. The header shows separate Market Pulse, Risk and Confidence,
 and Economic Health connection states. The source coverage band shows market, macro, and risk route
-check times, coverage counts, period or observation ranges, and unresolved Market Pulse source gaps.
+check times, coverage counts, period or observation ranges, unresolved Market Pulse source gaps, and
+the newest valid live check across source-backed routes.
 Regional data remains sample placeholder content.
 
 ## Tech Stack
