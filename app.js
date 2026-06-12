@@ -161,15 +161,14 @@ function renderDataMeta(item) {
   const cadence = item.releaseDate
     ? `${item.cadence}; latest release ${formatReleaseDate(item.releaseDate)}`
     : item.cadence;
-  const icon = {
-    Loading: "fa-spinner",
-    "Source-backed": "fa-building-columns",
-    Unavailable: "fa-triangle-exclamation",
-  }[status] || "fa-circle-info";
+  const statusMeta =
+    status === "Source-backed"
+      ? ""
+      : `<span><i class="fa-solid ${status === "Loading" ? "fa-spinner" : "fa-triangle-exclamation"}" aria-hidden="true"></i> ${escapeHtml(status)}</span>`;
 
   return `
     <div class="data-meta" aria-label="Indicator data details">
-      <span><i class="fa-solid ${icon}" aria-hidden="true"></i> ${escapeHtml(status)}</span>
+      ${statusMeta}
       <span><i class="fa-solid fa-database" aria-hidden="true"></i> ${escapeHtml(item.source)}</span>
       <span><i class="fa-regular fa-calendar" aria-hidden="true"></i> ${escapeHtml(cadence)}</span>
     </div>
@@ -300,12 +299,12 @@ function applyLiveSnapshot(snapshot) {
   setScoreVisual(snapshot.summary.score);
   setHtml(".score-drivers dl", renderSummaryDrivers(snapshot.summary.drivers));
   setText(".score-drivers p", "Source drivers");
-  setText(".score-drivers small", "Computed from visible source-backed indicators.");
+  setText(".score-drivers small", "Computed from visible live indicators.");
   setText("#market-pulse-title", "Markets update from public releases");
   setText("#economic-health-title", "Official releases show current pressure");
   setText("#risk-title", "Risk indicators update from public releases");
   setText("#global-title", "Regional growth uses World Bank releases");
-  setText("#source-coverage-title", "Source-backed snapshot");
+  setText("#source-coverage-title", "Live snapshot");
   setText("#source-coverage-copy", "Mercury loaded public releases for market pulse, economic health, risk, and regional growth. Each card shows its source and latest release date.");
   setText("#live-last-checked", formatCheckedAt(snapshot.checkedAt));
   setText("#refresh-schedule", "Checked on page load");
