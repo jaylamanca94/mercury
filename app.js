@@ -381,12 +381,12 @@ function renderDataMeta(item) {
     : "";
   const unit = item.sourceUnit
     ? `
-      <span><i class="fa-solid fa-ruler" aria-hidden="true"></i> Unit: ${escapeHtml(item.sourceUnit)}</span>
+      <span><i class="fa-solid fa-ruler" aria-hidden="true"></i> Reported as: ${escapeHtml(item.sourceUnit)}</span>
     `
     : "";
   const frequency = item.sourceFrequency
     ? `
-      <span><i class="fa-solid fa-rotate" aria-hidden="true"></i> Frequency: ${escapeHtml(item.sourceFrequency)}</span>
+      <span><i class="fa-solid fa-rotate" aria-hidden="true"></i> Updates: ${escapeHtml(item.sourceFrequency)}</span>
     `
     : "";
 
@@ -605,6 +605,7 @@ function applyMarketFallback() {
     "Market Pulse route unavailable in this view; sample market indicators remain visible",
   );
   setText("#market-source-status", "Sample fallback");
+  setCoverageSummary();
   setHtml(
     "#market-connection-pill",
     '<i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i> Market fallback visible',

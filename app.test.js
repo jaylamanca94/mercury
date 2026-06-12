@@ -32,6 +32,13 @@ function createElement() {
 const elements = new Map(
   [
     "#market-grid",
+    "#market-connection-pill",
+    "#market-coverage-count",
+    "#market-last-checked",
+    "#market-release-range",
+    "#market-gap-summary",
+    "#market-source-detail",
+    "#market-source-status",
     "#health-grid",
     "#risk-list",
     "#region-list",
@@ -134,8 +141,8 @@ assert.equal(riskPill.classList.contains("status-pill-live"), true);
 assert.equal(riskPill.classList.contains("status-pill-warning"), false);
 assert.match(elements.get("#risk-last-checked").textContent, /Jun 12, 2026/);
 assert.match(elements.get("#live-last-checked").textContent, /Jun 12, 2026/);
-assert.match(elements.get("#risk-list").innerHTML, /Unit: Index level/);
-assert.match(elements.get("#risk-list").innerHTML, /Frequency: Daily/);
+assert.match(elements.get("#risk-list").innerHTML, /Reported as: Index level/);
+assert.match(elements.get("#risk-list").innerHTML, /Updates: Daily/);
 
 context.applyRouteCheck("#risk-last-checked", "2026-06-11T12:00:00.000Z");
 assert.match(elements.get("#risk-last-checked").textContent, /Jun 11, 2026/);
@@ -150,3 +157,8 @@ assert.match(riskPill.innerHTML, /Risk fallback visible/);
 assert.equal(riskPill.classList.contains("status-pill-live"), false);
 assert.equal(riskPill.classList.contains("status-pill-warning"), true);
 assert.equal(elements.get("#risk-last-checked").textContent, "Route unavailable");
+
+context.applyMarketFallback();
+
+assert.equal(elements.get("#market-source-status").textContent, "Sample fallback");
+assert.equal(elements.get("#source-coverage-title").textContent, "Source coverage updated");

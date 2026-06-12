@@ -479,7 +479,7 @@ body {
   padding: 14px;
 }
 
-.indicator-row i,
+.indicator-row > i,
 .region-marker {
   align-items: center;
   background: var(--surface-muted);
@@ -517,6 +517,8 @@ body {
   font-weight: 700;
   gap: 8px;
   line-height: 16px;
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 .data-meta i {
