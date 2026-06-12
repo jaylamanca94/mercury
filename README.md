@@ -20,6 +20,9 @@ Market Pulse, Risk and Confidence, and Economic Health connection states. The so
 shows market, macro, and risk route check times, coverage counts, period or observation ranges,
 unresolved Market Pulse source gaps, and the newest valid live check across source-backed routes.
 Regional data remains sample placeholder content.
+Route-level source health summaries are surfaced in the source coverage band, so current, partial,
+delayed, stale, and fallback states keep their specific explanation instead of collapsing into
+generic source-loaded copy.
 
 ## Tech Stack
 

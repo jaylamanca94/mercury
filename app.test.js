@@ -91,6 +91,7 @@ context.applyRiskSnapshot({
   sourceHealth: {
     status: "ready",
     label: "FRED risk data current",
+    summary: "All Risk and Confidence indicators loaded from FRED within the expected observation cadence.",
     coverage: {
       loaded: 3,
       total: 3,
@@ -162,6 +163,10 @@ const riskPill = elements.get("#risk-connection-pill");
 assert.match(riskPill.innerHTML, /FRED risk data current/);
 assert.equal(riskPill.classList.contains("status-pill-live"), true);
 assert.equal(riskPill.classList.contains("status-pill-warning"), false);
+assert.match(
+  elements.get("#risk-source-detail").textContent,
+  /All Risk and Confidence indicators loaded from FRED within the expected observation cadence\./,
+);
 assert.match(elements.get("#risk-last-checked").textContent, /Jun 12, 2026/);
 assert.match(elements.get("#live-last-checked").textContent, /Jun 12, 2026/);
 assert.match(elements.get("#risk-list").innerHTML, /Reported as: Index level/);
@@ -171,6 +176,89 @@ assert.match(elements.get("#risk-list").innerHTML, /Latest/);
 assert.match(elements.get("#risk-list").innerHTML, /Previous/);
 assert.match(elements.get("#risk-list").innerHTML, /22.22/);
 assert.match(elements.get("#risk-list").innerHTML, /19.87/);
+
+context.applyRiskSnapshot({
+  checkedAt: "2026-06-11T12:00:00.000Z",
+  sourceAudit: {
+    checkedAt: "2026-06-12T12:10:00.000Z",
+  },
+  sourceHealth: {
+    status: "stale",
+    label: "Risk data stale",
+    summary: "1 risk indicator is older than Mercury's expected cadence.",
+    coverage: {
+      loaded: 3,
+      total: 3,
+    },
+    releaseRange: {
+      earliest: "2026-05-29",
+      latest: "2026-06-12",
+    },
+  },
+  indicators: [
+    {
+      id: "volatility",
+      name: "Volatility",
+      copy: "VIX is stale.",
+      trend: "Watch",
+      tone: "mixed",
+      icon: "fa-wave-square",
+      source: "FRED: CBOE Volatility Index",
+      cadence: "Daily close",
+      value: "22.22",
+      previous: "19.87",
+      change: "+11.8%",
+      releaseDate: "2026-05-29",
+      previousReleaseDate: "2026-05-28",
+      sourceUnit: "Index level",
+      sourceFrequency: "Daily",
+      sourceStatus: "Source-backed",
+      freshnessStatus: "Stale risk data",
+      freshnessCopy: "Latest observation is 14 days old.",
+    },
+    {
+      id: "dollar-strength",
+      name: "Dollar strength",
+      copy: "Dollar index is current.",
+      trend: "Stable",
+      tone: "stable",
+      icon: "fa-dollar-sign",
+      source: "FRED: Nominal Broad U.S. Dollar Index",
+      cadence: "Daily release",
+      value: "123.45",
+      previous: "123.20",
+      change: "+0.2%",
+      releaseDate: "2026-06-12",
+      previousReleaseDate: "2026-06-11",
+      sourceUnit: "Index level",
+      sourceFrequency: "Daily",
+      sourceStatus: "Source-backed",
+    },
+    {
+      id: "gold",
+      name: "Gold",
+      copy: "Gold fixing is current.",
+      trend: "Rising",
+      tone: "caution",
+      icon: "fa-coins",
+      source: "FRED: Gold Fixing Price",
+      cadence: "Daily fixing",
+      value: "$3,350.00",
+      previous: "$3,310.00",
+      change: "+1.2%",
+      releaseDate: "2026-06-12",
+      previousReleaseDate: "2026-06-11",
+      sourceUnit: "U.S. dollars per troy ounce",
+      sourceFrequency: "Daily",
+      sourceStatus: "Source-backed",
+    },
+  ],
+});
+
+assert.match(elements.get("#risk-source-detail").textContent, /1 risk indicator is older/);
+assert.match(riskPill.innerHTML, /Risk data stale/);
+assert.equal(riskPill.classList.contains("status-pill-live"), false);
+assert.equal(riskPill.classList.contains("status-pill-warning"), true);
 
 context.applyRouteCheck("#risk-last-checked", "2026-06-11T12:00:00.000Z");
 assert.match(elements.get("#risk-last-checked").textContent, /Jun 11, 2026/);
@@ -220,6 +308,7 @@ context.applyMarketSnapshot({
   sourceHealth: {
     status: "partial",
     label: "Partial market coverage",
+    summary: "1 of 4 Market Pulse indicators loaded from FRED; remaining cards keep sample fallback values.",
     coverage: {
       loaded: 1,
       total: 4,
@@ -278,6 +367,10 @@ context.applyMarketSnapshot({
 });
 
 assert.equal(elements.get("#market-gap-summary").textContent, "International");
+assert.match(
+  elements.get("#market-source-detail").textContent,
+  /1 of 4 Market Pulse indicators loaded from FRED; remaining cards keep sample fallback values\./,
+);
 assert.match(elements.get("#market-grid").innerHTML, /Market Pulse source selection/);
 assert.match(elements.get("#market-grid").innerHTML, /Reported as: Not selected/);
 assert.match(elements.get("#market-grid").innerHTML, /Updates: Not selected/);

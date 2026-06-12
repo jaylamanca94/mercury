@@ -192,6 +192,7 @@ Current prototype utilities:
 - The shared live last checked field reflects the newest valid route check so source freshness is not affected by async route completion order.
 - Header connection pills mirror the current source-backed Market Pulse, Risk and Confidence, and Economic Health bridge states with live or warning styling.
 - Source fallback copy carries the route failure reason when a source route returns a status error or network failure, without changing sample fallback labels.
+- Source coverage details should surface route-provided source health summaries when available, so stale, delayed, partial, and current states keep their specific explanation instead of reverting to generic loaded-from-source copy.
 - Market Pulse source coverage also shows a compact gap summary for unresolved or unavailable cards so partial coverage is not reduced to a loaded-count alone.
 - Every sample indicator includes an inline metadata panel for sample status, candidate source, and expected update cadence so users do not mistake prototype values for live data.
 - Sample fallback indicators should preserve route-provided issue metadata inline when a source route names a specific unresolved card, pending source selection, unavailable unit, or cadence state.

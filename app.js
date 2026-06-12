@@ -577,6 +577,10 @@ function setCoverageSummary() {
   );
 }
 
+function sourceHealthDetail(sourceHealth, fallbackDetail) {
+  return sourceHealth?.summary || fallbackDetail;
+}
+
 function applyRouteCheck(selector, checkedAt) {
   const checkedLabel = formatCheckedAt(checkedAt);
 
@@ -640,9 +644,12 @@ function applyMarketSnapshot(snapshot) {
   setText("#market-source-status", sourceHealth.status === "ready" ? "FRED" : sourceHealth.label);
   setText(
     "#market-source-detail",
-    loadedCount === totalCount
-      ? "Daily Market Pulse observations are loaded through Mercury's FRED source bridge"
-      : `${loadedCount} of ${totalCount} Market Pulse indicators loaded from FRED; unresolved cards keep sample fallback values`,
+    sourceHealthDetail(
+      sourceHealth,
+      loadedCount === totalCount
+        ? "Daily Market Pulse observations are loaded through Mercury's FRED source bridge"
+        : `${loadedCount} of ${totalCount} Market Pulse indicators loaded from FRED; unresolved cards keep sample fallback values`,
+    ),
   );
   setHtml(
     "#market-source-note",
@@ -747,9 +754,12 @@ function applyFredSnapshot(snapshot) {
   setText("#macro-source-status", sourceHealth.status === "ready" ? "FRED" : sourceHealth.label);
   setText(
     "#macro-source-detail",
-    loadedCount === totalCount
-      ? "Latest public FRED releases are loaded through Mercury's serverless source bridge"
-      : `${loadedCount} of ${totalCount} Economic Health indicators loaded from FRED; unavailable indicators keep sample fallback values`,
+    sourceHealthDetail(
+      sourceHealth,
+      loadedCount === totalCount
+        ? "Latest public FRED releases are loaded through Mercury's serverless source bridge"
+        : `${loadedCount} of ${totalCount} Economic Health indicators loaded from FRED; unavailable indicators keep sample fallback values`,
+    ),
   );
   setHtml(
     "#macro-source-note",
@@ -851,9 +861,12 @@ function applyRiskSnapshot(snapshot) {
   setText("#risk-source-status", sourceHealth.status === "ready" ? "FRED" : sourceHealth.label);
   setText(
     "#risk-source-detail",
-    loadedCount === totalCount
-      ? "Risk and Confidence observations are loaded through Mercury's FRED source bridge"
-      : `${loadedCount} of ${totalCount} Risk and Confidence indicators loaded from FRED; unavailable indicators keep sample fallback values`,
+    sourceHealthDetail(
+      sourceHealth,
+      loadedCount === totalCount
+        ? "Risk and Confidence observations are loaded through Mercury's FRED source bridge"
+        : `${loadedCount} of ${totalCount} Risk and Confidence indicators loaded from FRED; unavailable indicators keep sample fallback values`,
+    ),
   );
   setHtml(
     "#risk-source-note",
