@@ -329,6 +329,26 @@ function routeFallbackCopy(areaName, error) {
   return `${areaName} route unavailable: ${detail}`;
 }
 
+function sourceIssueStatus(issue) {
+  if (issue?.status === "Unavailable") {
+    return "Sample fallback";
+  }
+
+  return issue?.status || "Sample fallback";
+}
+
+function fallbackWithSourceIssue(fallbackIndicator, issue, defaultReason) {
+  return {
+    ...fallbackIndicator,
+    source: issue?.source || fallbackIndicator.source,
+    cadence: issue?.cadence || fallbackIndicator.cadence,
+    sourceUnit: issue?.sourceUnit || fallbackIndicator.sourceUnit,
+    sourceFrequency: issue?.sourceFrequency || fallbackIndicator.sourceFrequency,
+    sourceStatus: sourceIssueStatus(issue),
+    sourceIssue: issue?.reason || defaultReason,
+  };
+}
+
 function metricPeriodLabel(metric, previous = false) {
   if (metric.periodLabel) {
     return previous ? `Previous ${metric.periodLabel.toLowerCase()}` : metric.periodLabel;
@@ -597,11 +617,11 @@ function applyMarketSnapshot(snapshot) {
 
     const issue = issuesById.get(fallbackIndicator.id);
 
-    return {
-      ...fallbackIndicator,
-      sourceStatus: "Sample fallback",
-      sourceIssue: issue?.reason || "No source-backed market series is available yet, so Mercury kept the sample value visible.",
-    };
+    return fallbackWithSourceIssue(
+      fallbackIndicator,
+      issue,
+      "No source-backed market series is available yet, so Mercury kept the sample value visible.",
+    );
   });
   renderDashboard();
   setCoverageSummary();
@@ -703,13 +723,13 @@ function applyFredSnapshot(snapshot) {
 
     const issue = issuesById.get(fallbackIndicator.id);
 
-    return {
-      ...fallbackIndicator,
-      sourceStatus: "Sample fallback",
-      sourceIssue: issue
+    return fallbackWithSourceIssue(
+      fallbackIndicator,
+      issue,
+      issue
         ? `${issue.name} could not load from FRED, so Mercury kept the sample value visible.`
         : "FRED release unavailable, so Mercury kept the sample value visible.",
-    };
+    );
   });
   renderDashboard();
   setCoverageSummary();
@@ -809,11 +829,11 @@ function applyRiskSnapshot(snapshot) {
 
     const issue = issuesById.get(fallbackIndicator.id);
 
-    return {
-      ...fallbackIndicator,
-      sourceStatus: "Sample fallback",
-      sourceIssue: issue?.reason || "Risk source unavailable, so Mercury kept the sample value visible.",
-    };
+    return fallbackWithSourceIssue(
+      fallbackIndicator,
+      issue,
+      "Risk source unavailable, so Mercury kept the sample value visible.",
+    );
   });
   renderDashboard();
   setCoverageSummary();

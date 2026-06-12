@@ -114,6 +114,7 @@ In scope for the MVP:
 - Source coverage keeps the shared live last checked time anchored to the newest valid route check, not async route completion order
 - Route-level fallback states include a short status or network failure reason when a source route cannot load
 - Market Pulse source audits summarize unresolved source gaps separately from loaded FRED observations
+- Market Pulse sample fallback cards preserve source-gap metadata inline when a route names why a card is unresolved
 - Header connection pills show Market Pulse, Risk and Confidence, and Economic Health source status as each bridge loads or falls back
 - Plain-language labels and context
 - Neutral, non-advisory dashboard language
@@ -221,6 +222,7 @@ Recently completed:
 - Added compact source audit metadata for FRED coverage count, release range, and check time.
 - Added a partial Market Pulse FRED bridge for S&P 500, 10-year Treasury yield, and WTI oil observations while keeping unresolved market cards visibly labeled as sample fallback.
 - Added a compact Market Pulse gap summary so unresolved source selections stay visible beside loaded FRED coverage.
+- Preserved Market Pulse source-gap metadata on fallback cards so unresolved cards explain their source-selection state inline.
 - Added a Risk and Confidence FRED bridge for VIX, broad dollar index, and gold observations while keeping sample fallback behavior available.
 - Added route-level source check times to the coverage band so Market Pulse, Economic Health, and Risk and Confidence audits do not share one ambiguous timestamp.
 - Added a Risk and Confidence header status pill so all current FRED-backed dashboard areas expose connection state in the first viewport.
@@ -261,6 +263,7 @@ Future opportunities:
 - The header shows separate Market Pulse, Risk and Confidence, and Economic Health connection states, but regional coverage remains sample-only.
 - Economic Health keeps sample fallback cards visible when individual FRED indicators are unavailable.
 - Market Pulse keeps sample fallback cards visible when individual source-backed market indicators are unavailable or when no durable source has been selected for a card.
+- Market Pulse fallback cards can show route-provided source-gap details such as pending source selection, unit availability, and cadence state.
 - Risk and Confidence keeps sample fallback rows visible when individual FRED risk indicators are unavailable.
 - FRED release freshness is classified with simple cadence thresholds and should be refined as source handling matures.
 - Market observation freshness is classified with simple daily cadence thresholds and should be refined as source handling matures.

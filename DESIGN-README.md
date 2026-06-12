@@ -193,6 +193,7 @@ Current prototype utilities:
 - Source fallback copy carries the route failure reason when a source route returns a status error or network failure, without changing sample fallback labels.
 - Market Pulse source coverage also shows a compact gap summary for unresolved or unavailable cards so partial coverage is not reduced to a loaded-count alone.
 - Every sample indicator includes an inline metadata row for sample status, candidate source, and expected update cadence so users do not mistake prototype values for live data.
+- Sample fallback indicators should preserve route-provided issue metadata inline when a source route names a specific unresolved card, pending source selection, unavailable unit, or cadence state.
 - Source-backed indicators include inline freshness status, and unavailable source-backed indicators keep labeled sample fallback values in place.
 - Source-backed indicators include inline unit and frequency metadata so values such as index levels, rates, and dollar prices are not ambiguous.
 - Prototype source coverage uses a compact snapshot metadata block for sample-set date, latest live check, route-level check states, and refresh schedule.

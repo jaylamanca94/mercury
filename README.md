@@ -12,7 +12,8 @@ and Risk and Confidence sections when `/api/market-snapshot`, `/api/fred-snapsho
 `/api/risk-snapshot` are available. Individual indicators can
 fall back to labeled sample values when a FRED series is unavailable, delayed, stale, or not selected
 yet; route-level fallback states include a short status or network failure reason when the source
-route itself cannot load. Source-backed market cards show latest and previous daily observation
+route itself cannot load, and Market Pulse source gaps keep their route-provided selection details
+inline on fallback cards. Source-backed market cards show latest and previous daily observation
 dates; source-backed macro cards show latest and previous FRED release periods; source-backed risk
 rows show latest, previous, and change values for daily observations. The header shows separate
 Market Pulse, Risk and Confidence, and Economic Health connection states. The source coverage band

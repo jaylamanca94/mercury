@@ -191,6 +191,101 @@ context.applyMarketFallback();
 assert.equal(elements.get("#market-source-status").textContent, "Sample fallback");
 assert.equal(elements.get("#source-coverage-title").textContent, "Source coverage updated");
 
+context.applyMarketSnapshot({
+  checkedAt: "2026-06-12T12:00:00.000Z",
+  sourceAudit: {
+    checkedAt: "2026-06-12T12:00:00.000Z",
+    coverage: {
+      loaded: 1,
+      total: 4,
+      unavailable: 3,
+    },
+    releaseRange: {
+      earliest: "2026-06-10",
+      latest: "2026-06-10",
+    },
+    gaps: [
+      {
+        id: "international",
+        name: "International",
+        source: "Market Pulse source selection",
+        cadence: "Provider selection pending",
+        sourceUnit: "Not selected",
+        sourceFrequency: "Not selected",
+        status: "Sample fallback",
+        reason: "No durable public source has been selected yet for the International market pulse card.",
+      },
+    ],
+  },
+  sourceHealth: {
+    status: "partial",
+    label: "Partial market coverage",
+    coverage: {
+      loaded: 1,
+      total: 4,
+      unavailable: 3,
+    },
+    releaseRange: {
+      earliest: "2026-06-10",
+      latest: "2026-06-10",
+    },
+    gaps: [
+      {
+        id: "international",
+        name: "International",
+        source: "Market Pulse source selection",
+        cadence: "Provider selection pending",
+        sourceUnit: "Not selected",
+        sourceFrequency: "Not selected",
+        status: "Sample fallback",
+        reason: "No durable public source has been selected yet for the International market pulse card.",
+      },
+    ],
+  },
+  indicators: [
+    {
+      id: "us-markets",
+      name: "U.S. markets",
+      context: "S&P 500 close",
+      value: "6,120.00",
+      trend: "Up",
+      tone: "up",
+      icon: "fa-chart-line",
+      source: "FRED: S&P 500",
+      cadence: "Daily close",
+      sourceUnit: "Index level",
+      sourceFrequency: "Daily",
+      previous: "6,100.00",
+      change: "+0.3%",
+      points: [6080, 6090, 6100, 6120],
+      releaseDate: "2026-06-10",
+      previousReleaseDate: "2026-06-09",
+      sourceStatus: "Source-backed",
+    },
+  ],
+  issues: [
+    {
+      id: "international",
+      name: "International",
+      source: "Market Pulse source selection",
+      cadence: "Provider selection pending",
+      sourceUnit: "Not selected",
+      sourceFrequency: "Not selected",
+      status: "Sample fallback",
+      reason: "No durable public source has been selected yet for the International market pulse card.",
+    },
+  ],
+});
+
+assert.equal(elements.get("#market-gap-summary").textContent, "International");
+assert.match(elements.get("#market-grid").innerHTML, /Market Pulse source selection/);
+assert.match(elements.get("#market-grid").innerHTML, /Reported as: Not selected/);
+assert.match(elements.get("#market-grid").innerHTML, /Updates: Not selected/);
+assert.match(
+  elements.get("#market-grid").innerHTML,
+  /No durable public source has been selected yet for the International market pulse card\./,
+);
+
 context.applyMarketFallback(new Error("Market snapshot route returned 503"));
 
 assert.match(elements.get("#market-source-detail").textContent, /Market Pulse route unavailable: Market snapshot route returned 503/);
