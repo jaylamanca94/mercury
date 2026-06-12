@@ -183,8 +183,10 @@ Good utility candidates:
 Current prototype utilities:
 
 - Repeated metric cards use `8px` radius, compact labels, source context, status chips, small sparklines, and subtle raised surfaces.
+- Direction, risk, and stability accents should be thin edge treatments or small labels, not large tinted surfaces.
 - Metric cards include a compact previous-sample comparison so users can understand direction without relying only on the sparkline.
 - Metric card hierarchy should keep the value, comparison, and sparkline ahead of detailed source metadata.
+- Source metadata inside cards and rows should read as supporting detail: use flat top-separated metadata groups instead of nested card treatments.
 - Source-backed metric cards show the latest release period near the current value and the previous release period inside the comparison block.
 - Source-backed daily market metric cards show the latest observation date near the current value and the previous observation date inside the comparison block.
 - Source-backed daily risk rows use a compact comparison block for latest, previous, and change values before the source metadata.

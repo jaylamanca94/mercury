@@ -473,7 +473,7 @@ function renderMetricCard(metric) {
     : "";
 
   return `
-    <article class="metric-card">
+    <article class="metric-card metric-card-${escapeHtml(metric.tone)}">
       <div class="metric-top">
         <div>
           <p class="metric-name">${escapeHtml(metric.name)}</p>
@@ -535,7 +535,7 @@ function renderIndicatorRow(indicator) {
       : "";
 
   return `
-    <article class="indicator-row">
+    <article class="indicator-row indicator-row-${escapeHtml(indicator.tone)}">
       <i class="fa-solid ${indicator.icon}" aria-hidden="true"></i>
       <div>
         <p class="row-title">${escapeHtml(indicator.name)}</p>
@@ -550,7 +550,7 @@ function renderIndicatorRow(indicator) {
 
 function renderRegionRow(region) {
   return `
-    <article class="region-row">
+    <article class="region-row region-row-${escapeHtml(region.tone)}">
       <span class="region-marker" aria-hidden="true"><i class="fa-solid fa-location-dot"></i></span>
       <div>
         <p class="row-title">${escapeHtml(region.name)}</p>
