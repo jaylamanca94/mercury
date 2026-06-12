@@ -12,7 +12,8 @@ sections when `/api/market-snapshot` and `/api/fred-snapshot` are available. Ind
 fall back to labeled sample values when a FRED series is unavailable, delayed, stale, or not selected
 yet. Source-backed market cards show latest and previous daily observation dates; source-backed macro
 cards show latest and previous FRED release periods. The source coverage band shows market and macro
-coverage counts, period ranges, and last check time. Risk and regional data remain sample placeholders.
+coverage counts, period ranges, last check time, and unresolved Market Pulse source gaps. Risk and
+regional data remain sample placeholders.
 
 ## Tech Stack
 

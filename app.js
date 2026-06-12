@@ -276,6 +276,18 @@ function formatObservationRange(range) {
   return `${earliest} to ${latest}`;
 }
 
+function summarizeSourceGaps(gaps = []) {
+  if (!gaps.length) {
+    return "None";
+  }
+
+  const names = gaps.map((gap) => gap.name || gap.id || "Source gap").filter(Boolean);
+  const visibleNames = names.slice(0, 2).join(", ");
+  const remainingCount = Math.max(0, names.length - 2);
+
+  return remainingCount > 0 ? `${visibleNames} + ${remainingCount} more` : visibleNames;
+}
+
 function metricPeriodLabel(metric, previous = false) {
   if (metric.periodLabel) {
     return previous ? `Previous ${metric.periodLabel.toLowerCase()}` : metric.periodLabel;
@@ -483,6 +495,7 @@ function applyMarketSnapshot(snapshot) {
     unavailable: totalCount - loadedCount,
   };
   const observationRange = sourceHealth.releaseRange || snapshot.releaseRange;
+  const marketGaps = sourceHealth.gaps || snapshot.sourceAudit?.gaps || snapshot.issues || [];
 
   marketPulse = sampleMarketPulse.map((fallbackIndicator) => {
     const sourceIndicator = indicatorsById.get(fallbackIndicator.id);
@@ -510,6 +523,7 @@ function applyMarketSnapshot(snapshot) {
   );
   setText("#market-coverage-count", `${sourceCoverage.loaded} of ${sourceCoverage.total} loaded`);
   setText("#market-release-range", formatObservationRange(observationRange));
+  setText("#market-gap-summary", summarizeSourceGaps(marketGaps));
   setText("#live-last-checked", formatCheckedAt(snapshot.checkedAt));
   setText("#refresh-schedule", "Checked on page load");
   setText("#market-source-status", sourceHealth.status === "ready" ? "FRED" : sourceHealth.label);
@@ -546,6 +560,7 @@ function applyMarketFallback() {
 
   setText("#market-coverage-count", "0 of 4 loaded");
   setText("#market-release-range", "Unavailable");
+  setText("#market-gap-summary", "Market route unavailable");
   setText(
     "#market-source-detail",
     "Market Pulse route unavailable in this view; sample market indicators remain visible",

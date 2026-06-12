@@ -181,6 +181,7 @@ Current prototype utilities:
 - Source-backed metric cards show the latest release period near the current value and the previous release period inside the comparison block.
 - Source-backed daily market metric cards show the latest observation date near the current value and the previous observation date inside the comparison block.
 - The source coverage band shows compact source audit metadata for Market Pulse and Economic Health coverage counts, period ranges, and last check time.
+- Market Pulse source coverage also shows a compact gap summary for unresolved or unavailable cards so partial coverage is not reduced to a loaded-count alone.
 - Every sample indicator includes an inline metadata row for sample status, candidate source, and expected update cadence so users do not mistake prototype values for live data.
 - Source-backed indicators include inline freshness status, and unavailable source-backed indicators keep labeled sample fallback values in place.
 - Prototype source coverage uses a compact snapshot metadata block for sample-set date, live last-checked state, and refresh schedule.

@@ -105,6 +105,7 @@ In scope for the MVP:
 - Source-backed macro cards show latest and previous release periods beside comparison values
 - Source-backed market cards show latest and previous observation dates beside comparison values
 - Source-backed Economic Health and Market Pulse show source audit metadata for loaded count, period range, and last check time
+- Market Pulse source audits summarize unresolved source gaps separately from loaded FRED observations
 - Plain-language labels and context
 - Neutral, non-advisory dashboard language
 - Responsive dashboard experience
@@ -210,6 +211,7 @@ Recently completed:
 - Added release-period labels to source-backed Economic Health cards so previous-release comparisons show their time context.
 - Added compact source audit metadata for FRED coverage count, release range, and check time.
 - Added a partial Market Pulse FRED bridge for S&P 500, 10-year Treasury yield, and WTI oil observations while keeping unresolved market cards visibly labeled as sample fallback.
+- Added a compact Market Pulse gap summary so unresolved source selections stay visible beside loaded FRED coverage.
 
 Recommended next steps:
 
@@ -247,6 +249,7 @@ Future opportunities:
 - Source-backed Market Pulse comparisons use the previous FRED observation, not the static sample period.
 - Source-backed Economic Health coverage counts only the configured FRED indicators in the current bridge.
 - Market Pulse coverage counts the current four-card dashboard area, including source gaps such as International when no selected source exists yet.
+- Market Pulse gap summaries name unresolved or unavailable cards, but they do not select or endorse a provider.
 - Risk and Confidence and Global Snapshot still use sample data.
 - No source scoring model exists yet.
 - The current economy score is illustrative and must stay labeled until a formal scoring model is defined.
