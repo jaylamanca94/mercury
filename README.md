@@ -12,8 +12,8 @@ and Risk and Confidence sections when `/api/market-snapshot`, `/api/fred-snapsho
 `/api/risk-snapshot` are available. Individual indicators can
 fall back to labeled sample values when a FRED series is unavailable, delayed, stale, or not selected
 yet. Source-backed market cards show latest and previous daily observation dates; source-backed macro
-cards show latest and previous FRED release periods; source-backed risk rows describe the latest daily
-reading against the previous observation. The header shows separate Market Pulse, Risk and Confidence,
+cards show latest and previous FRED release periods; source-backed risk rows show latest, previous,
+and change values for daily observations. The header shows separate Market Pulse, Risk and Confidence,
 and Economic Health connection states. The source coverage band shows market, macro, and risk route
 check times, coverage counts, period or observation ranges, unresolved Market Pulse source gaps, and
 the newest valid live check across source-backed routes.

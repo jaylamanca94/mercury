@@ -107,6 +107,7 @@ In scope for the MVP:
 - Partial, delayed, stale, and fallback states for source-backed Risk and Confidence data
 - Source-backed macro cards show latest and previous release periods beside comparison values
 - Source-backed market cards show latest and previous observation dates beside comparison values
+- Source-backed Risk and Confidence rows show latest, previous, and change values beside daily observation dates
 - Source-backed Economic Health, Market Pulse, and Risk and Confidence show source audit metadata for loaded count, period or observation range, and route-level last check time
 - Source-backed cards and rows show unit and frequency metadata from the source route when available
 - Source coverage distinguishes route-level last check times for Market Pulse, Economic Health, and Risk and Confidence
@@ -224,6 +225,7 @@ Recently completed:
 - Added a Risk and Confidence header status pill so all current FRED-backed dashboard areas expose connection state in the first viewport.
 - Added unit and frequency metadata to source-backed Market Pulse, Economic Health, and Risk and Confidence indicators so users can interpret the value basis without leaving the dashboard.
 - Kept the shared live last checked timestamp tied to the newest valid route check so route load order does not make freshness look older.
+- Added compact latest, previous, and change comparisons to source-backed Risk and Confidence rows.
 
 Recommended next steps:
 

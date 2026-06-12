@@ -462,12 +462,43 @@ function renderMetricCard(metric) {
 }
 
 function renderIndicatorRow(indicator) {
+  const comparison =
+    indicator.sourceStatus === "Source-backed" && indicator.value && indicator.previous && indicator.change
+      ? `
+        <dl class="row-comparison" aria-label="Source observation comparison">
+          <div>
+            <dt>Latest</dt>
+            <dd>${escapeHtml(indicator.value)}</dd>
+            ${
+              indicator.releaseDate
+                ? `<small>${escapeHtml(formatObservationDate(indicator.releaseDate))}</small>`
+                : ""
+            }
+          </div>
+          <div>
+            <dt>Previous</dt>
+            <dd>${escapeHtml(indicator.previous)}</dd>
+            ${
+              indicator.previousReleaseDate
+                ? `<small>${escapeHtml(formatObservationDate(indicator.previousReleaseDate))}</small>`
+                : ""
+            }
+          </div>
+          <div>
+            <dt>Change</dt>
+            <dd>${escapeHtml(indicator.change)}</dd>
+          </div>
+        </dl>
+      `
+      : "";
+
   return `
     <article class="indicator-row">
       <i class="fa-solid ${indicator.icon}" aria-hidden="true"></i>
       <div>
         <p class="row-title">${escapeHtml(indicator.name)}</p>
         <p class="row-copy">${escapeHtml(indicator.copy)}</p>
+        ${comparison}
         ${renderDataMeta(indicator)}
       </div>
       <span class="${trendClass(indicator.tone)}">${escapeHtml(indicator.trend)}</span>

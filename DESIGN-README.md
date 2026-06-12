@@ -117,7 +117,7 @@ Use `8px` or less for normal cards and repeated list items unless a larger conta
 - Pair source-backed values with their unit and source frequency when those fields are known.
 - Source-backed comparisons should show the latest and previous release periods when the data source provides them.
 - Source-backed daily market comparisons should show the latest and previous observation dates when the data source provides them.
-- Source-backed daily risk rows should include the latest observation date in metadata and describe the latest value against the prior observation in neutral language.
+- Source-backed daily risk rows should include a compact latest, previous, and change comparison when the route provides those values.
 - Use sparklines for recent direction, not detailed analysis.
 - Avoid chart types that require financial expertise to interpret.
 - Prefer labels like `Rising`, `Falling`, `Mixed`, `Stable`, `Elevated risk`, or `Improving confidence`.
@@ -185,6 +185,7 @@ Current prototype utilities:
 - Metric cards include a compact previous-sample comparison so users can understand direction without relying only on the sparkline.
 - Source-backed metric cards show the latest release period near the current value and the previous release period inside the comparison block.
 - Source-backed daily market metric cards show the latest observation date near the current value and the previous observation date inside the comparison block.
+- Source-backed daily risk rows use a compact comparison block for latest, previous, and change values before the source metadata.
 - The source coverage band shows compact source audit metadata for Market Pulse, Economic Health, and Risk and Confidence route check times, coverage counts, and period or observation ranges.
 - The shared live last checked field reflects the newest valid route check so source freshness is not affected by async route completion order.
 - Header connection pills mirror the current source-backed Market Pulse, Risk and Confidence, and Economic Health bridge states with live or warning styling.

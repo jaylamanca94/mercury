@@ -102,6 +102,11 @@ context.applyRiskSnapshot({
       icon: "fa-wave-square",
       source: "FRED: CBOE Volatility Index",
       cadence: "Daily close",
+      value: "22.22",
+      previous: "19.87",
+      change: "+11.8%",
+      releaseDate: "2026-06-10",
+      previousReleaseDate: "2026-06-09",
       sourceUnit: "Index level",
       sourceFrequency: "Daily",
       sourceStatus: "Source-backed",
@@ -115,6 +120,11 @@ context.applyRiskSnapshot({
       icon: "fa-dollar-sign",
       source: "FRED: Nominal Broad U.S. Dollar Index",
       cadence: "Daily release",
+      value: "123.45",
+      previous: "123.20",
+      change: "+0.2%",
+      releaseDate: "2026-06-10",
+      previousReleaseDate: "2026-06-09",
       sourceUnit: "Index level",
       sourceFrequency: "Daily",
       sourceStatus: "Source-backed",
@@ -128,6 +138,11 @@ context.applyRiskSnapshot({
       icon: "fa-coins",
       source: "FRED: Gold Fixing Price",
       cadence: "Daily fixing",
+      value: "$3,350.00",
+      previous: "$3,310.00",
+      change: "+1.2%",
+      releaseDate: "2026-06-10",
+      previousReleaseDate: "2026-06-09",
       sourceUnit: "U.S. dollars per troy ounce",
       sourceFrequency: "Daily",
       sourceStatus: "Source-backed",
@@ -143,6 +158,11 @@ assert.match(elements.get("#risk-last-checked").textContent, /Jun 12, 2026/);
 assert.match(elements.get("#live-last-checked").textContent, /Jun 12, 2026/);
 assert.match(elements.get("#risk-list").innerHTML, /Reported as: Index level/);
 assert.match(elements.get("#risk-list").innerHTML, /Updates: Daily/);
+assert.match(elements.get("#risk-list").innerHTML, /Source observation comparison/);
+assert.match(elements.get("#risk-list").innerHTML, /Latest/);
+assert.match(elements.get("#risk-list").innerHTML, /Previous/);
+assert.match(elements.get("#risk-list").innerHTML, /22.22/);
+assert.match(elements.get("#risk-list").innerHTML, /19.87/);
 
 context.applyRouteCheck("#risk-last-checked", "2026-06-11T12:00:00.000Z");
 assert.match(elements.get("#risk-last-checked").textContent, /Jun 11, 2026/);
