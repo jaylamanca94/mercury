@@ -37,7 +37,7 @@
           <i class="fa-regular fa-clock" aria-hidden="true"></i>
           Sample set: Jun 2026
         </span>
-        <span class="status-pill">
+        <span id="macro-connection-pill" class="status-pill">
           <i class="fa-solid fa-plug-circle-xmark" aria-hidden="true"></i>
           No live refresh
         </span>
@@ -51,9 +51,9 @@
           <h2 id="global-status-title">Mixed but steady</h2>
           <p>
             Markets are firm, inflation pressure remains elevated, and risk indicators are calm.
-            This prototype uses sample data; each indicator now shows its candidate source and
-            expected update cadence before live integrations are connected. The sample set is
-            dated separately from future live source refreshes.
+            This prototype starts from sample data and can upgrade Economic Health to source-backed
+            FRED releases when the serverless route is available. Sample and source-backed states
+            stay visibly separated.
           </p>
         </div>
         <div class="summary-aside">
@@ -102,9 +102,9 @@
             <p class="eyebrow">Economic health</p>
             <h2 id="economic-health-title">Growth is positive, pressure is uneven</h2>
           </div>
-          <span class="source-note">
+          <span id="macro-source-note" class="source-note">
             <i class="fa-solid fa-building-columns" aria-hidden="true"></i>
-            Candidate official sources
+            Sample official-source candidates
           </span>
         </div>
         <div id="health-grid" class="metric-grid"></div>
@@ -136,9 +136,9 @@
         <div>
           <p class="eyebrow">Source coverage and freshness</p>
           <h2 id="source-coverage-title">Prototype mode</h2>
-          <p>
-            Live integrations are not connected yet. Mercury is tracking source readiness by
-            dashboard area so sample indicators do not look like live market or macro data.
+          <p id="source-coverage-copy">
+            Most integrations are not connected yet. Mercury is tracking source readiness by
+            dashboard area so sample indicators do not look like source-backed market or macro data.
           </p>
           <dl class="snapshot-meta" aria-label="Prototype snapshot status">
             <div>
@@ -147,11 +147,11 @@
             </div>
             <div>
               <dt>Live last checked</dt>
-              <dd>Not connected</dd>
+              <dd id="live-last-checked">Not connected</dd>
             </div>
             <div>
               <dt>Refresh schedule</dt>
-              <dd>Not scheduled</dd>
+              <dd id="refresh-schedule">Not scheduled</dd>
             </div>
           </dl>
         </div>
@@ -166,9 +166,9 @@
           <li>
             <span>
               Macro indicators
-              <small>Official source cadence identified before integration</small>
+              <small id="macro-source-detail">Official source cadence identified before integration</small>
             </span>
-            <strong>Sample</strong>
+            <strong id="macro-source-status">Sample</strong>
           </li>
           <li>
             <span>

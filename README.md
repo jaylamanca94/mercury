@@ -6,9 +6,10 @@ Tagline direction: The global economy at a glance.
 
 ## Product Status
 
-Mercury has an initial static dashboard prototype. Live data integrations do not exist yet, so
-the page labels its illustrative sample set separately from future live refresh timestamps and
-shows previous-sample comparisons for prototype metrics.
+Mercury has an initial static dashboard prototype with its first source-backed macro data bridge.
+The page starts from clearly labeled sample data, then upgrades the Economic Health section to
+public FRED releases when `/api/fred-snapshot` is available. Market, risk, and regional data remain
+sample placeholders.
 
 ## Tech Stack
 
@@ -18,7 +19,8 @@ Recommended starting stack:
 - Bootstrap 5 via CDN for layout and familiar UI patterns
 - Font Awesome Free via CDN for utility icons
 - Vercel Serverless Functions for live data proxies
-- Environment variables for API keys
+- Public FRED CSV releases for the first Economic Health source bridge
+- Environment variables for future API keys
 
 Keep the first build simple until live source requirements are clearer.
 
@@ -46,17 +48,19 @@ Every source should be evaluated for trust, cost, licensing, rate limits, update
 
 No install step is required for the first prototype.
 
-Open `index.html` in a browser, or serve the folder with any static file server.
+Open `index.html` in a browser for the sample fallback, or run/deploy the site through Vercel to
+enable `/api/fred-snapshot`.
 
 Current files:
 
 - `index.html` - static dashboard entry
 - `styles.css` - Mercury dashboard styling
 - `app.js` - sample indicator data and rendering
+- `api/fred-snapshot.js` - Vercel Serverless Function for public FRED Economic Health releases
 
 ## Environment Variables
 
-No environment variables are required yet.
+No environment variables are required yet. The current FRED source bridge uses public CSV downloads.
 
 Expected future variables may include API keys for market or economic data providers.
 
@@ -73,8 +77,8 @@ Mercury can deploy as a static site on Vercel. Push to `main` to update the prod
 
 Recommended next deployment path:
 
-1. Keep sample data clearly labeled until live sources are connected.
-2. Add live serverless data routes one source at a time.
+1. Keep remaining sample data clearly labeled until live sources are connected.
+2. Expand source-backed coverage one route at a time.
 3. Add validation and fallback states for stale, missing, delayed, and unavailable data.
 
 ## Important Boundary

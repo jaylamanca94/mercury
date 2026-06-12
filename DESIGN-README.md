@@ -120,6 +120,7 @@ Use `8px` or less for normal cards and repeated list items unless a larger conta
 - Do not use language like `buy signal`, `sell signal`, `undervalued`, or `overvalued`.
 - Make stale, delayed, sample, fallback, and unavailable data visually distinct.
 - Static sample dashboards must show both the sample-set date and the live refresh state so users do not confuse prototype values with current data.
+- Source-backed sections must update their own freshness labels without implying that unrelated sample sections are live.
 
 ## Icons
 
@@ -178,6 +179,7 @@ Current prototype utilities:
 - Prototype source coverage uses a compact snapshot metadata block for sample-set date, live last-checked state, and refresh schedule.
 - Region and risk rows use icon, title, short context, and a plain-language trend label.
 - Sample data must be visibly labeled in the header and source/freshness areas until live integrations exist.
+- Mixed source states should use explicit labels such as `Sample`, `Sample fallback`, and `Source-backed` at the section or indicator level.
 - Summary scores must include concise visible drivers and stay explicitly illustrative until Mercury has a formal scoring model.
 
 Avoid utilities for:

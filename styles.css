@@ -102,6 +102,10 @@ body {
   color: var(--violet);
 }
 
+.status-pill-live {
+  color: var(--green);
+}
+
 .dashboard-shell {
   display: grid;
   gap: 24px;

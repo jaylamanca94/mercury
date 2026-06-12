@@ -53,7 +53,7 @@ const marketPulse = [
   },
 ];
 
-const economicHealth = [
+let economicHealth = [
   {
     name: "Inflation",
     context: "Consumer prices",
@@ -177,12 +177,73 @@ function trendClass(tone) {
   return `trend-label trend-${tone}`;
 }
 
-function renderDataMeta(source, cadence) {
+function escapeHtml(value) {
+  return String(value)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+
+function formatReleaseDate(value) {
+  if (!value) {
+    return null;
+  }
+
+  const date = new Date(`${value}T00:00:00Z`);
+
+  if (Number.isNaN(date.getTime())) {
+    return value;
+  }
+
+  return new Intl.DateTimeFormat("en", {
+    month: "short",
+    year: "numeric",
+    timeZone: "UTC",
+  }).format(date);
+}
+
+function formatCheckedAt(value) {
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return "Unavailable";
+  }
+
+  return new Intl.DateTimeFormat("en", {
+    dateStyle: "medium",
+    timeStyle: "short",
+  }).format(date);
+}
+
+function setText(selector, text) {
+  const element = document.querySelector(selector);
+
+  if (element) {
+    element.textContent = text;
+  }
+}
+
+function setHtml(selector, html) {
+  const element = document.querySelector(selector);
+
+  if (element) {
+    element.innerHTML = html;
+  }
+}
+
+function renderDataMeta(item) {
+  const status = item.sourceStatus || "Sample";
+  const cadence = item.releaseDate
+    ? `${item.cadence}; latest release ${formatReleaseDate(item.releaseDate)}`
+    : item.cadence;
+
   return `
-    <div class="data-meta" aria-label="Prototype data details">
-      <span><i class="fa-solid fa-flask" aria-hidden="true"></i> Sample</span>
-      <span><i class="fa-solid fa-database" aria-hidden="true"></i> ${source}</span>
-      <span><i class="fa-regular fa-calendar" aria-hidden="true"></i> ${cadence}</span>
+    <div class="data-meta" aria-label="Indicator data details">
+      <span><i class="fa-solid ${status === "Sample" ? "fa-flask" : "fa-building-columns"}" aria-hidden="true"></i> ${escapeHtml(status)}</span>
+      <span><i class="fa-solid fa-database" aria-hidden="true"></i> ${escapeHtml(item.source)}</span>
+      <span><i class="fa-regular fa-calendar" aria-hidden="true"></i> ${escapeHtml(cadence)}</span>
     </div>
   `;
 }
@@ -214,26 +275,26 @@ function renderMetricCard(metric) {
     <article class="metric-card">
       <div class="metric-top">
         <div>
-          <p class="metric-name">${metric.name}</p>
-          <p class="metric-context">${metric.context}</p>
+          <p class="metric-name">${escapeHtml(metric.name)}</p>
+          <p class="metric-context">${escapeHtml(metric.context)}</p>
         </div>
         <span class="metric-icon" aria-hidden="true"><i class="fa-solid ${metric.icon}"></i></span>
       </div>
       <div>
-        <p class="metric-value">${metric.value}</p>
-        <span class="${trendClass(metric.tone)}">${metric.trend}</span>
+        <p class="metric-value">${escapeHtml(metric.value)}</p>
+        <span class="${trendClass(metric.tone)}">${escapeHtml(metric.trend)}</span>
       </div>
       <dl class="metric-comparison" aria-label="Sample period comparison">
         <div>
-          <dt>Previous sample</dt>
-          <dd>${metric.previous}</dd>
+          <dt>${metric.sourceStatus === "Source-backed" ? "Previous release" : "Previous sample"}</dt>
+          <dd>${escapeHtml(metric.previous)}</dd>
         </div>
         <div>
           <dt>Change</dt>
-          <dd>${metric.change}</dd>
+          <dd>${escapeHtml(metric.change)}</dd>
         </div>
       </dl>
-      ${renderDataMeta(metric.source, metric.cadence)}
+      ${renderDataMeta(metric)}
       ${renderSparkline(metric.points, metric.tone)}
     </article>
   `;
@@ -244,11 +305,11 @@ function renderIndicatorRow(indicator) {
     <article class="indicator-row">
       <i class="fa-solid ${indicator.icon}" aria-hidden="true"></i>
       <div>
-        <p class="row-title">${indicator.name}</p>
-        <p class="row-copy">${indicator.copy}</p>
-        ${renderDataMeta(indicator.source, indicator.cadence)}
+        <p class="row-title">${escapeHtml(indicator.name)}</p>
+        <p class="row-copy">${escapeHtml(indicator.copy)}</p>
+        ${renderDataMeta(indicator)}
       </div>
-      <span class="${trendClass(indicator.tone)}">${indicator.trend}</span>
+      <span class="${trendClass(indicator.tone)}">${escapeHtml(indicator.trend)}</span>
     </article>
   `;
 }
@@ -258,16 +319,89 @@ function renderRegionRow(region) {
     <article class="region-row">
       <span class="region-marker" aria-hidden="true"><i class="fa-solid fa-location-dot"></i></span>
       <div>
-        <p class="row-title">${region.name}</p>
-        <p class="row-copy">${region.copy}</p>
-        ${renderDataMeta(region.source, region.cadence)}
+        <p class="row-title">${escapeHtml(region.name)}</p>
+        <p class="row-copy">${escapeHtml(region.copy)}</p>
+        ${renderDataMeta(region)}
       </div>
-      <span class="${trendClass(region.tone)}">${region.trend}</span>
+      <span class="${trendClass(region.tone)}">${escapeHtml(region.trend)}</span>
     </article>
   `;
 }
 
-document.querySelector("#market-grid").innerHTML = marketPulse.map(renderMetricCard).join("");
-document.querySelector("#health-grid").innerHTML = economicHealth.map(renderMetricCard).join("");
-document.querySelector("#risk-list").innerHTML = riskIndicators.map(renderIndicatorRow).join("");
-document.querySelector("#region-list").innerHTML = regions.map(renderRegionRow).join("");
+function renderDashboard() {
+  document.querySelector("#market-grid").innerHTML = marketPulse.map(renderMetricCard).join("");
+  document.querySelector("#health-grid").innerHTML = economicHealth.map(renderMetricCard).join("");
+  document.querySelector("#risk-list").innerHTML = riskIndicators.map(renderIndicatorRow).join("");
+  document.querySelector("#region-list").innerHTML = regions.map(renderRegionRow).join("");
+}
+
+function applyFredSnapshot(snapshot) {
+  if (!snapshot?.indicators?.length) {
+    return;
+  }
+
+  const macroPill = document.querySelector("#macro-connection-pill");
+
+  economicHealth = snapshot.indicators;
+  renderDashboard();
+
+  setText("#economic-health-title", "Official releases show uneven pressure");
+  setText("#source-coverage-title", "Source-backed macro releases");
+  setText(
+    "#source-coverage-copy",
+    "Economic Health now uses public FRED releases. Market, risk, and regional coverage remain sample placeholders until their own source routes are connected.",
+  );
+  setText("#live-last-checked", formatCheckedAt(snapshot.checkedAt));
+  setText("#refresh-schedule", "Checked on page load");
+  setText("#macro-source-status", "FRED");
+  setText(
+    "#macro-source-detail",
+    "Latest public FRED releases are loaded through Mercury's serverless source bridge",
+  );
+  setHtml(
+    "#macro-source-note",
+    '<i class="fa-solid fa-building-columns" aria-hidden="true"></i> FRED latest releases',
+  );
+  setHtml(
+    "#macro-connection-pill",
+    '<i class="fa-solid fa-plug-circle-check" aria-hidden="true"></i> Macro releases connected',
+  );
+
+  if (macroPill) {
+    macroPill.classList.add("status-pill-live");
+  }
+}
+
+function applyFredFallback() {
+  setText("#macro-source-status", "Sample fallback");
+  setText(
+    "#macro-source-detail",
+    "FRED route unavailable in this view; sample macro indicators remain visible",
+  );
+}
+
+async function loadFredSnapshot() {
+  if (window.location.protocol === "file:") {
+    return;
+  }
+
+  try {
+    const response = await fetch("/api/fred-snapshot", {
+      headers: {
+        accept: "application/json",
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error("FRED snapshot route unavailable");
+    }
+
+    const snapshot = await response.json();
+    applyFredSnapshot(snapshot);
+  } catch (error) {
+    applyFredFallback();
+  }
+}
+
+renderDashboard();
+loadFredSnapshot();
