@@ -752,9 +752,31 @@ body {
     display: flex;
   }
 
+  .app-header {
+    gap: 18px;
+    padding: 24px 0 18px;
+  }
+
+  .app-header h1 {
+    font-size: 38px;
+    line-height: 44px;
+  }
+
+  .lead-copy {
+    font-size: 17px;
+  }
+
   .header-actions {
+    gap: 6px;
     justify-content: flex-start;
     max-width: none;
+  }
+
+  .status-pill,
+  .source-note {
+    font-size: 12px;
+    min-height: 30px;
+    padding: 5px 9px;
   }
 
   .summary-band {
@@ -769,12 +791,22 @@ body {
 
   .summary-score {
     justify-self: start;
-    width: 132px;
+    width: 104px;
   }
 
   .summary-aside {
-    grid-template-columns: 1fr;
+    gap: 14px;
+    grid-template-columns: auto minmax(0, 1fr);
     justify-items: start;
+  }
+
+  .score-value {
+    font-size: 34px;
+    line-height: 38px;
+  }
+
+  .score-label {
+    font-size: 10px;
   }
 
   .metric-grid {
@@ -814,6 +846,21 @@ body {
 }
 
 @media (max-width: 430px) {
+  .summary-aside {
+    padding: 14px;
+  }
+
+  .score-drivers div {
+    align-items: start;
+    display: grid;
+    gap: 2px;
+    justify-content: start;
+  }
+
+  .score-drivers dd {
+    text-align: left;
+  }
+
   .metric-comparison {
     grid-template-columns: 1fr;
   }

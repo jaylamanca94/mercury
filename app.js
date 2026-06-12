@@ -329,6 +329,10 @@ function routeFallbackCopy(areaName, error) {
   return `${areaName} route unavailable: ${detail}`;
 }
 
+function routeFallbackIssue(areaName) {
+  return `${areaName} route unavailable; showing sample value.`;
+}
+
 function sourceIssueStatus(issue) {
   if (issue?.status === "Unavailable") {
     return "Sample fallback";
@@ -673,7 +677,7 @@ function applyMarketFallback(error = null) {
   marketPulse = sampleMarketPulse.map((indicator) => ({
     ...indicator,
     sourceStatus: "Sample fallback",
-    sourceIssue: `${fallbackCopy}, so Mercury kept the sample value visible.`,
+    sourceIssue: routeFallbackIssue("Market Pulse"),
   }));
   renderDashboard();
 
@@ -783,7 +787,7 @@ function applyFredFallback(error = null) {
   economicHealth = sampleEconomicHealth.map((indicator) => ({
     ...indicator,
     sourceStatus: "Sample fallback",
-    sourceIssue: `${fallbackCopy}, so Mercury kept the sample value visible.`,
+    sourceIssue: routeFallbackIssue("FRED"),
   }));
   renderDashboard();
 
@@ -890,7 +894,7 @@ function applyRiskFallback(error = null) {
   riskIndicators = sampleRiskIndicators.map((indicator) => ({
     ...indicator,
     sourceStatus: "Sample fallback",
-    sourceIssue: `${fallbackCopy}, so Mercury kept the sample value visible.`,
+    sourceIssue: routeFallbackIssue("Risk"),
   }));
   renderDashboard();
 
