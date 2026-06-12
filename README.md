@@ -6,13 +6,13 @@ Tagline direction: The global economy at a glance.
 
 ## Product Status
 
-Mercury has an initial static dashboard prototype with its first source-backed macro data bridge.
-The page starts from clearly labeled sample data, then upgrades the Economic Health section to
-public FRED releases when `/api/fred-snapshot` is available. Individual macro indicators can fall
-back to labeled sample values when a FRED series is unavailable, delayed, or stale. Source-backed
-macro cards show the latest and previous FRED release periods for their comparisons, and the source
-coverage band shows FRED coverage count, release range, and last check time. Market, risk, and
-regional data remain sample placeholders.
+Mercury has an initial static dashboard prototype with source-backed FRED data bridges.
+The page starts from clearly labeled sample data, then upgrades the Market Pulse and Economic Health
+sections when `/api/market-snapshot` and `/api/fred-snapshot` are available. Individual indicators can
+fall back to labeled sample values when a FRED series is unavailable, delayed, stale, or not selected
+yet. Source-backed market cards show latest and previous daily observation dates; source-backed macro
+cards show latest and previous FRED release periods. The source coverage band shows market and macro
+coverage counts, period ranges, and last check time. Risk and regional data remain sample placeholders.
 
 ## Tech Stack
 
@@ -22,7 +22,7 @@ Recommended starting stack:
 - Bootstrap 5 via CDN for layout and familiar UI patterns
 - Font Awesome Free via CDN for utility icons
 - Vercel Serverless Functions for live data proxies
-- Public FRED CSV releases for the first Economic Health source bridge
+- Public FRED CSV releases for the first Economic Health and Market Pulse source bridges
 - Environment variables for future API keys
 
 Keep the first build simple until live source requirements are clearer.
@@ -52,13 +52,15 @@ Every source should be evaluated for trust, cost, licensing, rate limits, update
 No install step is required for the first prototype.
 
 Open `index.html` in a browser for the sample fallback, or run/deploy the site through Vercel to
-enable `/api/fred-snapshot`.
+enable `/api/market-snapshot` and `/api/fred-snapshot`.
 
 Current files:
 
 - `index.html` - static dashboard entry
 - `styles.css` - Mercury dashboard styling
 - `app.js` - sample indicator data and rendering
+- `api/market-snapshot.js` - Vercel Serverless Function for partial public FRED Market Pulse observations
+- `api/market-snapshot.test.js` - Node assertions for market source freshness, observation periods, source audit metadata, and partial coverage
 - `api/fred-snapshot.js` - Vercel Serverless Function for public FRED Economic Health releases
 - `api/fred-snapshot.test.js` - Node assertions for FRED source freshness, release periods, source audit metadata, and coverage states
 

@@ -84,8 +84,8 @@ A user should be able to open Mercury and immediately understand:
 
 ## Scope
 
-Current scope is a static prototype foundation for a live global economy dashboard MVP with the
-first source-backed Economic Health bridge.
+Current scope is a static prototype foundation for a live global economy dashboard MVP with
+source-backed FRED bridges for Economic Health and partial Market Pulse coverage.
 
 In scope for the MVP:
 
@@ -99,9 +99,12 @@ In scope for the MVP:
 - Explainable sample score drivers
 - Visible previous-sample comparisons for prototype metrics
 - First source-backed Economic Health route using public FRED releases
+- Partial source-backed Market Pulse route using public FRED daily market series
 - Partial, delayed, stale, and fallback states for source-backed Economic Health data
+- Partial, delayed, stale, and fallback states for source-backed Market Pulse data
 - Source-backed macro cards show latest and previous release periods beside comparison values
-- Source-backed Economic Health shows source audit metadata for loaded count, release range, and last check time
+- Source-backed market cards show latest and previous observation dates beside comparison values
+- Source-backed Economic Health and Market Pulse show source audit metadata for loaded count, period range, and last check time
 - Plain-language labels and context
 - Neutral, non-advisory dashboard language
 - Responsive dashboard experience
@@ -206,10 +209,11 @@ Recently completed:
 - Added per-indicator freshness and partial fallback states around the FRED Economic Health bridge.
 - Added release-period labels to source-backed Economic Health cards so previous-release comparisons show their time context.
 - Added compact source audit metadata for FRED coverage count, release range, and check time.
+- Added a partial Market Pulse FRED bridge for S&P 500, 10-year Treasury yield, and WTI oil observations while keeping unresolved market cards visibly labeled as sample fallback.
 
 Recommended next steps:
 
-1. Select the first source-backed data provider for Market Pulse.
+1. Select a durable source-backed approach for the International Market Pulse card.
 2. Define the indicator scoring model for up/down, risk, confidence, and trend.
 3. Expand source-backed period comparisons to additional indicators as new source routes come online.
 4. Add manual fixtures for empty, partial, delayed, and stale source states.
@@ -232,13 +236,18 @@ Future opportunities:
 
 ## Known Limitations
 
-- The first app scaffold still uses static sample data outside Economic Health.
+- The first app scaffold still uses static sample data outside Economic Health and partial Market Pulse coverage.
 - Economic Health can load source-backed public FRED releases through `/api/fred-snapshot`.
+- Market Pulse can load source-backed public FRED daily series through `/api/market-snapshot` for U.S. markets, the 10-year Treasury yield, and WTI oil.
 - Economic Health keeps sample fallback cards visible when individual FRED indicators are unavailable.
+- Market Pulse keeps sample fallback cards visible when individual source-backed market indicators are unavailable or when no durable source has been selected for a card.
 - FRED release freshness is classified with simple cadence thresholds and should be refined as source handling matures.
+- Market observation freshness is classified with simple daily cadence thresholds and should be refined as source handling matures.
 - Source-backed Economic Health comparisons use the previous FRED observation period, not the static sample period.
+- Source-backed Market Pulse comparisons use the previous FRED observation, not the static sample period.
 - Source-backed Economic Health coverage counts only the configured FRED indicators in the current bridge.
-- Market Pulse, Risk and Confidence, and Global Snapshot still use sample data.
+- Market Pulse coverage counts the current four-card dashboard area, including source gaps such as International when no selected source exists yet.
+- Risk and Confidence and Global Snapshot still use sample data.
 - No source scoring model exists yet.
 - The current economy score is illustrative and must stay labeled until a formal scoring model is defined.
 - Prototype sample values are illustrative and use a sample-set date, not a live refresh timestamp.

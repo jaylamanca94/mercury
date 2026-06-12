@@ -115,6 +115,7 @@ Use `8px` or less for normal cards and repeated list items unless a larger conta
 
 - Pair every numeric movement with direction, timeframe, source, and update time when possible.
 - Source-backed comparisons should show the latest and previous release periods when the data source provides them.
+- Source-backed daily market comparisons should show the latest and previous observation dates when the data source provides them.
 - Use sparklines for recent direction, not detailed analysis.
 - Avoid chart types that require financial expertise to interpret.
 - Prefer labels like `Rising`, `Falling`, `Mixed`, `Stable`, `Elevated risk`, or `Improving confidence`.
@@ -122,7 +123,7 @@ Use `8px` or less for normal cards and repeated list items unless a larger conta
 - Make stale, delayed, sample, fallback, and unavailable data visually distinct.
 - Static sample dashboards must show both the sample-set date and the live refresh state so users do not confuse prototype values with current data.
 - Source-backed sections must update their own freshness labels without implying that unrelated sample sections are live.
-- Source-backed sections should expose compact audit metadata for coverage count, release range, and last check time when those fields exist.
+- Source-backed sections should expose compact audit metadata for coverage count, release or observation range, and last check time when those fields exist.
 
 ## Icons
 
@@ -178,7 +179,8 @@ Current prototype utilities:
 - Repeated metric cards use `8px` radius, compact labels, source context, status chips, and small sparklines.
 - Metric cards include a compact previous-sample comparison so users can understand direction without relying only on the sparkline.
 - Source-backed metric cards show the latest release period near the current value and the previous release period inside the comparison block.
-- The source coverage band shows compact source audit metadata for Economic Health FRED coverage count, release range, and last check time.
+- Source-backed daily market metric cards show the latest observation date near the current value and the previous observation date inside the comparison block.
+- The source coverage band shows compact source audit metadata for Market Pulse and Economic Health coverage counts, period ranges, and last check time.
 - Every sample indicator includes an inline metadata row for sample status, candidate source, and expected update cadence so users do not mistake prototype values for live data.
 - Source-backed indicators include inline freshness status, and unavailable source-backed indicators keep labeled sample fallback values in place.
 - Prototype source coverage uses a compact snapshot metadata block for sample-set date, live last-checked state, and refresh schedule.

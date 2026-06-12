@@ -1,5 +1,6 @@
-const marketPulse = [
+const sampleMarketPulse = [
   {
+    id: "us-markets",
     name: "U.S. markets",
     context: "Large-cap stocks",
     value: "+0.6%",
@@ -13,6 +14,7 @@ const marketPulse = [
     points: [24, 28, 27, 33, 35, 42, 46],
   },
   {
+    id: "international",
     name: "International",
     context: "Developed markets",
     value: "+0.2%",
@@ -26,6 +28,7 @@ const marketPulse = [
     points: [28, 31, 29, 30, 34, 32, 36],
   },
   {
+    id: "bonds",
     name: "Bonds",
     context: "Broad bond index",
     value: "-0.1%",
@@ -39,6 +42,7 @@ const marketPulse = [
     points: [36, 35, 36, 34, 35, 34, 35],
   },
   {
+    id: "oil",
     name: "Oil",
     context: "Energy pressure",
     value: "+1.4%",
@@ -52,6 +56,8 @@ const marketPulse = [
     points: [18, 20, 22, 26, 31, 35, 39],
   },
 ];
+
+let marketPulse = sampleMarketPulse.map((indicator) => ({ ...indicator }));
 
 const sampleEconomicHealth = [
   {
@@ -210,6 +216,23 @@ function formatReleaseDate(value) {
   }).format(date);
 }
 
+function formatObservationDate(value) {
+  if (!value) {
+    return null;
+  }
+
+  const date = new Date(`${value}T00:00:00Z`);
+
+  if (Number.isNaN(date.getTime())) {
+    return value;
+  }
+
+  return new Intl.DateTimeFormat("en", {
+    dateStyle: "medium",
+    timeZone: "UTC",
+  }).format(date);
+}
+
 function formatCheckedAt(value) {
   const date = new Date(value);
 
@@ -238,12 +261,47 @@ function formatReleaseRange(range) {
   return `${earliest} to ${latest}`;
 }
 
+function formatObservationRange(range) {
+  if (!range?.earliest || !range?.latest) {
+    return "Unavailable";
+  }
+
+  const earliest = formatObservationDate(range.earliest);
+  const latest = formatObservationDate(range.latest);
+
+  if (earliest === latest) {
+    return latest;
+  }
+
+  return `${earliest} to ${latest}`;
+}
+
+function metricPeriodLabel(metric, previous = false) {
+  if (metric.periodLabel) {
+    return previous ? `Previous ${metric.periodLabel.toLowerCase()}` : metric.periodLabel;
+  }
+
+  if (metric.cadence?.toLowerCase().includes("daily")) {
+    return previous ? "Previous observation" : "Latest observation";
+  }
+
+  return previous ? "Previous release" : "Latest release";
+}
+
+function formatMetricPeriod(metric, value) {
+  if (metric.cadence?.toLowerCase().includes("daily")) {
+    return formatObservationDate(value);
+  }
+
+  return formatReleaseDate(value);
+}
+
 function renderMetricPeriod(metric) {
   if (metric.sourceStatus !== "Source-backed" || !metric.releaseDate) {
     return "";
   }
 
-  return `<p class="metric-period">Latest release: ${escapeHtml(formatReleaseDate(metric.releaseDate))}</p>`;
+  return `<p class="metric-period">${escapeHtml(metricPeriodLabel(metric))}: ${escapeHtml(formatMetricPeriod(metric, metric.releaseDate))}</p>`;
 }
 
 function setText(selector, text) {
@@ -276,8 +334,9 @@ function sourceStatusIcon(status) {
 
 function renderDataMeta(item) {
   const status = item.sourceStatus || "Sample";
+  const periodKind = item.cadence?.toLowerCase().includes("daily") ? "latest observation" : "latest release";
   const cadence = item.releaseDate
-    ? `${item.cadence}; latest release ${formatReleaseDate(item.releaseDate)}`
+    ? `${item.cadence}; ${periodKind} ${formatMetricPeriod(item, item.releaseDate)}`
     : item.cadence;
   const freshness = item.freshnessStatus
     ? `
@@ -325,7 +384,7 @@ function renderSparkline(points, tone) {
 
 function renderMetricCard(metric) {
   const previousPeriod = metric.previousReleaseDate
-    ? `<small>${escapeHtml(formatReleaseDate(metric.previousReleaseDate))}</small>`
+    ? `<small>${escapeHtml(formatMetricPeriod(metric, metric.previousReleaseDate))}</small>`
     : "";
 
   return `
@@ -342,9 +401,9 @@ function renderMetricCard(metric) {
         ${renderMetricPeriod(metric)}
         <span class="${trendClass(metric.tone)}">${escapeHtml(metric.trend)}</span>
       </div>
-      <dl class="metric-comparison" aria-label="${metric.sourceStatus === "Source-backed" ? "Source release comparison" : "Sample period comparison"}">
+      <dl class="metric-comparison" aria-label="${metric.sourceStatus === "Source-backed" ? "Source period comparison" : "Sample period comparison"}">
         <div>
-          <dt>${metric.sourceStatus === "Source-backed" ? "Previous release" : "Previous sample"}</dt>
+          <dt>${metric.sourceStatus === "Source-backed" ? metricPeriodLabel(metric, true) : "Previous sample"}</dt>
           <dd>${escapeHtml(metric.previous)}</dd>
           ${previousPeriod}
         </div>
@@ -394,6 +453,115 @@ function renderDashboard() {
   document.querySelector("#region-list").innerHTML = regions.map(renderRegionRow).join("");
 }
 
+function setCoverageSummary() {
+  setText("#source-coverage-title", "Source coverage updated");
+  setText(
+    "#source-coverage-copy",
+    "Mercury is tracking live coverage by dashboard area so source-backed cards, sample fallbacks, and unresolved source gaps stay visibly separated.",
+  );
+}
+
+function applyMarketSnapshot(snapshot) {
+  if (!snapshot?.indicators?.length) {
+    applyMarketFallback();
+    return;
+  }
+
+  const marketPill = document.querySelector("#market-connection-pill");
+  const indicatorsById = new Map(snapshot.indicators.map((indicator) => [indicator.id, indicator]));
+  const issuesById = new Map((snapshot.issues || []).map((issue) => [issue.id, issue]));
+  const loadedCount = indicatorsById.size;
+  const totalCount = sampleMarketPulse.length;
+  const sourceHealth = snapshot.sourceHealth || {
+    status: "partial",
+    label: "Partial market coverage",
+    summary: "Market Pulse partially loaded from public FRED series.",
+  };
+  const sourceCoverage = sourceHealth.coverage || snapshot.sourceAudit?.coverage || {
+    loaded: loadedCount,
+    total: totalCount,
+    unavailable: totalCount - loadedCount,
+  };
+  const observationRange = sourceHealth.releaseRange || snapshot.releaseRange;
+
+  marketPulse = sampleMarketPulse.map((fallbackIndicator) => {
+    const sourceIndicator = indicatorsById.get(fallbackIndicator.id);
+
+    if (sourceIndicator) {
+      return sourceIndicator;
+    }
+
+    const issue = issuesById.get(fallbackIndicator.id);
+
+    return {
+      ...fallbackIndicator,
+      sourceStatus: "Sample fallback",
+      sourceIssue: issue?.reason || "No source-backed market series is available yet, so Mercury kept the sample value visible.",
+    };
+  });
+  renderDashboard();
+  setCoverageSummary();
+
+  setText(
+    "#market-pulse-title",
+    loadedCount === totalCount
+      ? "Daily market signals are connected"
+      : "Daily market signals are partially connected",
+  );
+  setText("#market-coverage-count", `${sourceCoverage.loaded} of ${sourceCoverage.total} loaded`);
+  setText("#market-release-range", formatObservationRange(observationRange));
+  setText("#live-last-checked", formatCheckedAt(snapshot.checkedAt));
+  setText("#refresh-schedule", "Checked on page load");
+  setText("#market-source-status", sourceHealth.status === "ready" ? "FRED" : sourceHealth.label);
+  setText(
+    "#market-source-detail",
+    loadedCount === totalCount
+      ? "Daily Market Pulse observations are loaded through Mercury's FRED source bridge"
+      : `${loadedCount} of ${totalCount} Market Pulse indicators loaded from FRED; unresolved cards keep sample fallback values`,
+  );
+  setHtml(
+    "#market-source-note",
+    `<i class="fa-solid fa-chart-line" aria-hidden="true"></i> ${escapeHtml(sourceHealth.label)}`,
+  );
+  setHtml(
+    "#market-connection-pill",
+    `<i class="fa-solid ${sourceHealth.status === "ready" ? "fa-plug-circle-check" : "fa-triangle-exclamation"}" aria-hidden="true"></i> ${escapeHtml(sourceHealth.label)}`,
+  );
+
+  if (marketPill) {
+    marketPill.classList.toggle("status-pill-live", sourceHealth.status === "ready");
+    marketPill.classList.toggle("status-pill-warning", sourceHealth.status !== "ready");
+  }
+}
+
+function applyMarketFallback() {
+  const marketPill = document.querySelector("#market-connection-pill");
+
+  marketPulse = sampleMarketPulse.map((indicator) => ({
+    ...indicator,
+    sourceStatus: "Sample fallback",
+    sourceIssue: "Market Pulse route unavailable in this view, so Mercury kept the sample value visible.",
+  }));
+  renderDashboard();
+
+  setText("#market-coverage-count", "0 of 4 loaded");
+  setText("#market-release-range", "Unavailable");
+  setText(
+    "#market-source-detail",
+    "Market Pulse route unavailable in this view; sample market indicators remain visible",
+  );
+  setText("#market-source-status", "Sample fallback");
+  setHtml(
+    "#market-connection-pill",
+    '<i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i> Market fallback visible',
+  );
+
+  if (marketPill) {
+    marketPill.classList.remove("status-pill-live");
+    marketPill.classList.add("status-pill-warning");
+  }
+}
+
 function applyFredSnapshot(snapshot) {
   if (!snapshot?.indicators?.length) {
     applyFredFallback();
@@ -435,17 +603,13 @@ function applyFredSnapshot(snapshot) {
     };
   });
   renderDashboard();
+  setCoverageSummary();
 
   setText(
     "#economic-health-title",
     loadedCount === totalCount
       ? "Official releases show uneven pressure"
       : "Official releases are partially connected",
-  );
-  setText("#source-coverage-title", sourceHealth.label);
-  setText(
-    "#source-coverage-copy",
-    `${sourceHealth.summary} Market, risk, and regional coverage remain sample placeholders until their own source routes are connected.`,
   );
   setText("#live-last-checked", formatCheckedAt(snapshot.checkedAt));
   setText("#refresh-schedule", "Checked on page load");
@@ -490,11 +654,7 @@ function applyFredFallback() {
     "#macro-source-detail",
     "FRED route unavailable in this view; sample macro indicators remain visible",
   );
-  setText("#source-coverage-title", "Sample fallback visible");
-  setText(
-    "#source-coverage-copy",
-    "Economic Health could not reach the FRED source bridge in this view. Mercury keeps sample macro indicators visible and labels them as fallback data.",
-  );
+  setCoverageSummary();
   setHtml(
     "#macro-connection-pill",
     '<i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i> Macro fallback visible',
@@ -529,5 +689,29 @@ async function loadFredSnapshot() {
   }
 }
 
+async function loadMarketSnapshot() {
+  if (window.location.protocol === "file:") {
+    return;
+  }
+
+  try {
+    const response = await fetch("/api/market-snapshot", {
+      headers: {
+        accept: "application/json",
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error("Market snapshot route unavailable");
+    }
+
+    const snapshot = await response.json();
+    applyMarketSnapshot(snapshot);
+  } catch (error) {
+    applyMarketFallback();
+  }
+}
+
 renderDashboard();
+loadMarketSnapshot();
 loadFredSnapshot();
