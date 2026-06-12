@@ -95,6 +95,8 @@ context.applyRiskSnapshot({
       icon: "fa-wave-square",
       source: "FRED: CBOE Volatility Index",
       cadence: "Daily close",
+      sourceUnit: "Index level",
+      sourceFrequency: "Daily",
       sourceStatus: "Source-backed",
     },
     {
@@ -106,6 +108,8 @@ context.applyRiskSnapshot({
       icon: "fa-dollar-sign",
       source: "FRED: Nominal Broad U.S. Dollar Index",
       cadence: "Daily release",
+      sourceUnit: "Index level",
+      sourceFrequency: "Daily",
       sourceStatus: "Source-backed",
     },
     {
@@ -117,6 +121,8 @@ context.applyRiskSnapshot({
       icon: "fa-coins",
       source: "FRED: Gold Fixing Price",
       cadence: "Daily fixing",
+      sourceUnit: "U.S. dollars per troy ounce",
+      sourceFrequency: "Daily",
       sourceStatus: "Source-backed",
     },
   ],
@@ -128,6 +134,8 @@ assert.equal(riskPill.classList.contains("status-pill-live"), true);
 assert.equal(riskPill.classList.contains("status-pill-warning"), false);
 assert.match(elements.get("#risk-last-checked").textContent, /Jun 12, 2026/);
 assert.match(elements.get("#live-last-checked").textContent, /Jun 12, 2026/);
+assert.match(elements.get("#risk-list").innerHTML, /Unit: Index level/);
+assert.match(elements.get("#risk-list").innerHTML, /Frequency: Daily/);
 
 context.applyRiskFallback();
 

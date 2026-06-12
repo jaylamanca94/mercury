@@ -114,6 +114,7 @@ Use `8px` or less for normal cards and repeated list items unless a larger conta
 ## Chart And Indicator Guidance
 
 - Pair every numeric movement with direction, timeframe, source, and update time when possible.
+- Pair source-backed values with their unit and source frequency when those fields are known.
 - Source-backed comparisons should show the latest and previous release periods when the data source provides them.
 - Source-backed daily market comparisons should show the latest and previous observation dates when the data source provides them.
 - Source-backed daily risk rows should include the latest observation date in metadata and describe the latest value against the prior observation in neutral language.
@@ -126,6 +127,7 @@ Use `8px` or less for normal cards and repeated list items unless a larger conta
 - Source-backed sections must update their own freshness labels without implying that unrelated sample sections are live.
 - First-viewport connection pills should represent every currently source-backed dashboard area so live, partial, and fallback states are visible before users reach the source coverage band.
 - Source-backed sections should expose compact audit metadata for coverage count, release or observation range, and route-level last check time when those fields exist.
+- Source-backed indicators should expose compact unit and frequency metadata inline with source and freshness details when those fields exist.
 
 ## Icons
 
@@ -187,6 +189,7 @@ Current prototype utilities:
 - Market Pulse source coverage also shows a compact gap summary for unresolved or unavailable cards so partial coverage is not reduced to a loaded-count alone.
 - Every sample indicator includes an inline metadata row for sample status, candidate source, and expected update cadence so users do not mistake prototype values for live data.
 - Source-backed indicators include inline freshness status, and unavailable source-backed indicators keep labeled sample fallback values in place.
+- Source-backed indicators include inline unit and frequency metadata so values such as index levels, rates, and dollar prices are not ambiguous.
 - Prototype source coverage uses a compact snapshot metadata block for sample-set date, latest live check, route-level check states, and refresh schedule.
 - Region and risk rows use icon, title, short context, and a plain-language trend label.
 - Sample data must be visibly labeled in the header and source/freshness areas until live integrations exist.

@@ -76,6 +76,8 @@ const monthlyIndicator = buildSeriesIndicator(
     seriesId: "UNRATE",
     source: "FRED: Unemployment Rate",
     cadence: "Monthly release",
+    sourceUnit: "Percent",
+    sourceFrequency: "Monthly",
     valueKind: "latest",
     decimals: 1,
     delayedAfterDays: 50,
@@ -93,3 +95,5 @@ assert.equal(monthlyIndicator.releaseDate, "2026-05-01");
 assert.equal(monthlyIndicator.previousReleaseDate, "2026-04-01");
 assert.equal(monthlyIndicator.previous, "4.1%");
 assert.equal(monthlyIndicator.change, "+0.1 pts");
+assert.equal(monthlyIndicator.sourceUnit, "Percent");
+assert.equal(monthlyIndicator.sourceFrequency, "Monthly");

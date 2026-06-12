@@ -108,6 +108,7 @@ In scope for the MVP:
 - Source-backed macro cards show latest and previous release periods beside comparison values
 - Source-backed market cards show latest and previous observation dates beside comparison values
 - Source-backed Economic Health, Market Pulse, and Risk and Confidence show source audit metadata for loaded count, period or observation range, and route-level last check time
+- Source-backed cards and rows show unit and frequency metadata from the source route when available
 - Source coverage distinguishes route-level last check times for Market Pulse, Economic Health, and Risk and Confidence
 - Market Pulse source audits summarize unresolved source gaps separately from loaded FRED observations
 - Header connection pills show Market Pulse, Risk and Confidence, and Economic Health source status as each bridge loads or falls back
@@ -220,6 +221,7 @@ Recently completed:
 - Added a Risk and Confidence FRED bridge for VIX, broad dollar index, and gold observations while keeping sample fallback behavior available.
 - Added route-level source check times to the coverage band so Market Pulse, Economic Health, and Risk and Confidence audits do not share one ambiguous timestamp.
 - Added a Risk and Confidence header status pill so all current FRED-backed dashboard areas expose connection state in the first viewport.
+- Added unit and frequency metadata to source-backed Market Pulse, Economic Health, and Risk and Confidence indicators so users can interpret the value basis without leaving the dashboard.
 
 Recommended next steps:
 

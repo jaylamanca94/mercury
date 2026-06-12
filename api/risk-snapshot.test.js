@@ -72,6 +72,8 @@ const vixIndicator = buildRiskIndicator(
     seriesId: "VIXCLS",
     source: "FRED: CBOE Volatility Index",
     cadence: "Daily close",
+    sourceUnit: "Index level",
+    sourceFrequency: "Daily",
     valueKind: "index",
     decimals: 2,
     delayedAfterDays: 4,
@@ -92,6 +94,8 @@ assert.equal(vixIndicator.previous, "19.87");
 assert.equal(vixIndicator.trend, "Watch");
 assert.equal(vixIndicator.sourceStatus, "Source-backed");
 assert.match(vixIndicator.copy, /VIX is 22.22/);
+assert.equal(vixIndicator.sourceUnit, "Index level");
+assert.equal(vixIndicator.sourceFrequency, "Daily");
 
 const goldIndicator = buildRiskIndicator(
   {
@@ -100,6 +104,8 @@ const goldIndicator = buildRiskIndicator(
     seriesId: "GOLDAMGBD228NLBM",
     source: "FRED: Gold Fixing Price",
     cadence: "Daily fixing",
+    sourceUnit: "U.S. dollars per troy ounce",
+    sourceFrequency: "Daily",
     valueKind: "price",
     decimals: 2,
     delayedAfterDays: 9,

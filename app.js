@@ -365,11 +365,23 @@ function renderDataMeta(item) {
       <span><i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i> ${escapeHtml(item.sourceIssue)}</span>
     `
     : "";
+  const unit = item.sourceUnit
+    ? `
+      <span><i class="fa-solid fa-ruler" aria-hidden="true"></i> Unit: ${escapeHtml(item.sourceUnit)}</span>
+    `
+    : "";
+  const frequency = item.sourceFrequency
+    ? `
+      <span><i class="fa-solid fa-rotate" aria-hidden="true"></i> Frequency: ${escapeHtml(item.sourceFrequency)}</span>
+    `
+    : "";
 
   return `
     <div class="data-meta" aria-label="Indicator data details">
       <span><i class="fa-solid ${sourceStatusIcon(status)}" aria-hidden="true"></i> ${escapeHtml(status)}</span>
       <span><i class="fa-solid fa-database" aria-hidden="true"></i> ${escapeHtml(item.source)}</span>
+      ${unit}
+      ${frequency}
       <span><i class="fa-regular fa-calendar" aria-hidden="true"></i> ${escapeHtml(cadence)}</span>
       ${freshness}
       ${issue}

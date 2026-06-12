@@ -71,6 +71,8 @@ const marketIndicator = buildMarketIndicator(
     seriesId: "SP500",
     source: "FRED: S&P 500",
     cadence: "Daily close",
+    sourceUnit: "Index level",
+    sourceFrequency: "Daily",
     valueKind: "index",
     decimals: 2,
     delayedAfterDays: 4,
@@ -90,6 +92,8 @@ assert.equal(marketIndicator.value, "1,025.15");
 assert.equal(marketIndicator.previous, "1,010.00");
 assert.equal(marketIndicator.change, "+1.5%");
 assert.equal(marketIndicator.sourceStatus, "Source-backed");
+assert.equal(marketIndicator.sourceUnit, "Index level");
+assert.equal(marketIndicator.sourceFrequency, "Daily");
 
 const yieldIndicator = buildMarketIndicator(
   {
@@ -100,6 +104,8 @@ const yieldIndicator = buildMarketIndicator(
     seriesId: "DGS10",
     source: "FRED: 10-Year Treasury Constant Maturity Rate",
     cadence: "Daily release",
+    sourceUnit: "Percent",
+    sourceFrequency: "Daily",
     valueKind: "rate",
     decimals: 2,
     delayedAfterDays: 4,
