@@ -223,6 +223,21 @@ function formatCheckedAt(value) {
   }).format(date);
 }
 
+function formatReleaseRange(range) {
+  if (!range?.earliest || !range?.latest) {
+    return "Unavailable";
+  }
+
+  const earliest = formatReleaseDate(range.earliest);
+  const latest = formatReleaseDate(range.latest);
+
+  if (earliest === latest) {
+    return latest;
+  }
+
+  return `${earliest} to ${latest}`;
+}
+
 function renderMetricPeriod(metric) {
   if (metric.sourceStatus !== "Source-backed" || !metric.releaseDate) {
     return "";
@@ -395,6 +410,12 @@ function applyFredSnapshot(snapshot) {
     label: "FRED releases current",
     summary: "Economic Health loaded from public FRED releases.",
   };
+  const sourceCoverage = sourceHealth.coverage || snapshot.sourceAudit?.coverage || {
+    loaded: loadedCount,
+    total: totalCount,
+    unavailable: totalCount - loadedCount,
+  };
+  const releaseRange = sourceHealth.releaseRange || snapshot.releaseRange;
 
   economicHealth = sampleEconomicHealth.map((fallbackIndicator) => {
     const sourceIndicator = indicatorsById.get(fallbackIndicator.id);
@@ -428,6 +449,8 @@ function applyFredSnapshot(snapshot) {
   );
   setText("#live-last-checked", formatCheckedAt(snapshot.checkedAt));
   setText("#refresh-schedule", "Checked on page load");
+  setText("#macro-coverage-count", `${sourceCoverage.loaded} of ${sourceCoverage.total} loaded`);
+  setText("#macro-release-range", formatReleaseRange(releaseRange));
   setText("#macro-source-status", sourceHealth.status === "ready" ? "FRED" : sourceHealth.label);
   setText(
     "#macro-source-detail",
@@ -461,6 +484,8 @@ function applyFredFallback() {
   renderDashboard();
 
   setText("#macro-source-status", "Sample fallback");
+  setText("#macro-coverage-count", "0 of 4 loaded");
+  setText("#macro-release-range", "Unavailable");
   setText(
     "#macro-source-detail",
     "FRED route unavailable in this view; sample macro indicators remain visible",

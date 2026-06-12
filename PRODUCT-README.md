@@ -101,6 +101,7 @@ In scope for the MVP:
 - First source-backed Economic Health route using public FRED releases
 - Partial, delayed, stale, and fallback states for source-backed Economic Health data
 - Source-backed macro cards show latest and previous release periods beside comparison values
+- Source-backed Economic Health shows source audit metadata for loaded count, release range, and last check time
 - Plain-language labels and context
 - Neutral, non-advisory dashboard language
 - Responsive dashboard experience
@@ -204,6 +205,7 @@ Recently completed:
 - Added the first serverless API route for source-backed Economic Health releases from FRED.
 - Added per-indicator freshness and partial fallback states around the FRED Economic Health bridge.
 - Added release-period labels to source-backed Economic Health cards so previous-release comparisons show their time context.
+- Added compact source audit metadata for FRED coverage count, release range, and check time.
 
 Recommended next steps:
 
@@ -235,6 +237,7 @@ Future opportunities:
 - Economic Health keeps sample fallback cards visible when individual FRED indicators are unavailable.
 - FRED release freshness is classified with simple cadence thresholds and should be refined as source handling matures.
 - Source-backed Economic Health comparisons use the previous FRED observation period, not the static sample period.
+- Source-backed Economic Health coverage counts only the configured FRED indicators in the current bridge.
 - Market Pulse, Risk and Confidence, and Global Snapshot still use sample data.
 - No source scoring model exists yet.
 - The current economy score is illustrative and must stay labeled until a formal scoring model is defined.

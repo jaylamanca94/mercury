@@ -1,7 +1,7 @@
 const assert = require("node:assert/strict");
 
 const {
-  _internals: { buildSeriesIndicator, classifyFreshness, summarizeSourceHealth },
+  _internals: { buildSeriesIndicator, buildSourceAudit, classifyFreshness, summarizeSourceHealth },
 } = require("./fred-snapshot");
 
 const monthlySeries = {
@@ -44,6 +44,26 @@ assert.equal(
 );
 
 assert.equal(summarizeSourceHealth([], [{ id: "inflation" }]).status, "unavailable");
+
+const sourceAudit = buildSourceAudit(
+  [
+    { releaseDate: "2026-05-01" },
+    { releaseDate: "2026-03-01" },
+    { releaseDate: "2026-04-01" },
+  ],
+  [{ id: "gdp-growth" }],
+);
+
+assert.deepEqual(sourceAudit.coverage, {
+  area: "Economic Health",
+  loaded: 3,
+  total: 4,
+  unavailable: 1,
+});
+assert.deepEqual(sourceAudit.releaseRange, {
+  earliest: "2026-03-01",
+  latest: "2026-05-01",
+});
 
 const monthlyIndicator = buildSeriesIndicator(
   {

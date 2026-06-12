@@ -311,6 +311,23 @@ function summarizeSourceHealth(indicators, issues) {
   };
 }
 
+function buildSourceAudit(indicators, issues) {
+  const releaseDates = indicators.map((indicator) => indicator.releaseDate).sort();
+
+  return {
+    coverage: {
+      area: "Economic Health",
+      loaded: indicators.length,
+      total: SERIES.length,
+      unavailable: issues.length,
+    },
+    releaseRange: {
+      earliest: releaseDates[0] || null,
+      latest: releaseDates.at(-1) || null,
+    },
+  };
+}
+
 async function handler(req, res) {
   if (req.method && req.method !== "GET") {
     res.setHeader("Allow", "GET");
@@ -335,8 +352,8 @@ async function handler(req, res) {
       throw new Error("No FRED indicators loaded");
     }
 
-    const releaseDates = indicators.map((indicator) => indicator.releaseDate);
     const sourceHealth = summarizeSourceHealth(indicators, issues);
+    const sourceAudit = buildSourceAudit(indicators, issues);
 
     res.setHeader("Content-Type", "application/json; charset=utf-8");
     res.setHeader("Cache-Control", "s-maxage=3600, stale-while-revalidate=21600");
@@ -347,11 +364,12 @@ async function handler(req, res) {
         checkedAt,
         source: "Federal Reserve Economic Data (FRED)",
         coverage: "Economic Health",
-        sourceHealth,
-        releaseRange: {
-          earliest: releaseDates.slice().sort()[0],
-          latest: releaseDates.slice().sort().at(-1),
+        sourceHealth: {
+          ...sourceHealth,
+          ...sourceAudit,
         },
+        sourceAudit,
+        releaseRange: sourceAudit.releaseRange,
         indicators,
         issues,
       }),
@@ -380,6 +398,7 @@ module.exports = handler;
 module.exports._internals = {
   buildValues,
   buildSeriesIndicator,
+  buildSourceAudit,
   classifyFreshness,
   classifyTrend,
   parseFredCsv,

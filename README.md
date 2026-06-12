@@ -10,8 +10,9 @@ Mercury has an initial static dashboard prototype with its first source-backed m
 The page starts from clearly labeled sample data, then upgrades the Economic Health section to
 public FRED releases when `/api/fred-snapshot` is available. Individual macro indicators can fall
 back to labeled sample values when a FRED series is unavailable, delayed, or stale. Source-backed
-macro cards show the latest and previous FRED release periods for their comparisons. Market, risk,
-and regional data remain sample placeholders.
+macro cards show the latest and previous FRED release periods for their comparisons, and the source
+coverage band shows FRED coverage count, release range, and last check time. Market, risk, and
+regional data remain sample placeholders.
 
 ## Tech Stack
 
@@ -59,7 +60,7 @@ Current files:
 - `styles.css` - Mercury dashboard styling
 - `app.js` - sample indicator data and rendering
 - `api/fred-snapshot.js` - Vercel Serverless Function for public FRED Economic Health releases
-- `api/fred-snapshot.test.js` - Node assertions for FRED source freshness, release periods, and coverage states
+- `api/fred-snapshot.test.js` - Node assertions for FRED source freshness, release periods, source audit metadata, and coverage states
 
 ## Environment Variables
 
