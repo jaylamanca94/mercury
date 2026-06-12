@@ -8,8 +8,9 @@ Tagline direction: The global economy at a glance.
 
 Mercury has an initial static dashboard prototype with its first source-backed macro data bridge.
 The page starts from clearly labeled sample data, then upgrades the Economic Health section to
-public FRED releases when `/api/fred-snapshot` is available. Market, risk, and regional data remain
-sample placeholders.
+public FRED releases when `/api/fred-snapshot` is available. Individual macro indicators can fall
+back to labeled sample values when a FRED series is unavailable, delayed, or stale. Market, risk,
+and regional data remain sample placeholders.
 
 ## Tech Stack
 
@@ -57,6 +58,7 @@ Current files:
 - `styles.css` - Mercury dashboard styling
 - `app.js` - sample indicator data and rendering
 - `api/fred-snapshot.js` - Vercel Serverless Function for public FRED Economic Health releases
+- `api/fred-snapshot.test.js` - Node assertions for FRED source freshness and coverage states
 
 ## Environment Variables
 
@@ -79,7 +81,7 @@ Recommended next deployment path:
 
 1. Keep remaining sample data clearly labeled until live sources are connected.
 2. Expand source-backed coverage one route at a time.
-3. Add validation and fallback states for stale, missing, delayed, and unavailable data.
+3. Keep extending validation and fallback states as each source-backed route is added.
 
 ## Important Boundary
 

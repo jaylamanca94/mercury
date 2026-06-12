@@ -99,6 +99,7 @@ In scope for the MVP:
 - Explainable sample score drivers
 - Visible previous-sample comparisons for prototype metrics
 - First source-backed Economic Health route using public FRED releases
+- Partial, delayed, stale, and fallback states for source-backed Economic Health data
 - Plain-language labels and context
 - Neutral, non-advisory dashboard language
 - Responsive dashboard experience
@@ -200,13 +201,14 @@ Recently completed:
 
 - Created the first static dashboard scaffold with sample data and clear source/freshness placeholders.
 - Added the first serverless API route for source-backed Economic Health releases from FRED.
+- Added per-indicator freshness and partial fallback states around the FRED Economic Health bridge.
 
 Recommended next steps:
 
-1. Add stale, missing, delayed, and unavailable data states around source-backed routes.
-2. Select the first source-backed data provider for Market Pulse.
-3. Define the indicator scoring model for up/down, risk, confidence, and trend.
-4. Add source-backed period comparisons that match each indicator's real release cadence.
+1. Select the first source-backed data provider for Market Pulse.
+2. Define the indicator scoring model for up/down, risk, confidence, and trend.
+3. Add source-backed period comparisons that match each indicator's real release cadence.
+4. Add manual fixtures for empty, partial, delayed, and stale source states.
 
 Future opportunities:
 
@@ -228,6 +230,8 @@ Future opportunities:
 
 - The first app scaffold still uses static sample data outside Economic Health.
 - Economic Health can load source-backed public FRED releases through `/api/fred-snapshot`.
+- Economic Health keeps sample fallback cards visible when individual FRED indicators are unavailable.
+- FRED release freshness is classified with simple cadence thresholds and should be refined as source handling matures.
 - Market Pulse, Risk and Confidence, and Global Snapshot still use sample data.
 - No source scoring model exists yet.
 - The current economy score is illustrative and must stay labeled until a formal scoring model is defined.

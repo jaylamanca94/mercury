@@ -53,8 +53,9 @@ const marketPulse = [
   },
 ];
 
-let economicHealth = [
+const sampleEconomicHealth = [
   {
+    id: "inflation",
     name: "Inflation",
     context: "Consumer prices",
     value: "3.2%",
@@ -68,6 +69,7 @@ let economicHealth = [
     points: [44, 42, 40, 39, 38, 37, 37],
   },
   {
+    id: "interest-rates",
     name: "Interest rates",
     context: "Policy rate",
     value: "5.25%",
@@ -81,6 +83,7 @@ let economicHealth = [
     points: [30, 30, 30, 30, 30, 30, 30],
   },
   {
+    id: "unemployment",
     name: "Unemployment",
     context: "Labor market",
     value: "4.0%",
@@ -94,6 +97,7 @@ let economicHealth = [
     points: [30, 29, 29, 30, 30, 31, 31],
   },
   {
+    id: "gdp-growth",
     name: "GDP growth",
     context: "Quarterly pace",
     value: "2.1%",
@@ -107,6 +111,8 @@ let economicHealth = [
     points: [24, 25, 27, 29, 30, 31, 32],
   },
 ];
+
+let economicHealth = sampleEconomicHealth.map((indicator) => ({ ...indicator }));
 
 const riskIndicators = [
   {
@@ -233,17 +239,41 @@ function setHtml(selector, html) {
   }
 }
 
+function sourceStatusIcon(status) {
+  if (status === "Source-backed") {
+    return "fa-building-columns";
+  }
+
+  if (status === "Sample fallback" || status === "Unavailable") {
+    return "fa-triangle-exclamation";
+  }
+
+  return "fa-flask";
+}
+
 function renderDataMeta(item) {
   const status = item.sourceStatus || "Sample";
   const cadence = item.releaseDate
     ? `${item.cadence}; latest release ${formatReleaseDate(item.releaseDate)}`
     : item.cadence;
+  const freshness = item.freshnessStatus
+    ? `
+      <span><i class="fa-regular fa-clock" aria-hidden="true"></i> ${escapeHtml(item.freshnessStatus)}: ${escapeHtml(item.freshnessCopy)}</span>
+    `
+    : "";
+  const issue = item.sourceIssue
+    ? `
+      <span><i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i> ${escapeHtml(item.sourceIssue)}</span>
+    `
+    : "";
 
   return `
     <div class="data-meta" aria-label="Indicator data details">
-      <span><i class="fa-solid ${status === "Sample" ? "fa-flask" : "fa-building-columns"}" aria-hidden="true"></i> ${escapeHtml(status)}</span>
+      <span><i class="fa-solid ${sourceStatusIcon(status)}" aria-hidden="true"></i> ${escapeHtml(status)}</span>
       <span><i class="fa-solid fa-database" aria-hidden="true"></i> ${escapeHtml(item.source)}</span>
       <span><i class="fa-regular fa-calendar" aria-hidden="true"></i> ${escapeHtml(cadence)}</span>
+      ${freshness}
+      ${issue}
     </div>
   `;
 }
@@ -337,47 +367,104 @@ function renderDashboard() {
 
 function applyFredSnapshot(snapshot) {
   if (!snapshot?.indicators?.length) {
+    applyFredFallback();
     return;
   }
 
   const macroPill = document.querySelector("#macro-connection-pill");
+  const indicatorsById = new Map(snapshot.indicators.map((indicator) => [indicator.id, indicator]));
+  const issuesById = new Map((snapshot.issues || []).map((issue) => [issue.id, issue]));
+  const loadedCount = indicatorsById.size;
+  const totalCount = sampleEconomicHealth.length;
+  const sourceHealth = snapshot.sourceHealth || {
+    status: "ready",
+    label: "FRED releases current",
+    summary: "Economic Health loaded from public FRED releases.",
+  };
 
-  economicHealth = snapshot.indicators;
+  economicHealth = sampleEconomicHealth.map((fallbackIndicator) => {
+    const sourceIndicator = indicatorsById.get(fallbackIndicator.id);
+
+    if (sourceIndicator) {
+      return sourceIndicator;
+    }
+
+    const issue = issuesById.get(fallbackIndicator.id);
+
+    return {
+      ...fallbackIndicator,
+      sourceStatus: "Sample fallback",
+      sourceIssue: issue
+        ? `${issue.name} could not load from FRED, so Mercury kept the sample value visible.`
+        : "FRED release unavailable, so Mercury kept the sample value visible.",
+    };
+  });
   renderDashboard();
 
-  setText("#economic-health-title", "Official releases show uneven pressure");
-  setText("#source-coverage-title", "Source-backed macro releases");
+  setText(
+    "#economic-health-title",
+    loadedCount === totalCount
+      ? "Official releases show uneven pressure"
+      : "Official releases are partially connected",
+  );
+  setText("#source-coverage-title", sourceHealth.label);
   setText(
     "#source-coverage-copy",
-    "Economic Health now uses public FRED releases. Market, risk, and regional coverage remain sample placeholders until their own source routes are connected.",
+    `${sourceHealth.summary} Market, risk, and regional coverage remain sample placeholders until their own source routes are connected.`,
   );
   setText("#live-last-checked", formatCheckedAt(snapshot.checkedAt));
   setText("#refresh-schedule", "Checked on page load");
-  setText("#macro-source-status", "FRED");
+  setText("#macro-source-status", sourceHealth.status === "ready" ? "FRED" : sourceHealth.label);
   setText(
     "#macro-source-detail",
-    "Latest public FRED releases are loaded through Mercury's serverless source bridge",
+    loadedCount === totalCount
+      ? "Latest public FRED releases are loaded through Mercury's serverless source bridge"
+      : `${loadedCount} of ${totalCount} Economic Health indicators loaded from FRED; unavailable indicators keep sample fallback values`,
   );
   setHtml(
     "#macro-source-note",
-    '<i class="fa-solid fa-building-columns" aria-hidden="true"></i> FRED latest releases',
+    `<i class="fa-solid fa-building-columns" aria-hidden="true"></i> ${escapeHtml(sourceHealth.label)}`,
   );
   setHtml(
     "#macro-connection-pill",
-    '<i class="fa-solid fa-plug-circle-check" aria-hidden="true"></i> Macro releases connected',
+    `<i class="fa-solid ${sourceHealth.status === "ready" ? "fa-plug-circle-check" : "fa-triangle-exclamation"}" aria-hidden="true"></i> ${escapeHtml(sourceHealth.label)}`,
   );
 
   if (macroPill) {
-    macroPill.classList.add("status-pill-live");
+    macroPill.classList.toggle("status-pill-live", sourceHealth.status === "ready");
+    macroPill.classList.toggle("status-pill-warning", sourceHealth.status !== "ready");
   }
 }
 
 function applyFredFallback() {
+  const macroPill = document.querySelector("#macro-connection-pill");
+
+  economicHealth = sampleEconomicHealth.map((indicator) => ({
+    ...indicator,
+    sourceStatus: "Sample fallback",
+    sourceIssue: "FRED route unavailable in this view, so Mercury kept the sample value visible.",
+  }));
+  renderDashboard();
+
   setText("#macro-source-status", "Sample fallback");
   setText(
     "#macro-source-detail",
     "FRED route unavailable in this view; sample macro indicators remain visible",
   );
+  setText("#source-coverage-title", "Sample fallback visible");
+  setText(
+    "#source-coverage-copy",
+    "Economic Health could not reach the FRED source bridge in this view. Mercury keeps sample macro indicators visible and labels them as fallback data.",
+  );
+  setHtml(
+    "#macro-connection-pill",
+    '<i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i> Macro fallback visible',
+  );
+
+  if (macroPill) {
+    macroPill.classList.remove("status-pill-live");
+    macroPill.classList.add("status-pill-warning");
+  }
 }
 
 async function loadFredSnapshot() {

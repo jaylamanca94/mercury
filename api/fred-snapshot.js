@@ -1,4 +1,5 @@
 const FRED_GRAPH_BASE_URL = "https://fred.stlouisfed.org/graph/fredgraph.csv";
+const DAY_MS = 24 * 60 * 60 * 1000;
 
 const SERIES = [
   {
@@ -11,6 +12,8 @@ const SERIES = [
     cadence: "Monthly release",
     valueKind: "year-over-year",
     decimals: 1,
+    delayedAfterDays: 50,
+    staleAfterDays: 85,
   },
   {
     id: "interest-rates",
@@ -22,6 +25,8 @@ const SERIES = [
     cadence: "Monthly average",
     valueKind: "latest",
     decimals: 2,
+    delayedAfterDays: 50,
+    staleAfterDays: 85,
   },
   {
     id: "unemployment",
@@ -33,6 +38,8 @@ const SERIES = [
     cadence: "Monthly release",
     valueKind: "latest",
     decimals: 1,
+    delayedAfterDays: 50,
+    staleAfterDays: 85,
   },
   {
     id: "gdp-growth",
@@ -44,6 +51,8 @@ const SERIES = [
     cadence: "Quarterly release",
     valueKind: "latest",
     decimals: 1,
+    delayedAfterDays: 125,
+    staleAfterDays: 190,
   },
 ];
 
@@ -83,6 +92,55 @@ function formatPointChange(value) {
   }
 
   return `${value > 0 ? "+" : ""}${value.toFixed(1)} pts`;
+}
+
+function daysSinceRelease(releaseDate, checkedAt) {
+  const releaseTime = new Date(`${releaseDate}T00:00:00Z`).getTime();
+  const checkedTime = new Date(checkedAt).getTime();
+
+  if (Number.isNaN(releaseTime) || Number.isNaN(checkedTime)) {
+    return null;
+  }
+
+  return Math.max(0, Math.floor((checkedTime - releaseTime) / DAY_MS));
+}
+
+function classifyFreshness(releaseDate, checkedAt, series) {
+  const ageDays = daysSinceRelease(releaseDate, checkedAt);
+
+  if (ageDays === null) {
+    return {
+      freshnessStatus: "Unknown freshness",
+      freshnessTone: "mixed",
+      freshnessCopy: "Release date could not be verified.",
+      ageDays: null,
+    };
+  }
+
+  if (ageDays > series.staleAfterDays) {
+    return {
+      freshnessStatus: "Stale release",
+      freshnessTone: "caution",
+      freshnessCopy: `Latest release is ${ageDays} days old, beyond the expected ${series.cadence.toLowerCase()}.`,
+      ageDays,
+    };
+  }
+
+  if (ageDays > series.delayedAfterDays) {
+    return {
+      freshnessStatus: "Delayed release",
+      freshnessTone: "mixed",
+      freshnessCopy: `Latest release is ${ageDays} days old and may be waiting on the next ${series.cadence.toLowerCase()}.`,
+      ageDays,
+    };
+  }
+
+  return {
+    freshnessStatus: "Current release",
+    freshnessTone: "stable",
+    freshnessCopy: `Latest release is ${ageDays} days old and within the expected ${series.cadence.toLowerCase()}.`,
+    ageDays,
+  };
 }
 
 function buildValues(observations, series) {
@@ -150,7 +208,7 @@ function classifyTrend(seriesId, latest, previous) {
   return { trend: "Updated", tone: "stable" };
 }
 
-async function fetchSeries(series) {
+async function fetchSeries(series, checkedAt) {
   const url = `${FRED_GRAPH_BASE_URL}?id=${series.seriesId}`;
   const response = await fetch(url, {
     headers: {
@@ -172,6 +230,7 @@ async function fetchSeries(series) {
   const latest = values.at(-1);
   const previous = values.at(-2);
   const classification = classifyTrend(series.seriesId, latest.value, previous.value);
+  const freshness = classifyFreshness(latest.date, checkedAt, series);
 
   return {
     id: series.id,
@@ -188,6 +247,61 @@ async function fetchSeries(series) {
     points: values.slice(-7).map((point) => Number(point.value.toFixed(2))),
     releaseDate: latest.date,
     sourceStatus: "Source-backed",
+    ...freshness,
+  };
+}
+
+function serializeIssue(series, error) {
+  return {
+    id: series.id,
+    name: series.name,
+    source: series.source,
+    cadence: series.cadence,
+    status: "Unavailable",
+    reason: error instanceof Error ? error.message : "Unknown FRED source error",
+  };
+}
+
+function summarizeSourceHealth(indicators, issues) {
+  if (indicators.length === 0) {
+    return {
+      status: "unavailable",
+      label: "FRED unavailable",
+      summary: "No FRED indicators loaded; Mercury is keeping the sample fallback visible.",
+    };
+  }
+
+  if (issues.length > 0) {
+    return {
+      status: "partial",
+      label: "Partial FRED coverage",
+      summary: `${indicators.length} of ${SERIES.length} FRED indicators loaded; sample fallback remains visible for unavailable releases.`,
+    };
+  }
+
+  const staleCount = indicators.filter((indicator) => indicator.freshnessStatus === "Stale release").length;
+  const delayedCount = indicators.filter((indicator) => indicator.freshnessStatus === "Delayed release").length;
+
+  if (staleCount > 0) {
+    return {
+      status: "stale",
+      label: "FRED releases stale",
+      summary: `${staleCount} FRED indicator${staleCount === 1 ? " is" : "s are"} older than Mercury's expected cadence.`,
+    };
+  }
+
+  if (delayedCount > 0) {
+    return {
+      status: "delayed",
+      label: "FRED releases delayed",
+      summary: `${delayedCount} FRED indicator${delayedCount === 1 ? " is" : "s are"} past the usual release window.`,
+    };
+  }
+
+  return {
+    status: "ready",
+    label: "FRED releases current",
+    summary: "All Economic Health indicators loaded from FRED within the expected release cadence.",
   };
 }
 
@@ -200,23 +314,40 @@ async function handler(req, res) {
   }
 
   try {
-    const indicators = await Promise.all(SERIES.map(fetchSeries));
+    const checkedAt = new Date().toISOString();
+    const results = await Promise.allSettled(SERIES.map((series) => fetchSeries(series, checkedAt)));
+    const indicators = results
+      .filter((result) => result.status === "fulfilled")
+      .map((result) => result.value);
+    const issues = results
+      .map((result, index) =>
+        result.status === "rejected" ? serializeIssue(SERIES[index], result.reason) : null,
+      )
+      .filter(Boolean);
+
+    if (indicators.length === 0) {
+      throw new Error("No FRED indicators loaded");
+    }
+
     const releaseDates = indicators.map((indicator) => indicator.releaseDate);
+    const sourceHealth = summarizeSourceHealth(indicators, issues);
 
     res.setHeader("Content-Type", "application/json; charset=utf-8");
     res.setHeader("Cache-Control", "s-maxage=3600, stale-while-revalidate=21600");
     res.statusCode = 200;
     res.end(
       JSON.stringify({
-        status: "ready",
-        checkedAt: new Date().toISOString(),
+        status: sourceHealth.status,
+        checkedAt,
         source: "Federal Reserve Economic Data (FRED)",
         coverage: "Economic Health",
+        sourceHealth,
         releaseRange: {
           earliest: releaseDates.slice().sort()[0],
           latest: releaseDates.slice().sort().at(-1),
         },
         indicators,
+        issues,
       }),
     );
   } catch (error) {
@@ -228,6 +359,11 @@ async function handler(req, res) {
     res.end(
       JSON.stringify({
         status: "unavailable",
+        sourceHealth: {
+          status: "unavailable",
+          label: "FRED unavailable",
+          summary: "No FRED indicators loaded; Mercury is keeping the sample fallback visible.",
+        },
         error: "FRED data is unavailable. Mercury is keeping the sample fallback visible.",
       }),
     );
@@ -237,6 +373,8 @@ async function handler(req, res) {
 module.exports = handler;
 module.exports._internals = {
   buildValues,
+  classifyFreshness,
   classifyTrend,
   parseFredCsv,
+  summarizeSourceHealth,
 };
