@@ -120,8 +120,9 @@ const sampleEconomicHealth = [
 
 let economicHealth = sampleEconomicHealth.map((indicator) => ({ ...indicator }));
 
-const riskIndicators = [
+const sampleRiskIndicators = [
   {
+    id: "volatility",
     name: "Volatility",
     copy: "Market uncertainty is below recent stress levels.",
     trend: "Contained",
@@ -131,6 +132,7 @@ const riskIndicators = [
     cadence: "Delayed market cadence TBD",
   },
   {
+    id: "dollar-strength",
     name: "Dollar strength",
     copy: "Currency pressure is steady against major peers.",
     trend: "Stable",
@@ -140,6 +142,7 @@ const riskIndicators = [
     cadence: "Delayed market cadence TBD",
   },
   {
+    id: "gold",
     name: "Gold",
     copy: "Safe-haven demand is modestly higher.",
     trend: "Rising",
@@ -149,6 +152,8 @@ const riskIndicators = [
     cadence: "Delayed market cadence TBD",
   },
 ];
+
+let riskIndicators = sampleRiskIndicators.map((indicator) => ({ ...indicator }));
 
 const regions = [
   {
@@ -681,6 +686,87 @@ function applyFredFallback() {
   }
 }
 
+function applyRiskSnapshot(snapshot) {
+  if (!snapshot?.indicators?.length) {
+    applyRiskFallback();
+    return;
+  }
+
+  const indicatorsById = new Map(snapshot.indicators.map((indicator) => [indicator.id, indicator]));
+  const issuesById = new Map((snapshot.issues || []).map((issue) => [issue.id, issue]));
+  const loadedCount = indicatorsById.size;
+  const totalCount = sampleRiskIndicators.length;
+  const sourceHealth = snapshot.sourceHealth || {
+    status: "partial",
+    label: "Partial risk coverage",
+    summary: "Risk and Confidence partially loaded from public FRED series.",
+  };
+  const sourceCoverage = sourceHealth.coverage || snapshot.sourceAudit?.coverage || {
+    loaded: loadedCount,
+    total: totalCount,
+    unavailable: totalCount - loadedCount,
+  };
+  const observationRange = sourceHealth.releaseRange || snapshot.releaseRange;
+
+  riskIndicators = sampleRiskIndicators.map((fallbackIndicator) => {
+    const sourceIndicator = indicatorsById.get(fallbackIndicator.id);
+
+    if (sourceIndicator) {
+      return sourceIndicator;
+    }
+
+    const issue = issuesById.get(fallbackIndicator.id);
+
+    return {
+      ...fallbackIndicator,
+      sourceStatus: "Sample fallback",
+      sourceIssue: issue?.reason || "Risk source unavailable, so Mercury kept the sample value visible.",
+    };
+  });
+  renderDashboard();
+  setCoverageSummary();
+
+  setText(
+    "#risk-title",
+    loadedCount === totalCount
+      ? "Risk signals are connected"
+      : "Risk signals are partially connected",
+  );
+  setText("#risk-coverage-count", `${sourceCoverage.loaded} of ${sourceCoverage.total} loaded`);
+  setText("#risk-release-range", formatObservationRange(observationRange));
+  setText("#live-last-checked", formatCheckedAt(snapshot.checkedAt));
+  setText("#refresh-schedule", "Checked on page load");
+  setText("#risk-source-status", sourceHealth.status === "ready" ? "FRED" : sourceHealth.label);
+  setText(
+    "#risk-source-detail",
+    loadedCount === totalCount
+      ? "Risk and Confidence observations are loaded through Mercury's FRED source bridge"
+      : `${loadedCount} of ${totalCount} Risk and Confidence indicators loaded from FRED; unavailable indicators keep sample fallback values`,
+  );
+  setHtml(
+    "#risk-source-note",
+    `<i class="fa-solid fa-shield-halved" aria-hidden="true"></i> ${escapeHtml(sourceHealth.label)}`,
+  );
+}
+
+function applyRiskFallback() {
+  riskIndicators = sampleRiskIndicators.map((indicator) => ({
+    ...indicator,
+    sourceStatus: "Sample fallback",
+    sourceIssue: "Risk route unavailable in this view, so Mercury kept the sample value visible.",
+  }));
+  renderDashboard();
+
+  setText("#risk-source-status", "Sample fallback");
+  setText("#risk-coverage-count", "0 of 3 loaded");
+  setText("#risk-release-range", "Unavailable");
+  setText(
+    "#risk-source-detail",
+    "Risk route unavailable in this view; sample risk indicators remain visible",
+  );
+  setCoverageSummary();
+}
+
 async function loadFredSnapshot() {
   if (window.location.protocol === "file:") {
     return;
@@ -727,6 +813,30 @@ async function loadMarketSnapshot() {
   }
 }
 
+async function loadRiskSnapshot() {
+  if (window.location.protocol === "file:") {
+    return;
+  }
+
+  try {
+    const response = await fetch("/api/risk-snapshot", {
+      headers: {
+        accept: "application/json",
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error("Risk snapshot route unavailable");
+    }
+
+    const snapshot = await response.json();
+    applyRiskSnapshot(snapshot);
+  } catch (error) {
+    applyRiskFallback();
+  }
+}
+
 renderDashboard();
 loadMarketSnapshot();
 loadFredSnapshot();
+loadRiskSnapshot();

@@ -116,6 +116,7 @@ Use `8px` or less for normal cards and repeated list items unless a larger conta
 - Pair every numeric movement with direction, timeframe, source, and update time when possible.
 - Source-backed comparisons should show the latest and previous release periods when the data source provides them.
 - Source-backed daily market comparisons should show the latest and previous observation dates when the data source provides them.
+- Source-backed daily risk rows should include the latest observation date in metadata and describe the latest value against the prior observation in neutral language.
 - Use sparklines for recent direction, not detailed analysis.
 - Avoid chart types that require financial expertise to interpret.
 - Prefer labels like `Rising`, `Falling`, `Mixed`, `Stable`, `Elevated risk`, or `Improving confidence`.
@@ -180,7 +181,7 @@ Current prototype utilities:
 - Metric cards include a compact previous-sample comparison so users can understand direction without relying only on the sparkline.
 - Source-backed metric cards show the latest release period near the current value and the previous release period inside the comparison block.
 - Source-backed daily market metric cards show the latest observation date near the current value and the previous observation date inside the comparison block.
-- The source coverage band shows compact source audit metadata for Market Pulse and Economic Health coverage counts, period ranges, and last check time.
+- The source coverage band shows compact source audit metadata for Market Pulse, Economic Health, and Risk and Confidence coverage counts, period or observation ranges, and last check time.
 - Market Pulse source coverage also shows a compact gap summary for unresolved or unavailable cards so partial coverage is not reduced to a loaded-count alone.
 - Every sample indicator includes an inline metadata row for sample status, candidate source, and expected update cadence so users do not mistake prototype values for live data.
 - Source-backed indicators include inline freshness status, and unavailable source-backed indicators keep labeled sample fallback values in place.

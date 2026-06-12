@@ -85,7 +85,8 @@ A user should be able to open Mercury and immediately understand:
 ## Scope
 
 Current scope is a static prototype foundation for a live global economy dashboard MVP with
-source-backed FRED bridges for Economic Health and partial Market Pulse coverage.
+source-backed FRED bridges for Economic Health, partial Market Pulse coverage, and Risk and
+Confidence coverage.
 
 In scope for the MVP:
 
@@ -100,11 +101,13 @@ In scope for the MVP:
 - Visible previous-sample comparisons for prototype metrics
 - First source-backed Economic Health route using public FRED releases
 - Partial source-backed Market Pulse route using public FRED daily market series
+- Source-backed Risk and Confidence route using public FRED daily volatility, dollar, and gold series
 - Partial, delayed, stale, and fallback states for source-backed Economic Health data
 - Partial, delayed, stale, and fallback states for source-backed Market Pulse data
+- Partial, delayed, stale, and fallback states for source-backed Risk and Confidence data
 - Source-backed macro cards show latest and previous release periods beside comparison values
 - Source-backed market cards show latest and previous observation dates beside comparison values
-- Source-backed Economic Health and Market Pulse show source audit metadata for loaded count, period range, and last check time
+- Source-backed Economic Health, Market Pulse, and Risk and Confidence show source audit metadata for loaded count, period or observation range, and last check time
 - Market Pulse source audits summarize unresolved source gaps separately from loaded FRED observations
 - Plain-language labels and context
 - Neutral, non-advisory dashboard language
@@ -212,6 +215,7 @@ Recently completed:
 - Added compact source audit metadata for FRED coverage count, release range, and check time.
 - Added a partial Market Pulse FRED bridge for S&P 500, 10-year Treasury yield, and WTI oil observations while keeping unresolved market cards visibly labeled as sample fallback.
 - Added a compact Market Pulse gap summary so unresolved source selections stay visible beside loaded FRED coverage.
+- Added a Risk and Confidence FRED bridge for VIX, broad dollar index, and gold observations while keeping sample fallback behavior available.
 
 Recommended next steps:
 
@@ -238,19 +242,23 @@ Future opportunities:
 
 ## Known Limitations
 
-- The first app scaffold still uses static sample data outside Economic Health and partial Market Pulse coverage.
+- The first app scaffold still uses static sample data outside Economic Health, partial Market Pulse coverage, and Risk and Confidence coverage.
 - Economic Health can load source-backed public FRED releases through `/api/fred-snapshot`.
 - Market Pulse can load source-backed public FRED daily series through `/api/market-snapshot` for U.S. markets, the 10-year Treasury yield, and WTI oil.
+- Risk and Confidence can load source-backed public FRED daily series through `/api/risk-snapshot` for VIX, the nominal broad U.S. dollar index, and gold.
 - Economic Health keeps sample fallback cards visible when individual FRED indicators are unavailable.
 - Market Pulse keeps sample fallback cards visible when individual source-backed market indicators are unavailable or when no durable source has been selected for a card.
+- Risk and Confidence keeps sample fallback rows visible when individual FRED risk indicators are unavailable.
 - FRED release freshness is classified with simple cadence thresholds and should be refined as source handling matures.
 - Market observation freshness is classified with simple daily cadence thresholds and should be refined as source handling matures.
+- Risk observation freshness is classified with simple daily cadence thresholds and should be refined as source handling matures.
 - Source-backed Economic Health comparisons use the previous FRED observation period, not the static sample period.
 - Source-backed Market Pulse comparisons use the previous FRED observation, not the static sample period.
+- Source-backed Risk and Confidence rows use the previous FRED observation to describe the latest reading, not the static sample period.
 - Source-backed Economic Health coverage counts only the configured FRED indicators in the current bridge.
 - Market Pulse coverage counts the current four-card dashboard area, including source gaps such as International when no selected source exists yet.
 - Market Pulse gap summaries name unresolved or unavailable cards, but they do not select or endorse a provider.
-- Risk and Confidence and Global Snapshot still use sample data.
+- Global Snapshot still uses sample data.
 - No source scoring model exists yet.
 - The current economy score is illustrative and must stay labeled until a formal scoring model is defined.
 - Prototype sample values are illustrative and use a sample-set date, not a live refresh timestamp.
