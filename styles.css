@@ -461,7 +461,7 @@ body {
 
 .metric-grid {
   display: grid;
-  gap: 16px;
+  gap: 28px;
   grid-template-columns: repeat(4, minmax(0, 1fr));
 }
 
@@ -470,37 +470,57 @@ body {
 }
 
 .metric-card {
-  background: #fff;
-  border: 1px solid var(--line);
+  background: #f7f8f9;
+  border: 1px solid rgba(36, 123, 99, 0.42);
   border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(23, 27, 36, 0.15);
   display: grid;
-  gap: 14px;
-  min-height: 266px;
-  padding: 16px;
+  gap: 22px;
+  min-height: 414px;
+  padding: 30px;
+}
+
+.metric-card-down {
+  border-color: rgba(224, 48, 76, 0.5);
+}
+
+.metric-card-caution {
+  border-color: rgba(155, 106, 24, 0.5);
 }
 
 .metric-top {
-  align-items: start;
+  align-items: center;
   display: flex;
   justify-content: space-between;
-  gap: 12px;
+  gap: 16px;
 }
 
 .metric-icon {
   align-items: center;
-  background: var(--surface-muted);
-  border-radius: 8px;
-  color: var(--blue);
+  background: transparent;
+  border-radius: 0;
+  color: #16845b;
   display: inline-flex;
-  height: 36px;
+  font-size: 28px;
+  height: 30px;
   justify-content: center;
-  width: 36px;
+  width: 30px;
+}
+
+.metric-card-down .metric-icon {
+  color: #e0304c;
+}
+
+.metric-card-caution .metric-icon {
+  color: var(--amber);
 }
 
 .metric-name {
-  font-size: 14px;
-  font-weight: 800;
-  margin: 0 0 4px;
+  color: #080a0d;
+  font-size: 20px;
+  font-weight: 500;
+  line-height: 24px;
+  margin: 0;
 }
 
 .metric-context {
@@ -509,48 +529,25 @@ body {
   margin: 0;
 }
 
-.metric-comparison {
-  background: var(--surface-muted);
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  display: grid;
-  gap: 0;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  margin: 0;
-  overflow: hidden;
-}
-
-.metric-comparison div {
-  display: grid;
-  gap: 2px;
-  min-height: 56px;
-  padding: 10px;
-}
-
-.metric-comparison div + div {
-  border-left: 1px solid var(--line);
-}
-
-.metric-comparison dt {
-  color: var(--muted);
-  font-size: 11px;
-  font-weight: 800;
-  line-height: 14px;
-  text-transform: uppercase;
-}
-
-.metric-comparison dd {
-  font-size: 14px;
-  font-weight: 800;
-  line-height: 18px;
-  margin: 0;
+.metric-value-row {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
 }
 
 .metric-value {
-  font-size: 32px;
+  color: #030406;
+  font-size: 42px;
   font-weight: 850;
-  line-height: 38px;
+  line-height: 48px;
   margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.metric-value-long {
+  font-size: 32px;
+  line-height: 38px;
 }
 
 .trend-label,
@@ -585,8 +582,48 @@ body {
   color: var(--amber);
 }
 
+.metric-delta {
+  font-size: 16px;
+  line-height: 18px;
+  min-height: 31px;
+  padding: 6px 12px;
+}
+
+.metric-delta.trend-up {
+  background: #16845b;
+  color: #fff;
+}
+
+.metric-delta.trend-down {
+  background: #e0304c;
+  color: #fff;
+}
+
+.metric-delta.trend-caution {
+  background: var(--amber);
+  color: #fff;
+}
+
+.metric-delta.trend-mixed,
+.metric-delta.trend-stable {
+  background: var(--blue);
+  color: #fff;
+}
+
+.metric-chart-panel {
+  align-items: center;
+  background: #dedfe1;
+  border: 1px solid #c4c8cc;
+  border-radius: 5px;
+  display: flex;
+  height: 162px;
+  justify-content: center;
+  overflow: hidden;
+  padding: 22px;
+}
+
 .sparkline {
-  height: 42px;
+  height: 92px;
   width: 100%;
 }
 
@@ -603,17 +640,42 @@ body {
   stroke: currentColor;
   stroke-linecap: round;
   stroke-linejoin: round;
-  stroke-width: 3;
+  stroke-width: 5;
 }
 
 .sparkline-empty {
-  background: repeating-linear-gradient(
-    90deg,
-    var(--surface-muted) 0 18px,
-    transparent 18px 28px
-  );
-  border-radius: 8px;
-  opacity: 0.8;
+  align-items: center;
+  background: transparent;
+  border-radius: 0;
+  color: #0f1115;
+  display: flex;
+  font-size: 20px;
+  font-weight: 500;
+  justify-content: center;
+  opacity: 1;
+  text-transform: uppercase;
+}
+
+.metric-meta {
+  color: #222832;
+  display: grid;
+  gap: 6px;
+}
+
+.metric-meta span {
+  align-items: center;
+  display: inline-flex;
+  font-size: 18px;
+  font-weight: 400;
+  gap: 12px;
+  line-height: 24px;
+}
+
+.metric-meta i {
+  color: #c1c6ca;
+  flex: 0 0 20px;
+  font-size: 20px;
+  text-align: center;
 }
 
 .split-grid {
