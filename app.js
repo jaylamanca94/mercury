@@ -110,6 +110,10 @@ function metricValueClass(value) {
   return String(value).length > 8 ? "metric-value metric-value-long" : "metric-value";
 }
 
+function signalValueClass(value) {
+  return String(value).length > 8 ? "signal-value signal-value-long" : "signal-value";
+}
+
 function escapeHtml(value) {
   return String(value)
     .replaceAll("&", "&amp;")
@@ -376,13 +380,15 @@ function signalItems() {
 }
 
 function renderSignalTile(item) {
+  const tone = item.tone || "stable";
+
   return `
-    <article class="signal-tile">
+    <article class="signal-tile signal-tile-${escapeHtml(tone)}">
       <div>
         <p class="signal-name">${escapeHtml(item.name)}</p>
         <p class="signal-context">${escapeHtml(item.context)}</p>
       </div>
-      <p class="signal-value">${escapeHtml(item.value)}</p>
+      <p class="${signalValueClass(item.value)}">${escapeHtml(item.value)}</p>
       <div class="signal-footer">
         <span class="${trendClass(item.tone)}">${escapeHtml(item.trend)}</span>
         <small>${escapeHtml(signalFreshnessLabel(item))}</small>

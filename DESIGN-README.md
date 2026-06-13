@@ -190,6 +190,11 @@ Current source-backed utilities:
 - The key signal strip should reuse live dashboard data rather than introduce a separate dataset. It is a first-scan summary, not a new scoring model.
 - Primary Market Pulse and Economic Health sections may use larger panel treatment to make the main data areas feel more substantial, while repeated metric tiles remain compact and source-aware.
 - Repeated metric cards use `8px` radius, compact labels, source context, status chips, and small sparklines.
+- Metric cards and key signal tiles should use soft neutral surfaces with thin tone accents instead
+  of saturated full borders, so direction remains visible without making Mercury feel like a
+  trading interface.
+- Sparkline panels should read as quiet chart wells: subtle neutral backgrounds, light grid
+  texture, compact height, and restrained line weight rather than heavy gray blocks.
 - Metric cards include compact previous-release comparisons so users can understand direction without relying only on the sparkline.
 - Every live indicator includes compact source metadata for source, cadence, freshness, and caveats when relevant so users can judge trust without reading implementation details.
 - Source coverage uses a compact snapshot metadata block for latest dashboard check, section-level source state, and upstream source links.
