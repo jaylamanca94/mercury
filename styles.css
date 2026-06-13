@@ -133,6 +133,10 @@ body {
   color: var(--amber);
 }
 
+.status-pill-stale {
+  color: var(--red);
+}
+
 .dashboard-shell {
   display: grid;
   gap: 22px;
@@ -226,7 +230,7 @@ body {
 .snapshot-meta {
   display: grid;
   gap: 8px;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   margin: 18px 0 0;
   max-width: 720px;
 }
@@ -774,6 +778,32 @@ body {
   flex: 0 0 auto;
   line-height: 16px;
   margin-top: 1px;
+}
+
+.data-freshness-current {
+  color: var(--green);
+}
+
+.data-freshness-delayed,
+.data-freshness-loading {
+  color: var(--amber);
+}
+
+.data-freshness-stale {
+  color: var(--red);
+}
+
+.data-meta .data-freshness-current i {
+  color: var(--green);
+}
+
+.data-meta .data-freshness-delayed i,
+.data-meta .data-freshness-loading i {
+  color: var(--amber);
+}
+
+.data-meta .data-freshness-stale i {
+  color: var(--red);
 }
 
 .freshness-band {

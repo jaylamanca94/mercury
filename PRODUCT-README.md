@@ -96,6 +96,7 @@ In scope for the MVP:
 - Clear source attribution
 - Update timestamps
 - Visible source freshness and last-checked states
+- Cadence-aware current, delayed, and stale labels for live source releases
 - Exact source release-date labels that preserve each indicator's cadence
 - Explainable source-backed breadth score drivers
 - Visible previous-release comparisons for live metrics
@@ -203,13 +204,15 @@ Recently completed:
 - Added the first serverless API route for source-backed Economic Health releases from FRED.
 - Replaced rendered placeholder values with a live snapshot route spanning Yahoo Finance, FRED, and
   World Bank public data.
+- Added cadence-aware freshness guardrails so connected daily, weekly, monthly, quarterly, and
+  annual releases can be labeled current, delayed, or stale.
 
 Recommended next steps:
 
-1. Add stale and delayed-data detection for source-backed routes.
-2. Review production licensing and reliability for market-data providers.
-3. Refine the breadth score model for up/down, risk, confidence, and trend.
-4. Add source-backed period comparisons that match each indicator's real release cadence.
+1. Review production licensing and reliability for market-data providers.
+2. Refine the breadth score model for up/down, risk, confidence, and trend.
+3. Add source-backed period comparisons that match each indicator's real release cadence.
+4. Add automated regression coverage for source freshness and fallback states.
 
 Future opportunities:
 
@@ -237,6 +240,8 @@ Future opportunities:
   market or economic indicators.
 - Source coverage labels show partial live groups as live indicator counts so users can distinguish
   limited upstream availability from a fully unavailable section.
+- Freshness labels are rule-based guardrails by cadence, not official release calendars. They should
+  be refined when Mercury adopts provider-specific release schedules.
 - The current breadth score is a simple visible-indicator aggregation and should be refined before
   being treated as a formal economic scoring model.
 - Some economic indicators update monthly or quarterly, not in real time.

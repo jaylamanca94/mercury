@@ -2,6 +2,35 @@ const FRED_GRAPH_BASE_URL = "https://fred.stlouisfed.org/graph/fredgraph.csv";
 const YAHOO_CHART_BASE_URL = "https://query1.finance.yahoo.com/v8/finance/chart";
 const WORLD_BANK_BASE_URL = "https://api.worldbank.org/v2";
 const UPSTREAM_TIMEOUT_MS = 8000;
+const MS_PER_DAY = 24 * 60 * 60 * 1000;
+
+const FRESHNESS_RULES = {
+  daily: {
+    currentDays: 5,
+    delayedDays: 10,
+    expectation: "expected within 5 days for daily market data",
+  },
+  weekly: {
+    currentDays: 14,
+    delayedDays: 28,
+    expectation: "expected within 14 days for weekly releases",
+  },
+  monthly: {
+    currentDays: 75,
+    delayedDays: 120,
+    expectation: "expected within 75 days for monthly releases",
+  },
+  quarterly: {
+    currentDays: 210,
+    delayedDays: 300,
+    expectation: "expected within 210 days for quarterly releases",
+  },
+  annual: {
+    currentDays: 900,
+    delayedDays: 1200,
+    expectation: "expected within 900 days for annual releases",
+  },
+};
 
 const YAHOO_SERIES = [
   {
@@ -277,6 +306,149 @@ function formatPointChange(value) {
   }
 
   return `${value > 0 ? "+" : ""}${value.toFixed(2)} pts`;
+}
+
+function inferFreshnessCadence(cadence) {
+  const normalizedCadence = String(cadence || "").toLowerCase();
+
+  if (normalizedCadence.includes("daily")) return "daily";
+  if (normalizedCadence.includes("weekly")) return "weekly";
+  if (normalizedCadence.includes("monthly")) return "monthly";
+  if (normalizedCadence.includes("quarterly")) return "quarterly";
+  if (normalizedCadence.includes("annual")) return "annual";
+
+  return "monthly";
+}
+
+function normalizeFreshnessDate(value) {
+  if (!value) {
+    return null;
+  }
+
+  if (/^\d{4}$/.test(value)) {
+    return `${value}-12-31`;
+  }
+
+  return value;
+}
+
+function pluralizeDays(days) {
+  return `${days} ${days === 1 ? "day" : "days"}`;
+}
+
+function classifyReleaseFreshness(releaseDate, cadence, checkedAt = new Date()) {
+  const normalizedDate = normalizeFreshnessDate(releaseDate);
+  const releaseTime = normalizedDate ? new Date(`${normalizedDate}T00:00:00Z`).getTime() : NaN;
+  const checkedTime = checkedAt instanceof Date ? checkedAt.getTime() : new Date(checkedAt).getTime();
+
+  if (!normalizedDate || Number.isNaN(releaseTime) || Number.isNaN(checkedTime)) {
+    return {
+      status: "unavailable",
+      label: "Freshness unavailable",
+      detail: "No source release date was available.",
+      ageDays: null,
+    };
+  }
+
+  const cadenceKey = inferFreshnessCadence(cadence);
+  const rule = FRESHNESS_RULES[cadenceKey] || FRESHNESS_RULES.monthly;
+  const ageDays = Math.max(0, Math.floor((checkedTime - releaseTime) / MS_PER_DAY));
+  const base = {
+    ageDays,
+    cadence: cadenceKey,
+    expectation: rule.expectation,
+  };
+
+  if (ageDays <= rule.currentDays) {
+    return {
+      ...base,
+      status: "current",
+      label: "Current",
+      detail: `${pluralizeDays(ageDays)} old; ${rule.expectation}.`,
+    };
+  }
+
+  if (ageDays <= rule.delayedDays) {
+    return {
+      ...base,
+      status: "delayed",
+      label: "Delayed",
+      detail: `${pluralizeDays(ageDays)} old; ${rule.expectation}.`,
+    };
+  }
+
+  return {
+    ...base,
+    status: "stale",
+    label: "Stale",
+    detail: `${pluralizeDays(ageDays)} old; ${rule.expectation}.`,
+  };
+}
+
+function withFreshness(item, checkedAt) {
+  return {
+    ...item,
+    freshness: classifyReleaseFreshness(item.releaseDate, item.cadence, checkedAt),
+  };
+}
+
+function buildFreshnessSummary(items) {
+  const counts = {
+    current: 0,
+    delayed: 0,
+    stale: 0,
+    unavailable: 0,
+  };
+
+  items.forEach((item) => {
+    const status = item.freshness?.status || "unavailable";
+    counts[status] = (counts[status] || 0) + 1;
+  });
+
+  const connectedCount = counts.current + counts.delayed + counts.stale;
+
+  if (!connectedCount) {
+    return {
+      status: "unavailable",
+      label: "Freshness unavailable",
+      copy: "No connected source returned a usable release date.",
+      counts,
+    };
+  }
+
+  if (counts.stale > 0) {
+    return {
+      status: "stale",
+      label: `${counts.stale} stale ${counts.stale === 1 ? "release" : "releases"}`,
+      copy: "Some connected releases are stale for their cadence. Mercury keeps the values visible but labels the freshness risk.",
+      counts,
+    };
+  }
+
+  if (counts.delayed > 0) {
+    return {
+      status: "delayed",
+      label: `${counts.delayed} delayed ${counts.delayed === 1 ? "release" : "releases"}`,
+      copy: "Some connected releases are beyond their expected cadence window. Mercury labels them as delayed instead of treating them as fully current.",
+      counts,
+    };
+  }
+
+  if (counts.unavailable > 0) {
+    return {
+      status: "partial",
+      label: "Connected releases current",
+      copy: "Connected releases are within their cadence windows; unavailable sources remain called out separately.",
+      counts,
+    };
+  }
+
+  return {
+    status: "current",
+    label: "Release cadence current",
+    copy: "Connected public releases are within their expected cadence windows.",
+    counts,
+  };
 }
 
 function buildValues(observations, series) {
@@ -671,20 +843,28 @@ function groupBySection(items, regions) {
 }
 
 async function buildSnapshot() {
+  const checkedAt = new Date();
   const yahooResults = await Promise.allSettled(YAHOO_SERIES.map(fetchYahooSeries));
-  const yahooItems = yahooResults.map((result, index) =>
-    result.status === "fulfilled" ? result.value : unavailableFredItem(YAHOO_SERIES[index]),
-  );
+  const yahooItems = yahooResults
+    .map((result, index) =>
+      result.status === "fulfilled" ? result.value : unavailableFredItem(YAHOO_SERIES[index]),
+    )
+    .map((item) => withFreshness(item, checkedAt));
   const fredResults = await Promise.allSettled(FRED_SERIES.map(fetchFredSeries));
-  const fredItems = fredResults.map((result, index) =>
-    result.status === "fulfilled" ? result.value : unavailableFredItem(FRED_SERIES[index]),
-  );
+  const fredItems = fredResults
+    .map((result, index) =>
+      result.status === "fulfilled" ? result.value : unavailableFredItem(FRED_SERIES[index]),
+    )
+    .map((item) => withFreshness(item, checkedAt));
   const regionResults = await Promise.allSettled(WORLD_BANK_REGIONS.map(fetchWorldBankRegion));
-  const regions = regionResults.map((result, index) =>
-    result.status === "fulfilled" ? result.value : unavailableRegion(WORLD_BANK_REGIONS[index]),
-  );
+  const regions = regionResults
+    .map((result, index) =>
+      result.status === "fulfilled" ? result.value : unavailableRegion(WORLD_BANK_REGIONS[index]),
+    )
+    .map((item) => withFreshness(item, checkedAt));
   const sourceItems = [...yahooItems, ...fredItems];
   const sections = groupBySection(sourceItems, regions);
+  const freshness = buildFreshnessSummary([...sourceItems, ...regions]);
   const releaseDates = [
     ...sourceItems.map((item) => item.releaseDate),
     ...regions.map((region) => region.releaseDate),
@@ -697,9 +877,10 @@ async function buildSnapshot() {
 
   return {
     status: unavailableCount === 0 ? "ready" : availableCount === 0 ? "unavailable" : "partial",
-    checkedAt: new Date().toISOString(),
+    checkedAt: checkedAt.toISOString(),
     source: "Yahoo Finance, FRED, and World Bank public data",
     coverage: "Market Pulse, Economic Health, Risk and Confidence, Global Snapshot",
+    freshness,
     releaseRange: {
       earliest: releaseDates.slice().sort()[0] || null,
       latest: releaseDates.slice().sort().at(-1) || null,
@@ -741,8 +922,10 @@ async function handler(req, res) {
 
 module.exports = handler;
 module.exports._internals = {
+  buildFreshnessSummary,
   buildSummary,
   buildValues,
+  classifyReleaseFreshness,
   classifyRegionalGrowth,
   classifyTrend,
   fetchWorldBankRegion,
