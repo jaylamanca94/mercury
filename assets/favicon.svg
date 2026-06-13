@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title">
+  <title>Mercury chart icon</title>
+  <style>
+    :root {
+      --bg-top: #f8fafc;
+      --bg-bottom: #edf0f4;
+      --mark: #2f6fbb;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg-top: #2b2f32;
+        --bg-bottom: #030405;
+        --mark: #ffffff;
+      }
+    }
+  </style>
+  <defs>
+    <linearGradient id="mercury-icon-bg" x1="0" x2="0" y1="0" y2="1">
+      <stop offset="0" stop-color="var(--bg-top)"/>
+      <stop offset="1" stop-color="var(--bg-bottom)"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="112" fill="url(#mercury-icon-bg)"/>
+  <path
+    d="M64 64c0-17.7-14.3-32-32-32S0 46.3 0 64L0 400c0 44.2 35.8 80 80 80l400 0c17.7 0 32-14.3 32-32s-14.3-32-32-32L80 416c-8.8 0-16-7.2-16-16L64 64zm406.6 86.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L320 210.7 262.6 153.4c-12.5-12.5-32.8-12.5-45.3 0l-96 96c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0l73.4-73.4 57.4 57.4c12.5 12.5 32.8 12.5 45.3 0l128-128z"
+    fill="var(--mark)"
+    transform="translate(96 96) scale(.625)"
+  />
+</svg>
