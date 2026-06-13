@@ -692,9 +692,11 @@ async function buildSnapshot() {
   const unavailableCount = [...sourceItems, ...regions].filter(
     (item) => item.sourceStatus !== "Source-backed",
   ).length;
+  const totalSourceCount = sourceItems.length + regions.length;
+  const availableCount = totalSourceCount - unavailableCount;
 
   return {
-    status: unavailableCount ? "partial" : "ready",
+    status: unavailableCount === 0 ? "ready" : availableCount === 0 ? "unavailable" : "partial",
     checkedAt: new Date().toISOString(),
     source: "Yahoo Finance, FRED, and World Bank public data",
     coverage: "Market Pulse, Economic Health, Risk and Confidence, Global Snapshot",

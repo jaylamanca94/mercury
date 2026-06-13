@@ -324,6 +324,56 @@ function renderSummaryDrivers(drivers) {
     .join("");
 }
 
+function snapshotItems(snapshot) {
+  return [
+    ...(snapshot.marketPulse || []),
+    ...(snapshot.economicHealth || []),
+    ...(snapshot.riskIndicators || []),
+    ...(snapshot.regions || []),
+  ];
+}
+
+function applySnapshotConnectionState(snapshot, sourcePill) {
+  const hasLiveSources = snapshotItems(snapshot).some(
+    (item) => item.sourceStatus === "Source-backed",
+  );
+  const isUnavailable = snapshot.status === "unavailable" || !hasLiveSources;
+  const isPartial = snapshot.status === "partial";
+
+  sourcePill?.classList.remove("status-pill-live", "status-pill-caution");
+
+  if (isUnavailable) {
+    setText(".score-label", "Source status");
+    setText("#signal-strip-title", "Current signals unavailable");
+    setText("#source-coverage-title", "Live data unavailable");
+    setText(
+      "#source-coverage-copy",
+      "Mercury reached the live snapshot route, but no upstream public sources returned usable values.",
+    );
+    setHtml(
+      "#macro-connection-pill",
+      '<i class="fa-solid fa-plug-circle-xmark" aria-hidden="true"></i> Live data unavailable',
+    );
+    sourcePill?.classList.add("status-pill-caution");
+    return;
+  }
+
+  if (isPartial) {
+    setHtml(
+      "#macro-connection-pill",
+      '<i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i> Some public sources connected',
+    );
+    sourcePill?.classList.add("status-pill-caution");
+    return;
+  }
+
+  setHtml(
+    "#macro-connection-pill",
+    '<i class="fa-solid fa-plug-circle-check" aria-hidden="true"></i> Public sources connected',
+  );
+  sourcePill?.classList.add("status-pill-live");
+}
+
 function applyLiveSnapshot(snapshot) {
   if (!snapshot?.marketPulse?.length || !snapshot?.economicHealth?.length) {
     return;
@@ -373,14 +423,7 @@ function applyLiveSnapshot(snapshot) {
     "#market-source-note",
     '<i class="fa-solid fa-building-columns" aria-hidden="true"></i> Yahoo daily charts',
   );
-  setHtml(
-    "#macro-connection-pill",
-    '<i class="fa-solid fa-plug-circle-check" aria-hidden="true"></i> Public sources connected',
-  );
-
-  if (sourcePill) {
-    sourcePill.classList.add("status-pill-live");
-  }
+  applySnapshotConnectionState(snapshot, sourcePill);
 }
 
 function markUnavailable(items) {
