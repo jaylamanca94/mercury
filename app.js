@@ -71,6 +71,50 @@ function trendClass(tone) {
   return `trend-label trend-${tone}`;
 }
 
+function metricCardTone(metric) {
+  if (metric.change?.trim().startsWith("-")) {
+    return "down";
+  }
+
+  if (metric.change?.trim().startsWith("+")) {
+    return "up";
+  }
+
+  return metric.tone || "stable";
+}
+
+function metricDeltaLabel(metric) {
+  if (metric.change && metric.change !== "Loading" && metric.change !== "Unavailable") {
+    return metric.change;
+  }
+
+  return metric.trend || "Pending";
+}
+
+function metricValueClass(value) {
+  return String(value).length > 8 ? "metric-value metric-value-long" : "metric-value";
+}
+
+function sourceLabel(source) {
+  if (!source) {
+    return "Public source";
+  }
+
+  if (source.includes("Yahoo")) {
+    return "Yahoo Finance";
+  }
+
+  if (source.includes("FRED")) {
+    return "FRED";
+  }
+
+  if (source.includes("World Bank")) {
+    return "World Bank";
+  }
+
+  return source;
+}
+
 function escapeHtml(value) {
   return String(value)
     .replaceAll("&", "&amp;")
@@ -107,6 +151,27 @@ function formatReleaseDate(value) {
     year: "numeric",
     timeZone: "UTC",
   }).format(date);
+}
+
+function formatCardDate(value) {
+  if (!value) {
+    return "Loading date";
+  }
+
+  const date = new Date(`${value}T00:00:00Z`);
+
+  if (Number.isNaN(date.getTime())) {
+    return value;
+  }
+
+  return new Intl.DateTimeFormat("en", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+    timeZone: "UTC",
+  })
+    .format(date)
+    .replace(",", "");
 }
 
 function formatCheckedAt(value) {
@@ -209,7 +274,7 @@ function renderDataMeta(item) {
 
 function renderSparkline(points, tone) {
   if (!points?.length) {
-    return '<div class="sparkline sparkline-empty" aria-label="Trend line loading"></div>';
+    return '<div class="sparkline sparkline-empty" aria-label="Trend line loading">Line graph</div>';
   }
 
   const width = 180;
@@ -234,31 +299,25 @@ function renderSparkline(points, tone) {
 }
 
 function renderMetricCard(metric) {
+  const cardTone = metricCardTone(metric);
+
   return `
-    <article class="metric-card">
+    <article class="metric-card metric-card-${cardTone}">
       <div class="metric-top">
-        <div>
-          <p class="metric-name">${escapeHtml(metric.name)}</p>
-          <p class="metric-context">${escapeHtml(metric.context)}</p>
-        </div>
+        <p class="metric-name">${escapeHtml(metric.name)}</p>
         <span class="metric-icon" aria-hidden="true"><i class="fa-solid ${metric.icon}"></i></span>
       </div>
-      <div>
-        <p class="metric-value">${escapeHtml(metric.value)}</p>
-        <span class="${trendClass(metric.tone)}">${escapeHtml(metric.trend)}</span>
+      <div class="metric-value-row">
+        <p class="${metricValueClass(metric.value)}">${escapeHtml(metric.value)}</p>
+        <span class="${trendClass(cardTone)} metric-delta">${escapeHtml(metricDeltaLabel(metric))}</span>
       </div>
-      <dl class="metric-comparison" aria-label="Latest period comparison">
-        <div>
-          <dt>Previous release</dt>
-          <dd>${escapeHtml(metric.previous)}</dd>
-        </div>
-        <div>
-          <dt>Change</dt>
-          <dd>${escapeHtml(metric.change)}</dd>
-        </div>
-      </dl>
-      ${renderDataMeta(metric)}
-      ${renderSparkline(metric.points, metric.tone)}
+      <div class="metric-chart-panel">
+        ${renderSparkline(metric.points, cardTone)}
+      </div>
+      <div class="metric-meta" aria-label="Metric source details">
+        <span><i class="fa-regular fa-calendar" aria-hidden="true"></i> ${escapeHtml(formatCardDate(metric.releaseDate))}</span>
+        <span><i class="fa-solid fa-earth-americas" aria-hidden="true"></i> ${escapeHtml(sourceLabel(metric.source))}</span>
+      </div>
     </article>
   `;
 }
