@@ -15,6 +15,9 @@ Mercury should feel like checking the weather, but for the global economy: clear
 - Avoid trading-app cues that imply action, speculation, or urgency.
 - Make direction, risk, confidence, source, freshness, and region easy to find.
 - Use plain-language status labels alongside numbers.
+- Use audience-facing labels in the UI: prefer `economic indicators`, `data status`,
+  `score inputs`, and `live data` over internal terms like `macro`, `source posture`,
+  `source drivers`, or `serverless route`.
 - Use charts and sparklines only when they clarify trend or movement.
 - Use calm warning states for risk, uncertainty, stale data, and unavailable sources.
 
@@ -44,18 +47,18 @@ The first useful dashboard should support fast scanning in less than 60 seconds.
 
 Recommended dashboard order:
 
-1. Global economy status summary
-2. Market Pulse
-3. Economic Health
-4. Risk and Confidence
-5. Global Snapshot
+1. Compact app header with source status and latest-release state
+2. Global economy status summary paired with source status
+3. Key signal strip with the highest-signal live indicators
+4. Primary Market Pulse and Economic Health panels
+5. Risk and Confidence plus Global Snapshot
 6. Source coverage and freshness
 
 ### Desktop
 
-- 12-column grid
+- 12-column grid or equivalent wide dashboard shell
 - Page margin: `24px`
-- Column gap: `24px`
+- Column gap: `16px` to `24px`
 - Content padding: `24px`
 
 ### Tablet
@@ -118,8 +121,11 @@ Use `8px` or less for normal cards and repeated list items unless a larger conta
 - Avoid chart types that require financial expertise to interpret.
 - Prefer labels like `Rising`, `Falling`, `Mixed`, `Stable`, `Elevated risk`, or `Improving confidence`.
 - Do not use language like `buy signal`, `sell signal`, `undervalued`, or `overvalued`.
-- Make stale, delayed, fallback, no-data, and unavailable data visually distinct.
+- Make stale, delayed, sample, fallback, no-data, and unavailable data visually distinct.
 - Source-backed sections must update their own freshness labels from the current source response, including source observation time, previous-release comparison timing, and dashboard fetch timing when those are different.
+- Show exact daily release dates for daily market/risk data, month-level labels for monthly economic releases, and year-level labels for annual regional releases.
+- Static sample sections must show both the sample-set date and the live refresh state so users do not confuse prototype values with current data.
+- Live-source sections must update their own freshness labels without implying that unrelated sample sections are live.
 - If `/api/live-snapshot` is unavailable, the dashboard should show unavailable source states instead of sample economic values.
 
 ## Icons
@@ -177,13 +183,18 @@ Good utility candidates:
 
 Current source-backed utilities:
 
+- The dashboard uses a calm command-center structure inspired by analytics dashboards: compact header, status summary, key signal strip, primary panels, and source freshness. Keep this hierarchy, but avoid sidebar-heavy app chrome, decorative banners, and trading-terminal density.
+- The key signal strip should reuse live dashboard data rather than introduce a separate dataset. It is a first-scan summary, not a new scoring model.
+- Primary Market Pulse and Economic Health sections may use larger panel treatment to make the main data areas feel more substantial, while repeated metric tiles remain compact and source-aware.
 - Repeated metric cards use `8px` radius, compact labels, source context, status chips, and small sparklines.
 - Metric cards include compact previous-release comparisons so users can understand direction without relying only on the sparkline.
 - Every live indicator includes compact source metadata for source, cadence, freshness, and caveats when relevant so users can judge trust without reading implementation details.
 - Source coverage uses a compact snapshot metadata block for latest dashboard check, section-level source state, and upstream source links.
 - Region and risk rows use icon, title, short context, and a plain-language trend label.
-- Mixed source states should use explicit labels such as `Live`, `Delayed`, `Stale`, `No data`, `Unavailable`, and `Fallback` at the section or indicator level.
-- Summary scores must include concise visible drivers and stay explicitly model-limited until Mercury has a formal economic scoring framework.
+- Sample data must be visibly labeled in the header and source/freshness areas until live integrations exist.
+- Mixed source states should use explicit labels such as `Live`, `Live source`, `Delayed`, `Stale`, `No data`, `Unavailable`, `Fallback`, `Sample`, and `Sample fallback` at the section or indicator level.
+- Partial live source groups should show the count of live indicators, such as `3 of 4 live`, rather than a generic `Partial` label.
+- Summary scores must include concise visible drivers and stay explicitly model-limited and illustrative until Mercury has a formal economic scoring framework.
 
 Avoid utilities for:
 

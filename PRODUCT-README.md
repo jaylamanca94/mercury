@@ -96,6 +96,7 @@ In scope for the MVP:
 - Clear source attribution
 - Update timestamps
 - Visible source freshness and last-checked states
+- Exact source release-date labels that preserve each indicator's cadence
 - Explainable source-backed breadth score drivers
 - Visible previous-release comparisons for live metrics
 - Source-backed Economic Health route using public FRED releases
@@ -233,7 +234,9 @@ Future opportunities:
 - Economic Health loads source-backed public FRED releases through `/api/live-snapshot`.
 - Risk and Confidence combines Yahoo Finance daily proxies with the FRED Financial Stress Index.
 - Global Snapshot uses World Bank annual GDP growth releases, which update less frequently than
-  market or macro indicators.
+  market or economic indicators.
+- Source coverage labels show partial live groups as live indicator counts so users can distinguish
+  limited upstream availability from a fully unavailable section.
 - The current breadth score is a simple visible-indicator aggregation and should be refined before
   being treated as a formal economic scoring model.
 - Some economic indicators update monthly or quarterly, not in real time.

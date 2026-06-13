@@ -37,8 +37,8 @@ const YAHOO_SERIES = [
   {
     id: "dollar-index",
     section: "marketPulse",
-    name: "Dollar proxy",
-    context: "U.S. dollar index ETF",
+    name: "U.S. dollar",
+    context: "Dollar index ETF proxy",
     icon: "fa-dollar-sign",
     symbol: "UUP",
     source: "Yahoo Finance: Invesco DB U.S. Dollar Index Bullish Fund chart",
@@ -81,7 +81,7 @@ const YAHOO_SERIES = [
   {
     id: "high-yield-credit",
     section: "riskIndicators",
-    name: "High-yield credit",
+    name: "Credit stress",
     icon: "fa-landmark",
     symbol: "HYG",
     source: "Yahoo Finance: iShares iBoxx High Yield Corporate Bond ETF chart",
@@ -373,7 +373,7 @@ function buildRiskCopy(series, value, change) {
   }
 
   if (series.trendModel === "credit-market") {
-    return `High-yield credit is ${value}, with a ${change.toLowerCase()} move from the prior close.`;
+    return `Credit markets are ${value}, with a ${change.toLowerCase()} move from the prior close.`;
   }
 
   return `Financial stress is ${value}, ${change.toLowerCase()} from the prior weekly reading.`;
@@ -651,7 +651,7 @@ function buildSummary(sections) {
     score: score ?? 0,
     title,
     copy:
-      "Mercury is using public market, macro, risk, and regional releases to summarize the current global economy without investment advice.",
+      "Mercury is using public market, economic, risk, and regional releases to summarize the current global economy without investment advice.",
     drivers: [
       { label: "Market pulse", value: sectionLabel(marketScore) },
       { label: "Economic health", value: sectionLabel(economicScore) },
@@ -692,9 +692,11 @@ async function buildSnapshot() {
   const unavailableCount = [...sourceItems, ...regions].filter(
     (item) => item.sourceStatus !== "Source-backed",
   ).length;
+  const totalSourceCount = sourceItems.length + regions.length;
+  const availableCount = totalSourceCount - unavailableCount;
 
   return {
-    status: unavailableCount ? "partial" : "ready",
+    status: unavailableCount === 0 ? "ready" : availableCount === 0 ? "unavailable" : "partial",
     checkedAt: new Date().toISOString(),
     source: "Yahoo Finance, FRED, and World Bank public data",
     coverage: "Market Pulse, Economic Health, Risk and Confidence, Global Snapshot",
