@@ -25,10 +25,15 @@
     <a class="skip-link" href="#main-content">Skip to dashboard</a>
 
     <header class="app-header">
-      <div>
-        <p class="eyebrow mb-2">Live dashboard</p>
-        <h1>Mercury</h1>
-        <p class="lead-copy mb-0">The global economy at a glance.</p>
+      <div class="brand-lockup">
+        <span class="brand-mark" aria-hidden="true">
+          <i class="fa-solid fa-earth-americas"></i>
+        </span>
+        <div>
+          <p class="eyebrow mb-2">Global economy dashboard</p>
+          <h1>Mercury</h1>
+          <p class="lead-copy mb-0">The global economy at a glance.</p>
+        </div>
       </div>
       <div class="header-actions" aria-label="Dashboard status">
         <span class="status-pill">
@@ -47,67 +52,100 @@
     </header>
 
     <main id="main-content" class="dashboard-shell">
-      <section class="summary-band" aria-labelledby="global-status-title">
-        <div class="summary-copy">
-          <p class="eyebrow">Global economy status</p>
-          <h2 id="global-status-title">Loading live snapshot</h2>
-          <p>
-            Mercury is loading public market, macro, risk, and regional releases. If the live route
-            is unavailable, the dashboard shows source status rather than fabricated figures.
-          </p>
-        </div>
-        <div class="summary-aside">
-          <div class="summary-score" aria-label="Live breadth score loading">
-            <span class="score-value">...</span>
-            <span class="score-label">Live breadth</span>
+      <section class="topline-grid" aria-labelledby="global-status-title">
+        <div class="summary-band">
+          <div class="summary-copy">
+            <p class="eyebrow">Current conditions</p>
+            <h2 id="global-status-title">Checking public sources</h2>
+            <p>
+              Mercury is loading market, economic, risk, and regional releases. If a source cannot
+              be reached, that section is marked unavailable.
+            </p>
           </div>
-          <div class="score-drivers" aria-label="Source drivers">
-            <p>Source drivers</p>
-            <dl>
-              <div>
-                <dt>Market pulse</dt>
-                <dd>Loading</dd>
-              </div>
-              <div>
-                <dt>Economic health</dt>
-                <dd>Loading</dd>
-              </div>
-              <div>
-                <dt>Risk tone</dt>
-                <dd>Loading</dd>
-              </div>
-            </dl>
-            <small>Computed from visible live indicators.</small>
+          <div class="summary-aside">
+            <div class="summary-score" aria-label="Breadth score loading">
+              <span class="score-value">...</span>
+              <span class="score-label">Breadth score</span>
+            </div>
+            <div class="score-drivers" aria-label="Score inputs">
+              <p>Score inputs</p>
+              <dl>
+                <div>
+                  <dt>Market pulse</dt>
+                  <dd>Loading</dd>
+                </div>
+                <div>
+                  <dt>Economic health</dt>
+                  <dd>Loading</dd>
+                </div>
+                <div>
+                  <dt>Risk tone</dt>
+                  <dd>Loading</dd>
+                </div>
+              </dl>
+              <small>Based on visible live indicators.</small>
+            </div>
           </div>
         </div>
+
+        <aside class="source-rail" aria-labelledby="source-rail-title">
+          <p class="eyebrow">Data status</p>
+          <h2 id="source-rail-title">Public sources first</h2>
+          <dl class="source-rail-list">
+            <div>
+              <dt>Coverage</dt>
+              <dd>Markets, economy, risk, regions</dd>
+            </div>
+            <div>
+              <dt>Last checked</dt>
+              <dd id="source-rail-checked">Loading</dd>
+            </div>
+            <div>
+              <dt>Refresh</dt>
+              <dd id="source-rail-refresh">On page load</dd>
+            </div>
+          </dl>
+        </aside>
       </section>
 
-      <section class="section-block" aria-labelledby="market-pulse-title">
-        <div class="section-heading">
+      <section class="signal-strip" aria-labelledby="signal-strip-title">
+        <div class="section-heading compact-heading">
           <div>
-            <p class="eyebrow">Market pulse</p>
-            <h2 id="market-pulse-title">Loading market releases</h2>
+            <p class="eyebrow">Key signals</p>
+            <h2 id="signal-strip-title">Loading current indicators</h2>
           </div>
-          <span id="market-source-note" class="source-note">
-            <i class="fa-solid fa-circle-info" aria-hidden="true"></i>
-            Public market sources
-          </span>
         </div>
-        <div id="market-grid" class="metric-grid"></div>
+        <div id="signal-grid" class="signal-grid"></div>
       </section>
 
-      <section class="section-block" aria-labelledby="economic-health-title">
-        <div class="section-heading">
-          <div>
-            <p class="eyebrow">Economic health</p>
-            <h2 id="economic-health-title">Loading official releases</h2>
+      <section class="primary-panels" aria-label="Primary dashboard panels">
+        <section class="section-block panel-block" aria-labelledby="market-pulse-title">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">Market pulse</p>
+              <h2 id="market-pulse-title">Loading market releases</h2>
+            </div>
+            <span id="market-source-note" class="source-note">
+              <i class="fa-solid fa-circle-info" aria-hidden="true"></i>
+              Public market sources
+            </span>
           </div>
-          <span id="macro-source-note" class="source-note">
-            <i class="fa-solid fa-building-columns" aria-hidden="true"></i>
-            FRED official releases
-          </span>
-        </div>
-        <div id="health-grid" class="metric-grid"></div>
+          <div id="market-grid" class="metric-grid"></div>
+        </section>
+
+        <section class="section-block panel-block" aria-labelledby="economic-health-title">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">Economic health</p>
+              <h2 id="economic-health-title">Loading official releases</h2>
+            </div>
+            <span id="macro-source-note" class="source-note">
+              <i class="fa-solid fa-building-columns" aria-hidden="true"></i>
+              FRED official releases
+            </span>
+          </div>
+          <div id="health-grid" class="metric-grid"></div>
+        </section>
       </section>
 
       <section class="split-grid">
@@ -134,7 +172,7 @@
 
       <section class="freshness-band" aria-labelledby="source-coverage-title">
         <div>
-          <p class="eyebrow">Source coverage and freshness</p>
+          <p class="eyebrow">Source coverage</p>
           <h2 id="source-coverage-title">Loading source coverage</h2>
           <p id="source-coverage-copy">
             Mercury is connecting to public data releases and will show the latest available source
@@ -146,11 +184,11 @@
               <dd>Public releases</dd>
             </div>
             <div>
-              <dt>Live last checked</dt>
+              <dt>Last checked</dt>
               <dd id="live-last-checked">Loading</dd>
             </div>
             <div>
-              <dt>Refresh schedule</dt>
+              <dt>Refresh</dt>
               <dd id="refresh-schedule">Loading</dd>
             </div>
           </dl>
@@ -165,8 +203,8 @@
           </li>
           <li>
             <span>
-              Macro indicators
-              <small id="macro-source-detail">Loading official macro releases</small>
+              Economic indicators
+              <small id="macro-source-detail">Loading official economic releases</small>
             </span>
             <strong id="macro-source-status">Loading</strong>
           </li>

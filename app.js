@@ -6,7 +6,7 @@ function pendingMetric(name, context, icon) {
     trend: "Pending",
     tone: "stable",
     icon,
-    source: "Live public-data route",
+    source: "Mercury live data",
     cadence: "Loading source cadence",
     previous: "Loading",
     change: "Loading",
@@ -22,7 +22,7 @@ function pendingIndicator(name, icon) {
     trend: "Pending",
     tone: "stable",
     icon,
-    source: "Live public-data route",
+    source: "Mercury live data",
     cadence: "Loading source cadence",
     sourceStatus: "Loading",
   };
@@ -43,7 +43,7 @@ function pendingRegion(name) {
 let marketPulse = [
   pendingMetric("U.S. equities", "S&P 500 daily close", "fa-chart-line"),
   pendingMetric("Bonds", "7-10 year Treasury ETF", "fa-scale-balanced"),
-  pendingMetric("Dollar proxy", "U.S. dollar index ETF", "fa-dollar-sign"),
+  pendingMetric("U.S. dollar", "Dollar index ETF proxy", "fa-dollar-sign"),
   pendingMetric("Oil", "WTI crude futures", "fa-gas-pump"),
 ];
 
@@ -136,7 +136,7 @@ function setScoreVisual(score) {
 
   if (element && Number.isFinite(score)) {
     element.style.setProperty("--score", `${score}%`);
-    element.setAttribute("aria-label", `Live breadth score ${score} out of 100`);
+    element.setAttribute("aria-label", `Breadth score ${score} out of 100`);
   }
 }
 
@@ -156,6 +156,14 @@ function sourceStatusLabel(items, sourceName) {
   return "Unavailable";
 }
 
+function displaySourceStatus(status) {
+  if (status === "Source-backed") {
+    return "Live source";
+  }
+
+  return status || "Unavailable";
+}
+
 function renderDataMeta(item) {
   const status = item.sourceStatus || "Unavailable";
   const cadence = item.releaseDate
@@ -164,7 +172,7 @@ function renderDataMeta(item) {
   const statusMeta =
     status === "Source-backed"
       ? ""
-      : `<span><i class="fa-solid ${status === "Loading" ? "fa-spinner" : "fa-triangle-exclamation"}" aria-hidden="true"></i> ${escapeHtml(status)}</span>`;
+      : `<span><i class="fa-solid ${status === "Loading" ? "fa-spinner" : "fa-triangle-exclamation"}" aria-hidden="true"></i> ${escapeHtml(displaySourceStatus(status))}</span>`;
 
   return `
     <div class="data-meta" aria-label="Indicator data details">
@@ -231,6 +239,42 @@ function renderMetricCard(metric) {
   `;
 }
 
+function signalItems() {
+  const items = [
+    marketPulse[0],
+    economicHealth[0],
+    economicHealth[1],
+    economicHealth[2],
+    economicHealth[3],
+    riskIndicators[0],
+  ].filter(Boolean);
+
+  return items.map((item) => ({
+    name: item.name,
+    context: item.context || "Risk tone",
+    value: item.value || (item.sourceStatus === "Unavailable" ? "Unavailable" : "Loading"),
+    trend: item.trend || "Pending",
+    tone: item.tone || "stable",
+    sourceStatus: item.sourceStatus || "Loading",
+  }));
+}
+
+function renderSignalTile(item) {
+  return `
+    <article class="signal-tile">
+      <div>
+        <p class="signal-name">${escapeHtml(item.name)}</p>
+        <p class="signal-context">${escapeHtml(item.context)}</p>
+      </div>
+      <p class="signal-value">${escapeHtml(item.value)}</p>
+      <div class="signal-footer">
+        <span class="${trendClass(item.tone)}">${escapeHtml(item.trend)}</span>
+        <small>${escapeHtml(displaySourceStatus(item.sourceStatus))}</small>
+      </div>
+    </article>
+  `;
+}
+
 function renderIndicatorRow(indicator) {
   return `
     <article class="indicator-row">
@@ -260,6 +304,7 @@ function renderRegionRow(region) {
 }
 
 function renderDashboard() {
+  document.querySelector("#signal-grid").innerHTML = signalItems().map(renderSignalTile).join("");
   document.querySelector("#market-grid").innerHTML = marketPulse.map(renderMetricCard).join("");
   document.querySelector("#health-grid").innerHTML = economicHealth.map(renderMetricCard).join("");
   document.querySelector("#risk-list").innerHTML = riskIndicators.map(renderIndicatorRow).join("");
@@ -295,23 +340,26 @@ function applyLiveSnapshot(snapshot) {
   setText("#global-status-title", snapshot.summary.title);
   setText(".summary-copy p:last-child", snapshot.summary.copy);
   setText(".score-value", snapshot.summary.score);
-  setText(".score-label", "Live breadth");
+  setText(".score-label", "Breadth score");
   setScoreVisual(snapshot.summary.score);
   setHtml(".score-drivers dl", renderSummaryDrivers(snapshot.summary.drivers));
-  setText(".score-drivers p", "Source drivers");
-  setText(".score-drivers small", "Computed from visible live indicators.");
-  setText("#market-pulse-title", "Markets update from public releases");
-  setText("#economic-health-title", "Official releases show current pressure");
-  setText("#risk-title", "Risk indicators update from public releases");
-  setText("#global-title", "Regional growth uses World Bank releases");
-  setText("#source-coverage-title", "Live snapshot");
-  setText("#source-coverage-copy", "Mercury loaded public releases for market pulse, economic health, risk, and regional growth. Each card shows its source and latest release date.");
+  setText(".score-drivers p", "Score inputs");
+  setText(".score-drivers small", "Based on visible live indicators.");
+  setText("#market-pulse-title", "Markets from daily public charts");
+  setText("#economic-health-title", "Economic indicators from official releases");
+  setText("#signal-strip-title", "Current signals at a glance");
+  setText("#risk-title", "Risk and confidence from public releases");
+  setText("#global-title", "Regional growth from World Bank data");
+  setText("#source-coverage-title", "Source coverage");
+  setText("#source-coverage-copy", "Each section lists its source, latest release date, and refresh state.");
   setText("#live-last-checked", formatCheckedAt(snapshot.checkedAt));
+  setText("#source-rail-checked", formatCheckedAt(snapshot.checkedAt));
   setText("#refresh-schedule", "Checked on page load");
+  setText("#source-rail-refresh", "Checked on page load");
   setText("#market-source-status", sourceStatusLabel(snapshot.marketPulse, "Yahoo"));
   setText("#market-source-detail", "Daily market series are loaded through Yahoo Finance charts");
   setText("#macro-source-status", sourceStatusLabel(snapshot.economicHealth, "FRED"));
-  setText("#macro-source-detail", "Official macro releases are loaded through FRED");
+  setText("#macro-source-detail", "Official economic releases are loaded through FRED");
   setText("#risk-source-status", sourceStatusLabel(snapshot.riskIndicators, "Yahoo/FRED"));
   setText("#risk-source-detail", "Risk indicators are loaded through Yahoo Finance and FRED");
   setText("#regional-source-status", sourceStatusLabel(snapshot.regions, "World Bank"));
@@ -319,7 +367,7 @@ function applyLiveSnapshot(snapshot) {
   setText("#sample-set-date", "Latest releases");
   setHtml(
     "#macro-source-note",
-    '<i class="fa-solid fa-building-columns" aria-hidden="true"></i> FRED official releases',
+    '<i class="fa-solid fa-building-columns" aria-hidden="true"></i> FRED economic releases',
   );
   setHtml(
     "#market-source-note",
@@ -327,7 +375,7 @@ function applyLiveSnapshot(snapshot) {
   );
   setHtml(
     "#macro-connection-pill",
-    '<i class="fa-solid fa-plug-circle-check" aria-hidden="true"></i> Live sources connected',
+    '<i class="fa-solid fa-plug-circle-check" aria-hidden="true"></i> Public sources connected',
   );
 
   if (sourcePill) {
@@ -344,28 +392,61 @@ function markUnavailable(items) {
     previous: item.previous === "Loading" ? "Unavailable" : item.previous,
     change: item.change === "Loading" ? "Unavailable" : item.change,
     copy: item.copy?.replace("Loading", "Unable to load") || item.copy,
-    cadence: "Requires the serverless live-data route",
+    cadence: "Requires Mercury's live data",
   }));
 }
 
 function applyLiveFallback() {
+  const sourcePill = document.querySelector("#macro-connection-pill");
+
   marketPulse = markUnavailable(marketPulse);
   economicHealth = markUnavailable(economicHealth);
   riskIndicators = markUnavailable(riskIndicators);
   regions = markUnavailable(regions);
   renderDashboard();
 
+  setText("#global-status-title", "Live data unavailable");
+  setText(
+    ".summary-copy p:last-child",
+    "This view cannot reach Mercury's live data. Values are marked unavailable instead of using sample figures.",
+  );
+  setText(".score-value", "0");
+  setText(".score-label", "Source status");
+  setScoreVisual(0);
+  setHtml(
+    ".score-drivers dl",
+    renderSummaryDrivers([
+      { label: "Market pulse", value: "Unavailable" },
+      { label: "Economic health", value: "Unavailable" },
+      { label: "Risk tone", value: "Unavailable" },
+      { label: "Regional growth", value: "Unavailable" },
+    ]),
+  );
+  setText(".score-drivers p", "Score inputs");
+  setText(".score-drivers small", "Live data is required for current values.");
+  setText("#signal-strip-title", "Current signals unavailable");
   setText("#source-coverage-title", "Live data unavailable");
   setText(
     "#source-coverage-copy",
-    "Mercury could not reach the serverless live-data route in this view, so it is showing source status instead of sample figures.",
+    "Live data is unavailable in this view. Current values will appear when the source responds.",
   );
   setText("#live-last-checked", "Unavailable");
-  setText("#refresh-schedule", "Route unavailable");
+  setText("#source-rail-checked", "Unavailable");
+  setText("#refresh-schedule", "Unavailable");
+  setText("#source-rail-refresh", "Unavailable");
   setText("#market-source-status", "Unavailable");
   setText("#macro-source-status", "Unavailable");
   setText("#risk-source-status", "Unavailable");
   setText("#regional-source-status", "Unavailable");
+  setText("#sample-set-date", "Source status");
+  setHtml(
+    "#macro-connection-pill",
+    '<i class="fa-solid fa-plug-circle-xmark" aria-hidden="true"></i> Live data unavailable',
+  );
+
+  if (sourcePill) {
+    sourcePill.classList.add("status-pill-caution");
+  }
 }
 
 async function loadLiveSnapshot() {
