@@ -118,9 +118,9 @@ Use `8px` or less for normal cards and repeated list items unless a larger conta
 - Avoid chart types that require financial expertise to interpret.
 - Prefer labels like `Rising`, `Falling`, `Mixed`, `Stable`, `Elevated risk`, or `Improving confidence`.
 - Do not use language like `buy signal`, `sell signal`, `undervalued`, or `overvalued`.
-- Make stale, delayed, sample, fallback, and unavailable data visually distinct.
-- Static sample dashboards must show both the sample-set date and the live refresh state so users do not confuse prototype values with current data.
-- Source-backed sections must update their own freshness labels without implying that unrelated sample sections are live.
+- Make stale, delayed, fallback, no-data, and unavailable data visually distinct.
+- Source-backed sections must update their own freshness labels from the current source response, including source observation time, previous-release comparison timing, and dashboard fetch timing when those are different.
+- If `/api/live-snapshot` is unavailable, the dashboard should show unavailable source states instead of sample economic values.
 
 ## Icons
 
@@ -171,16 +171,15 @@ Good utility candidates:
 - Empty, loading, stale, fallback, and error state patterns
 - Light and dark mode helpers
 
-Current prototype utilities:
+Current source-backed utilities:
 
 - Repeated metric cards use `8px` radius, compact labels, source context, status chips, and small sparklines.
-- Metric cards include a compact previous-sample comparison so users can understand direction without relying only on the sparkline.
-- Every sample indicator includes an inline metadata row for sample status, candidate source, and expected update cadence so users do not mistake prototype values for live data.
-- Prototype source coverage uses a compact snapshot metadata block for sample-set date, live last-checked state, and refresh schedule.
+- Metric cards include compact previous-release comparisons so users can understand direction without relying only on the sparkline.
+- Every live indicator includes compact source metadata for source, cadence, freshness, and caveats when relevant so users can judge trust without reading implementation details.
+- Source coverage uses a compact snapshot metadata block for latest dashboard check, section-level source state, and upstream source links.
 - Region and risk rows use icon, title, short context, and a plain-language trend label.
-- Sample data must be visibly labeled in the header and source/freshness areas until live integrations exist.
-- Mixed source states should use explicit labels such as `Sample`, `Sample fallback`, and `Source-backed` at the section or indicator level.
-- Summary scores must include concise visible drivers and stay explicitly illustrative until Mercury has a formal scoring model.
+- Mixed source states should use explicit labels such as `Live`, `Delayed`, `Stale`, `No data`, `Unavailable`, and `Fallback` at the section or indicator level.
+- Summary scores must include concise visible drivers and stay explicitly model-limited until Mercury has a formal economic scoring framework.
 
 Avoid utilities for:
 
