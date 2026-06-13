@@ -95,6 +95,13 @@ function formatReleaseDate(value) {
     return value;
   }
 
+  if (/^\d{4}-\d{2}-\d{2}$/.test(value) && !value.endsWith("-01")) {
+    return new Intl.DateTimeFormat("en", {
+      dateStyle: "medium",
+      timeZone: "UTC",
+    }).format(date);
+  }
+
   return new Intl.DateTimeFormat("en", {
     month: "short",
     year: "numeric",
@@ -145,15 +152,32 @@ function sourceStatusLabel(items, sourceName) {
     return "Unavailable";
   }
 
-  if (items.every((item) => item.sourceStatus === "Source-backed")) {
+  const liveCount = items.filter((item) => item.sourceStatus === "Source-backed").length;
+
+  if (liveCount === items.length) {
     return sourceName;
   }
 
-  if (items.some((item) => item.sourceStatus === "Source-backed")) {
-    return "Partial";
+  if (liveCount > 0) {
+    return `${liveCount} of ${items.length} live`;
   }
 
   return "Unavailable";
+}
+
+function formatReleaseWindow(releaseRange) {
+  const latest = formatReleaseDate(releaseRange?.latest);
+  const earliest = formatReleaseDate(releaseRange?.earliest);
+
+  if (!latest) {
+    return "Unavailable";
+  }
+
+  if (earliest && earliest !== latest) {
+    return `${earliest} to ${latest}`;
+  }
+
+  return latest;
 }
 
 function displaySourceStatus(status) {
@@ -402,6 +426,7 @@ function applyLiveSnapshot(snapshot) {
   setText("#global-title", "Regional growth from World Bank data");
   setText("#source-coverage-title", "Source coverage");
   setText("#source-coverage-copy", "Each section lists its source, latest release date, and refresh state.");
+  setText("#latest-release-window", formatReleaseWindow(snapshot.releaseRange));
   setText("#live-last-checked", formatCheckedAt(snapshot.checkedAt));
   setText("#source-rail-checked", formatCheckedAt(snapshot.checkedAt));
   setText("#refresh-schedule", "Checked on page load");
@@ -414,7 +439,7 @@ function applyLiveSnapshot(snapshot) {
   setText("#risk-source-detail", "Risk indicators are loaded through Yahoo Finance and FRED");
   setText("#regional-source-status", sourceStatusLabel(snapshot.regions, "World Bank"));
   setText("#regional-source-detail", "Annual regional growth releases are loaded from the World Bank");
-  setText("#sample-set-date", "Latest releases");
+  setText("#sample-set-date", `Latest release ${formatReleaseDate(snapshot.releaseRange?.latest) || "available"}`);
   setHtml(
     "#macro-source-note",
     '<i class="fa-solid fa-building-columns" aria-hidden="true"></i> FRED economic releases',
@@ -473,6 +498,7 @@ function applyLiveFallback() {
     "#source-coverage-copy",
     "Live data is unavailable in this view. Current values will appear when the source responds.",
   );
+  setText("#latest-release-window", "Unavailable");
   setText("#live-last-checked", "Unavailable");
   setText("#source-rail-checked", "Unavailable");
   setText("#refresh-schedule", "Unavailable");

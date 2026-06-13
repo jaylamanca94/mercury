@@ -9,7 +9,8 @@ Tagline direction: The global economy at a glance.
 Mercury has a source-backed dashboard baseline. The page loads market pulse, economic health,
 risk, and regional growth from public data routes when `/api/live-snapshot` is available. If the
 route is unavailable, the UI shows loading or unavailable source states instead of fabricated
-figures.
+figures. Source coverage shows the latest available source release window, page-load check time,
+and live indicator counts for partially available source groups.
 
 ## Tech Stack
 

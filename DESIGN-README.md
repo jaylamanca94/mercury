@@ -123,6 +123,7 @@ Use `8px` or less for normal cards and repeated list items unless a larger conta
 - Do not use language like `buy signal`, `sell signal`, `undervalued`, or `overvalued`.
 - Make stale, delayed, sample, fallback, no-data, and unavailable data visually distinct.
 - Source-backed sections must update their own freshness labels from the current source response, including source observation time, previous-release comparison timing, and dashboard fetch timing when those are different.
+- Show exact daily release dates for daily market/risk data, month-level labels for monthly economic releases, and year-level labels for annual regional releases.
 - Static sample sections must show both the sample-set date and the live refresh state so users do not confuse prototype values with current data.
 - Live-source sections must update their own freshness labels without implying that unrelated sample sections are live.
 - If `/api/live-snapshot` is unavailable, the dashboard should show unavailable source states instead of sample economic values.
@@ -192,6 +193,7 @@ Current source-backed utilities:
 - Region and risk rows use icon, title, short context, and a plain-language trend label.
 - Sample data must be visibly labeled in the header and source/freshness areas until live integrations exist.
 - Mixed source states should use explicit labels such as `Live`, `Live source`, `Delayed`, `Stale`, `No data`, `Unavailable`, `Fallback`, `Sample`, and `Sample fallback` at the section or indicator level.
+- Partial live source groups should show the count of live indicators, such as `3 of 4 live`, rather than a generic `Partial` label.
 - Summary scores must include concise visible drivers and stay explicitly model-limited and illustrative until Mercury has a formal economic scoring framework.
 
 Avoid utilities for:
