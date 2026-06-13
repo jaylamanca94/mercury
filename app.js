@@ -87,6 +87,10 @@ function trendClass(tone) {
 }
 
 function metricCardTone(metric) {
+  if (metric.sourceStatus === "Unavailable" || metric.value === "Unavailable") {
+    return "unavailable";
+  }
+
   if (metric.change?.trim().startsWith("-")) {
     return "down";
   }
@@ -165,6 +169,18 @@ function formatCheckedAt(value) {
   }).format(date);
 }
 
+function formatCheckedTime(value) {
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return "Unavailable";
+  }
+
+  return new Intl.DateTimeFormat("en", {
+    timeStyle: "short",
+  }).format(date);
+}
+
 function setText(selector, text) {
   const element = document.querySelector(selector);
 
@@ -182,11 +198,11 @@ function setHtml(selector, html) {
 }
 
 function setScoreVisual(score) {
-  const element = document.querySelector(".summary-score");
+  const element = document.querySelector(".score-panel");
 
   if (element && Number.isFinite(score)) {
     element.style.setProperty("--score", `${score}%`);
-    element.setAttribute("aria-label", `Breadth score ${score} out of 100`);
+    element.setAttribute("aria-label", `Economy score ${score} out of 100`);
   }
 }
 
@@ -273,6 +289,42 @@ function signalFreshnessLabel(item) {
   return displaySourceStatus(item.sourceStatus);
 }
 
+function displayMetricName(metric) {
+  const names = {
+    "GDP growth": "GDP Growth",
+    "Interest rates": "Interest Rates",
+    "U.S. dollar": "U.S. Dollar",
+    "U.S. equities": "Stocks",
+  };
+
+  return names[metric.name] || metric.name;
+}
+
+function sourceShortName(source) {
+  if (!source) {
+    return "Source unavailable";
+  }
+
+  if (source.includes("Yahoo")) return "Yahoo Finance";
+  if (source.includes("FRED")) return "FRED";
+  if (source.includes("World Bank")) return "World Bank";
+  if (source.includes("Mercury")) return "Mercury live data";
+
+  return source.split(":")[0];
+}
+
+function metricReleaseLabel(metric) {
+  if (metric.releaseDate) {
+    return formatReleaseDate(metric.releaseDate);
+  }
+
+  if (metric.sourceStatus === "Loading") {
+    return "Loading";
+  }
+
+  return "Unavailable";
+}
+
 function renderDataMeta(item) {
   const status = item.sourceStatus || "Unavailable";
   const cadence = item.releaseDate
@@ -324,17 +376,18 @@ function renderSparkline(points, tone) {
   `;
 }
 
-function renderMetricCard(metric) {
+function renderMetricCard(metric, options = {}) {
   const cardTone = metricCardTone(metric);
+  const widthClass = options.wide ? " metric-card-wide" : "";
 
   return `
-    <article class="metric-card metric-card-${cardTone}">
+    <article class="metric-card metric-card-${cardTone}${widthClass}">
       <div class="metric-top">
         <div>
-          <p class="metric-name">${escapeHtml(metric.name)}</p>
+          <p class="metric-name">${escapeHtml(displayMetricName(metric))}</p>
           <p class="metric-context">${escapeHtml(metric.context)}</p>
         </div>
-        <span class="metric-icon" aria-hidden="true"><i class="fa-solid ${metric.icon}"></i></span>
+        <span class="metric-icon" aria-hidden="true"><i class="fa-solid fa-chart-line"></i></span>
       </div>
       <div class="metric-value-row">
         <p class="${metricValueClass(metric.value)}">${escapeHtml(metric.value)}</p>
@@ -343,17 +396,10 @@ function renderMetricCard(metric) {
       <div class="metric-chart-panel">
         ${renderSparkline(metric.points, cardTone)}
       </div>
-      <dl class="metric-comparison" aria-label="Latest period comparison">
-        <div>
-          <dt>Previous release</dt>
-          <dd>${escapeHtml(metric.previous)}</dd>
-        </div>
-        <div>
-          <dt>Change</dt>
-          <dd>${escapeHtml(metric.change)}</dd>
-        </div>
-      </dl>
-      ${renderDataMeta(metric)}
+      <div class="metric-footer" aria-label="Metric source details">
+        <span><i class="fa-regular fa-calendar" aria-hidden="true"></i> ${escapeHtml(metricReleaseLabel(metric))}</span>
+        <span><i class="fa-solid fa-earth-americas" aria-hidden="true"></i> ${escapeHtml(sourceShortName(metric.source))}</span>
+      </div>
     </article>
   `;
 }
@@ -426,11 +472,36 @@ function renderRegionRow(region) {
 }
 
 function renderDashboard() {
-  document.querySelector("#signal-grid").innerHTML = signalItems().map(renderSignalTile).join("");
-  document.querySelector("#market-grid").innerHTML = marketPulse.map(renderMetricCard).join("");
-  document.querySelector("#health-grid").innerHTML = economicHealth.map(renderMetricCard).join("");
-  document.querySelector("#risk-list").innerHTML = riskIndicators.map(renderIndicatorRow).join("");
-  document.querySelector("#region-list").innerHTML = regions.map(renderRegionRow).join("");
+  const marketGrid = document.querySelector("#market-grid");
+  const commodityGrid = document.querySelector("#commodity-grid");
+  const currencyGrid = document.querySelector("#currency-grid");
+  const riskList = document.querySelector("#risk-list");
+  const regionList = document.querySelector("#region-list");
+  const marketCards = [
+    [marketPulse[0], { wide: true }],
+    [marketPulse[1], { wide: true }],
+    ...economicHealth.map((item) => [item, {}]),
+  ].filter(([item]) => Boolean(item));
+
+  if (marketGrid) {
+    marketGrid.innerHTML = marketCards.map(([item, options]) => renderMetricCard(item, options)).join("");
+  }
+
+  if (commodityGrid) {
+    commodityGrid.innerHTML = marketPulse[3] ? renderMetricCard(marketPulse[3]) : "";
+  }
+
+  if (currencyGrid) {
+    currencyGrid.innerHTML = marketPulse[2] ? renderMetricCard(marketPulse[2]) : "";
+  }
+
+  if (riskList) {
+    riskList.innerHTML = riskIndicators.map(renderIndicatorRow).join("");
+  }
+
+  if (regionList) {
+    regionList.innerHTML = regions.map(renderRegionRow).join("");
+  }
 }
 
 function renderSummaryDrivers(drivers) {
@@ -465,8 +536,6 @@ function applySnapshotConnectionState(snapshot, sourcePill) {
   sourcePill?.classList.remove("status-pill-live", "status-pill-caution");
 
   if (isUnavailable) {
-    setText(".score-label", "Source status");
-    setText("#signal-strip-title", "Current signals unavailable");
     setText("#source-coverage-title", "Live data unavailable");
     setText(
       "#source-coverage-copy",
@@ -547,16 +616,17 @@ function applyLiveSnapshot(snapshot) {
   renderDashboard();
 
   setText("#global-status-title", snapshot.summary.title);
-  setText(".summary-copy p:last-child", snapshot.summary.copy);
+  setText("#summary-copy", snapshot.summary.copy);
   setText(".score-value", snapshot.summary.score);
-  setText(".score-label", "Breadth score");
+  setText(".score-label", "Economy Score");
   setScoreVisual(snapshot.summary.score);
   setHtml(".score-drivers dl", renderSummaryDrivers(snapshot.summary.drivers));
   setText(".score-drivers p", "Score inputs");
   setText(".score-drivers small", "Based on visible live indicators.");
-  setText("#market-pulse-title", "Markets from daily public charts");
-  setText("#economic-health-title", "Economic indicators from official releases");
-  setText("#signal-strip-title", "Current signals at a glance");
+  setText("#last-updated-pill", `Last updated ${formatCheckedTime(snapshot.checkedAt)}`);
+  setText("#markets-title", "Markets");
+  setText("#commodity-title", "Commodities");
+  setText("#currency-title", "Currency");
   setText("#risk-title", "Risk and confidence from public releases");
   setText("#global-title", "Regional growth from World Bank data");
   setText("#source-coverage-title", "Source coverage");
@@ -619,11 +689,11 @@ function applyLiveFallback() {
 
   setText("#global-status-title", "Live data unavailable");
   setText(
-    ".summary-copy p:last-child",
+    "#summary-copy",
     "This view cannot reach Mercury's live data. Values are marked unavailable instead of using sample figures.",
   );
   setText(".score-value", "0");
-  setText(".score-label", "Source status");
+  setText(".score-label", "Economy Score");
   setScoreVisual(0);
   setHtml(
     ".score-drivers dl",
@@ -636,7 +706,10 @@ function applyLiveFallback() {
   );
   setText(".score-drivers p", "Score inputs");
   setText(".score-drivers small", "Live data is required for current values.");
-  setText("#signal-strip-title", "Current signals unavailable");
+  setText("#last-updated-pill", "Live data unavailable");
+  setText("#markets-title", "Markets");
+  setText("#commodity-title", "Commodities");
+  setText("#currency-title", "Currency");
   setText("#source-coverage-title", "Live data unavailable");
   setText(
     "#source-coverage-copy",
@@ -665,8 +738,19 @@ function applyLiveFallback() {
 }
 
 async function loadLiveSnapshot() {
+  const refreshButton = document.querySelector("#refresh-data-button");
+
+  if (refreshButton) {
+    refreshButton.disabled = true;
+    refreshButton.textContent = "Refreshing";
+  }
+
   if (window.location.protocol === "file:") {
     applyLiveFallback();
+    if (refreshButton) {
+      refreshButton.disabled = false;
+      refreshButton.textContent = "Refresh Data";
+    }
     return;
   }
 
@@ -685,8 +769,14 @@ async function loadLiveSnapshot() {
     applyLiveSnapshot(snapshot);
   } catch (error) {
     applyLiveFallback();
+  } finally {
+    if (refreshButton) {
+      refreshButton.disabled = false;
+      refreshButton.textContent = "Refresh Data";
+    }
   }
 }
 
 renderDashboard();
 loadLiveSnapshot();
+document.querySelector("#refresh-data-button")?.addEventListener("click", loadLiveSnapshot);

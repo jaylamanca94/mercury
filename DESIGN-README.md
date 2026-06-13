@@ -47,10 +47,10 @@ The first useful dashboard should support fast scanning in less than 60 seconds.
 
 Recommended dashboard order:
 
-1. Compact app header with source status and latest-release state
-2. Global economy status summary paired with source status
-3. Key signal strip with the highest-signal live indicators
-4. Primary Market Pulse and Economic Health panels
+1. Slim app header with product identity and lightweight user/context affordance
+2. Page title row with latest-check timestamp and refresh action
+3. Current-conditions summary with a compact economy score panel
+4. Grouped metric sections for Markets, Commodities, and Currency
 5. Risk and Confidence plus Global Snapshot
 6. Source coverage and freshness
 
@@ -187,7 +187,14 @@ Good utility candidates:
 Current source-backed utilities:
 
 - The dashboard uses a calm command-center structure inspired by analytics dashboards: compact header, status summary, key signal strip, primary panels, and source freshness. Keep this hierarchy, but avoid sidebar-heavy app chrome, decorative banners, and trading-terminal density.
-- The key signal strip should reuse live dashboard data rather than introduce a separate dataset. It is a first-scan summary, not a new scoring model.
+- The latest dashboard shell follows the Figma section model: a slim white top nav, gray page
+  canvas, centered `1160px` content column, title/action row, large current-conditions card, and
+  stacked white section panels for grouped metric cards.
+- Primary metric groups should be organized by audience-facing categories such as `Markets`,
+  `Commodities`, and `Currency`, while preserving source-backed economic, risk, regional, and
+  freshness context elsewhere on the page.
+- Any first-scan metric grouping should reuse live dashboard data rather than introduce a separate
+  dataset. It is a presentation layer, not a new scoring model.
 - Primary Market Pulse and Economic Health sections may use larger panel treatment to make the main data areas feel more substantial, while repeated metric tiles remain compact and source-aware.
 - Repeated metric cards use `8px` radius, compact labels, source context, status chips, and small sparklines.
 - Metric cards and key signal tiles should use soft neutral surfaces with thin tone accents instead
