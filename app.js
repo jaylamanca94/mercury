@@ -12,6 +12,11 @@ function pendingMetric(name, context, icon) {
     change: "Loading",
     points: [],
     sourceStatus: "Loading",
+    freshness: {
+      status: "loading",
+      label: "Checking freshness",
+      detail: "Waiting for the live source release date.",
+    },
   };
 }
 
@@ -25,6 +30,11 @@ function pendingIndicator(name, icon) {
     source: "Mercury live data",
     cadence: "Loading source cadence",
     sourceStatus: "Loading",
+    freshness: {
+      status: "loading",
+      label: "Checking freshness",
+      detail: "Waiting for the live source release date.",
+    },
   };
 }
 
@@ -37,6 +47,11 @@ function pendingRegion(name) {
     source: "World Bank public data",
     cadence: "Loading source cadence",
     sourceStatus: "Loading",
+    freshness: {
+      status: "loading",
+      label: "Checking freshness",
+      detail: "Waiting for the live source release date.",
+    },
   };
 }
 
@@ -95,26 +110,6 @@ function metricValueClass(value) {
   return String(value).length > 8 ? "metric-value metric-value-long" : "metric-value";
 }
 
-function sourceLabel(source) {
-  if (!source) {
-    return "Public source";
-  }
-
-  if (source.includes("Yahoo")) {
-    return "Yahoo Finance";
-  }
-
-  if (source.includes("FRED")) {
-    return "FRED";
-  }
-
-  if (source.includes("World Bank")) {
-    return "World Bank";
-  }
-
-  return source;
-}
-
 function escapeHtml(value) {
   return String(value)
     .replaceAll("&", "&amp;")
@@ -151,27 +146,6 @@ function formatReleaseDate(value) {
     year: "numeric",
     timeZone: "UTC",
   }).format(date);
-}
-
-function formatCardDate(value) {
-  if (!value) {
-    return "Loading date";
-  }
-
-  const date = new Date(`${value}T00:00:00Z`);
-
-  if (Number.isNaN(date.getTime())) {
-    return value;
-  }
-
-  return new Intl.DateTimeFormat("en", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-    timeZone: "UTC",
-  })
-    .format(date)
-    .replace(",", "");
 }
 
 function formatCheckedAt(value) {
@@ -218,13 +192,25 @@ function sourceStatusLabel(items, sourceName) {
   }
 
   const liveCount = items.filter((item) => item.sourceStatus === "Source-backed").length;
+  const delayedCount = items.filter((item) => item.freshness?.status === "delayed").length;
+  const staleCount = items.filter((item) => item.freshness?.status === "stale").length;
 
   if (liveCount === items.length) {
+    if (staleCount > 0) {
+      return `${sourceName}; ${staleCount} stale`;
+    }
+
+    if (delayedCount > 0) {
+      return `${sourceName}; ${delayedCount} delayed`;
+    }
+
     return sourceName;
   }
 
   if (liveCount > 0) {
-    return `${liveCount} of ${items.length} live`;
+    const freshnessLabel =
+      staleCount > 0 ? `; ${staleCount} stale` : delayedCount > 0 ? `; ${delayedCount} delayed` : "";
+    return `${liveCount} of ${items.length} live${freshnessLabel}`;
   }
 
   return "Unavailable";
@@ -253,6 +239,36 @@ function displaySourceStatus(status) {
   return status || "Unavailable";
 }
 
+function freshnessIcon(status) {
+  if (status === "current") return "fa-circle-check";
+  if (status === "delayed") return "fa-clock";
+  if (status === "stale") return "fa-triangle-exclamation";
+  if (status === "loading") return "fa-spinner";
+  return "fa-circle-exclamation";
+}
+
+function displayFreshness(freshness) {
+  return freshness?.label || "Freshness unavailable";
+}
+
+function freshnessDetail(freshness) {
+  if (!freshness?.detail) {
+    return displayFreshness(freshness);
+  }
+
+  return `${displayFreshness(freshness)}; ${freshness.detail}`;
+}
+
+function signalFreshnessLabel(item) {
+  const status = item.freshness?.status;
+
+  if (status === "delayed" || status === "stale") {
+    return displayFreshness(item.freshness);
+  }
+
+  return displaySourceStatus(item.sourceStatus);
+}
+
 function renderDataMeta(item) {
   const status = item.sourceStatus || "Unavailable";
   const cadence = item.releaseDate
@@ -262,10 +278,16 @@ function renderDataMeta(item) {
     status === "Source-backed"
       ? ""
       : `<span><i class="fa-solid ${status === "Loading" ? "fa-spinner" : "fa-triangle-exclamation"}" aria-hidden="true"></i> ${escapeHtml(displaySourceStatus(status))}</span>`;
+  const freshness = item.freshness || {};
+  const freshnessMeta =
+    status === "Source-backed" || freshness.status === "loading"
+      ? `<span class="data-freshness data-freshness-${escapeHtml(freshness.status || "unavailable")}"><i class="fa-solid ${freshnessIcon(freshness.status)}" aria-hidden="true"></i> ${escapeHtml(freshnessDetail(freshness))}</span>`
+      : "";
 
   return `
     <div class="data-meta" aria-label="Indicator data details">
       ${statusMeta}
+      ${freshnessMeta}
       <span><i class="fa-solid fa-database" aria-hidden="true"></i> ${escapeHtml(item.source)}</span>
       <span><i class="fa-regular fa-calendar" aria-hidden="true"></i> ${escapeHtml(cadence)}</span>
     </div>
@@ -304,7 +326,10 @@ function renderMetricCard(metric) {
   return `
     <article class="metric-card metric-card-${cardTone}">
       <div class="metric-top">
-        <p class="metric-name">${escapeHtml(metric.name)}</p>
+        <div>
+          <p class="metric-name">${escapeHtml(metric.name)}</p>
+          <p class="metric-context">${escapeHtml(metric.context)}</p>
+        </div>
         <span class="metric-icon" aria-hidden="true"><i class="fa-solid ${metric.icon}"></i></span>
       </div>
       <div class="metric-value-row">
@@ -314,10 +339,17 @@ function renderMetricCard(metric) {
       <div class="metric-chart-panel">
         ${renderSparkline(metric.points, cardTone)}
       </div>
-      <div class="metric-meta" aria-label="Metric source details">
-        <span><i class="fa-regular fa-calendar" aria-hidden="true"></i> ${escapeHtml(formatCardDate(metric.releaseDate))}</span>
-        <span><i class="fa-solid fa-earth-americas" aria-hidden="true"></i> ${escapeHtml(sourceLabel(metric.source))}</span>
-      </div>
+      <dl class="metric-comparison" aria-label="Latest period comparison">
+        <div>
+          <dt>Previous release</dt>
+          <dd>${escapeHtml(metric.previous)}</dd>
+        </div>
+        <div>
+          <dt>Change</dt>
+          <dd>${escapeHtml(metric.change)}</dd>
+        </div>
+      </dl>
+      ${renderDataMeta(metric)}
     </article>
   `;
 }
@@ -339,6 +371,7 @@ function signalItems() {
     trend: item.trend || "Pending",
     tone: item.tone || "stable",
     sourceStatus: item.sourceStatus || "Loading",
+    freshness: item.freshness,
   }));
 }
 
@@ -352,7 +385,7 @@ function renderSignalTile(item) {
       <p class="signal-value">${escapeHtml(item.value)}</p>
       <div class="signal-footer">
         <span class="${trendClass(item.tone)}">${escapeHtml(item.trend)}</span>
-        <small>${escapeHtml(displaySourceStatus(item.sourceStatus))}</small>
+        <small>${escapeHtml(signalFreshnessLabel(item))}</small>
       </div>
     </article>
   `;
@@ -457,6 +490,43 @@ function applySnapshotConnectionState(snapshot, sourcePill) {
   sourcePill?.classList.add("status-pill-live");
 }
 
+function freshnessPillIcon(status) {
+  if (status === "current" || status === "partial") return "fa-circle-check";
+  if (status === "delayed") return "fa-clock";
+  if (status === "stale") return "fa-triangle-exclamation";
+  return "fa-circle-exclamation";
+}
+
+function applySnapshotFreshnessState(snapshot) {
+  const freshnessPill = document.querySelector("#sample-set-date");
+  const freshness = snapshot.freshness || {};
+
+  freshnessPill?.classList.remove("status-pill-live", "status-pill-caution", "status-pill-stale");
+  setText("#source-rail-freshness", displayFreshness(freshness));
+  setText("#snapshot-freshness", displayFreshness(freshness));
+
+  if (!freshnessPill) {
+    return;
+  }
+
+  setHtml(
+    "#sample-set-date",
+    `<i class="fa-solid ${freshnessPillIcon(freshness.status)}" aria-hidden="true"></i> ${escapeHtml(displayFreshness(freshness))}`,
+  );
+
+  if (freshness.status === "current" || freshness.status === "partial") {
+    freshnessPill.classList.add("status-pill-live");
+    return;
+  }
+
+  if (freshness.status === "stale") {
+    freshnessPill.classList.add("status-pill-stale");
+    return;
+  }
+
+  freshnessPill.classList.add("status-pill-caution");
+}
+
 function applyLiveSnapshot(snapshot) {
   if (!snapshot?.marketPulse?.length || !snapshot?.economicHealth?.length) {
     return;
@@ -484,7 +554,11 @@ function applyLiveSnapshot(snapshot) {
   setText("#risk-title", "Risk and confidence from public releases");
   setText("#global-title", "Regional growth from World Bank data");
   setText("#source-coverage-title", "Source coverage");
-  setText("#source-coverage-copy", "Each section lists its source, latest release date, and refresh state.");
+  setText(
+    "#source-coverage-copy",
+    snapshot.freshness?.copy ||
+      "Each section lists its source, latest release date, and refresh state.",
+  );
   setText("#latest-release-window", formatReleaseWindow(snapshot.releaseRange));
   setText("#live-last-checked", formatCheckedAt(snapshot.checkedAt));
   setText("#source-rail-checked", formatCheckedAt(snapshot.checkedAt));
@@ -498,7 +572,6 @@ function applyLiveSnapshot(snapshot) {
   setText("#risk-source-detail", "Risk indicators are loaded through Yahoo Finance and FRED");
   setText("#regional-source-status", sourceStatusLabel(snapshot.regions, "World Bank"));
   setText("#regional-source-detail", "Annual regional growth releases are loaded from the World Bank");
-  setText("#sample-set-date", `Latest release ${formatReleaseDate(snapshot.releaseRange?.latest) || "available"}`);
   setHtml(
     "#macro-source-note",
     '<i class="fa-solid fa-building-columns" aria-hidden="true"></i> FRED economic releases',
@@ -507,6 +580,7 @@ function applyLiveSnapshot(snapshot) {
     "#market-source-note",
     '<i class="fa-solid fa-building-columns" aria-hidden="true"></i> Yahoo daily charts',
   );
+  applySnapshotFreshnessState(snapshot);
   applySnapshotConnectionState(snapshot, sourcePill);
 }
 
@@ -516,6 +590,11 @@ function markUnavailable(items) {
     value: item.value === "Loading" ? "Unavailable" : item.value,
     trend: "Unavailable",
     sourceStatus: "Unavailable",
+    freshness: {
+      status: "unavailable",
+      label: "Freshness unavailable",
+      detail: "Live data is required for source freshness.",
+    },
     previous: item.previous === "Loading" ? "Unavailable" : item.previous,
     change: item.change === "Loading" ? "Unavailable" : item.change,
     copy: item.copy?.replace("Loading", "Unable to load") || item.copy,
@@ -559,6 +638,8 @@ function applyLiveFallback() {
   );
   setText("#latest-release-window", "Unavailable");
   setText("#live-last-checked", "Unavailable");
+  setText("#source-rail-freshness", "Unavailable");
+  setText("#snapshot-freshness", "Unavailable");
   setText("#source-rail-checked", "Unavailable");
   setText("#refresh-schedule", "Unavailable");
   setText("#source-rail-refresh", "Unavailable");

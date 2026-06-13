@@ -124,6 +124,9 @@ Use `8px` or less for normal cards and repeated list items unless a larger conta
 - Make stale, delayed, sample, fallback, no-data, and unavailable data visually distinct.
 - Source-backed sections must update their own freshness labels from the current source response, including source observation time, previous-release comparison timing, and dashboard fetch timing when those are different.
 - Show exact daily release dates for daily market/risk data, month-level labels for monthly economic releases, and year-level labels for annual regional releases.
+- Pair source release dates with cadence-aware freshness labels: `Current`, `Delayed`, or `Stale`.
+  Daily, weekly, monthly, quarterly, and annual data must use different thresholds so slower
+  official releases are not treated like market charts.
 - Static sample sections must show both the sample-set date and the live refresh state so users do not confuse prototype values with current data.
 - Live-source sections must update their own freshness labels without implying that unrelated sample sections are live.
 - If `/api/live-snapshot` is unavailable, the dashboard should show unavailable source states instead of sample economic values.
@@ -190,6 +193,9 @@ Current source-backed utilities:
 - Metric cards include compact previous-release comparisons so users can understand direction without relying only on the sparkline.
 - Every live indicator includes compact source metadata for source, cadence, freshness, and caveats when relevant so users can judge trust without reading implementation details.
 - Source coverage uses a compact snapshot metadata block for latest dashboard check, section-level source state, and upstream source links.
+- Freshness metadata belongs alongside source metadata on metric cards, risk rows, region rows, the
+  source rail, and the source coverage band. Treat delayed and stale labels as calm trust signals,
+  not urgent trading-style alerts.
 - Region and risk rows use icon, title, short context, and a plain-language trend label.
 - Sample data must be visibly labeled in the header and source/freshness areas until live integrations exist.
 - Mixed source states should use explicit labels such as `Live`, `Live source`, `Delayed`, `Stale`, `No data`, `Unavailable`, `Fallback`, `Sample`, and `Sample fallback` at the section or indicator level.

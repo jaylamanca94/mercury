@@ -10,7 +10,7 @@ Mercury has a source-backed dashboard baseline. The page loads market pulse, eco
 risk, and regional growth from public data routes when `/api/live-snapshot` is available. If the
 route is unavailable, the UI shows loading or unavailable source states instead of fabricated
 figures. Source coverage shows the latest available source release window, page-load check time,
-and live indicator counts for partially available source groups.
+cadence-aware freshness state, and live indicator counts for partially available source groups.
 
 ## Tech Stack
 
@@ -85,7 +85,7 @@ Mercury can deploy as a static site on Vercel. Push to `main` to update the prod
 Recommended next deployment path:
 
 1. Deploy the live snapshot route and confirm cache behavior in production.
-2. Add validation and fallback states for stale, missing, delayed, and unavailable data.
+2. Add automated regression coverage for stale, missing, delayed, and unavailable data.
 3. Review market-data licensing before relying on any provider for a public production launch.
 
 ## Important Boundary
