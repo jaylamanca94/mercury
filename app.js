@@ -95,26 +95,6 @@ function metricValueClass(value) {
   return String(value).length > 8 ? "metric-value metric-value-long" : "metric-value";
 }
 
-function sourceLabel(source) {
-  if (!source) {
-    return "Public source";
-  }
-
-  if (source.includes("Yahoo")) {
-    return "Yahoo Finance";
-  }
-
-  if (source.includes("FRED")) {
-    return "FRED";
-  }
-
-  if (source.includes("World Bank")) {
-    return "World Bank";
-  }
-
-  return source;
-}
-
 function escapeHtml(value) {
   return String(value)
     .replaceAll("&", "&amp;")
@@ -151,27 +131,6 @@ function formatReleaseDate(value) {
     year: "numeric",
     timeZone: "UTC",
   }).format(date);
-}
-
-function formatCardDate(value) {
-  if (!value) {
-    return "Loading date";
-  }
-
-  const date = new Date(`${value}T00:00:00Z`);
-
-  if (Number.isNaN(date.getTime())) {
-    return value;
-  }
-
-  return new Intl.DateTimeFormat("en", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-    timeZone: "UTC",
-  })
-    .format(date)
-    .replace(",", "");
 }
 
 function formatCheckedAt(value) {
@@ -304,7 +263,10 @@ function renderMetricCard(metric) {
   return `
     <article class="metric-card metric-card-${cardTone}">
       <div class="metric-top">
-        <p class="metric-name">${escapeHtml(metric.name)}</p>
+        <div>
+          <p class="metric-name">${escapeHtml(metric.name)}</p>
+          <p class="metric-context">${escapeHtml(metric.context)}</p>
+        </div>
         <span class="metric-icon" aria-hidden="true"><i class="fa-solid ${metric.icon}"></i></span>
       </div>
       <div class="metric-value-row">
@@ -314,10 +276,17 @@ function renderMetricCard(metric) {
       <div class="metric-chart-panel">
         ${renderSparkline(metric.points, cardTone)}
       </div>
-      <div class="metric-meta" aria-label="Metric source details">
-        <span><i class="fa-regular fa-calendar" aria-hidden="true"></i> ${escapeHtml(formatCardDate(metric.releaseDate))}</span>
-        <span><i class="fa-solid fa-earth-americas" aria-hidden="true"></i> ${escapeHtml(sourceLabel(metric.source))}</span>
-      </div>
+      <dl class="metric-comparison" aria-label="Latest period comparison">
+        <div>
+          <dt>Previous release</dt>
+          <dd>${escapeHtml(metric.previous)}</dd>
+        </div>
+        <div>
+          <dt>Change</dt>
+          <dd>${escapeHtml(metric.change)}</dd>
+        </div>
+      </dl>
+      ${renderDataMeta(metric)}
     </article>
   `;
 }
