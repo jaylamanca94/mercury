@@ -194,6 +194,8 @@ Every live data surface should show source, freshness, and caveats when relevant
 - Use visual encoding for direction, risk, confidence, and freshness.
 - Make source attribution visible enough to build trust without overwhelming the dashboard.
 - Avoid inactive controls that imply unavailable workflows.
+- Show scope notes instead of filters when a dashboard section mixes several source-backed
+  geographies or asset categories without a source-backed filtering model.
 - Start with the smallest working dashboard before adding integrations.
 
 ## Roadmap

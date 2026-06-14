@@ -169,6 +169,8 @@ Use `8px` or less for normal cards and repeated list items unless a larger conta
 - Dashboard cards should be easy to scan without requiring interaction.
 - Interactions should reveal context, source details, explanations, or historical trend depth.
 - Avoid controls that imply trading, ordering, transactions, portfolio management, or alerts before those workflows are approved.
+- Use compact scope notes instead of dropdowns or segmented controls when a section is not yet
+  filterable by source-backed data. Controls must visibly change the dashboard content when present.
 - Clickable rows and cards should have clear pointer, hover, and keyboard focus states.
 - Loading, no-data, stale-data, and error states should be plain, calm, and useful.
 

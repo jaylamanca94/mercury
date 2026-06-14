@@ -262,22 +262,21 @@ body {
   padding: 24px;
 }
 
-.region-select {
-  appearance: auto;
-  background: var(--surface);
+.coverage-note {
+  align-items: center;
+  background: var(--card);
   border: 1px solid var(--line-strong);
-  border-radius: 4px;
-  color: var(--ink);
-  font: inherit;
-  line-height: 24px;
+  border-radius: 24px;
+  color: var(--muted);
+  display: inline-flex;
+  font-size: 13px;
+  font-weight: 700;
+  justify-content: center;
+  line-height: 18px;
+  margin: 0;
   min-height: 40px;
-  min-width: 247px;
   padding: 8px 16px;
-}
-
-.region-select:focus-visible {
-  box-shadow: 0 0 0 4px rgba(25, 135, 84, 0.14);
-  outline: none;
+  text-align: right;
 }
 
 .metric-grid {
@@ -769,8 +768,9 @@ body {
     padding: 24px;
   }
 
-  .region-select {
-    min-width: 0;
+  .coverage-note {
+    justify-content: flex-start;
+    text-align: left;
     width: 100%;
   }
 

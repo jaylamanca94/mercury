@@ -678,6 +678,10 @@ function applyLiveSnapshot(snapshot) {
   setText(".score-drivers small", "Based on visible live indicators.");
   setText("#last-updated-pill", `Last updated ${formatCheckedTime(snapshot.checkedAt)}`);
   setText("#economy-title", "Economy");
+  setText(
+    "#economy-coverage-note",
+    "U.S. macro, broad market, commodity, and FX coverage",
+  );
   setText("#currency-title", "Currency");
   setText("#risk-title", "Risk and confidence from public releases");
   setText("#global-title", "Regional growth from World Bank data");
@@ -760,6 +764,7 @@ function applyLiveFallback() {
   setText(".score-drivers small", "Live data is required for current values.");
   setText("#last-updated-pill", "Live data unavailable");
   setText("#economy-title", "Economy");
+  setText("#economy-coverage-note", "Live coverage unavailable");
   setText("#currency-title", "Currency");
   setText("#source-coverage-title", "Live data unavailable");
   setText(
