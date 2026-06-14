@@ -1,5 +1,6 @@
-function pendingMetric(name, context, icon) {
+function pendingMetric(name, context, icon, id) {
   return {
+    ...(id ? { id } : {}),
     name,
     context,
     value: "Loading",
@@ -56,10 +57,12 @@ function pendingRegion(name) {
 }
 
 let marketPulse = [
-  pendingMetric("U.S. equities", "S&P 500 daily close", "fa-chart-line"),
-  pendingMetric("Bonds", "7-10 year Treasury ETF", "fa-scale-balanced"),
-  pendingMetric("U.S. dollar", "Dollar index ETF proxy", "fa-dollar-sign"),
-  pendingMetric("Oil", "WTI crude futures", "fa-gas-pump"),
+  pendingMetric("U.S. equities", "S&P 500 daily close", "fa-chart-line", "us-equities"),
+  pendingMetric("Bonds", "7-10 year Treasury ETF", "fa-scale-balanced", "bonds"),
+  pendingMetric("VXUS", "Total international stock ETF", "fa-globe", "vxus"),
+  pendingMetric("VGT", "Information technology ETF", "fa-microchip", "vgt"),
+  pendingMetric("U.S. dollar", "Dollar index ETF proxy", "fa-dollar-sign", "dollar-index"),
+  pendingMetric("Oil", "WTI crude futures", "fa-gas-pump", "oil"),
 ];
 
 let economicHealth = [
@@ -489,15 +492,29 @@ function renderRegionRow(region) {
   `;
 }
 
+function findMetric(items, id, name) {
+  return items.find((item) => item.id === id) || items.find((item) => item.name === name);
+}
+
 function renderDashboard() {
   const marketGrid = document.querySelector("#market-grid");
   const commodityGrid = document.querySelector("#commodity-grid");
   const currencyGrid = document.querySelector("#currency-grid");
   const riskList = document.querySelector("#risk-list");
   const regionList = document.querySelector("#region-list");
+  const featuredMarketCards = [
+    findMetric(marketPulse, "us-equities", "U.S. equities"),
+    findMetric(marketPulse, "bonds", "Bonds"),
+  ].filter(Boolean);
+  const tickerCards = [
+    findMetric(marketPulse, "vxus", "VXUS"),
+    findMetric(marketPulse, "vgt", "VGT"),
+  ].filter(Boolean);
+  const currencyMetric = findMetric(marketPulse, "dollar-index", "U.S. dollar");
+  const commodityMetric = findMetric(marketPulse, "oil", "Oil");
   const marketCards = [
-    [marketPulse[0], { wide: true }],
-    [marketPulse[1], { wide: true }],
+    ...featuredMarketCards.map((item) => [item, { wide: true }]),
+    ...tickerCards.map((item) => [item, {}]),
     ...economicHealth.map((item) => [item, {}]),
   ].filter(([item]) => Boolean(item));
 
@@ -506,11 +523,11 @@ function renderDashboard() {
   }
 
   if (commodityGrid) {
-    commodityGrid.innerHTML = marketPulse[3] ? renderMetricCard(marketPulse[3]) : "";
+    commodityGrid.innerHTML = commodityMetric ? renderMetricCard(commodityMetric) : "";
   }
 
   if (currencyGrid) {
-    currencyGrid.innerHTML = marketPulse[2] ? renderMetricCard(marketPulse[2]) : "";
+    currencyGrid.innerHTML = currencyMetric ? renderMetricCard(currencyMetric) : "";
   }
 
   if (riskList) {
