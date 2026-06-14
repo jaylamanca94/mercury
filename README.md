@@ -11,6 +11,8 @@ risk, and regional growth from public data routes when `/api/live-snapshot` is a
 route is unavailable, the UI shows loading or unavailable source states instead of fabricated
 figures. Source coverage shows the latest available source release window, page-load check time,
 cadence-aware freshness state, and live indicator counts for partially available source groups.
+Economy and Currency sections include Today, Week, Month, and Year controls; Economy also supports
+United States, Europe, and Asia market-proxy views.
 
 ## Tech Stack
 
@@ -21,6 +23,7 @@ Recommended starting stack:
 - Font Awesome Free via CDN for utility icons
 - Vercel Serverless Functions for live data proxies
 - Yahoo Finance chart data for market pulse and daily risk proxies
+- Public market proxy funds for comparable U.S., Europe, and Asia Economy market cards
 - Public FRED CSV releases for macro indicators and financial stress
 - World Bank API releases for regional annual GDP growth
 - Environment variables for future API keys

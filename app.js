@@ -59,8 +59,8 @@ function pendingRegion(name) {
 
 let marketPulse = [
   pendingMetric("S&P 500", "Vanguard S&P 500 ETF", "fa-chart-line", "us-equities", "VOO"),
-  pendingMetric("International", "Total international stock ETF", "fa-globe", "vxus", "VXUS"),
-  pendingMetric("Technology", "Information technology ETF", "fa-microchip", "vgt", "VGT"),
+  pendingMetric("Small Cap", "Vanguard Small-Cap Index Fund", "fa-chart-line", "us-small-cap", "VSMAX"),
+  pendingMetric("Technology", "Vanguard Information Technology ETF", "fa-microchip", "us-technology", "VGT"),
   pendingMetric("Bonds", "Total bond market ETF", "fa-scale-balanced", "bonds", "BND"),
   pendingMetric("Oil", "WTI crude futures", "fa-gas-pump", "oil", "CL=F"),
   pendingMetric("U.S. dollar", "Dollar index ETF proxy", "fa-dollar-sign", "dollar-index", "UUP"),
@@ -88,6 +88,46 @@ let regions = [
   pendingRegion("Low and middle income"),
 ];
 
+const PERIOD_OPTIONS = {
+  today: {
+    label: "Today",
+    dailyObservations: 1,
+    weeklyObservations: 1,
+    monthlyObservations: 1,
+    quarterlyObservations: 1,
+    annualObservations: 1,
+  },
+  week: {
+    label: "Week",
+    dailyObservations: 5,
+    weeklyObservations: 1,
+    monthlyObservations: 1,
+    quarterlyObservations: 1,
+    annualObservations: 1,
+  },
+  month: {
+    label: "Month",
+    dailyObservations: 21,
+    weeklyObservations: 4,
+    monthlyObservations: 1,
+    quarterlyObservations: 1,
+    annualObservations: 1,
+  },
+  year: {
+    label: "Year",
+    dailyObservations: 252,
+    weeklyObservations: 52,
+    monthlyObservations: 12,
+    quarterlyObservations: 4,
+    annualObservations: 1,
+  },
+};
+
+const MARKET_ROLE_ORDER = ["large-cap", "small-cap", "technology", "bonds"];
+let selectedEconomyPeriod = "today";
+let selectedCurrencyPeriod = "today";
+let selectedRegion = "United States";
+
 function trendClass(tone) {
   return `trend-label trend-${tone}`;
 }
@@ -95,6 +135,10 @@ function trendClass(tone) {
 function metricCardTone(metric) {
   if (metric.sourceStatus === "Unavailable" || metric.value === "Unavailable") {
     return "unavailable";
+  }
+
+  if (metric.periodTone) {
+    return metric.periodTone;
   }
 
   if (metric.tone) {
@@ -113,6 +157,10 @@ function metricCardTone(metric) {
 }
 
 function metricDeltaLabel(metric) {
+  if (metric.periodChange) {
+    return metric.periodChange;
+  }
+
   if (metric.change && metric.change !== "Loading" && metric.change !== "Unavailable") {
     return metric.change;
   }
@@ -126,6 +174,174 @@ function metricValueClass(value) {
 
 function signalValueClass(value) {
   return String(value).length > 8 ? "signal-value signal-value-long" : "signal-value";
+}
+
+function periodOption(period) {
+  return PERIOD_OPTIONS[period] || PERIOD_OPTIONS.today;
+}
+
+function periodObservationCount(metric, period) {
+  const option = periodOption(period);
+  const cadence = inferDisplayCadence(metric.cadence);
+
+  if (cadence === "weekly") return option.weeklyObservations;
+  if (cadence === "monthly") return option.monthlyObservations;
+  if (cadence === "quarterly") return option.quarterlyObservations;
+  if (cadence === "annual") return option.annualObservations;
+
+  return option.dailyObservations;
+}
+
+function signedNumber(value, decimals = 1) {
+  if (!Number.isFinite(value) || Math.abs(value) < 0.005) {
+    return "0.0";
+  }
+
+  return `${value > 0 ? "+" : ""}${value.toFixed(decimals)}`;
+}
+
+function formatDeltaLabel(value, comparison) {
+  if (!Number.isFinite(value)) {
+    return "Unavailable";
+  }
+
+  if (Math.abs(value) < 0.005) {
+    return "No change";
+  }
+
+  if (comparison === "point-change") {
+    return `${value > 0 ? "+" : ""}${value.toFixed(2)} pts`;
+  }
+
+  return `${value > 0 ? "+" : ""}${value.toFixed(1)}%`;
+}
+
+function periodTone(value) {
+  if (!Number.isFinite(value) || Math.abs(value) < 0.005) {
+    return "stable";
+  }
+
+  return value > 0 ? "up" : "down";
+}
+
+function metricPeriodDelta(metric, period) {
+  const history = Array.isArray(metric.history) ? metric.history : [];
+
+  if (metric.sourceStatus !== "Source-backed" || history.length < 2) {
+    return null;
+  }
+
+  const latest = history.at(-1);
+  const observationCount = periodObservationCount(metric, period);
+  const baselineIndex = Math.max(0, history.length - 1 - observationCount);
+  const baseline = history[baselineIndex];
+
+  if (!latest || !baseline || !Number.isFinite(latest.value) || !Number.isFinite(baseline.value)) {
+    return null;
+  }
+
+  const rawDelta = latest.value - baseline.value;
+  const percentDelta = baseline.value ? (rawDelta / baseline.value) * 100 : rawDelta;
+  const value = metric.comparison === "point-change" ? rawDelta : percentDelta;
+
+  return {
+    value,
+    label: formatDeltaLabel(value, metric.comparison),
+    tone: periodTone(value),
+    points: history.slice(baselineIndex).map((point) => point.value),
+  };
+}
+
+function withPeriodDelta(metric, period) {
+  const delta = metricPeriodDelta(metric, period);
+
+  if (!delta) {
+    return metric;
+  }
+
+  return {
+    ...metric,
+    periodChange: delta.label,
+    periodChangeValue: delta.value,
+    periodTone: delta.tone,
+    periodPoints: delta.points.length > 1 ? delta.points : metric.points,
+  };
+}
+
+function sectionChange(cards) {
+  const weighted = cards
+    .filter((card) => card.comparison !== "point-change" && Number.isFinite(card.periodChangeValue))
+    .map((card) => ({
+      value: card.periodChangeValue,
+      weight: Number.isFinite(card.weight) ? card.weight : 1,
+    }));
+
+  if (!weighted.length) {
+    return null;
+  }
+
+  const totalWeight = weighted.reduce((total, item) => total + item.weight, 0);
+  const value = weighted.reduce((total, item) => total + item.value * item.weight, 0) / totalWeight;
+
+  return {
+    value,
+    label: `${signedNumber(value)}%`,
+    tone: periodTone(value),
+  };
+}
+
+function updateSectionBadge(selector, change) {
+  const element = document.querySelector(selector);
+
+  if (!element) {
+    return;
+  }
+
+  element.classList.remove("trend-up", "trend-down", "trend-stable", "trend-mixed", "trend-caution", "trend-unavailable");
+
+  if (!change) {
+    element.textContent = "Unavailable";
+    element.classList.add("trend-unavailable");
+    return;
+  }
+
+  element.textContent = change.label;
+  element.classList.add(`trend-${change.tone}`);
+}
+
+function syncControlValues() {
+  const economyPeriodSelect = document.querySelector("#economy-period-select");
+  const currencyPeriodSelect = document.querySelector("#currency-period-select");
+  const economyRegionSelect = document.querySelector("#economy-region-select");
+
+  if (economyPeriodSelect) {
+    economyPeriodSelect.value = selectedEconomyPeriod;
+  }
+
+  if (currencyPeriodSelect) {
+    currencyPeriodSelect.value = selectedCurrencyPeriod;
+  }
+
+  if (economyRegionSelect) {
+    economyRegionSelect.value = selectedRegion;
+  }
+}
+
+function bindDashboardControls() {
+  document.querySelector("#economy-period-select")?.addEventListener("change", (event) => {
+    selectedEconomyPeriod = event.target.value;
+    renderDashboard();
+  });
+
+  document.querySelector("#currency-period-select")?.addEventListener("change", (event) => {
+    selectedCurrencyPeriod = event.target.value;
+    renderDashboard();
+  });
+
+  document.querySelector("#economy-region-select")?.addEventListener("change", (event) => {
+    selectedRegion = event.target.value;
+    renderDashboard();
+  });
 }
 
 function escapeHtml(value) {
@@ -416,6 +632,7 @@ function renderSparkline(points, tone) {
 
 function renderMetricCard(metric) {
   const cardTone = metricCardTone(metric);
+  const sparklinePoints = metric.periodPoints || metric.points;
 
   return `
     <article class="metric-card metric-card-${cardTone}">
@@ -437,7 +654,7 @@ function renderMetricCard(metric) {
         <span class="${trendClass(cardTone)} metric-delta">${escapeHtml(metricDeltaLabel(metric))}</span>
       </div>
       <div class="metric-chart-panel">
-        ${renderSparkline(metric.points, cardTone)}
+        ${renderSparkline(sparklinePoints, cardTone)}
       </div>
       <div class="metric-footer" aria-label="Metric source details">
         <span><i class="fa-regular fa-calendar" aria-hidden="true"></i> ${escapeHtml(metricReleaseLabel(metric))}</span>
@@ -518,35 +735,65 @@ function findMetric(items, id, name) {
   return items.find((item) => item.id === id) || items.find((item) => item.name === name);
 }
 
-function renderDashboard() {
-  const economyGrid = document.querySelector("#economy-grid");
-  const currencyGrid = document.querySelector("#currency-grid");
-  const riskList = document.querySelector("#risk-list");
-  const regionList = document.querySelector("#region-list");
-  const marketCards = [
+function marketRoleRank(metric) {
+  const index = MARKET_ROLE_ORDER.indexOf(metric.marketRole);
+  return index === -1 ? MARKET_ROLE_ORDER.length : index;
+}
+
+function regionalMarketCards() {
+  const regionalCards = marketPulse
+    .filter((item) => item.viewGroup === "economy" && item.region === selectedRegion)
+    .sort((a, b) => marketRoleRank(a) - marketRoleRank(b));
+
+  if (regionalCards.length) {
+    return regionalCards;
+  }
+
+  return [
     findMetric(marketPulse, "us-equities", "S&P 500"),
-    findMetric(marketPulse, "vxus", "VXUS"),
-    findMetric(marketPulse, "vgt", "VGT"),
+    findMetric(marketPulse, "us-small-cap", "Small Cap"),
+    findMetric(marketPulse, "us-technology", "Technology"),
     findMetric(marketPulse, "bonds", "Bonds"),
   ].filter(Boolean);
-  const economyCards = [
-    ...marketCards,
-    ...economicHealth,
-  ].filter(Boolean);
-  const currencyCards = [
+}
+
+function currencyCards() {
+  const grouped = marketPulse.filter((item) => item.viewGroup === "currency");
+
+  if (grouped.length) {
+    return grouped;
+  }
+
+  return [
     findMetric(marketPulse, "oil", "Oil"),
     findMetric(marketPulse, "dollar-index", "U.S. dollar"),
     findMetric(marketPulse, "euro", "Euro"),
     findMetric(marketPulse, "yen", "Yen"),
   ].filter(Boolean);
+}
+
+function renderDashboard() {
+  const economyGrid = document.querySelector("#economy-grid");
+  const currencyGrid = document.querySelector("#currency-grid");
+  const riskList = document.querySelector("#risk-list");
+  const regionList = document.querySelector("#region-list");
+  const marketCards = regionalMarketCards().map((item) => withPeriodDelta(item, selectedEconomyPeriod));
+  const economyCards = [
+    ...marketCards,
+    ...economicHealth.map((item) => withPeriodDelta(item, selectedEconomyPeriod)),
+  ].filter(Boolean);
+  const activeCurrencyCards = currencyCards().map((item) => withPeriodDelta(item, selectedCurrencyPeriod));
 
   if (economyGrid) {
     economyGrid.innerHTML = economyCards.map(renderMetricCard).join("");
   }
 
   if (currencyGrid) {
-    currencyGrid.innerHTML = currencyCards.map((item) => renderMetricCard(item)).join("");
+    currencyGrid.innerHTML = activeCurrencyCards.map((item) => renderMetricCard(item)).join("");
   }
+
+  updateSectionBadge("#economy-change-badge", sectionChange(economyCards));
+  updateSectionBadge("#currency-change-badge", sectionChange(activeCurrencyCards));
 
   if (riskList) {
     riskList.innerHTML = riskIndicators.map(renderIndicatorRow).join("");
@@ -678,10 +925,6 @@ function applyLiveSnapshot(snapshot) {
   setText(".score-drivers small", "Based on visible live indicators.");
   setText("#last-updated-pill", `Last updated ${formatCheckedTime(snapshot.checkedAt)}`);
   setText("#economy-title", "Economy");
-  setText(
-    "#economy-coverage-note",
-    "U.S. macro, broad market, commodity, and FX coverage",
-  );
   setText("#currency-title", "Currency");
   setText("#risk-title", "Risk and confidence from public releases");
   setText("#global-title", "Regional growth from World Bank data");
@@ -764,7 +1007,6 @@ function applyLiveFallback() {
   setText(".score-drivers small", "Live data is required for current values.");
   setText("#last-updated-pill", "Live data unavailable");
   setText("#economy-title", "Economy");
-  setText("#economy-coverage-note", "Live coverage unavailable");
   setText("#currency-title", "Currency");
   setText("#source-coverage-title", "Live data unavailable");
   setText(
@@ -833,6 +1075,8 @@ async function loadLiveSnapshot() {
   }
 }
 
+syncControlValues();
+bindDashboardControls();
 renderDashboard();
 loadLiveSnapshot();
 document.querySelector("#refresh-data-button")?.addEventListener("click", loadLiveSnapshot);

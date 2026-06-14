@@ -25,7 +25,7 @@
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
       referrerpolicy="no-referrer"
     >
-    <link rel="stylesheet" href="styles.css?v=20260614-coverage-note">
+    <link rel="stylesheet" href="styles.css?v=20260614-region-periods">
   </head>
   <body>
     <a class="skip-link" href="#main-content">Skip to dashboard</a>
@@ -87,17 +87,50 @@
 
       <section class="dashboard-section economy-section" aria-labelledby="economy-title">
         <div class="section-heading">
-          <h2 id="economy-title">Economy</h2>
-          <p id="economy-coverage-note" class="coverage-note">
-            U.S. macro, broad market, commodity, and FX coverage
-          </p>
+          <div class="section-title-group">
+            <h2 id="economy-title">Economy</h2>
+            <span id="economy-change-badge" class="section-change-badge trend-stable">Loading</span>
+          </div>
+          <div class="section-controls" aria-label="Economy controls">
+            <label class="section-select-label" for="economy-period-select">
+              <span class="visually-hidden">Economy period</span>
+              <select id="economy-period-select" class="section-select" aria-label="Economy period">
+                <option value="today">Today</option>
+                <option value="week">Week</option>
+                <option value="month">Month</option>
+                <option value="year">Year</option>
+              </select>
+            </label>
+            <label class="section-select-label section-select-label-region" for="economy-region-select">
+              <span class="visually-hidden">Economy region</span>
+              <select id="economy-region-select" class="section-select" aria-label="Economy region">
+                <option value="United States">United States</option>
+                <option value="Europe">Europe</option>
+                <option value="Asia">Asia</option>
+              </select>
+            </label>
+          </div>
         </div>
         <div id="economy-grid" class="metric-grid economy-grid"></div>
       </section>
 
       <section class="dashboard-section" aria-labelledby="currency-title">
         <div class="section-heading">
-          <h2 id="currency-title">Currency</h2>
+          <div class="section-title-group">
+            <h2 id="currency-title">Currency</h2>
+            <span id="currency-change-badge" class="section-change-badge trend-stable">Loading</span>
+          </div>
+          <div class="section-controls" aria-label="Currency controls">
+            <label class="section-select-label" for="currency-period-select">
+              <span class="visually-hidden">Currency period</span>
+              <select id="currency-period-select" class="section-select" aria-label="Currency period">
+                <option value="today">Today</option>
+                <option value="week">Week</option>
+                <option value="month">Month</option>
+                <option value="year">Year</option>
+              </select>
+            </label>
+          </div>
         </div>
         <div id="currency-grid" class="metric-grid currency-grid"></div>
       </section>
@@ -179,6 +212,6 @@
       </section>
     </main>
 
-    <script src="app.js?v=20260614-coverage-note"></script>
+    <script src="app.js?v=20260614-region-periods"></script>
   </body>
 </html>

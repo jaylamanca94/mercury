@@ -99,7 +99,10 @@ In scope for the MVP:
 - Cadence-aware current, delayed, and stale labels for live source releases
 - Exact source release-date labels that preserve each indicator's cadence
 - Explainable source-backed breadth score drivers
+- Weighted section gain/loss badges for the cards currently in view
 - Visible previous-release comparisons for live metrics
+- Source-backed Today, Week, Month, and Year comparison controls for Economy and Currency cards
+- Region-aware market proxy cards for United States, Europe, and Asia in the Economy section
 - Source-backed Economic Health route using public FRED releases
 - Plain-language labels and context
 - Neutral, non-advisory dashboard language
@@ -196,6 +199,8 @@ Every live data surface should show source, freshness, and caveats when relevant
 - Avoid inactive controls that imply unavailable workflows.
 - Show scope notes instead of filters when a dashboard section mixes several source-backed
   geographies or asset categories without a source-backed filtering model.
+- Region controls may use clearly labeled ETF or fund proxies for comparable market categories, but
+  must not imply investment advice, complete regional coverage, or official macro equivalence.
 - Start with the smallest working dashboard before adding integrations.
 
 ## Roadmap
@@ -208,6 +213,8 @@ Recently completed:
   World Bank public data.
 - Added cadence-aware freshness guardrails so connected daily, weekly, monthly, quarterly, and
   annual releases can be labeled current, delayed, or stale.
+- Added active period controls and region-aware Economy market proxies for United States, Europe,
+  and Asia.
 
 Recommended next steps:
 
@@ -236,6 +243,9 @@ Future opportunities:
 
 - Market Pulse uses Yahoo Finance chart data as a public market-data bridge; production licensing
   should be reviewed before a public launch.
+- Regional Economy controls use public market proxy funds to keep the comparison source-backed.
+  These proxies are not investment recommendations and do not represent complete regional macro
+  coverage.
 - Economic Health loads source-backed public FRED releases through `/api/live-snapshot`.
 - Risk and Confidence combines Yahoo Finance daily proxies with the FRED Financial Stress Index.
 - Global Snapshot uses World Bank annual GDP growth releases, which update less frequently than

@@ -134,6 +134,9 @@ Use `8px` or less for normal cards and repeated list items unless a larger conta
 - Avoid chart types that require financial expertise to interpret.
 - Prefer labels like `Rising`, `Falling`, `Mixed`, `Stable`, `Elevated risk`, or `Improving confidence`.
 - Do not use language like `buy signal`, `sell signal`, `undervalued`, or `overvalued`.
+- Section gain/loss badges should be computed from comparable visible percent-change cards and
+  update when period or region filters change. Treat them as lightweight rollups, not formal
+  economic scores.
 - Make stale, delayed, sample, fallback, no-data, and unavailable data visually distinct.
 - Source-backed sections must update their own freshness labels from the current source response, including source observation time, previous-release comparison timing, and dashboard fetch timing when those are different.
 - Show exact daily release dates for daily market/risk data, month-level labels for monthly economic releases, and year-level labels for annual regional releases.
@@ -171,6 +174,8 @@ Use `8px` or less for normal cards and repeated list items unless a larger conta
 - Avoid controls that imply trading, ordering, transactions, portfolio management, or alerts before those workflows are approved.
 - Use compact scope notes instead of dropdowns or segmented controls when a section is not yet
   filterable by source-backed data. Controls must visibly change the dashboard content when present.
+- Period dropdowns use `Today`, `Week`, `Month`, and `Year` labels and should update card deltas,
+  sparklines, and section rollups together.
 - Clickable rows and cards should have clear pointer, hover, and keyboard focus states.
 - Loading, no-data, stale-data, and error states should be plain, calm, and useful.
 
@@ -215,6 +220,8 @@ Current source-backed utilities:
   dataset. It is a presentation layer, not a new scoring model.
 - Primary Market Pulse and Economic Health sections may use larger panel treatment to make the main data areas feel more substantial, while repeated metric tiles remain compact and source-aware.
 - Repeated metric cards use `8px` radius, compact labels, source context, status chips, and small sparklines.
+- Section headers may pair a title with a compact signed badge and right-aligned native selects,
+  matching the latest Figma dashboard direction while preserving keyboard and screen-reader access.
 - Metric cards and key signal tiles should use soft neutral surfaces with thin tone accents instead
   of saturated full borders, so direction remains visible without making Mercury feel like a
   trading interface.
