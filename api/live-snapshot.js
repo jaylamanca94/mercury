@@ -865,10 +865,15 @@ async function buildSnapshot() {
   const sourceItems = [...yahooItems, ...fredItems];
   const sections = groupBySection(sourceItems, regions);
   const freshness = buildFreshnessSummary([...sourceItems, ...regions]);
-  const releaseDates = [
-    ...sourceItems.map((item) => item.releaseDate),
-    ...regions.map((region) => region.releaseDate),
-  ].filter(Boolean);
+  const releaseEntries = [...sourceItems, ...regions]
+    .filter((item) => item.releaseDate)
+    .map((item) => ({
+      date: item.releaseDate,
+      cadence: item.cadence,
+    }))
+    .sort((a, b) => a.date.localeCompare(b.date));
+  const earliestRelease = releaseEntries[0] || {};
+  const latestRelease = releaseEntries.at(-1) || {};
   const unavailableCount = [...sourceItems, ...regions].filter(
     (item) => item.sourceStatus !== "Source-backed",
   ).length;
@@ -882,8 +887,10 @@ async function buildSnapshot() {
     coverage: "Market Pulse, Economic Health, Risk and Confidence, Global Snapshot",
     freshness,
     releaseRange: {
-      earliest: releaseDates.slice().sort()[0] || null,
-      latest: releaseDates.slice().sort().at(-1) || null,
+      earliest: earliestRelease.date || null,
+      earliestCadence: earliestRelease.cadence || null,
+      latest: latestRelease.date || null,
+      latestCadence: latestRelease.cadence || null,
     },
     summary: buildSummary(sections),
     ...sections,

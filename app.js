@@ -127,7 +127,19 @@ function escapeHtml(value) {
     .replaceAll("'", "&#039;");
 }
 
-function formatReleaseDate(value) {
+function inferDisplayCadence(cadence) {
+  const normalizedCadence = String(cadence || "").toLowerCase();
+
+  if (normalizedCadence.includes("daily")) return "daily";
+  if (normalizedCadence.includes("weekly")) return "weekly";
+  if (normalizedCadence.includes("monthly")) return "monthly";
+  if (normalizedCadence.includes("quarterly")) return "quarterly";
+  if (normalizedCadence.includes("annual")) return "annual";
+
+  return null;
+}
+
+function formatReleaseDate(value, cadence) {
   if (!value) {
     return null;
   }
@@ -142,7 +154,13 @@ function formatReleaseDate(value) {
     return value;
   }
 
-  if (/^\d{4}-\d{2}-\d{2}$/.test(value) && !value.endsWith("-01")) {
+  const cadenceKey = inferDisplayCadence(cadence);
+  const shouldShowExactDate =
+    cadenceKey === "daily" ||
+    cadenceKey === "weekly" ||
+    (!cadenceKey && /^\d{4}-\d{2}-\d{2}$/.test(value) && !value.endsWith("-01"));
+
+  if (shouldShowExactDate) {
     return new Intl.DateTimeFormat("en", {
       dateStyle: "medium",
       timeZone: "UTC",
@@ -237,8 +255,8 @@ function sourceStatusLabel(items, sourceName) {
 }
 
 function formatReleaseWindow(releaseRange) {
-  const latest = formatReleaseDate(releaseRange?.latest);
-  const earliest = formatReleaseDate(releaseRange?.earliest);
+  const latest = formatReleaseDate(releaseRange?.latest, releaseRange?.latestCadence);
+  const earliest = formatReleaseDate(releaseRange?.earliest, releaseRange?.earliestCadence);
 
   if (!latest) {
     return "Unavailable";
@@ -315,7 +333,7 @@ function sourceShortName(source) {
 
 function metricReleaseLabel(metric) {
   if (metric.releaseDate) {
-    return formatReleaseDate(metric.releaseDate);
+    return formatReleaseDate(metric.releaseDate, metric.cadence);
   }
 
   if (metric.sourceStatus === "Loading") {
@@ -328,7 +346,7 @@ function metricReleaseLabel(metric) {
 function renderDataMeta(item) {
   const status = item.sourceStatus || "Unavailable";
   const cadence = item.releaseDate
-    ? `${item.cadence}; latest release ${formatReleaseDate(item.releaseDate)}`
+    ? `${item.cadence}; latest release ${formatReleaseDate(item.releaseDate, item.cadence)}`
     : item.cadence;
   const statusMeta =
     status === "Source-backed"
