@@ -32,7 +32,9 @@ body {
 }
 
 .skip-link {
-  background: var(--ink);
+  background: #111820;
+  border: 2px solid #8ee6b0;
+  border-radius: 4px;
   color: #fff;
   left: 16px;
   padding: 8px 12px;
@@ -42,6 +44,8 @@ body {
 }
 
 .skip-link:focus {
+  outline: 3px solid #fff;
+  outline-offset: 2px;
   top: 16px;
 }
 
@@ -507,6 +511,10 @@ body {
   stroke-width: 4;
 }
 
+.sparkline circle {
+  fill: currentColor;
+}
+
 .sparkline-empty {
   align-items: center;
   background: transparent;
@@ -518,6 +526,17 @@ body {
   justify-content: center;
   line-height: 24px;
   text-transform: uppercase;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
 }
 
 .metric-footer {

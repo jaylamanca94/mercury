@@ -331,16 +331,19 @@ function bindDashboardControls() {
   document.querySelector("#economy-period-select")?.addEventListener("change", (event) => {
     selectedEconomyPeriod = event.target.value;
     renderDashboard();
+    announceDashboardStatus(`Economy period changed to ${event.target.selectedOptions[0]?.textContent || event.target.value}.`);
   });
 
   document.querySelector("#currency-period-select")?.addEventListener("change", (event) => {
     selectedCurrencyPeriod = event.target.value;
     renderDashboard();
+    announceDashboardStatus(`Currency period changed to ${event.target.selectedOptions[0]?.textContent || event.target.value}.`);
   });
 
   document.querySelector("#economy-region-select")?.addEventListener("change", (event) => {
     selectedRegion = event.target.value;
     renderDashboard();
+    announceDashboardStatus(`Economy region changed to ${event.target.selectedOptions[0]?.textContent || event.target.value}.`);
   });
 }
 
@@ -439,6 +442,10 @@ function setHtml(selector, html) {
   if (element) {
     element.innerHTML = html;
   }
+}
+
+function announceDashboardStatus(message) {
+  setText("#dashboard-status", message);
 }
 
 function setScoreVisual(score) {
@@ -589,7 +596,7 @@ function displayMetricDetail(value) {
 
 function renderMetricComparison(metric) {
   return `
-    <dl class="metric-comparison" aria-label="Previous value comparison">
+    <dl class="metric-comparison" aria-label="${escapeHtml(displayMetricName(metric))} previous value comparison">
       <div>
         <dt>Previous value</dt>
         <dd>${escapeHtml(displayMetricDetail(metric.previous))}</dd>
@@ -627,9 +634,19 @@ function renderDataMeta(item) {
   `;
 }
 
-function renderSparkline(points, tone) {
+function renderSparkline(points, tone, label) {
+  const accessibleLabel = escapeHtml(label || "Recent trend line");
+
   if (!points?.length) {
-    return '<div class="sparkline sparkline-empty" aria-label="Trend line loading">Line graph</div>';
+    return `<div class="sparkline sparkline-empty" role="img" aria-label="${accessibleLabel} unavailable">Line graph</div>`;
+  }
+
+  if (points.length === 1) {
+    return `
+      <svg class="sparkline trend-${tone}" viewBox="0 0 180 42" role="img" aria-label="${accessibleLabel}; one data point available">
+        <circle cx="90" cy="21" r="4"></circle>
+      </svg>
+    `;
   }
 
   const width = 180;
@@ -647,7 +664,7 @@ function renderSparkline(points, tone) {
     .join(" ");
 
   return `
-    <svg class="sparkline trend-${tone}" viewBox="0 0 ${width} ${height}" role="img" aria-label="Recent trend line">
+    <svg class="sparkline trend-${tone}" viewBox="0 0 ${width} ${height}" role="img" aria-label="${accessibleLabel}">
       <path d="${d}"></path>
     </svg>
   `;
@@ -662,7 +679,7 @@ function renderMetricCard(metric) {
       <div class="metric-top">
         <div>
           <div class="metric-title-line">
-            <p class="metric-name">${escapeHtml(displayMetricName(metric))}</p>
+            <h3 class="metric-name">${escapeHtml(displayMetricName(metric))}</h3>
             ${
               metricTickerLabel(metric)
                 ? `<p class="metric-ticker">${escapeHtml(metricTickerLabel(metric))}</p>`
@@ -678,7 +695,11 @@ function renderMetricCard(metric) {
         <span class="${trendClass(cardTone)} metric-delta">${escapeHtml(metricDeltaLabel(metric))}</span>
       </div>
       <div class="metric-chart-panel">
-        ${renderSparkline(sparklinePoints, cardTone)}
+        ${renderSparkline(
+          sparklinePoints,
+          cardTone,
+          `${displayMetricName(metric)} ${metricDeltaLabel(metric)} trend`,
+        )}
       </div>
       ${renderMetricComparison(metric)}
       <div class="metric-footer" aria-label="Metric source details">
@@ -735,7 +756,7 @@ function renderIndicatorRow(indicator) {
     <article class="indicator-row">
       <i class="fa-solid ${indicator.icon}" aria-hidden="true"></i>
       <div>
-        <p class="row-title">${escapeHtml(indicator.name)}</p>
+        <h3 class="row-title">${escapeHtml(indicator.name)}</h3>
         <p class="row-copy">${escapeHtml(indicator.copy)}</p>
         ${renderDataMeta(indicator)}
       </div>
@@ -749,7 +770,7 @@ function renderRegionRow(region) {
     <article class="region-row">
       <span class="region-marker" aria-hidden="true"><i class="fa-solid fa-location-dot"></i></span>
       <div>
-        <p class="row-title">${escapeHtml(region.name)}</p>
+        <h3 class="row-title">${escapeHtml(region.name)}</h3>
         <p class="row-copy">${escapeHtml(region.copy)}</p>
         ${renderDataMeta(region)}
       </div>
@@ -984,6 +1005,7 @@ function applyLiveSnapshot(snapshot) {
   );
   applySnapshotFreshnessState(snapshot);
   applySnapshotConnectionState(snapshot, sourcePill);
+  announceDashboardStatus(`Dashboard data updated. Latest check ${formatCheckedAt(snapshot.checkedAt)}.`);
 }
 
 function markUnavailable(items) {
@@ -1060,10 +1082,16 @@ function applyLiveFallback() {
   if (sourcePill) {
     sourcePill.classList.add("status-pill-caution");
   }
+
+  announceDashboardStatus("Live dashboard data is unavailable in this view.");
 }
 
 async function loadLiveSnapshot() {
   const refreshButton = document.querySelector("#refresh-data-button");
+  const dashboardShell = document.querySelector("#main-content");
+
+  dashboardShell?.setAttribute("aria-busy", "true");
+  announceDashboardStatus("Checking latest dashboard data.");
 
   if (refreshButton) {
     refreshButton.disabled = true;
@@ -1076,6 +1104,7 @@ async function loadLiveSnapshot() {
       refreshButton.disabled = false;
       refreshButton.textContent = "Refresh data";
     }
+    dashboardShell?.setAttribute("aria-busy", "false");
     return;
   }
 
@@ -1099,6 +1128,7 @@ async function loadLiveSnapshot() {
       refreshButton.disabled = false;
       refreshButton.textContent = "Refresh data";
     }
+    dashboardShell?.setAttribute("aria-busy", "false");
   }
 }
 

@@ -47,10 +47,22 @@
       <div class="page-title-row">
         <h1>Global economy at a glance</h1>
         <div class="page-actions" aria-label="Dashboard actions">
-          <span id="last-updated-pill" class="timestamp-pill">Checking latest data</span>
-          <button id="refresh-data-button" class="refresh-button" type="button">Refresh data</button>
+          <span id="last-updated-pill" class="timestamp-pill" aria-live="polite" aria-atomic="true">
+            Checking latest data
+          </span>
+          <button
+            id="refresh-data-button"
+            class="refresh-button"
+            type="button"
+            aria-describedby="dashboard-status"
+          >
+            Refresh data
+          </button>
         </div>
       </div>
+      <p id="dashboard-status" class="visually-hidden" role="status" aria-live="polite" aria-atomic="true">
+        Checking latest dashboard data.
+      </p>
 
       <section class="summary-band" aria-labelledby="global-status-title">
         <div class="summary-copy">
