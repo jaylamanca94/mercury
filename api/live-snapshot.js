@@ -573,7 +573,10 @@ function classifyTrend(series, latest, previous) {
   }
 
   if (series.trendModel === "inflation") {
-    if (latest >= 3) return { trend: delta < -0.05 ? "Cooling" : "Elevated", tone: "caution" };
+    if (latest >= 3) {
+      if (delta < -0.05) return { trend: "Cooling", tone: "mixed" };
+      return { trend: "Elevated", tone: "caution" };
+    }
     return { trend: "Contained", tone: "stable" };
   }
 

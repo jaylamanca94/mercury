@@ -97,6 +97,10 @@ function metricCardTone(metric) {
     return "unavailable";
   }
 
+  if (metric.tone) {
+    return metric.tone;
+  }
+
   if (metric.change?.trim().startsWith("-")) {
     return "down";
   }
