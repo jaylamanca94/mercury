@@ -50,7 +50,7 @@ Recommended dashboard order:
 1. Slim app header with product identity and lightweight user/context affordance
 2. Page title row with latest-check timestamp and refresh action
 3. Current-conditions summary with a compact economy score panel
-4. Grouped metric sections for Markets, Commodities, and Currency
+4. Grouped metric sections for Economy and Currency
 5. Risk and Confidence plus Global Snapshot
 6. Source coverage and freshness
 
@@ -186,13 +186,16 @@ Good utility candidates:
 
 Current source-backed utilities:
 
-- The dashboard uses a calm command-center structure inspired by analytics dashboards: compact header, status summary, key signal strip, primary panels, and source freshness. Keep this hierarchy, but avoid sidebar-heavy app chrome, decorative banners, and trading-terminal density.
-- The latest dashboard shell follows the Figma section model: a slim white top nav, gray page
+- The dashboard uses a calm command-center structure inspired by analytics dashboards: compact header, status summary, primary panels, and source freshness. Keep this hierarchy, but avoid sidebar-heavy app chrome, decorative banners, and trading-terminal density.
+- The latest dashboard shell follows the Figma section model: a slim top nav, dark gray page
   canvas, centered `1160px` content column, title/action row, large current-conditions card, and
-  stacked white section panels for grouped metric cards.
-- Primary metric groups should be organized by audience-facing categories such as `Markets`,
-  `Commodities`, and `Currency`, while preserving source-backed economic, risk, regional, and
-  freshness context elsewhere on the page.
+  stacked section panels for grouped metric cards.
+- Primary metric groups should be organized by audience-facing categories such as `Economy` and
+  `Currency`. Economy combines the top market/ticker cards with core macro indicators; Currency
+  holds oil, dollar, and FX cards. Preserve risk, regional, and freshness context elsewhere on the
+  page.
+- Repeated metric cards should show a readable card name plus a compact ticker or series label in
+  the header, for example `Technology` + `VGT` or `Inflation` + `CPI`.
 - Any first-scan metric grouping should reuse live dashboard data rather than introduce a separate
   dataset. It is a presentation layer, not a new scoring model.
 - Primary Market Pulse and Economic Health sections may use larger panel treatment to make the main data areas feel more substantial, while repeated metric tiles remain compact and source-aware.

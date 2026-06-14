@@ -1,8 +1,9 @@
-function pendingMetric(name, context, icon, id) {
+function pendingMetric(name, context, icon, id, ticker) {
   return {
     ...(id ? { id } : {}),
     name,
     context,
+    ...(ticker ? { ticker } : {}),
     value: "Loading",
     trend: "Pending",
     tone: "stable",
@@ -57,19 +58,21 @@ function pendingRegion(name) {
 }
 
 let marketPulse = [
-  pendingMetric("U.S. equities", "S&P 500 daily close", "fa-chart-line", "us-equities"),
-  pendingMetric("Bonds", "7-10 year Treasury ETF", "fa-scale-balanced", "bonds"),
-  pendingMetric("VXUS", "Total international stock ETF", "fa-globe", "vxus"),
-  pendingMetric("VGT", "Information technology ETF", "fa-microchip", "vgt"),
-  pendingMetric("U.S. dollar", "Dollar index ETF proxy", "fa-dollar-sign", "dollar-index"),
-  pendingMetric("Oil", "WTI crude futures", "fa-gas-pump", "oil"),
+  pendingMetric("S&P 500", "Vanguard S&P 500 ETF", "fa-chart-line", "us-equities", "VOO"),
+  pendingMetric("International", "Total international stock ETF", "fa-globe", "vxus", "VXUS"),
+  pendingMetric("Technology", "Information technology ETF", "fa-microchip", "vgt", "VGT"),
+  pendingMetric("Bonds", "Total bond market ETF", "fa-scale-balanced", "bonds", "BND"),
+  pendingMetric("Oil", "WTI crude futures", "fa-gas-pump", "oil", "CL=F"),
+  pendingMetric("U.S. dollar", "Dollar index ETF proxy", "fa-dollar-sign", "dollar-index", "UUP"),
+  pendingMetric("Euro", "EUR/USD exchange rate", "fa-euro-sign", "euro", "EUR/USD"),
+  pendingMetric("Yen", "USD/JPY exchange rate", "fa-yen-sign", "yen", "USD/JPY"),
 ];
 
 let economicHealth = [
-  pendingMetric("Inflation", "Consumer prices", "fa-receipt"),
-  pendingMetric("Interest rates", "Federal funds rate", "fa-percent"),
-  pendingMetric("Unemployment", "Labor market", "fa-briefcase"),
-  pendingMetric("GDP growth", "Quarterly pace", "fa-seedling"),
+  pendingMetric("Inflation", "Consumer prices", "fa-receipt", "inflation", "CPI"),
+  pendingMetric("Interest rates", "Federal funds rate", "fa-percent", "interest-rates", "Fed funds"),
+  pendingMetric("Unemployment", "Labor market", "fa-briefcase", "unemployment", "UNRATE"),
+  pendingMetric("GDP growth", "Quarterly pace", "fa-seedling", "gdp-growth", "GDP"),
 ];
 
 let riskIndicators = [
@@ -315,10 +318,20 @@ function displayMetricName(metric) {
     "GDP growth": "GDP Growth",
     "Interest rates": "Interest Rates",
     "U.S. dollar": "U.S. Dollar",
-    "U.S. equities": "Stocks",
   };
 
   return names[metric.name] || metric.name;
+}
+
+function metricTickerLabel(metric) {
+  if (metric.ticker) {
+    return metric.ticker;
+  }
+
+  if (metric.id === "dollar-index") return "UUP";
+  if (metric.id === "oil") return "CL=F";
+
+  return "";
 }
 
 function sourceShortName(source) {
@@ -397,16 +410,21 @@ function renderSparkline(points, tone) {
   `;
 }
 
-function renderMetricCard(metric, options = {}) {
+function renderMetricCard(metric) {
   const cardTone = metricCardTone(metric);
-  const widthClass = options.wide ? " metric-card-wide" : "";
 
   return `
-    <article class="metric-card metric-card-${cardTone}${widthClass}">
+    <article class="metric-card metric-card-${cardTone}">
       <div class="metric-top">
         <div>
-          <p class="metric-name">${escapeHtml(displayMetricName(metric))}</p>
-          <p class="metric-context">${escapeHtml(metric.context)}</p>
+          <div class="metric-title-line">
+            <p class="metric-name">${escapeHtml(displayMetricName(metric))}</p>
+            ${
+              metricTickerLabel(metric)
+                ? `<p class="metric-ticker">${escapeHtml(metricTickerLabel(metric))}</p>`
+                : ""
+            }
+          </div>
         </div>
         <span class="metric-icon" aria-hidden="true"><i class="fa-solid fa-chart-line"></i></span>
       </div>
@@ -497,37 +515,33 @@ function findMetric(items, id, name) {
 }
 
 function renderDashboard() {
-  const marketGrid = document.querySelector("#market-grid");
-  const commodityGrid = document.querySelector("#commodity-grid");
+  const economyGrid = document.querySelector("#economy-grid");
   const currencyGrid = document.querySelector("#currency-grid");
   const riskList = document.querySelector("#risk-list");
   const regionList = document.querySelector("#region-list");
-  const featuredMarketCards = [
-    findMetric(marketPulse, "us-equities", "U.S. equities"),
-    findMetric(marketPulse, "bonds", "Bonds"),
-  ].filter(Boolean);
-  const tickerCards = [
+  const marketCards = [
+    findMetric(marketPulse, "us-equities", "S&P 500"),
     findMetric(marketPulse, "vxus", "VXUS"),
     findMetric(marketPulse, "vgt", "VGT"),
+    findMetric(marketPulse, "bonds", "Bonds"),
   ].filter(Boolean);
-  const currencyMetric = findMetric(marketPulse, "dollar-index", "U.S. dollar");
-  const commodityMetric = findMetric(marketPulse, "oil", "Oil");
-  const marketCards = [
-    ...featuredMarketCards.map((item) => [item, { wide: true }]),
-    ...tickerCards.map((item) => [item, {}]),
-    ...economicHealth.map((item) => [item, {}]),
-  ].filter(([item]) => Boolean(item));
+  const economyCards = [
+    ...marketCards,
+    ...economicHealth,
+  ].filter(Boolean);
+  const currencyCards = [
+    findMetric(marketPulse, "oil", "Oil"),
+    findMetric(marketPulse, "dollar-index", "U.S. dollar"),
+    findMetric(marketPulse, "euro", "Euro"),
+    findMetric(marketPulse, "yen", "Yen"),
+  ].filter(Boolean);
 
-  if (marketGrid) {
-    marketGrid.innerHTML = marketCards.map(([item, options]) => renderMetricCard(item, options)).join("");
-  }
-
-  if (commodityGrid) {
-    commodityGrid.innerHTML = commodityMetric ? renderMetricCard(commodityMetric) : "";
+  if (economyGrid) {
+    economyGrid.innerHTML = economyCards.map(renderMetricCard).join("");
   }
 
   if (currencyGrid) {
-    currencyGrid.innerHTML = currencyMetric ? renderMetricCard(currencyMetric) : "";
+    currencyGrid.innerHTML = currencyCards.map((item) => renderMetricCard(item)).join("");
   }
 
   if (riskList) {
@@ -659,8 +673,7 @@ function applyLiveSnapshot(snapshot) {
   setText(".score-drivers p", "Score inputs");
   setText(".score-drivers small", "Based on visible live indicators.");
   setText("#last-updated-pill", `Last updated ${formatCheckedTime(snapshot.checkedAt)}`);
-  setText("#markets-title", "Markets");
-  setText("#commodity-title", "Commodities");
+  setText("#economy-title", "Economy");
   setText("#currency-title", "Currency");
   setText("#risk-title", "Risk and confidence from public releases");
   setText("#global-title", "Regional growth from World Bank data");
@@ -676,7 +689,7 @@ function applyLiveSnapshot(snapshot) {
   setText("#refresh-schedule", "Checked on page load");
   setText("#source-rail-refresh", "Checked on page load");
   setText("#market-source-status", sourceStatusLabel(snapshot.marketPulse, "Yahoo"));
-  setText("#market-source-detail", "Daily market series are loaded through Yahoo Finance charts");
+  setText("#market-source-detail", "Daily market, commodity, and FX series are loaded through Yahoo Finance charts");
   setText("#macro-source-status", sourceStatusLabel(snapshot.economicHealth, "FRED"));
   setText("#macro-source-detail", "Official economic releases are loaded through FRED");
   setText("#risk-source-status", sourceStatusLabel(snapshot.riskIndicators, "Yahoo/FRED"));
@@ -742,8 +755,7 @@ function applyLiveFallback() {
   setText(".score-drivers p", "Score inputs");
   setText(".score-drivers small", "Live data is required for current values.");
   setText("#last-updated-pill", "Live data unavailable");
-  setText("#markets-title", "Markets");
-  setText("#commodity-title", "Commodities");
+  setText("#economy-title", "Economy");
   setText("#currency-title", "Currency");
   setText("#source-coverage-title", "Live data unavailable");
   setText(

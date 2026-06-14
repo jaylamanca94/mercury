@@ -1,17 +1,17 @@
 :root {
-  --page: #e2e3e5;
-  --surface: #fcfcfd;
-  --card: #f8f9fa;
-  --chart: #e9ecef;
-  --ink: #2b2f32;
-  --muted: #4f565c;
-  --muted-soft: #6c757d;
-  --line: #e9ecef;
-  --line-strong: #c4c8cb;
-  --nav-line: #adb5bd;
+  --page: #2b2f32;
+  --surface: #212529;
+  --card: #2b2f32;
+  --chart: #495057;
+  --ink: #e2e3e5;
+  --muted: #c4c8cb;
+  --muted-soft: #adb5bd;
+  --line: #495057;
+  --line-strong: #6c757d;
+  --nav-line: #495057;
   --green: #198754;
   --red: #dc3545;
-  --gray: #6c757d;
+  --gray: #c4c8cb;
   --shadow: 2px 4px 4px rgba(0, 0, 0, 0.08);
 }
 
@@ -137,7 +137,7 @@ body {
   align-items: center;
   background: var(--gray);
   border-radius: 24px;
-  color: #fff;
+  color: var(--surface);
   display: inline-flex;
   font-size: 14px;
   font-weight: 700;
@@ -250,7 +250,7 @@ body {
 }
 
 .score-label {
-  color: #000;
+  color: var(--muted-soft);
   font-size: 16px;
   font-weight: 400;
   line-height: 24px;
@@ -286,14 +286,6 @@ body {
   grid-template-columns: repeat(4, minmax(0, 1fr));
 }
 
-.market-grid .metric-card-wide {
-  grid-column: span 2;
-}
-
-.compact-grid {
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-}
-
 .metric-card {
   --metric-border: var(--green);
   --metric-state: var(--green);
@@ -302,14 +294,10 @@ body {
   border-radius: 8px;
   box-shadow: var(--shadow);
   display: grid;
-  gap: 16px;
-  min-height: 216px;
+  gap: 8px;
+  min-height: 154px;
   overflow: hidden;
   padding: 16px;
-}
-
-.metric-card-wide {
-  min-height: 216px;
 }
 
 .metric-card-down {
@@ -342,20 +330,29 @@ body {
   min-width: 0;
 }
 
-.metric-name {
-  color: #000;
+.metric-title-line {
+  align-items: baseline;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.metric-name,
+.metric-ticker {
   font-size: 14px;
-  font-weight: 400;
   line-height: 16px;
   margin: 0;
 }
 
-.metric-context {
+.metric-name {
+  color: var(--ink);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.metric-ticker {
   color: var(--muted);
-  font-size: 12px;
-  font-weight: 500;
-  line-height: 16px;
-  margin: 2px 0 0;
+  font-weight: 400;
 }
 
 .metric-icon {
@@ -378,7 +375,7 @@ body {
 }
 
 .metric-value {
-  color: #000;
+  color: var(--ink);
   font-size: 24px;
   font-weight: 700;
   line-height: 32px;
@@ -468,7 +465,7 @@ body {
   align-items: center;
   background: transparent;
   border-radius: 0;
-  color: #000;
+  color: var(--ink);
   display: flex;
   font-size: 16px;
   font-weight: 400;
@@ -546,7 +543,7 @@ body {
 }
 
 .row-title {
-  color: #000;
+  color: var(--ink);
   font-size: 14px;
   font-weight: 700;
   line-height: 18px;
@@ -695,7 +692,7 @@ body {
   }
 
   .metric-grid,
-  .compact-grid {
+  .currency-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
@@ -739,10 +736,6 @@ body {
     width: min(100%, 271px);
   }
 
-  .market-grid .metric-card-wide {
-    grid-column: span 1;
-  }
-
   .snapshot-meta {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -765,7 +758,7 @@ body {
   }
 
   .metric-grid,
-  .compact-grid,
+  .currency-grid,
   .snapshot-meta {
     grid-template-columns: 1fr;
   }
