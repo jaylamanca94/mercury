@@ -16,8 +16,12 @@ Mercury should feel like checking the weather, but for the global economy: clear
 - Make direction, risk, confidence, source, freshness, and region easy to find.
 - Use plain-language status labels alongside numbers.
 - Use audience-facing labels in the UI: prefer `economic indicators`, `data status`,
-  `score inputs`, and `live data` over internal terms like `macro`, `source posture`,
+  `what shapes this score`, and `live data` over internal terms like `macro`, `source posture`,
   `source drivers`, or `serverless route`.
+- Name dashboard surfaces around the user's task before the product shell. Prefer `Global economy
+  at a glance`, `Data coverage`, `Conditions score`, and `What shapes this score` over duplicate
+  product labels or model-heavy language such as `Mercury Dashboard`, `Source coverage`,
+  `Economy Score`, or `Score inputs`.
 - Use charts and sparklines only when they clarify trend or movement.
 - Use calm warning states for risk, uncertainty, stale data, and unavailable sources.
 
@@ -62,10 +66,10 @@ Recommended dashboard order:
 
 1. Slim app header with product identity and lightweight user/context affordance
 2. Page title row with latest-check timestamp and refresh action
-3. Current-conditions summary with a compact economy score panel
+3. Current-conditions summary with a compact conditions score panel
 4. Grouped metric sections for Economy and Currency
 5. Risk and Confidence plus Global Snapshot
-6. Source coverage and freshness
+6. Data coverage and freshness
 
 ### Desktop
 
@@ -232,9 +236,9 @@ Current source-backed utilities:
 - Every live indicator card includes compact source metadata for source, cadence, freshness, latest
   release timing, and caveats when relevant so users can judge trust without reading
   implementation details.
-- Source coverage uses a compact snapshot metadata block for latest dashboard check, section-level source state, and upstream source links.
+- Data coverage uses a compact snapshot metadata block for latest dashboard check, section-level source state, and upstream source links.
 - Freshness metadata belongs alongside source metadata on metric cards, risk rows, region rows, the
-  source rail, and the source coverage band. Treat delayed and stale labels as calm trust signals,
+  source rail, and the data coverage band. Treat delayed and stale labels as calm trust signals,
   not urgent trading-style alerts.
 - Region and risk rows use icon, title, short context, and a plain-language trend label.
 - Sample data must be visibly labeled in the header and source/freshness areas until live integrations exist.

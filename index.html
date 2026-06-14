@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta
       name="description"
-      content="Mercury is a calm, source-aware dashboard for understanding the current global economy."
+      content="Mercury shows current global economic conditions from public data sources."
     >
     <title>Mercury | Global Economy Dashboard</title>
     <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
@@ -25,7 +25,7 @@
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
       referrerpolicy="no-referrer"
     >
-    <link rel="stylesheet" href="styles.css?v=20260614-card-source-context">
+    <link rel="stylesheet" href="styles.css?v=20260614-clarity-language">
   </head>
   <body>
     <a class="skip-link" href="#main-content">Skip to dashboard</a>
@@ -45,28 +45,28 @@
 
     <main id="main-content" class="dashboard-shell">
       <div class="page-title-row">
-        <h1>Mercury Dashboard</h1>
+        <h1>Global economy at a glance</h1>
         <div class="page-actions" aria-label="Dashboard actions">
-          <span id="last-updated-pill" class="timestamp-pill">Last updated loading</span>
-          <button id="refresh-data-button" class="refresh-button" type="button">Refresh Data</button>
+          <span id="last-updated-pill" class="timestamp-pill">Checking latest data</span>
+          <button id="refresh-data-button" class="refresh-button" type="button">Refresh data</button>
         </div>
       </div>
 
       <section class="summary-band" aria-labelledby="global-status-title">
         <div class="summary-copy">
-          <p>Current Conditions</p>
-          <h2 id="global-status-title">Checking public sources</h2>
+          <p>Current conditions</p>
+          <h2 id="global-status-title">Checking public data</h2>
           <p id="summary-copy">
-            Mercury is loading market, economic, risk, and regional releases. If a source cannot
-            be reached, that section is marked unavailable.
+            Mercury is checking market, economic, risk, and regional data. Unavailable sources stay
+            labeled instead of using sample figures.
           </p>
         </div>
         <div class="score-panel" aria-label="Economy score loading">
           <span class="score-value">...</span>
-          <span class="score-label">Economy Score</span>
+          <span class="score-label">Conditions score</span>
         </div>
-        <div class="score-drivers visually-hidden" aria-label="Score inputs">
-          <p>Score inputs</p>
+        <div class="score-drivers visually-hidden" aria-label="What shapes this score">
+          <p>What shapes this score</p>
           <dl>
             <div>
               <dt>Market pulse</dt>
@@ -81,7 +81,7 @@
               <dd>Loading</dd>
             </div>
           </dl>
-          <small>Based on visible live indicators.</small>
+          <small>Uses live indicators currently available.</small>
         </div>
       </section>
 
@@ -154,19 +154,19 @@
       <section class="dashboard-section freshness-band" aria-labelledby="source-coverage-title">
         <div>
           <div class="section-heading">
-            <h2 id="source-coverage-title">Source coverage</h2>
+            <h2 id="source-coverage-title">Data coverage</h2>
           </div>
           <p id="source-coverage-copy">
-            Mercury is connecting to public data releases and will show the latest available source
-            timestamps when the snapshot loads.
+            Mercury is checking public data releases and will show the latest available dates when
+            the snapshot loads.
           </p>
           <dl class="snapshot-meta" aria-label="Live snapshot status">
             <div>
-              <dt>Latest release</dt>
+              <dt>Latest data release</dt>
               <dd id="latest-release-window">Loading</dd>
             </div>
             <div>
-              <dt>Freshness</dt>
+              <dt>Data freshness</dt>
               <dd id="snapshot-freshness">Loading</dd>
             </div>
             <div>
@@ -174,37 +174,37 @@
               <dd id="live-last-checked">Loading</dd>
             </div>
             <div>
-              <dt>Refresh</dt>
+              <dt>Check timing</dt>
               <dd id="refresh-schedule">Loading</dd>
             </div>
           </dl>
         </div>
-        <ul class="freshness-list" aria-label="Live source status">
+        <ul class="freshness-list" aria-label="Live data status">
           <li>
             <span>
               Market data
-              <small id="market-source-detail">Loading public market releases</small>
+              <small id="market-source-detail">Checking public market data</small>
             </span>
             <strong id="market-source-status">Loading</strong>
           </li>
           <li>
             <span>
               Economic indicators
-              <small id="macro-source-detail">Loading official economic releases</small>
+              <small id="macro-source-detail">Checking official economic releases</small>
             </span>
             <strong id="macro-source-status">Loading</strong>
           </li>
           <li>
             <span>
               Risk indicators
-              <small id="risk-source-detail">Loading public risk releases</small>
+              <small id="risk-source-detail">Checking risk indicators</small>
             </span>
             <strong id="risk-source-status">Loading</strong>
           </li>
           <li>
             <span>
               Regional coverage
-              <small id="regional-source-detail">Loading World Bank growth releases</small>
+              <small id="regional-source-detail">Checking World Bank growth data</small>
             </span>
             <strong id="regional-source-status">Loading</strong>
           </li>
@@ -212,6 +212,6 @@
       </section>
     </main>
 
-    <script src="app.js?v=20260614-card-source-context"></script>
+    <script src="app.js?v=20260614-clarity-language"></script>
   </body>
 </html>

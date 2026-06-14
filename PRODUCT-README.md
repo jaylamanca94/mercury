@@ -250,8 +250,8 @@ Future opportunities:
 - Risk and Confidence combines Yahoo Finance daily proxies with the FRED Financial Stress Index.
 - Global Snapshot uses World Bank annual GDP growth releases, which update less frequently than
   market or economic indicators.
-- Source coverage labels show partial live groups as live indicator counts so users can distinguish
-  limited upstream availability from a fully unavailable section.
+- Data coverage labels show partial live groups as live indicator counts so users can distinguish
+  limited source availability from a fully unavailable section.
 - Freshness labels are rule-based guardrails by cadence, not official release calendars. They should
   be refined when Mercury adopts provider-specific release schedules.
 - The current breadth score is a simple visible-indicator aggregation and should be refined before

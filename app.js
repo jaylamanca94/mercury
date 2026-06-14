@@ -8,8 +8,8 @@ function pendingMetric(name, context, icon, id, ticker) {
     trend: "Pending",
     tone: "stable",
     icon,
-    source: "Mercury live data",
-    cadence: "Loading source cadence",
+    source: "Public data",
+    cadence: "Checking update schedule",
     previous: "Loading",
     change: "Loading",
     points: [],
@@ -17,7 +17,7 @@ function pendingMetric(name, context, icon, id, ticker) {
     freshness: {
       status: "loading",
       label: "Checking freshness",
-      detail: "Waiting for the live source release date.",
+      detail: "Waiting for the latest release date.",
     },
   };
 }
@@ -25,17 +25,17 @@ function pendingMetric(name, context, icon, id, ticker) {
 function pendingIndicator(name, icon) {
   return {
     name,
-    copy: "Loading the latest public data release.",
+    copy: "Checking the latest public release.",
     trend: "Pending",
     tone: "stable",
     icon,
-    source: "Mercury live data",
-    cadence: "Loading source cadence",
+    source: "Public data",
+    cadence: "Checking update schedule",
     sourceStatus: "Loading",
     freshness: {
       status: "loading",
       label: "Checking freshness",
-      detail: "Waiting for the live source release date.",
+      detail: "Waiting for the latest release date.",
     },
   };
 }
@@ -43,16 +43,16 @@ function pendingIndicator(name, icon) {
 function pendingRegion(name) {
   return {
     name,
-    copy: "Loading the latest public growth release.",
+    copy: "Checking the latest growth release.",
     trend: "Pending",
     tone: "stable",
     source: "World Bank public data",
-    cadence: "Loading source cadence",
+    cadence: "Checking update schedule",
     sourceStatus: "Loading",
     freshness: {
       status: "loading",
       label: "Checking freshness",
-      detail: "Waiting for the live source release date.",
+      detail: "Waiting for the latest release date.",
     },
   };
 }
@@ -63,7 +63,7 @@ let marketPulse = [
   pendingMetric("Technology", "Vanguard Information Technology ETF", "fa-microchip", "us-technology", "VGT"),
   pendingMetric("Bonds", "Total bond market ETF", "fa-scale-balanced", "bonds", "BND"),
   pendingMetric("Oil", "WTI crude futures", "fa-gas-pump", "oil", "CL=F"),
-  pendingMetric("U.S. dollar", "Dollar index ETF proxy", "fa-dollar-sign", "dollar-index", "UUP"),
+  pendingMetric("U.S. dollar", "Dollar index fund proxy", "fa-dollar-sign", "dollar-index", "UUP"),
   pendingMetric("Euro", "EUR/USD exchange rate", "fa-euro-sign", "euro", "EUR/USD"),
   pendingMetric("Yen", "USD/JPY exchange rate", "fa-yen-sign", "yen", "USD/JPY"),
 ];
@@ -446,7 +446,7 @@ function setScoreVisual(score) {
 
   if (element && Number.isFinite(score)) {
     element.style.setProperty("--score", `${score}%`);
-    element.setAttribute("aria-label", `Economy score ${score} out of 100`);
+    element.setAttribute("aria-label", `Conditions score ${score} out of 100`);
   }
 }
 
@@ -461,11 +461,11 @@ function sourceStatusLabel(items, sourceName) {
 
   if (liveCount === items.length) {
     if (staleCount > 0) {
-      return `${sourceName}; ${staleCount} stale`;
+      return `${sourceName} (${staleCount} stale)`;
     }
 
     if (delayedCount > 0) {
-      return `${sourceName}; ${delayedCount} delayed`;
+      return `${sourceName} (${delayedCount} delayed)`;
     }
 
     return sourceName;
@@ -473,7 +473,7 @@ function sourceStatusLabel(items, sourceName) {
 
   if (liveCount > 0) {
     const freshnessLabel =
-      staleCount > 0 ? `; ${staleCount} stale` : delayedCount > 0 ? `; ${delayedCount} delayed` : "";
+      staleCount > 0 ? ` (${staleCount} stale)` : delayedCount > 0 ? ` (${delayedCount} delayed)` : "";
     return `${liveCount} of ${items.length} live${freshnessLabel}`;
   }
 
@@ -497,7 +497,7 @@ function formatReleaseWindow(releaseRange) {
 
 function displaySourceStatus(status) {
   if (status === "Source-backed") {
-    return "Live source";
+    return "Live";
   }
 
   return status || "Unavailable";
@@ -562,7 +562,7 @@ function sourceShortName(source) {
   if (source.includes("Yahoo")) return "Yahoo Finance";
   if (source.includes("FRED")) return "FRED";
   if (source.includes("World Bank")) return "World Bank";
-  if (source.includes("Mercury")) return "Mercury live data";
+  if (source.includes("Mercury")) return "Public data";
 
   return source.split(":")[0];
 }
@@ -589,9 +589,9 @@ function displayMetricDetail(value) {
 
 function renderMetricComparison(metric) {
   return `
-    <dl class="metric-comparison" aria-label="Previous release comparison">
+    <dl class="metric-comparison" aria-label="Previous value comparison">
       <div>
-        <dt>Previous release</dt>
+        <dt>Previous value</dt>
         <dd>${escapeHtml(displayMetricDetail(metric.previous))}</dd>
       </div>
       <div>
@@ -866,7 +866,7 @@ function applySnapshotConnectionState(snapshot, sourcePill) {
     setText("#source-coverage-title", "Live data unavailable");
     setText(
       "#source-coverage-copy",
-      "Mercury reached the live snapshot route, but no upstream public sources returned usable values.",
+      "Mercury checked the public data sources, but none returned usable values.",
     );
     setHtml(
       "#macro-connection-pill",
@@ -879,7 +879,7 @@ function applySnapshotConnectionState(snapshot, sourcePill) {
   if (isPartial) {
     setHtml(
       "#macro-connection-pill",
-      '<i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i> Some public sources connected',
+      '<i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i> Some data sources connected',
     );
     sourcePill?.classList.add("status-pill-caution");
     return;
@@ -887,7 +887,7 @@ function applySnapshotConnectionState(snapshot, sourcePill) {
 
   setHtml(
     "#macro-connection-pill",
-    '<i class="fa-solid fa-plug-circle-check" aria-hidden="true"></i> Public sources connected',
+    '<i class="fa-solid fa-plug-circle-check" aria-hidden="true"></i> Data sources connected',
   );
   sourcePill?.classList.add("status-pill-live");
 }
@@ -945,35 +945,35 @@ function applyLiveSnapshot(snapshot) {
   setText("#global-status-title", snapshot.summary.title);
   setText("#summary-copy", snapshot.summary.copy);
   setText(".score-value", snapshot.summary.score);
-  setText(".score-label", "Economy Score");
+  setText(".score-label", "Conditions score");
   setScoreVisual(snapshot.summary.score);
   setHtml(".score-drivers dl", renderSummaryDrivers(snapshot.summary.drivers));
-  setText(".score-drivers p", "Score inputs");
-  setText(".score-drivers small", "Based on visible live indicators.");
-  setText("#last-updated-pill", `Last updated ${formatCheckedTime(snapshot.checkedAt)}`);
+  setText(".score-drivers p", "What shapes this score");
+  setText(".score-drivers small", "Uses live indicators currently available.");
+  setText("#last-updated-pill", `Checked ${formatCheckedTime(snapshot.checkedAt)}`);
   setText("#economy-title", "Economy");
   setText("#currency-title", "Currency");
-  setText("#risk-title", "Risk and confidence from public releases");
-  setText("#global-title", "Regional growth from World Bank data");
-  setText("#source-coverage-title", "Source coverage");
+  setText("#risk-title", "Risk and confidence");
+  setText("#global-title", "Regional growth");
+  setText("#source-coverage-title", "Data coverage");
   setText(
     "#source-coverage-copy",
     snapshot.freshness?.copy ||
-      "Each section lists its source, latest release date, and refresh state.",
+      "Each section shows its source, latest release date, and freshness.",
   );
   setText("#latest-release-window", formatReleaseWindow(snapshot.releaseRange));
   setText("#live-last-checked", formatCheckedAt(snapshot.checkedAt));
   setText("#source-rail-checked", formatCheckedAt(snapshot.checkedAt));
-  setText("#refresh-schedule", "Checked on page load");
-  setText("#source-rail-refresh", "Checked on page load");
-  setText("#market-source-status", sourceStatusLabel(snapshot.marketPulse, "Yahoo"));
-  setText("#market-source-detail", "Daily market, commodity, and FX series are loaded through Yahoo Finance charts");
+  setText("#refresh-schedule", "On page load");
+  setText("#source-rail-refresh", "On page load");
+  setText("#market-source-status", sourceStatusLabel(snapshot.marketPulse, "Yahoo Finance"));
+  setText("#market-source-detail", "Daily market, commodity, and currency data from Yahoo Finance");
   setText("#macro-source-status", sourceStatusLabel(snapshot.economicHealth, "FRED"));
-  setText("#macro-source-detail", "Official economic releases are loaded through FRED");
-  setText("#risk-source-status", sourceStatusLabel(snapshot.riskIndicators, "Yahoo/FRED"));
-  setText("#risk-source-detail", "Risk indicators are loaded through Yahoo Finance and FRED");
+  setText("#macro-source-detail", "Official economic releases from FRED");
+  setText("#risk-source-status", sourceStatusLabel(snapshot.riskIndicators, "Yahoo Finance/FRED"));
+  setText("#risk-source-detail", "Market risk from Yahoo Finance; stress index from FRED");
   setText("#regional-source-status", sourceStatusLabel(snapshot.regions, "World Bank"));
-  setText("#regional-source-detail", "Annual regional growth releases are loaded from the World Bank");
+  setText("#regional-source-detail", "Annual GDP growth from World Bank");
   setHtml(
     "#macro-source-note",
     '<i class="fa-solid fa-building-columns" aria-hidden="true"></i> FRED economic releases',
@@ -995,12 +995,12 @@ function markUnavailable(items) {
     freshness: {
       status: "unavailable",
       label: "Freshness unavailable",
-      detail: "Live data is required for source freshness.",
+      detail: "Current release timing requires live data.",
     },
     previous: item.previous === "Loading" ? "Unavailable" : item.previous,
     change: item.change === "Loading" ? "Unavailable" : item.change,
     copy: item.copy?.replace("Loading", "Unable to load") || item.copy,
-    cadence: "Requires Mercury's live data",
+    cadence: "Needs live data",
   }));
 }
 
@@ -1016,10 +1016,10 @@ function applyLiveFallback() {
   setText("#global-status-title", "Live data unavailable");
   setText(
     "#summary-copy",
-    "This view cannot reach Mercury's live data. Values are marked unavailable instead of using sample figures.",
+    "Mercury cannot reach live data in this view. Values stay unavailable instead of using sample figures.",
   );
   setText(".score-value", "0");
-  setText(".score-label", "Economy Score");
+  setText(".score-label", "Conditions score");
   setScoreVisual(0);
   setHtml(
     ".score-drivers dl",
@@ -1030,15 +1030,15 @@ function applyLiveFallback() {
       { label: "Regional growth", value: "Unavailable" },
     ]),
   );
-  setText(".score-drivers p", "Score inputs");
-  setText(".score-drivers small", "Live data is required for current values.");
+  setText(".score-drivers p", "What shapes this score");
+  setText(".score-drivers small", "Current values need live data.");
   setText("#last-updated-pill", "Live data unavailable");
   setText("#economy-title", "Economy");
   setText("#currency-title", "Currency");
   setText("#source-coverage-title", "Live data unavailable");
   setText(
     "#source-coverage-copy",
-    "Live data is unavailable in this view. Current values will appear when the source responds.",
+    "Live data is unavailable in this view. Current values will appear when public sources respond.",
   );
   setText("#latest-release-window", "Unavailable");
   setText("#live-last-checked", "Unavailable");
@@ -1051,7 +1051,7 @@ function applyLiveFallback() {
   setText("#macro-source-status", "Unavailable");
   setText("#risk-source-status", "Unavailable");
   setText("#regional-source-status", "Unavailable");
-  setText("#sample-set-date", "Source status");
+  setText("#sample-set-date", "Data status");
   setHtml(
     "#macro-connection-pill",
     '<i class="fa-solid fa-plug-circle-xmark" aria-hidden="true"></i> Live data unavailable',
@@ -1067,14 +1067,14 @@ async function loadLiveSnapshot() {
 
   if (refreshButton) {
     refreshButton.disabled = true;
-    refreshButton.textContent = "Refreshing";
+    refreshButton.textContent = "Checking";
   }
 
   if (window.location.protocol === "file:") {
     applyLiveFallback();
     if (refreshButton) {
       refreshButton.disabled = false;
-      refreshButton.textContent = "Refresh Data";
+      refreshButton.textContent = "Refresh data";
     }
     return;
   }
@@ -1097,7 +1097,7 @@ async function loadLiveSnapshot() {
   } finally {
     if (refreshButton) {
       refreshButton.disabled = false;
-      refreshButton.textContent = "Refresh Data";
+      refreshButton.textContent = "Refresh data";
     }
   }
 }

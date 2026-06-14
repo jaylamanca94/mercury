@@ -9,7 +9,7 @@ Tagline direction: The global economy at a glance.
 Mercury has a source-backed dashboard baseline. The page loads market pulse, economic health,
 risk, and regional growth from public data routes when `/api/live-snapshot` is available. If the
 route is unavailable, the UI shows loading or unavailable source states instead of fabricated
-figures. Source coverage shows the latest available source release window, page-load check time,
+figures. Data coverage shows the latest available source release window, page-load check time,
 cadence-aware freshness state, and live indicator counts for partially available source groups.
 Economy and Currency sections include Today, Week, Month, and Year controls; Economy also supports
 United States, Europe, and Asia market-proxy views.

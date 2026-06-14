@@ -8,27 +8,27 @@ const FRESHNESS_RULES = {
   daily: {
     currentDays: 5,
     delayedDays: 10,
-    expectation: "expected within 5 days for daily market data",
+    expectation: "usually updated within 5 days for daily market data",
   },
   weekly: {
     currentDays: 14,
     delayedDays: 28,
-    expectation: "expected within 14 days for weekly releases",
+    expectation: "usually updated within 14 days for weekly releases",
   },
   monthly: {
     currentDays: 75,
     delayedDays: 120,
-    expectation: "expected within 75 days for monthly releases",
+    expectation: "usually updated within 75 days for monthly releases",
   },
   quarterly: {
     currentDays: 210,
     delayedDays: 300,
-    expectation: "expected within 210 days for quarterly releases",
+    expectation: "usually updated within 210 days for quarterly releases",
   },
   annual: {
     currentDays: 900,
     delayedDays: 1200,
-    expectation: "expected within 900 days for annual releases",
+    expectation: "usually updated within 900 days for annual releases",
   },
 };
 
@@ -157,7 +157,7 @@ const YAHOO_SERIES = [
     id: "europe-technology",
     section: "marketPulse",
     name: "Technology",
-    context: "Europe technology sector proxy",
+    context: "Europe technology fund proxy",
     icon: "fa-microchip",
     symbol: "EXV3.DE",
     ticker: "EXV3.DE",
@@ -177,7 +177,7 @@ const YAHOO_SERIES = [
     id: "europe-bonds",
     section: "marketPulse",
     name: "Bonds",
-    context: "International bond market proxy",
+    context: "International bond fund proxy",
     icon: "fa-scale-balanced",
     symbol: "BNDX",
     ticker: "BNDX",
@@ -217,7 +217,7 @@ const YAHOO_SERIES = [
     id: "asia-small-cap",
     section: "marketPulse",
     name: "Small Cap",
-    context: "Asia small-cap proxy",
+    context: "Asia small-cap fund proxy",
     icon: "fa-chart-line",
     symbol: "DGS",
     ticker: "DGS",
@@ -237,7 +237,7 @@ const YAHOO_SERIES = [
     id: "asia-technology",
     section: "marketPulse",
     name: "Technology",
-    context: "Asia technology proxy",
+    context: "Asia technology fund proxy",
     icon: "fa-microchip",
     symbol: "CQQQ",
     ticker: "CQQQ",
@@ -257,7 +257,7 @@ const YAHOO_SERIES = [
     id: "asia-bonds",
     section: "marketPulse",
     name: "Bonds",
-    context: "International bond market proxy",
+    context: "International bond fund proxy",
     icon: "fa-scale-balanced",
     symbol: "BNDX",
     ticker: "BNDX",
@@ -277,7 +277,7 @@ const YAHOO_SERIES = [
     id: "dollar-index",
     section: "marketPulse",
     name: "U.S. dollar",
-    context: "Dollar index ETF proxy",
+    context: "Dollar index fund proxy",
     icon: "fa-dollar-sign",
     symbol: "UUP",
     ticker: "UUP",
@@ -668,7 +668,7 @@ function buildFreshnessSummary(items) {
     return {
       status: "unavailable",
       label: "Freshness unavailable",
-      copy: "No connected source returned a usable release date.",
+      copy: "No public source returned a usable release date.",
       counts,
     };
   }
@@ -677,7 +677,7 @@ function buildFreshnessSummary(items) {
     return {
       status: "stale",
       label: `${counts.stale} stale ${counts.stale === 1 ? "release" : "releases"}`,
-      copy: "Some connected releases are stale for their cadence. Mercury keeps the values visible but labels the freshness risk.",
+      copy: "Some releases are stale for their update schedule. Mercury keeps values visible and labels the freshness risk.",
       counts,
     };
   }
@@ -686,7 +686,7 @@ function buildFreshnessSummary(items) {
     return {
       status: "delayed",
       label: `${counts.delayed} delayed ${counts.delayed === 1 ? "release" : "releases"}`,
-      copy: "Some connected releases are beyond their expected cadence window. Mercury labels them as delayed instead of treating them as fully current.",
+      copy: "Some releases are late for their usual update schedule. Mercury labels them delayed instead of current.",
       counts,
     };
   }
@@ -695,7 +695,7 @@ function buildFreshnessSummary(items) {
     return {
       status: "partial",
       label: "Connected releases current",
-      copy: "Connected releases are within their cadence windows; unavailable sources remain called out separately.",
+      copy: "Connected releases are current; unavailable sources remain called out separately.",
       counts,
     };
   }
@@ -703,7 +703,7 @@ function buildFreshnessSummary(items) {
   return {
     status: "current",
     label: "Release cadence current",
-    copy: "Connected public releases are within their expected cadence windows.",
+    copy: "Connected public data is within expected update windows.",
     counts,
   };
 }
@@ -802,7 +802,7 @@ function classifyTrend(series, latest, previous) {
 
 function buildRiskCopy(series, value, change) {
   if (value === "Unavailable") {
-    return `${series.name} could not be loaded from its public source.`;
+    return `${series.name} is unavailable from its public source.`;
   }
 
   if (series.trendModel === "volatility") {
@@ -810,7 +810,7 @@ function buildRiskCopy(series, value, change) {
   }
 
   if (series.trendModel === "credit-market") {
-    return `Credit markets are ${value}, with a ${change.toLowerCase()} move from the prior close.`;
+    return `The credit stress proxy is ${value}, with a ${change.toLowerCase()} move from the prior close.`;
   }
 
   return `Financial stress is ${value}, ${change.toLowerCase()} from the prior weekly reading.`;
@@ -1116,7 +1116,7 @@ function buildSummary(sections) {
     score: score ?? 0,
     title,
     copy:
-      "Mercury is using public market, economic, risk, and regional releases to summarize the current global economy without investment advice.",
+      "Public market, economic, risk, and regional data shape this quick read on global conditions. Mercury does not provide investment advice.",
     drivers: [
       { label: "Market pulse", value: sectionLabel(marketScore) },
       { label: "Economic health", value: sectionLabel(economicScore) },
@@ -1214,7 +1214,7 @@ async function handler(req, res) {
     res.end(
       JSON.stringify({
         status: "unavailable",
-        error: "Live public data is unavailable. Mercury is showing source status instead of sample figures.",
+        error: "Live public data is unavailable. Mercury is showing unavailable source states instead of sample figures.",
       }),
     );
   }
