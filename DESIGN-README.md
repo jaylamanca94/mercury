@@ -21,6 +21,19 @@ Mercury should feel like checking the weather, but for the global economy: clear
 - Use charts and sparklines only when they clarify trend or movement.
 - Use calm warning states for risk, uncertainty, stale data, and unavailable sources.
 
+## Visual References
+
+Mercury's look and feel can draw product-quality inspiration from Robinhood, Vanguard, and
+Coinbase, but should apply principles rather than copy their visual systems.
+
+- From Robinhood: simple first-scan financial cards, clear trend states, and low-friction scanning.
+- From Vanguard: trust, restraint, source seriousness, and long-term financial credibility.
+- From Coinbase: modern dark surfaces, compact account-style panels, and confident information
+  density.
+
+Use these references to guide polish, hierarchy, density, and trust signals while keeping Mercury
+informational, source-backed, and explicitly not a trading or investment-advice product.
+
 ## UI Foundation
 
 Use this file as the visual source of truth for `Mercury`. Update it whenever spacing, color, typography, icon sizing, chart treatments, interaction feel, accessibility, or reusable utilities change.
