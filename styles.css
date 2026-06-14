@@ -377,7 +377,8 @@ body {
 }
 
 .metric-name,
-.metric-ticker {
+.metric-ticker,
+.metric-context {
   font-size: 14px;
   line-height: 16px;
   margin: 0;
@@ -392,6 +393,12 @@ body {
 .metric-ticker {
   color: var(--muted);
   font-weight: 400;
+}
+
+.metric-context {
+  color: var(--muted);
+  margin-top: 4px;
+  overflow-wrap: anywhere;
 }
 
 .metric-icon {
@@ -458,7 +465,7 @@ body {
 
 .trend-unavailable {
   background: var(--gray);
-  color: #fff;
+  color: var(--surface);
 }
 
 .metric-delta {
@@ -517,8 +524,42 @@ body {
   align-items: center;
   display: flex;
   flex-wrap: wrap;
-  gap: 16px;
+  gap: 8px 16px;
   min-width: 0;
+}
+
+.metric-comparison {
+  border-top: 1px solid var(--line);
+  display: grid;
+  gap: 8px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin: 0;
+  padding-top: 8px;
+}
+
+.metric-comparison div {
+  min-width: 0;
+}
+
+.metric-comparison dt,
+.metric-comparison dd {
+  margin: 0;
+}
+
+.metric-comparison dt {
+  color: var(--muted-soft);
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 14px;
+  text-transform: uppercase;
+}
+
+.metric-comparison dd {
+  color: var(--ink);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 16px;
+  overflow-wrap: anywhere;
 }
 
 .metric-footer span {
@@ -529,7 +570,7 @@ body {
   gap: 4px;
   line-height: 16px;
   min-width: 0;
-  white-space: nowrap;
+  overflow-wrap: anywhere;
 }
 
 .metric-footer i {
@@ -817,5 +858,9 @@ body {
 
   .metric-footer {
     gap: 8px 12px;
+  }
+
+  .metric-comparison {
+    grid-template-columns: 1fr;
   }
 }

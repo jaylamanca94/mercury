@@ -579,6 +579,29 @@ function metricReleaseLabel(metric) {
   return "Unavailable";
 }
 
+function displayMetricDetail(value) {
+  if (!value) {
+    return "Unavailable";
+  }
+
+  return value;
+}
+
+function renderMetricComparison(metric) {
+  return `
+    <dl class="metric-comparison" aria-label="Previous release comparison">
+      <div>
+        <dt>Previous release</dt>
+        <dd>${escapeHtml(displayMetricDetail(metric.previous))}</dd>
+      </div>
+      <div>
+        <dt>Change</dt>
+        <dd>${escapeHtml(displayMetricDetail(metric.change))}</dd>
+      </div>
+    </dl>
+  `;
+}
+
 function renderDataMeta(item) {
   const status = item.sourceStatus || "Unavailable";
   const cadence = item.releaseDate
@@ -646,6 +669,7 @@ function renderMetricCard(metric) {
                 : ""
             }
           </div>
+          <p class="metric-context">${escapeHtml(metric.context || "Economic indicator")}</p>
         </div>
         <span class="metric-icon" aria-hidden="true"><i class="fa-solid fa-chart-line"></i></span>
       </div>
@@ -656,9 +680,12 @@ function renderMetricCard(metric) {
       <div class="metric-chart-panel">
         ${renderSparkline(sparklinePoints, cardTone)}
       </div>
+      ${renderMetricComparison(metric)}
       <div class="metric-footer" aria-label="Metric source details">
         <span><i class="fa-regular fa-calendar" aria-hidden="true"></i> ${escapeHtml(metricReleaseLabel(metric))}</span>
         <span><i class="fa-solid fa-earth-americas" aria-hidden="true"></i> ${escapeHtml(sourceShortName(metric.source))}</span>
+        <span><i class="fa-solid ${freshnessIcon(metric.freshness?.status)}" aria-hidden="true"></i> ${escapeHtml(displayFreshness(metric.freshness))}</span>
+        <span><i class="fa-solid fa-rotate" aria-hidden="true"></i> ${escapeHtml(metric.cadence || "Cadence unavailable")}</span>
       </div>
     </article>
   `;

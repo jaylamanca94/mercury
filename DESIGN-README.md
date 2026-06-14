@@ -227,8 +227,11 @@ Current source-backed utilities:
   trading interface.
 - Sparkline panels should read as quiet chart wells: subtle neutral backgrounds, light grid
   texture, compact height, and restrained line weight rather than heavy gray blocks.
-- Metric cards include compact previous-release comparisons so users can understand direction without relying only on the sparkline.
-- Every live indicator includes compact source metadata for source, cadence, freshness, and caveats when relevant so users can judge trust without reading implementation details.
+- Metric cards include their short indicator context and compact previous-release comparisons so
+  users can understand direction without relying only on the sparkline or ticker.
+- Every live indicator card includes compact source metadata for source, cadence, freshness, latest
+  release timing, and caveats when relevant so users can judge trust without reading
+  implementation details.
 - Source coverage uses a compact snapshot metadata block for latest dashboard check, section-level source state, and upstream source links.
 - Freshness metadata belongs alongside source metadata on metric cards, risk rows, region rows, the
   source rail, and the source coverage band. Treat delayed and stale labels as calm trust signals,
