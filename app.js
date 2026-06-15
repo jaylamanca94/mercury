@@ -916,6 +916,34 @@ function marketRoleRank(metric) {
   return index === -1 ? MARKET_ROLE_ORDER.length : index;
 }
 
+function unavailableRegionalMarketCards(region) {
+  return [
+    { name: region, context: "Large-cap market proxy", marketRole: "large-cap" },
+    { name: "Small Cap", context: `${region} small-cap proxy`, marketRole: "small-cap" },
+    { name: "Technology", context: `${region} technology proxy`, marketRole: "technology" },
+    { name: "Bonds", context: `${region} bond proxy`, marketRole: "bonds" },
+  ].map((metric) => ({
+    ...metric,
+    value: "Unavailable",
+    trend: "Unavailable",
+    tone: "unavailable",
+    source: "Public data",
+    cadence: "Needs live data",
+    sourceStatus: "Unavailable",
+    freshness: {
+      status: "unavailable",
+      label: "Freshness unavailable",
+      detail: "Regional market proxy data requires live sources.",
+    },
+    change: "Unavailable",
+    previous: "Unavailable",
+    points: [],
+    history: [],
+    comparison: "percent-change",
+    region,
+  }));
+}
+
 function regionalMarketCards() {
   const regionalCards = marketPulse
     .filter((item) => item.viewGroup === "economy" && item.region === selectedRegion)
@@ -923,6 +951,10 @@ function regionalMarketCards() {
 
   if (regionalCards.length) {
     return regionalCards;
+  }
+
+  if (!isGlobalView()) {
+    return unavailableRegionalMarketCards(selectedRegion);
   }
 
   return [
