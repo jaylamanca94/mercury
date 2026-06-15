@@ -224,13 +224,17 @@ Current source-backed utilities:
   dataset. It is a presentation layer, not a new scoring model.
 - Primary Market Pulse and Economic Health sections may use larger panel treatment to make the main data areas feel more substantial, while repeated metric tiles remain compact and source-aware.
 - Repeated metric cards use `8px` radius, compact labels, source context, status chips, and small sparklines.
+- The global Economy grid uses a deliberate desktop rhythm: three regional market cards on the
+  first row and four secondary currency/oil cards on the second row. Collapse this to two columns
+  near tablet widths and one column on mobile rather than leaving orphaned cards.
 - Section headers may pair a title with a compact signed badge and right-aligned native selects,
   matching the latest Figma dashboard direction while preserving keyboard and screen-reader access.
 - Metric cards and key signal tiles should use soft neutral surfaces with thin tone accents instead
   of saturated full borders, so direction remains visible without making Mercury feel like a
   trading interface.
 - Sparkline panels should read as quiet chart wells: subtle neutral backgrounds, light grid
-  texture, compact height, and restrained line weight rather than heavy gray blocks.
+  texture, compact height, and restrained line weight rather than heavy gray blocks. Empty
+  sparkline states should use calm labels such as `No trend`, not placeholder-like chart labels.
 - Metric cards include their short indicator context and compact previous-release comparisons so
   users can understand direction without relying only on the sparkline or ticker.
 - Every live indicator card includes compact source metadata for source, cadence, freshness, latest

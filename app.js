@@ -669,7 +669,7 @@ function renderSparkline(points, tone, label) {
   const accessibleLabel = escapeHtml(label || "Recent trend line");
 
   if (!points?.length) {
-    return `<div class="sparkline sparkline-empty" role="img" aria-label="${accessibleLabel} unavailable">Line graph</div>`;
+    return `<div class="sparkline sparkline-empty" role="img" aria-label="${accessibleLabel} unavailable">No trend</div>`;
   }
 
   if (points.length === 1) {

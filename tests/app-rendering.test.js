@@ -171,6 +171,32 @@ test("metric cards show compact indicator context", () => {
   assert.match(html, /Vanguard S&amp;P 500 ETF/);
 });
 
+test("empty sparklines use calm no-trend copy", () => {
+  const context = loadAppContext();
+  const html = vm.runInContext(
+    `
+      renderMetricCard({
+        name: "United States",
+        context: "Market proxy needs live data",
+        value: "Unavailable",
+        change: "Unavailable",
+        tone: "unavailable",
+        icon: "fa-chart-line",
+        source: "Public data",
+        cadence: "Needs live data",
+        sourceStatus: "Unavailable",
+        freshness: { status: "unavailable", label: "Freshness unavailable" },
+        points: [],
+        comparison: "percent-change",
+      });
+    `,
+    context,
+  );
+
+  assert.match(html, /No trend/);
+  assert.doesNotMatch(html, /Line graph/);
+});
+
 test("metric cards do not expose unavailable previous values", () => {
   const context = loadAppContext();
   const html = vm.runInContext(
