@@ -615,6 +615,16 @@ function displayMetricDetail(value) {
   return value;
 }
 
+function metricPreviousLabel(metric) {
+  const previous = displayMetricDetail(metric.previous);
+
+  if (previous === "Loading" || previous === "Unavailable") {
+    return "";
+  }
+
+  return `Previous ${previous}`;
+}
+
 function renderMetricComparison(metric) {
   return `
     <dl class="metric-comparison" aria-label="${escapeHtml(displayMetricName(metric))} previous value comparison">
@@ -695,6 +705,7 @@ function renderMetricCard(metric) {
   const cardTone = metricCardTone(metric);
   const sparklinePoints = metric.periodPoints || metric.points;
   const hasChart = !metric.hideChart;
+  const previousLabel = metricPreviousLabel(metric);
 
   return `
     <article class="metric-card metric-card-${cardTone}${metric.isWide ? " metric-card-wide" : ""}">
@@ -727,6 +738,11 @@ function renderMetricCard(metric) {
           : ""
       }
       <div class="metric-footer" aria-label="Metric source details">
+        ${
+          previousLabel
+            ? `<span class="metric-previous"><i class="fa-solid fa-clock-rotate-left" aria-hidden="true"></i> ${escapeHtml(previousLabel)}</span>`
+            : ""
+        }
         <span><i class="fa-regular fa-calendar" aria-hidden="true"></i> ${escapeHtml(metricReleaseLabel(metric))}</span>
         ${
           metric.cadence && inferDisplayCadence(metric.cadence) !== "daily"

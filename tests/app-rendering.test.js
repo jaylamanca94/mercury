@@ -88,3 +88,57 @@ test("focused regional fallback does not reuse U.S. starter cards", () => {
   assert.equal(normalizedCards.every((card) => card.region === "Europe"), true);
   assert.equal(normalizedCards.every((card) => card.sourceStatus === "Unavailable"), true);
 });
+
+test("metric cards show source previous values when available", () => {
+  const context = loadAppContext();
+  const html = vm.runInContext(
+    `
+      renderMetricCard({
+        name: "Inflation",
+        context: "Consumer prices",
+        value: "3.1%",
+        change: "+0.20 pts",
+        previous: "2.9%",
+        tone: "caution",
+        icon: "fa-receipt",
+        source: "FRED: Consumer Price Index for All Urban Consumers",
+        cadence: "Monthly release",
+        releaseDate: "2026-05-01",
+        sourceStatus: "Source-backed",
+        freshness: { status: "current", label: "Current" },
+        points: [2.7, 2.9, 3.1],
+        comparison: "point-change",
+      });
+    `,
+    context,
+  );
+
+  assert.match(html, /Previous 2\.9%/);
+  assert.match(html, /FRED/);
+});
+
+test("metric cards do not expose unavailable previous values", () => {
+  const context = loadAppContext();
+  const html = vm.runInContext(
+    `
+      renderMetricCard({
+        name: "Inflation",
+        context: "Consumer prices",
+        value: "Unavailable",
+        change: "Unavailable",
+        previous: "Unavailable",
+        tone: "unavailable",
+        icon: "fa-receipt",
+        source: "FRED: Consumer Price Index for All Urban Consumers",
+        cadence: "Needs live data",
+        sourceStatus: "Unavailable",
+        freshness: { status: "unavailable", label: "Freshness unavailable" },
+        points: [],
+        comparison: "point-change",
+      });
+    `,
+    context,
+  );
+
+  assert.doesNotMatch(html, /Previous Unavailable/);
+});
