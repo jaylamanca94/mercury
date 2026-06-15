@@ -57,6 +57,11 @@ No install step is required for the first prototype.
 Open `index.html` in a browser to see unavailable source states, or run/deploy the site through
 Vercel to enable `/api/live-snapshot`.
 
+Optional validation commands:
+
+- `npm test` - run the dependency-free Node regression tests for live snapshot helpers
+- `npm run check` - syntax-check the browser and serverless JavaScript, then run the tests
+
 Current files:
 
 - `index.html` - static dashboard entry
