@@ -124,9 +124,9 @@ const PERIOD_OPTIONS = {
 };
 
 const MARKET_ROLE_ORDER = ["large-cap", "small-cap", "technology", "bonds"];
-let selectedEconomyPeriod = "today";
-let selectedCurrencyPeriod = "today";
-let selectedRegion = "United States";
+let selectedEconomyPeriod = "week";
+let selectedCurrencyPeriod = "week";
+let selectedRegion = "Global";
 
 function trendClass(tone) {
   return `trend-label trend-${tone}`;
@@ -542,6 +542,7 @@ function signalFreshnessLabel(item) {
 
 function displayMetricName(metric) {
   const names = {
+    "Asia Pacific": "Asia",
     "GDP growth": "GDP Growth",
     "Interest rates": "Interest Rates",
     "U.S. dollar": "U.S. Dollar",
@@ -572,6 +573,26 @@ function sourceShortName(source) {
   if (source.includes("Mercury")) return "Public data";
 
   return source.split(":")[0];
+}
+
+function metricIconClass(metric) {
+  if (metric.icon) {
+    return metric.icon;
+  }
+
+  const normalizedName = String(metric.name || "").toLowerCase();
+
+  if (normalizedName.includes("credit")) return "fa-credit-card";
+  if (normalizedName.includes("stress")) return "fa-chart-line";
+  if (normalizedName.includes("volatility")) return "fa-chart-line";
+  if (normalizedName.includes("gdp")) return "fa-chart-line";
+  if (normalizedName.includes("united states")) return "fa-flag-usa";
+  if (normalizedName.includes("dollar")) return "fa-dollar-sign";
+  if (normalizedName.includes("euro")) return "fa-euro-sign";
+  if (normalizedName.includes("yen")) return "fa-yen-sign";
+  if (normalizedName.includes("oil")) return "fa-gas-pump";
+
+  return "fa-chart-line";
 }
 
 function metricReleaseLabel(metric) {
@@ -673,9 +694,10 @@ function renderSparkline(points, tone, label) {
 function renderMetricCard(metric) {
   const cardTone = metricCardTone(metric);
   const sparklinePoints = metric.periodPoints || metric.points;
+  const hasChart = !metric.hideChart;
 
   return `
-    <article class="metric-card metric-card-${cardTone}">
+    <article class="metric-card metric-card-${cardTone}${metric.isWide ? " metric-card-wide" : ""}">
       <div class="metric-top">
         <div>
           <div class="metric-title-line">
@@ -686,30 +708,136 @@ function renderMetricCard(metric) {
                 : ""
             }
           </div>
-          <p class="metric-context">${escapeHtml(metric.context || "Economic indicator")}</p>
         </div>
-        <span class="metric-icon" aria-hidden="true"><i class="fa-solid fa-chart-line"></i></span>
+        <span class="metric-icon" aria-hidden="true"><i class="fa-solid ${escapeHtml(metricIconClass(metric))}"></i></span>
       </div>
       <div class="metric-value-row">
         <p class="${metricValueClass(metric.value)}">${escapeHtml(metric.value)}</p>
-        <span class="${trendClass(cardTone)} metric-delta">${escapeHtml(metricDeltaLabel(metric))}</span>
+        <span class="metric-delta trend-text-${escapeHtml(cardTone)}">${escapeHtml(metricDeltaLabel(metric))}</span>
       </div>
-      <div class="metric-chart-panel">
-        ${renderSparkline(
-          sparklinePoints,
-          cardTone,
-          `${displayMetricName(metric)} ${metricDeltaLabel(metric)} trend`,
-        )}
-      </div>
-      ${renderMetricComparison(metric)}
+      ${
+        hasChart
+          ? `<div class="metric-chart-panel">
+              ${renderSparkline(
+                sparklinePoints,
+                cardTone,
+                `${displayMetricName(metric)} ${metricDeltaLabel(metric)} trend`,
+              )}
+            </div>`
+          : ""
+      }
       <div class="metric-footer" aria-label="Metric source details">
         <span><i class="fa-regular fa-calendar" aria-hidden="true"></i> ${escapeHtml(metricReleaseLabel(metric))}</span>
+        ${
+          metric.cadence && inferDisplayCadence(metric.cadence) !== "daily"
+            ? `<span><i class="fa-solid fa-rotate" aria-hidden="true"></i> ${escapeHtml(metric.cadence)}</span>`
+            : ""
+        }
         <span><i class="fa-solid fa-earth-americas" aria-hidden="true"></i> ${escapeHtml(sourceShortName(metric.source))}</span>
-        <span><i class="fa-solid ${freshnessIcon(metric.freshness?.status)}" aria-hidden="true"></i> ${escapeHtml(displayFreshness(metric.freshness))}</span>
-        <span><i class="fa-solid fa-rotate" aria-hidden="true"></i> ${escapeHtml(metric.cadence || "Cadence unavailable")}</span>
       </div>
     </article>
   `;
+}
+
+function isGlobalView() {
+  return selectedRegion === "Global";
+}
+
+function findRegionalMarket(region) {
+  return marketPulse.find(
+    (item) => item.viewGroup === "economy" && item.region === region && item.marketRole === "large-cap",
+  );
+}
+
+function globalMarketCards() {
+  const cards = [
+    ["United States", findRegionalMarket("United States")],
+    ["Europe", findRegionalMarket("Europe")],
+    ["Asia", findRegionalMarket("Asia")],
+  ]
+    .filter(([, metric]) => Boolean(metric))
+    .map(([name, metric]) => ({
+      ...withPeriodDelta(metric, selectedEconomyPeriod),
+      name,
+      context: metricTickerLabel(metric) || metric.context,
+    }));
+
+  if (cards.length) {
+    return cards;
+  }
+
+  return ["United States", "Europe", "Asia"].map((name) => ({
+    name,
+    context: "Caption",
+    value: "Unavailable",
+    trend: "Unavailable",
+    tone: "unavailable",
+    source: "Public data",
+    cadence: "Needs live data",
+    sourceStatus: "Unavailable",
+    freshness: {
+      status: "unavailable",
+      label: "Unavailable",
+    },
+    points: [],
+  }));
+}
+
+function orderedGlobalCurrencyCards() {
+  const order = ["dollar-index", "euro", "yen", "oil"];
+  const grouped = currencyCards().map((item) => withPeriodDelta(item, selectedEconomyPeriod));
+
+  return order
+    .map((id) => grouped.find((item) => item.id === id))
+    .filter(Boolean)
+    .map((item) => ({ ...item, hideChart: true }));
+}
+
+function regionalValue(region) {
+  const match = String(region.copy || "").match(/is\s+(-?\d+(?:\.\d+)?%)/i);
+
+  return region.value || match?.[1] || (region.sourceStatus === "Unavailable" ? "Unavailable" : "Loading");
+}
+
+function regionalChange(region) {
+  const match = String(region.copy || "").match(/([+-]\d+(?:\.\d+)?\s?pts?)/i);
+
+  return region.change || match?.[1] || region.trend || "Pending";
+}
+
+function regionMetricCard(region, overrides = {}) {
+  return {
+    ...region,
+    ...overrides,
+    value: regionalValue(region),
+    change: regionalChange(region),
+    context: overrides.context || "GDP Growth",
+    comparison: "point-change",
+    hideChart: true,
+  };
+}
+
+function focusedSupportCards() {
+  const dollar = findMetric(marketPulse, "dollar-index", "U.S. dollar");
+  const regionName = selectedRegion === "Asia" ? "China" : selectedRegion === "Europe" ? "European Union" : selectedRegion;
+  const regionGrowth = regions.find((region) => region.name === regionName) || regions[0];
+
+  return [
+    dollar ? { ...withPeriodDelta(dollar, selectedEconomyPeriod), isWide: true, hideChart: true } : null,
+    regionGrowth ? regionMetricCard(regionGrowth, { name: "GDP Growth", isWide: true }) : null,
+  ].filter(Boolean);
+}
+
+function riskMetricCards() {
+  return riskIndicators.map((indicator) => ({
+    ...indicator,
+    name: indicator.name === "Credit stress" ? "Credit" : indicator.name === "Financial stress" ? "Stress" : indicator.name,
+    ticker: indicator.name === "Volatility" ? "VIX" : "",
+    context: indicator.name,
+    value: indicator.value || indicator.trend || "Loading",
+    change: indicator.change || indicator.trend || "Pending",
+    hideChart: true,
+  }));
 }
 
 function signalItems() {
@@ -825,30 +953,45 @@ function renderDashboard() {
   const currencyGrid = document.querySelector("#currency-grid");
   const riskList = document.querySelector("#risk-list");
   const regionList = document.querySelector("#region-list");
+  const lowerGrid = document.querySelector(".lower-grid");
+  const globalView = isGlobalView();
   const marketCards = regionalMarketCards().map((item) => withPeriodDelta(item, selectedEconomyPeriod));
-  const economyCards = [
-    ...marketCards,
-    ...economicHealth.map((item) => withPeriodDelta(item, selectedEconomyPeriod)),
-  ].filter(Boolean);
-  const activeCurrencyCards = currencyCards().map((item) => withPeriodDelta(item, selectedCurrencyPeriod));
+  const economyCards = globalView
+    ? [...globalMarketCards(), ...orderedGlobalCurrencyCards()]
+    : [
+        ...marketCards,
+        ...economicHealth.map((item) => withPeriodDelta(item, selectedEconomyPeriod)),
+      ].filter(Boolean);
+  const supportCards = globalView
+    ? regions.slice(0, 3).map((region) => regionMetricCard(region))
+    : focusedSupportCards();
+
+  document.body.classList.toggle("dashboard-global", globalView);
+  document.body.classList.toggle("dashboard-focused", !globalView);
+  setText("#view-title", selectedRegion);
 
   if (economyGrid) {
     economyGrid.innerHTML = economyCards.map(renderMetricCard).join("");
   }
 
   if (currencyGrid) {
-    currencyGrid.innerHTML = activeCurrencyCards.map((item) => renderMetricCard(item)).join("");
+    currencyGrid.innerHTML = supportCards.map((item) => renderMetricCard(item)).join("");
   }
 
   updateSectionBadge("#economy-change-badge", sectionChange(economyCards));
-  updateSectionBadge("#currency-change-badge", sectionChange(activeCurrencyCards));
+  updateSectionBadge("#currency-change-badge", sectionChange(supportCards));
+  setText("#currency-title", globalView ? "GDP Growth" : "Supporting indicators");
+
+  if (lowerGrid) {
+    lowerGrid.hidden = globalView;
+  }
 
   if (riskList) {
-    riskList.innerHTML = riskIndicators.map(renderIndicatorRow).join("");
+    riskList.innerHTML = riskMetricCards().map(renderMetricCard).join("");
   }
 
   if (regionList) {
-    regionList.innerHTML = regions.map(renderRegionRow).join("");
+    regionList.innerHTML = regions.map((region) => renderMetricCard(regionMetricCard(region))).join("");
   }
 }
 
@@ -973,7 +1116,6 @@ function applyLiveSnapshot(snapshot) {
   setText(".score-drivers small", "Uses live indicators currently available.");
   setText("#last-updated-pill", `Checked ${formatCheckedTime(snapshot.checkedAt)}`);
   setText("#economy-title", "Economy");
-  setText("#currency-title", "Currency");
   setText("#risk-title", "Risk and confidence");
   setText("#global-title", "Regional growth");
   setText("#source-coverage-title", "Data coverage");
@@ -1056,7 +1198,6 @@ function applyLiveFallback() {
   setText(".score-drivers small", "Current values need live data.");
   setText("#last-updated-pill", "Live data unavailable");
   setText("#economy-title", "Economy");
-  setText("#currency-title", "Currency");
   setText("#source-coverage-title", "Live data unavailable");
   setText(
     "#source-coverage-copy",
@@ -1095,14 +1236,14 @@ async function loadLiveSnapshot() {
 
   if (refreshButton) {
     refreshButton.disabled = true;
-    refreshButton.textContent = "Checking";
+    refreshButton.innerHTML = '<i class="fa-solid fa-spinner" aria-hidden="true"></i><span class="visually-hidden">Checking data</span>';
   }
 
   if (window.location.protocol === "file:") {
     applyLiveFallback();
     if (refreshButton) {
       refreshButton.disabled = false;
-      refreshButton.textContent = "Refresh data";
+      refreshButton.innerHTML = '<i class="fa-solid fa-rotate" aria-hidden="true"></i><span class="visually-hidden">Refresh data</span>';
     }
     dashboardShell?.setAttribute("aria-busy", "false");
     return;
@@ -1126,7 +1267,7 @@ async function loadLiveSnapshot() {
   } finally {
     if (refreshButton) {
       refreshButton.disabled = false;
-      refreshButton.textContent = "Refresh data";
+      refreshButton.innerHTML = '<i class="fa-solid fa-rotate" aria-hidden="true"></i><span class="visually-hidden">Refresh data</span>';
     }
     dashboardShell?.setAttribute("aria-busy", "false");
   }
