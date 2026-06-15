@@ -89,6 +89,32 @@ test("focused regional fallback does not reuse U.S. starter cards", () => {
   assert.equal(normalizedCards.every((card) => card.sourceStatus === "Unavailable"), true);
 });
 
+test("global fallback cards explain missing market proxies", () => {
+  const context = loadAppContext();
+  const cards = vm.runInContext(
+    `
+      marketPulse = [];
+      globalMarketCards().map((card) => ({
+        context: card.context,
+        name: card.name,
+        sourceStatus: card.sourceStatus,
+      }));
+    `,
+    context,
+  );
+  const normalizedCards = JSON.parse(JSON.stringify(cards));
+
+  assert.deepEqual(
+    normalizedCards.map((card) => card.context),
+    [
+      "Market proxy needs live data",
+      "Market proxy needs live data",
+      "Market proxy needs live data",
+    ],
+  );
+  assert.equal(normalizedCards.every((card) => card.sourceStatus === "Unavailable"), true);
+});
+
 test("metric cards show source previous values when available", () => {
   const context = loadAppContext();
   const html = vm.runInContext(
@@ -115,6 +141,34 @@ test("metric cards show source previous values when available", () => {
 
   assert.match(html, /Previous 2\.9%/);
   assert.match(html, /FRED/);
+});
+
+test("metric cards show compact indicator context", () => {
+  const context = loadAppContext();
+  const html = vm.runInContext(
+    `
+      renderMetricCard({
+        name: "United States",
+        context: "Vanguard S&P 500 ETF",
+        value: "$498.10",
+        change: "+1.2%",
+        previous: "$492.18",
+        tone: "up",
+        icon: "fa-chart-line",
+        ticker: "VOO",
+        source: "Yahoo Finance: Vanguard S&P 500 ETF chart",
+        cadence: "Daily market close",
+        releaseDate: "2026-06-12",
+        sourceStatus: "Source-backed",
+        freshness: { status: "current", label: "Current" },
+        points: [492.18, 498.10],
+        comparison: "percent-change",
+      });
+    `,
+    context,
+  );
+
+  assert.match(html, /Vanguard S&amp;P 500 ETF/);
 });
 
 test("metric cards do not expose unavailable previous values", () => {

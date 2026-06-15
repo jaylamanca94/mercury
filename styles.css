@@ -340,7 +340,12 @@ body {
 }
 
 .metric-context {
-  display: none;
+  color: var(--muted);
+  display: block;
+  font-size: 12px;
+  line-height: 16px;
+  margin: 4px 0 0;
+  overflow-wrap: anywhere;
 }
 
 .metric-icon {

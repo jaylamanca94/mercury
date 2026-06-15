@@ -719,6 +719,7 @@ function renderMetricCard(metric) {
                 : ""
             }
           </div>
+          ${metric.context ? `<p class="metric-context">${escapeHtml(metric.context)}</p>` : ""}
         </div>
         <span class="metric-icon" aria-hidden="true"><i class="fa-solid ${escapeHtml(metricIconClass(metric))}"></i></span>
       </div>
@@ -784,7 +785,7 @@ function globalMarketCards() {
 
   return ["United States", "Europe", "Asia"].map((name) => ({
     name,
-    context: "Caption",
+    context: "Market proxy needs live data",
     value: "Unavailable",
     trend: "Unavailable",
     tone: "unavailable",
