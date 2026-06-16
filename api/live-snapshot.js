@@ -897,6 +897,7 @@ async function fetchFredSeries(series) {
     weight: series.weight || 1,
     comparison: series.comparison,
     previous: formatValue(previous.value, series),
+    previousReleaseDate: previous.date,
     change,
     points: values.slice(-7).map((point) => Number(point.value.toFixed(2))),
     history: values.slice(-60).map((point) => ({
@@ -981,6 +982,7 @@ async function fetchYahooSeries(series) {
     weight: series.weight || 1,
     comparison: series.comparison,
     previous: formatValue(previous.value, series, currency),
+    previousReleaseDate: previous.date,
     change,
     points: values.slice(-7).map((point) => Number(point.value.toFixed(2))),
     history: values.slice(-260).map((point) => ({
@@ -1061,6 +1063,9 @@ async function fetchWorldBankRegion(region) {
     source: region.source,
     cadence: "Annual release",
     releaseDate: latest.date,
+    previous: `${previous.value.toFixed(1)}%`,
+    previousReleaseDate: previous.date,
+    change,
     sourceStatus: "Source-backed",
   };
 }

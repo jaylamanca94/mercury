@@ -235,8 +235,9 @@ Current source-backed utilities:
 - Sparkline panels should read as quiet chart wells: subtle neutral backgrounds, light grid
   texture, compact height, and restrained line weight rather than heavy gray blocks. Empty
   sparkline states should use calm labels such as `No trend`, not placeholder-like chart labels.
-- Metric cards include their short indicator context and compact previous-release comparisons so
-  users can understand direction without relying only on the sparkline or ticker.
+- Metric cards include their short indicator context and compact previous-release comparisons with
+  prior observation dates, so users can understand direction without relying only on the sparkline
+  or ticker.
 - Every live indicator card includes compact source metadata for source, cadence, freshness, latest
   release timing, and caveats when relevant so users can judge trust without reading
   implementation details.

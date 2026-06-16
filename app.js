@@ -622,6 +622,12 @@ function metricPreviousLabel(metric) {
     return "";
   }
 
+  const previousDate = formatReleaseDate(metric.previousReleaseDate, metric.cadence);
+
+  if (previousDate) {
+    return `Previous ${previous} (${previousDate})`;
+  }
+
   return `Previous ${previous}`;
 }
 

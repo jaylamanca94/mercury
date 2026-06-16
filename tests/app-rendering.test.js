@@ -130,6 +130,7 @@ test("metric cards show source previous values when available", () => {
         source: "FRED: Consumer Price Index for All Urban Consumers",
         cadence: "Monthly release",
         releaseDate: "2026-05-01",
+        previousReleaseDate: "2026-04-01",
         sourceStatus: "Source-backed",
         freshness: { status: "current", label: "Current" },
         points: [2.7, 2.9, 3.1],
@@ -139,8 +140,37 @@ test("metric cards show source previous values when available", () => {
     context,
   );
 
-  assert.match(html, /Previous 2\.9%/);
+  assert.match(html, /Previous 2\.9% \(Apr 2026\)/);
   assert.match(html, /FRED/);
+});
+
+test("daily metric cards show exact previous observation dates", () => {
+  const context = loadAppContext();
+  const html = vm.runInContext(
+    `
+      renderMetricCard({
+        name: "United States",
+        context: "Vanguard S&P 500 ETF",
+        value: "$498.10",
+        change: "+1.2%",
+        previous: "$492.18",
+        previousReleaseDate: "2026-06-12",
+        tone: "up",
+        icon: "fa-chart-line",
+        ticker: "VOO",
+        source: "Yahoo Finance: Vanguard S&P 500 ETF chart",
+        cadence: "Daily market close",
+        releaseDate: "2026-06-15",
+        sourceStatus: "Source-backed",
+        freshness: { status: "current", label: "Current" },
+        points: [492.18, 498.10],
+        comparison: "percent-change",
+      });
+    `,
+    context,
+  );
+
+  assert.match(html, /Previous \$492\.18 \(Jun 12, 2026\)/);
 });
 
 test("metric cards show compact indicator context", () => {
