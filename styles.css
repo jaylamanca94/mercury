@@ -12,6 +12,7 @@
   --nav-line: #ccd3cf;
   --green: #207a57;
   --red: #b44f4f;
+  --neutral-state: #6f7b82;
   --shadow: 0 14px 30px rgba(27, 34, 31, 0.08), 0 2px 8px rgba(27, 34, 31, 0.06);
 }
 
@@ -204,11 +205,16 @@ body {
 }
 
 .view-change {
-  color: var(--green);
+  color: var(--neutral-state);
   display: inline-flex;
   font-size: 16px;
   font-weight: 400;
   line-height: 24px;
+}
+
+.view-change.trend-up,
+.trend-text-up {
+  color: var(--green);
 }
 
 .view-change.trend-down,
@@ -219,14 +225,12 @@ body {
 }
 
 .view-change.trend-unavailable,
-.trend-text-unavailable {
-  color: var(--muted);
-}
-
-.trend-text-up,
+.trend-text-unavailable,
+.view-change.trend-stable,
+.view-change.trend-mixed,
 .trend-text-stable,
 .trend-text-mixed {
-  color: var(--green);
+  color: var(--muted);
 }
 
 .section-select-label {
@@ -302,7 +306,7 @@ body {
 }
 
 .metric-card {
-  --metric-state: var(--green);
+  --metric-state: var(--neutral-state);
   background: linear-gradient(180deg, var(--surface) 0%, var(--surface-subtle) 100%);
   border: 1px solid var(--line);
   border-radius: 8px;
@@ -328,9 +332,18 @@ body {
   grid-column: span 2;
 }
 
+.metric-card-up {
+  --metric-state: var(--green);
+}
+
 .metric-card-down,
 .metric-card-caution {
   --metric-state: var(--red);
+}
+
+.metric-card-stable,
+.metric-card-mixed {
+  --metric-state: var(--neutral-state);
 }
 
 .metric-card-unavailable {
@@ -497,16 +510,25 @@ body {
 
 .trend-label,
 .section-change-badge {
-  color: var(--green);
+  color: var(--neutral-state);
   display: inline-flex;
   font-size: 14px;
   font-weight: 400;
   line-height: 16px;
 }
 
+.trend-up {
+  color: var(--green);
+}
+
 .trend-down,
 .trend-caution {
   color: var(--red);
+}
+
+.trend-stable,
+.trend-mixed {
+  color: var(--muted);
 }
 
 .trend-unavailable {

@@ -57,6 +57,8 @@ Mercury should avoid looking like a brokerage or trading app. Use measured, prof
 - Confidence or stability: blue
 
 Use red/green direction sparingly and always pair it with text labels so color is not the only signal.
+Loading, stable, no-change, and mixed states should use neutral gray or blue-gray treatment, not
+positive green.
 
 ## Layout
 

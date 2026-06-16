@@ -4,6 +4,8 @@ const path = require("node:path");
 const test = require("node:test");
 const vm = require("node:vm");
 
+const styles = fs.readFileSync(path.join(__dirname, "..", "styles.css"), "utf8");
+
 function createElement() {
   return {
     classList: {
@@ -251,4 +253,10 @@ test("metric cards do not expose unavailable previous values", () => {
   );
 
   assert.doesNotMatch(html, /Previous Unavailable/);
+});
+
+test("stable and mixed visual states stay neutral", () => {
+  assert.match(styles, /\.metric-card-up\s*{\s*--metric-state: var\(--green\);/);
+  assert.match(styles, /\.metric-card-stable,\s*\.metric-card-mixed\s*{\s*--metric-state: var\(--neutral-state\);/);
+  assert.match(styles, /\.trend-stable,\s*\.trend-mixed\s*{\s*color: var\(--muted\);/);
 });
