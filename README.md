@@ -11,9 +11,9 @@ risk, and regional growth from public data routes when `/api/live-snapshot` is a
 route is unavailable, the UI shows loading or unavailable source states instead of fabricated
 figures. Data coverage shows the latest available source release window, page-load check time,
 cadence-aware freshness state, and live indicator counts for partially available source groups.
-Source-backed metric cards show the prior source value and its observation date alongside the
-latest release date, source, and cadence so users can judge the displayed movement without opening
-a separate data table.
+Source-backed metric cards show the prior source value, while the Data coverage section carries
+provider attribution, freshness, and broader source context. Daily market cards hide routine dates
+when current, but delayed, stale, or slower-cadence indicators keep date context when it affects trust.
 Economy and market-support sections include Today, Week, Month, Year, and 5-year controls; Economy
 also supports United States, Europe, and Asia market-proxy views. Longer market-history sparklines
 are smoothed so year and 5-year views read as trend lines rather than noisy raw traces.

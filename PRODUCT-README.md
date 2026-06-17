@@ -193,6 +193,9 @@ Every live data surface should show source, freshness, and caveats when relevant
 - Use a dashboard pattern that feels like economic weather: quick, visual, and calm.
 - Separate current condition, trend direction, and context so users can scan without over-reading.
 - Use neutral language that explains conditions without implying investment advice.
+- Distinguish movement from interpretation when an indicator can cut both ways. For example, lower
+  oil prices can ease costs while pressuring energy markets, so Mercury should not automatically
+  frame the move as good or bad.
 - Prefer concise status labels over dense financial jargon.
 - Use visual encoding for direction, risk, confidence, and freshness.
 - Make source attribution visible enough to build trust without overwhelming the dashboard.

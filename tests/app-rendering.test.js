@@ -154,7 +154,7 @@ test("hero insight explains sentiment and top movers", () => {
       const cards = [
         { name: "Asia", periodChange: "+8.5%", periodChangeValue: 8.5, comparison: "percent-change" },
         { name: "Europe", periodChange: "+3.6%", periodChangeValue: 3.6, comparison: "percent-change" },
-        { name: "Oil", periodChange: "-15.9%", periodChangeValue: -15.9, comparison: "percent-change" },
+        { id: "oil", name: "Oil", periodChange: "-15.9%", periodChangeValue: -15.9, comparison: "percent-change" },
       ];
       const change = { value: 0.5, label: "+0.5%", tone: "up" };
       ({
@@ -171,10 +171,10 @@ test("hero insight explains sentiment and top movers", () => {
   assert.equal(result.badge, "<span>Healthy</span><strong>+0.5%</strong>");
   assert.equal(
     result.insight,
-    "Broadly positive this week, led by Asia (+8.5%). Oil (-15.9%) remains the primary drag.",
+    "Broadly positive this week, led by Asia (+8.5%). Oil (-15.9%) moved sharply, which is a mixed signal for growth and input costs.",
   );
   assert.doesNotMatch(result.movers, /Top movers/);
-  assert.match(result.movers, /hero-mover-down/);
+  assert.match(result.movers, /hero-mover-mixed/);
   assert.match(styles, /\.hero-insight\s*{[^}]*max-width: 44rem;/s);
   assert.match(styles, /\.hero-condition\s*{[^}]*flex-direction: column;/s);
 });
@@ -227,10 +227,11 @@ test("metric cards show source previous values when available", () => {
   );
 
   assert.match(html, /Previous 2\.9% \(Apr 2026\)/);
-  assert.match(html, /FRED/);
+  assert.match(html, /May 2026/);
+  assert.doesNotMatch(html, /FRED/);
 });
 
-test("daily metric cards show exact previous observation dates", () => {
+test("current daily metric cards hide routine dates and repeated source names", () => {
   const context = loadAppContext();
   const html = vm.runInContext(
     `
@@ -256,7 +257,41 @@ test("daily metric cards show exact previous observation dates", () => {
     context,
   );
 
-  assert.match(html, /Previous \$492\.18 \(Jun 12, 2026\)/);
+  assert.match(html, /Previous \$492\.18/);
+  assert.doesNotMatch(html, /Previous \$492\.18 \(Jun 12, 2026\)/);
+  assert.doesNotMatch(html, /Jun 15, 2026/);
+  assert.doesNotMatch(html, /Yahoo Finance/);
+});
+
+test("stale daily metric cards keep date context", () => {
+  const context = loadAppContext();
+  const html = vm.runInContext(
+    `
+      renderMetricCard({
+        name: "United States",
+        context: "Vanguard S&P 500 ETF",
+        value: "$498.10",
+        change: "+1.2%",
+        previous: "$492.18",
+        previousReleaseDate: "2026-05-10",
+        tone: "up",
+        icon: "fa-chart-line",
+        ticker: "VOO",
+        source: "Yahoo Finance: Vanguard S&P 500 ETF chart",
+        cadence: "Daily market close",
+        releaseDate: "2026-05-12",
+        sourceStatus: "Source-backed",
+        freshness: { status: "stale", label: "Stale" },
+        points: [492.18, 498.10],
+        comparison: "percent-change",
+      });
+    `,
+    context,
+  );
+
+  assert.match(html, /Previous \$492\.18 \(May 10, 2026\)/);
+  assert.match(html, /May 12, 2026/);
+  assert.doesNotMatch(html, /Yahoo Finance/);
 });
 
 test("metric cards show compact indicator context", () => {

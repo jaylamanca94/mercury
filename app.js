@@ -355,18 +355,32 @@ function heroMoverLabel(card) {
   return `${name} (${label})`;
 }
 
+function isContextualMover(card) {
+  return card?.id === "oil" || displayMetricName(card).toLowerCase() === "oil";
+}
+
+function heroMoverTone(card) {
+  return isContextualMover(card) ? "mixed" : periodTone(card.periodChangeValue);
+}
+
 function buildHeroInsight(change, movers, period, scope) {
   if (!change) {
     return "Waiting for enough live market data to explain the current global read.";
   }
 
   const sentiment = sentimentForChange(change);
-  const leader = movers.find((card) => card.periodChangeValue > 0.05);
-  const drag = movers.find((card) => card.periodChangeValue < -0.05);
+  const directionalMovers = movers.filter((card) => !isContextualMover(card));
+  const leader = directionalMovers.find((card) => card.periodChangeValue > 0.05);
+  const drag = directionalMovers.find((card) => card.periodChangeValue < -0.05);
+  const contextualMover = movers.find(isContextualMover);
   const leadPhrase = leader ? `, led by ${heroMoverLabel(leader)}` : "";
   const dragPhrase = drag ? ` ${heroMoverLabel(drag)} remains the primary drag.` : "";
+  const contextualPhrase =
+    contextualMover && !drag
+      ? ` ${heroMoverLabel(contextualMover)} moved sharply, which is a mixed signal for growth and input costs.`
+      : "";
 
-  return `${sentenceCase(sentiment.phrase)} ${periodPhrase(period)}${leadPhrase}.${dragPhrase}`.trim();
+  return `${sentenceCase(sentiment.phrase)} ${periodPhrase(period)}${leadPhrase}.${dragPhrase}${contextualPhrase}`.trim();
 }
 
 function renderHeroMovers(movers) {
@@ -377,7 +391,7 @@ function renderHeroMovers(movers) {
   return `
     ${movers
       .map((card) => {
-        const tone = periodTone(card.periodChangeValue);
+        const tone = heroMoverTone(card);
 
         return `
           <span class="hero-mover hero-mover-${escapeHtml(tone)}">
@@ -721,6 +735,21 @@ function metricReleaseLabel(metric) {
   return "Unavailable";
 }
 
+function shouldShowMetricDate(metric) {
+  if (!metric.releaseDate && !metric.previousReleaseDate) {
+    return false;
+  }
+
+  const freshnessStatus = metric.freshness?.status;
+  const cadence = inferDisplayCadence(metric.cadence);
+
+  if (freshnessStatus === "delayed" || freshnessStatus === "stale") {
+    return true;
+  }
+
+  return cadence !== "daily";
+}
+
 function displayMetricDetail(value) {
   if (!value) {
     return "Unavailable";
@@ -736,7 +765,9 @@ function metricPreviousLabel(metric) {
     return "";
   }
 
-  const previousDate = formatReleaseDate(metric.previousReleaseDate, metric.cadence);
+  const previousDate = shouldShowMetricDate(metric)
+    ? formatReleaseDate(metric.previousReleaseDate, metric.cadence)
+    : null;
 
   if (previousDate) {
     return `Previous ${previous} (${previousDate})`;
@@ -933,6 +964,19 @@ function renderMetricCard(metric) {
   const sparklinePoints = metric.periodPoints || metric.points;
   const hasChart = !metric.hideChart;
   const previousLabel = metricPreviousLabel(metric);
+  const releaseLabel = shouldShowMetricDate(metric) ? metricReleaseLabel(metric) : "";
+  const cadenceLabel = metric.cadence && inferDisplayCadence(metric.cadence) !== "daily" ? metric.cadence : "";
+  const footerItems = [
+    previousLabel
+      ? `<span class="metric-previous"><i class="fa-solid fa-clock-rotate-left acadia-icon" aria-hidden="true"></i> ${escapeHtml(previousLabel)}</span>`
+      : "",
+    releaseLabel
+      ? `<span><i class="fa-regular fa-calendar acadia-icon" aria-hidden="true"></i> ${escapeHtml(releaseLabel)}</span>`
+      : "",
+    cadenceLabel
+      ? `<span><i class="fa-solid fa-rotate acadia-icon" aria-hidden="true"></i> ${escapeHtml(cadenceLabel)}</span>`
+      : "",
+  ].filter(Boolean);
   const deltaState =
     cardTone === "down" || cardTone === "caution" || cardTone === "unavailable"
       ? " is-danger"
@@ -971,20 +1015,11 @@ function renderMetricCard(metric) {
             </div>`
           : ""
       }
-      <div class="metric-footer" aria-label="Metric source details">
-        ${
-          previousLabel
-            ? `<span class="metric-previous"><i class="fa-solid fa-clock-rotate-left acadia-icon" aria-hidden="true"></i> ${escapeHtml(previousLabel)}</span>`
-            : ""
-        }
-        <span><i class="fa-regular fa-calendar acadia-icon" aria-hidden="true"></i> ${escapeHtml(metricReleaseLabel(metric))}</span>
-        ${
-          metric.cadence && inferDisplayCadence(metric.cadence) !== "daily"
-            ? `<span><i class="fa-solid fa-rotate acadia-icon" aria-hidden="true"></i> ${escapeHtml(metric.cadence)}</span>`
-            : ""
-        }
-        <span><i class="fa-solid fa-earth-americas acadia-icon" aria-hidden="true"></i> ${escapeHtml(sourceShortName(metric.source))}</span>
-      </div>
+      ${
+        footerItems.length
+          ? `<div class="metric-footer" aria-label="Metric data details">${footerItems.join("")}</div>`
+          : ""
+      }
     </article>
   `;
 }
@@ -1407,7 +1442,11 @@ function applyLiveSnapshot(snapshot) {
   setText(
     "#source-coverage-copy",
     snapshot.freshness?.copy ||
-      "Each section shows its source, latest release date, and freshness.",
+      "Connected source freshness is summarized here so individual cards can stay compact.",
+  );
+  setText(
+    "#source-provider-copy",
+    "Financial data provided by Yahoo Finance. Economic releases provided by FRED. Regional growth provided by World Bank.",
   );
   setText("#latest-release-window", formatReleaseWindow(snapshot.releaseRange));
   setText("#live-last-checked", formatCheckedAt(snapshot.checkedAt));

@@ -151,6 +151,9 @@ Use `8px` or less for normal cards and repeated list items unless a larger conta
 ## Chart And Indicator Guidance
 
 - Pair every numeric movement with direction, timeframe, source, and update time when possible.
+- Distinguish direction from economic interpretation. Some moves, such as oil prices falling, are
+  contextual rather than automatically good or bad; hero copy should describe those as mixed signals
+  instead of primary drags or wins.
 - Use sparklines for recent direction, not detailed analysis.
 - Sparkline panels in metric cards should span the full card content width, including the right-side
   icon reserve, let the line enter and exit at the chart edges, and use smoothed curves instead of
@@ -168,6 +171,8 @@ Use `8px` or less for normal cards and repeated list items unless a larger conta
 - Make stale, delayed, sample, fallback, no-data, and unavailable data visually distinct.
 - Source-backed sections must update their own freshness labels from the current source response, including source observation time, previous-release comparison timing, and dashboard fetch timing when those are different.
 - Show exact daily release dates for daily market/risk data, month-level labels for monthly economic releases, and year-level labels for annual regional releases.
+- In compact metric cards, omit routine dates for current daily market data. Show daily dates when
+  freshness is delayed or stale, and keep month/year labels for slower official releases.
 - Pair source release dates with cadence-aware freshness labels: `Current`, `Delayed`, or `Stale`.
   Daily, weekly, monthly, quarterly, and annual data must use different thresholds so slower
   official releases are not treated like market charts.
@@ -273,16 +278,15 @@ Current source-backed utilities:
   a heavy area chart. The chart and footer content should span to the normal card content padding;
   reserve space for the top-right icon only in the card header. Empty sparkline states should use
   calm labels such as `No trend`, not placeholder-like chart labels.
-- Metric cards include their short indicator context and compact previous-release comparisons with
-  prior observation dates, so users can understand direction without relying only on the sparkline
-  or ticker.
-- Every live indicator card includes compact source metadata for source, cadence, freshness, latest
-  release timing, and caveats when relevant so users can judge trust without reading
-  implementation details.
+- Metric cards include their short indicator context and compact previous-value comparisons, so
+  users can understand direction without relying only on the sparkline or ticker.
+- Avoid repeating provider names such as `Yahoo Finance` inside every metric card. Use the Data
+  coverage section for provider attribution, source freshness, and caveats; use card-level metadata
+  only when a date or cadence materially affects trust.
 - Data coverage uses a compact snapshot metadata block for latest dashboard check, section-level source state, and upstream source links.
-- Freshness metadata belongs alongside source metadata on metric cards, risk rows, region rows, the
-  source rail, and the data coverage band. Treat delayed and stale labels as calm trust signals,
-  not urgent trading-style alerts.
+- Freshness metadata belongs in the data coverage band by default. Treat delayed and stale labels as
+  calm trust signals, not urgent trading-style alerts, and surface date context on cards only when
+  freshness is not current or the source cadence is slower than daily.
 - Region and risk rows use icon, title, short context, and a plain-language trend label.
 - Sample data must be visibly labeled in the header and source/freshness areas until live integrations exist.
 - Mixed source states should use explicit labels such as `Live`, `Live source`, `Delayed`, `Stale`, `No data`, `Unavailable`, `Fallback`, `Sample`, and `Sample fallback` at the section or indicator level.
