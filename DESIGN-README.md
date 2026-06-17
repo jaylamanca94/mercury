@@ -51,6 +51,7 @@ Mercury now treats `../Acadia` as the shared coded design-system baseline. Befor
 - Mercury's implemented adapter uses Acadia tokens for the app chrome, page shell, translucent surfaces, metric cards, native selects, icon actions, badges, focus rings, status rows, shadows, radius, theme behavior, and responsive page margins.
 - Keep Mercury-specific economics language, source-trust rules, chart semantics, freshness labels, neutral financial tone, and public-data caveats in this document.
 - Keep local exceptions narrow: source freshness semantics, market/economic movement colors, sparklines, score calculations, and dashboard content order may remain Mercury-specific.
+- Do not use state-colored card borders, top rails, or outlines on metric cards. Match Acadia's neutral metric surface; show movement through text labels, deltas, and sparklines instead.
 - If a Mercury pattern becomes useful for another product, graduate the neutral part into Acadia and keep Mercury's economy-specific wording and data treatment here.
 
 ## Color

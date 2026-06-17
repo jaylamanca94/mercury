@@ -574,18 +574,9 @@ body {
 }
 
 .metric-card:hover {
-  border-color: color-mix(in srgb, var(--metric-state) 22%, var(--acadia-color-border));
-  box-shadow: var(--acadia-shadow-card);
+  border-color: var(--acadia-color-border-strong);
+  box-shadow: var(--acadia-shadow-control);
   transform: translateY(-1px);
-}
-
-.metric-card::before {
-  background: var(--metric-state);
-  content: "";
-  height: 3px;
-  inset: 0 0 auto;
-  opacity: 0.84;
-  position: absolute;
 }
 
 .metric-card-wide {
@@ -662,7 +653,7 @@ body {
 .metric-icon,
 .acadia-metric-icon {
   align-items: center;
-  color: color-mix(in srgb, var(--metric-state) 62%, var(--acadia-color-text-muted));
+  color: color-mix(in srgb, var(--acadia-color-text-muted) 58%, transparent);
   display: inline-flex;
   height: 2.5rem;
   justify-content: center;

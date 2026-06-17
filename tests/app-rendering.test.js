@@ -261,6 +261,12 @@ test("stable and mixed visual states stay neutral", () => {
   assert.match(styles, /\.trend-stable,\s*\.trend-mixed\s*{\s*color: var\(--muted\);/);
 });
 
+test("metric cards use Acadia surfaces instead of state-colored borders", () => {
+  assert.doesNotMatch(styles, /\.metric-card::before/);
+  assert.doesNotMatch(styles, /border-color: color-mix\(in srgb, var\(--metric-state\)/);
+  assert.match(styles, /\.metric-icon,\s*\.acadia-metric-icon\s*{[^}]*var\(--acadia-color-text-muted\)/s);
+});
+
 test("Acadia header wrapper preserves balanced desktop layout", () => {
   assert.match(styles, /\.app-header-inner\s*{[^}]*display: flex;/s);
   assert.match(styles, /\.app-header-inner\s*{[^}]*justify-content: space-between;/s);
