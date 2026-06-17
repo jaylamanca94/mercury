@@ -752,7 +752,7 @@ function displayMetricName(metric) {
 }
 
 function shouldShowMetricContext(metric) {
-  return !["large-cap", "small-cap", "technology"].includes(metric.marketRole);
+  return false;
 }
 
 function displayMetricContext(metric) {
@@ -772,6 +772,52 @@ function metricTickerLabel(metric) {
   if (metric.id === "oil") return "CL=F";
 
   return "";
+}
+
+function metricCaptionLabel(metric) {
+  const captionsById = {
+    "dollar-index": "USD",
+    euro: "EUR",
+    yen: "JPY",
+    oil: "CL=F",
+    bitcoin: "BTC",
+    inflation: "CPI",
+    "interest-rates": "FED",
+    unemployment: "UNRATE",
+    "gdp-growth": "GDP",
+    volatility: "VIX",
+    "high-yield-credit": "HYG",
+    "financial-stress": "STLFSI4",
+  };
+  const normalizedName = String(metric.name || "").toLowerCase();
+  const captionsByName = {
+    "u.s. dollar": "USD",
+    euro: "EUR",
+    yen: "JPY",
+    oil: "CL=F",
+    bitcoin: "BTC",
+    inflation: "CPI",
+    "interest rates": "FED",
+    unemployment: "UNRATE",
+    "gdp growth": "GDP",
+    volatility: "VIX",
+    credit: "HYG",
+    stress: "STLFSI4",
+  };
+
+  if (captionsById[metric.id]) {
+    return captionsById[metric.id];
+  }
+
+  if (captionsByName[normalizedName]) {
+    return captionsByName[normalizedName];
+  }
+
+  if (String(metric.context || "").toLowerCase() === "gdp growth") {
+    return "GDP";
+  }
+
+  return metricTickerLabel(metric);
 }
 
 function sourceShortName(source) {
@@ -1065,6 +1111,7 @@ function renderMetricCard(metric) {
   const cardTone = metricCardTone(metric);
   const sparklinePoints = metric.periodPoints || metric.points;
   const hasChart = !metric.hideChart;
+  const metricCaption = metricCaptionLabel(metric);
   const metricContext = displayMetricContext(metric);
   const releaseLabel = shouldShowMetricDate(metric) ? metricReleaseLabel(metric) : "";
   const cadenceLabel = metric.cadence && inferDisplayCadence(metric.cadence) !== "daily" ? metric.cadence : "";
@@ -1089,6 +1136,7 @@ function renderMetricCard(metric) {
         <div>
           <div class="metric-title-line">
             <h3 class="metric-name">${escapeHtml(displayMetricName(metric))}</h3>
+            ${metricCaption ? `<span class="metric-caption">${escapeHtml(metricCaption)}</span>` : ""}
           </div>
           ${metricContext ? `<p class="metric-context">${escapeHtml(metricContext)}</p>` : ""}
         </div>
@@ -1211,7 +1259,7 @@ function riskMetricCards() {
   return riskIndicators.map((indicator) => ({
     ...indicator,
     name: indicator.name === "Credit stress" ? "Credit" : indicator.name === "Financial stress" ? "Stress" : indicator.name,
-    ticker: indicator.name === "Volatility" ? "VIX" : "",
+    ticker: indicator.name === "Volatility" ? "VIX" : indicator.ticker || "",
     context: indicator.name,
     value: indicator.value || indicator.trend || "Loading",
     change: indicator.change || indicator.trend || "Pending",

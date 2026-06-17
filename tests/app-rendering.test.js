@@ -147,7 +147,7 @@ test("global supporting cards include Bitcoin after fiat and commodity indicator
   assert.match(styles, /\.dashboard-global \.economy-grid > \.metric-card:nth-child\(n \+ 7\)\s*{\s*grid-column: span 6;/);
 });
 
-test("global regional cards keep proxy tickers off the visible card face", () => {
+test("global regional cards show proxy tickers as inline captions", () => {
   const context = loadAppContext();
   const html = vm.runInContext(
     `
@@ -177,8 +177,7 @@ test("global regional cards keep proxy tickers off the visible card face", () =>
   );
 
   assert.match(html, /title="United States - VOO"/);
-  assert.doesNotMatch(html, /class="metric-ticker"/);
-  assert.doesNotMatch(html, />VOO</);
+  assert.match(html, /<span class="metric-caption">VOO<\/span>/);
   assert.doesNotMatch(html, /Vanguard S&amp;P 500 ETF<\/p>/);
 });
 
@@ -228,8 +227,70 @@ test("core market cards use category icons and hide proxy subtitles", () => {
   assert.match(html, /fa-shop/);
   assert.match(html, /title="S&amp;P 500 - VOO - Vanguard S&amp;P 500 ETF"/);
   assert.match(html, /title="Small Cap - VSMAX - Vanguard Small-Cap Index Fund"/);
+  assert.match(html, /<span class="metric-caption">VOO<\/span>/);
+  assert.match(html, /<span class="metric-caption">VSMAX<\/span>/);
   assert.doesNotMatch(html, /class="metric-context">Vanguard S&amp;P 500 ETF/);
   assert.doesNotMatch(html, /class="metric-context">Vanguard Small-Cap Index Fund/);
+});
+
+test("support metric cards use clean inline captions instead of long subtitles", () => {
+  const context = loadAppContext();
+  const html = vm.runInContext(
+    `
+      [
+        renderMetricCard({
+          id: "dollar-index",
+          name: "U.S. dollar",
+          context: "Dollar index fund proxy",
+          value: "$28.18",
+          change: "+0.5%",
+          tone: "up",
+          ticker: "UUP",
+          sourceStatus: "Source-backed",
+          freshness: { status: "current", label: "Current" },
+          points: [],
+          hideChart: true,
+          comparison: "percent-change",
+        }),
+        renderMetricCard({
+          id: "euro",
+          name: "Euro",
+          context: "EUR/USD exchange rate",
+          value: "1.1509",
+          change: "-0.2%",
+          tone: "down",
+          ticker: "EUR/USD",
+          sourceStatus: "Source-backed",
+          freshness: { status: "current", label: "Current" },
+          points: [],
+          hideChart: true,
+          comparison: "percent-change",
+        }),
+        renderMetricCard({
+          id: "yen",
+          name: "Yen",
+          context: "USD/JPY exchange rate",
+          value: "160.61",
+          change: "+0.1%",
+          tone: "up",
+          ticker: "USD/JPY",
+          sourceStatus: "Source-backed",
+          freshness: { status: "current", label: "Current" },
+          points: [],
+          hideChart: true,
+          comparison: "percent-change",
+        }),
+      ].join("");
+    `,
+    context,
+  );
+
+  assert.match(html, /<span class="metric-caption">USD<\/span>/);
+  assert.match(html, /<span class="metric-caption">EUR<\/span>/);
+  assert.match(html, /<span class="metric-caption">JPY<\/span>/);
+  assert.doesNotMatch(html, /Dollar index fund proxy<\/p>/);
+  assert.doesNotMatch(html, /EUR\/USD exchange rate<\/p>/);
+  assert.doesNotMatch(html, /USD\/JPY exchange rate<\/p>/);
 });
 
 test("hero insight explains sentiment and top movers", () => {
@@ -374,7 +435,7 @@ test("slower-cadence metric cards keep release context without previous footers"
   assert.doesNotMatch(html, /FRED/);
 });
 
-test("current daily metric cards hide routine dates, previous values, tickers, and repeated source names", () => {
+test("current daily metric cards hide routine dates, previous values, subtitles, and repeated source names", () => {
   const context = loadAppContext();
   const html = vm.runInContext(
     `
@@ -401,8 +462,8 @@ test("current daily metric cards hide routine dates, previous values, tickers, a
   );
 
   assert.match(html, /title="United States - VOO - Vanguard S&amp;P 500 ETF"/);
-  assert.doesNotMatch(html, /class="metric-ticker"/);
-  assert.doesNotMatch(html, />VOO</);
+  assert.match(html, /<span class="metric-caption">VOO<\/span>/);
+  assert.doesNotMatch(html, /Vanguard S&amp;P 500 ETF<\/p>/);
   assert.doesNotMatch(html, /Previous \$492\.18/);
   assert.doesNotMatch(html, /Jun 15, 2026/);
   assert.doesNotMatch(html, /Yahoo Finance/);
@@ -439,7 +500,7 @@ test("stale daily metric cards keep date context without previous footers", () =
   assert.doesNotMatch(html, /Yahoo Finance/);
 });
 
-test("metric cards show compact indicator context when it clarifies the label", () => {
+test("metric cards show compact indicator captions when they clarify the label", () => {
   const context = loadAppContext();
   const html = vm.runInContext(
     `
@@ -463,7 +524,8 @@ test("metric cards show compact indicator context when it clarifies the label", 
     context,
   );
 
-  assert.match(html, /Consumer prices/);
+  assert.match(html, /<span class="metric-caption">CPI<\/span>/);
+  assert.doesNotMatch(html, /Consumer prices<\/p>/);
 });
 
 test("empty sparklines use calm no-trend copy", () => {

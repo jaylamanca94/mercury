@@ -288,12 +288,12 @@ Current source-backed utilities:
   a heavy area chart. The chart and footer content should span to the normal card content padding;
   reserve space for the top-right icon only in the card header. Empty sparkline states should use
   calm labels such as `No trend`, not placeholder-like chart labels.
-- Metric cards include only short plain-language context when it helps interpretation. Do not show
-  previous-value footers in the scannable card grid when the visible percent or point change already
-  explains the comparison.
-- Core market cards such as `S&P 500`, `Small Cap`, and `Technology` should stand on their category
-  names without visible ETF/proxy subtitles. Keep proxy details available through hover/source
-  context. Use `business-time` for S&P 500, `shop` for Small Cap, and `microchip` for Technology.
+- Metric cards should pair the title with one compact inline code, such as `VOO`, `USD`, `EUR`,
+  `CPI`, or `GDP`, instead of a second-line subtitle. Keep longer proxy details available through
+  hover/source context. Do not show previous-value footers in the scannable card grid when the
+  visible percent or point change already explains the comparison.
+- Core market cards such as `S&P 500`, `Small Cap`, and `Technology` should stay category-led. Use
+  `business-time` for S&P 500, `shop` for Small Cap, and `microchip` for Technology.
 - Avoid repeating provider names such as `Yahoo Finance` inside every metric card. Use the Data
   coverage section for provider attribution, source freshness, and caveats; use card-level metadata
   only when a date or cadence materially affects trust.

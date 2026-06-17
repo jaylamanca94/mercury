@@ -776,6 +776,13 @@ body {
   font-weight: 800;
 }
 
+.metric-caption {
+  color: var(--acadia-color-text-muted);
+  font-size: 0.875rem;
+  font-weight: 800;
+  line-height: 1rem;
+}
+
 .metric-context {
   color: var(--acadia-color-text-muted);
 }
