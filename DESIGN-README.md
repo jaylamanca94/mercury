@@ -81,8 +81,8 @@ The first useful dashboard should support fast scanning in less than 60 seconds.
 Recommended dashboard order:
 
 1. Slim app header with product identity and lightweight user/context affordance
-2. Hero briefing row with a global economy insight card and a separate controls card
-3. Hero insight with market sentiment, signed change, and top movers
+2. Page-level controls for period, region, freshness timestamp, and refresh action
+3. Full-width hero insight with market sentiment, signed change, aggregate trend, and top movers
 4. Current-conditions summary with a compact conditions score panel
 5. Grouped metric sections for Economy and market supports
 6. Risk and Confidence plus Global Snapshot
@@ -262,10 +262,11 @@ Current source-backed utilities:
   first row, three fiat/currency cards on the second row, and oil plus Bitcoin as a wider
   commodity/digital-asset support pair. Collapse this to two columns near tablet widths and one
   column on mobile rather than leaving orphaned cards.
-- The first dashboard row should split into two horizontal Acadia surfaces on desktop: a briefing
-  card for `Global economy at a glance`, sentiment, top movers, and explanatory copy; and a
-  separate controls card for period, region, freshness timestamp, and refresh action. Stack those
-  cards on tablet and mobile.
+- Period, region, freshness timestamp, and refresh action should live as page-level controls above
+  the hero, aligned to the right edge on desktop and left-aligned when the controls wrap. Do not put
+  them in a competing top-right card.
+- The global briefing hero should span the dashboard width as one Acadia surface for `Global
+  economy at a glance`, sentiment, explanatory copy, aggregate trend, and top movers.
 - Section headers may pair a title with a compact signed badge and right-aligned native selects,
   matching the latest Figma dashboard direction while preserving keyboard and screen-reader access.
 - The hero badge should combine sentiment and movement, such as `Healthy +0.5%`, and the hero copy

@@ -288,7 +288,10 @@ test("five-year period and long sparkline smoothing are available", () => {
   assert.equal(result.yearPoints.length, 96);
   assert.notEqual(result.yearPoints[1], 110);
   assert.match(indexHtml, /<option value="fiveYear">5 years<\/option>/);
-  assert.match(styles, /\.hero-panel-row\s*{[^}]*grid-template-columns: minmax\(0, 1\.05fr\) minmax\(22rem, 0\.95fr\);/s);
+  assert.match(indexHtml, /class="page-controls-row"[\s\S]*economy-period-select[\s\S]*class="page-title-row/s);
+  assert.match(styles, /\.page-controls-row\s*{[^}]*justify-content: flex-end;/s);
+  assert.doesNotMatch(indexHtml, /page-actions-card/);
+  assert.doesNotMatch(styles, /\.hero-panel-row/);
 });
 
 test("slower-cadence metric cards keep release context without previous footers", () => {
