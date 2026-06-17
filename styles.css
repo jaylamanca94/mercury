@@ -465,6 +465,8 @@ body {
 
 .page-controls-row {
   display: flex;
+  border-top: 1px solid var(--acadia-color-border);
+  padding-top: var(--acadia-space-2);
   justify-content: flex-end;
 }
 
@@ -660,27 +662,14 @@ body {
 }
 
 .metric-grid,
-.indicator-list,
-.region-list {
+.indicator-list {
   display: grid;
   gap: var(--acadia-space-3);
   grid-template-columns: repeat(auto-fit, minmax(15.5rem, 1fr));
 }
 
 .dashboard-global .economy-grid {
-  grid-template-columns: repeat(12, minmax(0, 1fr));
-}
-
-.dashboard-global .economy-grid > .metric-card {
-  grid-column: span 4;
-}
-
-.dashboard-global .economy-grid > .metric-card:nth-child(n + 4) {
-  grid-column: span 4;
-}
-
-.dashboard-global .economy-grid > .metric-card:nth-child(n + 7) {
-  grid-column: span 6;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
 .dashboard-global .currency-grid {
@@ -691,8 +680,13 @@ body {
   grid-template-columns: repeat(4, minmax(0, 1fr));
 }
 
-.dashboard-focused .currency-grid {
+.dashboard-focused .currency-grid,
+.commodity-grid {
   grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.economic-health-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
 }
 
 .metric-card,
@@ -1125,13 +1119,10 @@ body {
   .dashboard-global .economy-grid,
   .dashboard-global .currency-grid,
   .dashboard-focused .economy-grid,
-  .dashboard-focused .currency-grid {
+  .dashboard-focused .currency-grid,
+  .commodity-grid,
+  .economic-health-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .dashboard-global .economy-grid > .metric-card,
-  .dashboard-global .economy-grid > .metric-card:nth-child(n + 4) {
-    grid-column: auto;
   }
 }
 
@@ -1181,6 +1172,10 @@ body {
     padding: 1rem;
   }
 
+  .page-controls-row {
+    width: 100%;
+  }
+
   .page-actions {
     align-items: stretch;
     display: grid;
@@ -1206,11 +1201,12 @@ body {
 
   .metric-grid,
   .indicator-list,
-  .region-list,
   .dashboard-global .economy-grid,
   .dashboard-global .currency-grid,
   .dashboard-focused .economy-grid,
   .dashboard-focused .currency-grid,
+  .commodity-grid,
+  .economic-health-grid,
   .snapshot-meta {
     grid-template-columns: 1fr;
   }

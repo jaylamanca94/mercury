@@ -24,6 +24,9 @@ Mercury should feel like checking the weather, but for the global economy: clear
   `Economy Score`, or `Score inputs`.
 - The first viewport should answer `how is the world doing?` with a short hero insight generated
   from visible live cards, not just a numeric score.
+- Period, region, freshness, and refresh controls belong with the Global Economy hero so the selected
+  scope and the resulting briefing read as one unit. On mobile, the period and region controls should
+  stay in a two-column grid when space allows.
 - Use charts and sparklines only when they clarify trend or movement.
 - Use calm warning states for risk, uncertainty, stale data, and unavailable sources.
 
@@ -81,11 +84,11 @@ The first useful dashboard should support fast scanning in less than 60 seconds.
 Recommended dashboard order:
 
 1. Slim app header with product identity and lightweight user/context affordance
-2. Page-level controls for period, region, freshness timestamp, and refresh action
-3. Full-width hero insight with market sentiment, signed change, aggregate trend, and top movers
-4. Current-conditions summary with a compact conditions score panel
-5. Grouped metric sections for Economy and market supports
-6. Risk and Confidence plus Global Snapshot
+2. Full-width hero insight with market sentiment, signed change, aggregate trend, top movers, and the period/region/freshness controls attached to the same surface
+3. Regional Markets
+4. Currencies
+5. Commodities
+6. Risk & Confidence plus Economic Health
 7. Data coverage and freshness
 
 ### Desktop

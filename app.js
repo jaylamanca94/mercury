@@ -1230,8 +1230,10 @@ function globalMarketCards() {
   }));
 }
 
-function orderedGlobalCurrencyCards() {
-  const order = ["dollar-index", "euro", "yen", "oil", "bitcoin"];
+const CURRENCY_SUPPORT_CARD_IDS = ["dollar-index", "euro", "yen"];
+const COMMODITY_CARD_IDS = ["oil", "bitcoin"];
+
+function orderedMarketSupportCards(order) {
   const grouped = currencyCards().map((item) => withPeriodDelta(item, selectedEconomyPeriod));
 
   return order
@@ -1240,39 +1242,20 @@ function orderedGlobalCurrencyCards() {
     .map((item) => ({ ...item, hideChart: true }));
 }
 
-function regionalValue(region) {
-  const match = String(region.copy || "").match(/is\s+(-?\d+(?:\.\d+)?%)/i);
-
-  return region.value || match?.[1] || (region.sourceStatus === "Unavailable" ? "Unavailable" : "Loading");
+function orderedGlobalCurrencyCards() {
+  return orderedMarketSupportCards([...CURRENCY_SUPPORT_CARD_IDS, ...COMMODITY_CARD_IDS]);
 }
 
-function regionalChange(region) {
-  const match = String(region.copy || "").match(/([+-]\d+(?:\.\d+)?\s?pts?)/i);
-
-  return region.change || match?.[1] || region.trend || "Pending";
+function currencySupportCards() {
+  return orderedMarketSupportCards(CURRENCY_SUPPORT_CARD_IDS);
 }
 
-function regionMetricCard(region, overrides = {}) {
-  return {
-    ...region,
-    ...overrides,
-    value: regionalValue(region),
-    change: regionalChange(region),
-    context: overrides.context || "GDP Growth",
-    comparison: "point-change",
-    hideChart: true,
-  };
+function commodityCards() {
+  return orderedMarketSupportCards(COMMODITY_CARD_IDS);
 }
 
-function focusedSupportCards() {
-  const dollar = findMetric(marketPulse, "dollar-index", "U.S. dollar");
-  const regionName = selectedRegion === "Asia" ? "China" : selectedRegion === "Europe" ? "European Union" : selectedRegion;
-  const regionGrowth = regions.find((region) => region.name === regionName) || regions[0];
-
-  return [
-    dollar ? { ...withPeriodDelta(dollar, selectedEconomyPeriod), isWide: true, hideChart: true } : null,
-    regionGrowth ? regionMetricCard(regionGrowth, { name: "GDP Growth", isWide: true }) : null,
-  ].filter(Boolean);
+function economicHealthCards() {
+  return economicHealth.map((item) => ({ ...withPeriodDelta(item, selectedEconomyPeriod), hideChart: true }));
 }
 
 function riskMetricCards() {
@@ -1431,49 +1414,47 @@ function currencyCards() {
 function renderDashboard() {
   const economyGrid = document.querySelector("#economy-grid");
   const currencyGrid = document.querySelector("#currency-grid");
+  const commodityGrid = document.querySelector("#commodity-grid");
   const riskList = document.querySelector("#risk-list");
-  const regionList = document.querySelector("#region-list");
-  const lowerGrid = document.querySelector(".lower-grid");
+  const economicHealthGrid = document.querySelector("#economic-health-grid");
   const globalView = isGlobalView();
   const marketCards = regionalMarketCards().map((item) => withPeriodDelta(item, selectedEconomyPeriod));
-  const economyCards = globalView
-    ? [...globalMarketCards(), ...orderedGlobalCurrencyCards()]
-    : [
-        ...marketCards,
-        ...economicHealth.map((item) => withPeriodDelta(item, selectedEconomyPeriod)),
-      ].filter(Boolean);
-  const supportCards = globalView
-    ? regions.slice(0, 3).map((region) => regionMetricCard(region))
-    : focusedSupportCards();
-  const economyChange = sectionChange(economyCards);
+  const regionalCards = globalView ? globalMarketCards() : marketCards;
+  const currencyCardsForView = currencySupportCards();
+  const commodityCardsForView = commodityCards();
+  const healthCards = economicHealthCards();
+  const heroCards = globalView
+    ? [...regionalCards, ...currencyCardsForView, ...commodityCardsForView]
+    : [...regionalCards, ...healthCards].filter(Boolean);
+  const economyChange = sectionChange(heroCards);
 
   document.body.classList.toggle("dashboard-global", globalView);
   document.body.classList.toggle("dashboard-focused", !globalView);
   setText("#view-title", viewTitle(selectedRegion));
+  setText("#economy-title", globalView ? "Regional Markets" : `${selectedRegion} Markets`);
 
   if (economyGrid) {
-    economyGrid.innerHTML = economyCards.map(renderMetricCard).join("");
+    economyGrid.innerHTML = regionalCards.map(renderMetricCard).join("");
   }
 
   if (currencyGrid) {
-    currencyGrid.innerHTML = supportCards.map((item) => renderMetricCard(item)).join("");
+    currencyGrid.innerHTML = currencyCardsForView.map((item) => renderMetricCard(item)).join("");
+  }
+
+  if (commodityGrid) {
+    commodityGrid.innerHTML = commodityCardsForView.map((item) => renderMetricCard(item)).join("");
+  }
+
+  if (economicHealthGrid) {
+    economicHealthGrid.innerHTML = healthCards.map((item) => renderMetricCard(item)).join("");
   }
 
   updateSectionBadge("#economy-change-badge", economyChange, { includeSentiment: true });
-  updateHeroInsight(economyCards, economyChange);
-  updateSectionBadge("#currency-change-badge", sectionChange(supportCards));
-  setText("#currency-title", globalView ? "GDP Growth" : "Supporting indicators");
-
-  if (lowerGrid) {
-    lowerGrid.hidden = globalView;
-  }
+  updateHeroInsight(heroCards, economyChange);
+  updateSectionBadge("#currency-change-badge", sectionChange(currencyCardsForView));
 
   if (riskList) {
     riskList.innerHTML = riskMetricCards().map(renderMetricCard).join("");
-  }
-
-  if (regionList) {
-    regionList.innerHTML = regions.map((region) => renderMetricCard(regionMetricCard(region))).join("");
   }
 }
 

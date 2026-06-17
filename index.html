@@ -36,41 +36,6 @@
     </header>
 
     <main id="main-content" class="dashboard-shell acadia-shell acadia-stack">
-      <section class="page-controls-row" aria-label="Dashboard controls">
-        <div class="page-actions acadia-toolbar">
-          <label class="section-select-label acadia-field" for="economy-period-select">
-            <span class="acadia-label">Period</span>
-            <select id="economy-period-select" class="section-select acadia-control" aria-label="Economy period">
-              <option value="today">Today</option>
-              <option value="week" selected>Week</option>
-              <option value="month">Month</option>
-              <option value="year">Year</option>
-              <option value="fiveYear">5 years</option>
-            </select>
-          </label>
-          <label class="section-select-label section-select-label-region acadia-field" for="economy-region-select">
-            <span class="acadia-label">Region</span>
-            <select id="economy-region-select" class="section-select acadia-control" aria-label="Economy region">
-              <option value="Global" selected>Global</option>
-              <option value="United States">United States</option>
-              <option value="Europe">Europe</option>
-              <option value="Asia">Asia</option>
-            </select>
-          </label>
-          <span id="last-updated-pill" class="timestamp-pill acadia-badge" aria-live="polite" aria-atomic="true">
-            Checking latest data
-          </span>
-          <button
-            id="refresh-data-button"
-            class="refresh-button acadia-icon-action"
-            type="button"
-            aria-describedby="dashboard-status"
-          >
-            <i class="fa-solid fa-rotate acadia-icon" aria-hidden="true"></i>
-            <span class="visually-hidden">Refresh data</span>
-          </button>
-        </div>
-      </section>
       <section class="page-title-row acadia-surface acadia-panel-dense" aria-labelledby="view-title">
         <div class="page-title-group acadia-section-header-copy">
           <span class="acadia-kicker">Global economy at a glance</span>
@@ -83,6 +48,41 @@
           </p>
           <div id="hero-sparkline" class="hero-chart-panel" aria-label="Global economy trend"></div>
           <div id="hero-movers" class="hero-movers" aria-label="Top movers"></div>
+        </div>
+        <div class="page-controls-row" aria-label="Dashboard controls">
+          <div class="page-actions acadia-toolbar">
+            <label class="section-select-label acadia-field" for="economy-period-select">
+              <span class="acadia-label">Period</span>
+              <select id="economy-period-select" class="section-select acadia-control" aria-label="Economy period">
+                <option value="today">Today</option>
+                <option value="week" selected>Week</option>
+                <option value="month">Month</option>
+                <option value="year">Year</option>
+                <option value="fiveYear">5 years</option>
+              </select>
+            </label>
+            <label class="section-select-label section-select-label-region acadia-field" for="economy-region-select">
+              <span class="acadia-label">Region</span>
+              <select id="economy-region-select" class="section-select acadia-control" aria-label="Economy region">
+                <option value="Global" selected>Global</option>
+                <option value="United States">United States</option>
+                <option value="Europe">Europe</option>
+                <option value="Asia">Asia</option>
+              </select>
+            </label>
+            <span id="last-updated-pill" class="timestamp-pill acadia-badge" aria-live="polite" aria-atomic="true">
+              Checking latest data
+            </span>
+            <button
+              id="refresh-data-button"
+              class="refresh-button acadia-icon-action"
+              type="button"
+              aria-describedby="dashboard-status"
+            >
+              <i class="fa-solid fa-rotate acadia-icon" aria-hidden="true"></i>
+              <span class="visually-hidden">Refresh data</span>
+            </button>
+          </div>
         </div>
       </section>
       <p id="dashboard-status" class="visually-hidden" role="status" aria-live="polite" aria-atomic="true">
@@ -123,9 +123,10 @@
       </section>
 
       <section class="dashboard-section economy-section" aria-labelledby="economy-title">
-        <div class="section-heading visually-hidden">
+        <div class="section-heading compact-section-heading">
           <div class="section-title-group">
-            <h2 id="economy-title">Economy</h2>
+            <span class="acadia-kicker">Markets</span>
+            <h2 id="economy-title" class="acadia-title">Regional Markets</h2>
           </div>
         </div>
         <div id="economy-grid" class="metric-grid economy-grid"></div>
@@ -134,9 +135,9 @@
       <section class="dashboard-section" aria-labelledby="currency-title">
         <div class="section-heading compact-section-heading">
           <div class="section-title-group">
-            <span class="acadia-kicker">Context</span>
+            <span class="acadia-kicker">Market supports</span>
             <div class="section-title-line">
-              <h2 id="currency-title" class="acadia-title">GDP Growth</h2>
+              <h2 id="currency-title" class="acadia-title">Currencies</h2>
               <span id="currency-change-badge" class="view-change trend-stable acadia-badge">Loading</span>
             </div>
           </div>
@@ -156,19 +157,35 @@
         <div id="currency-grid" class="metric-grid currency-grid"></div>
       </section>
 
+      <section class="dashboard-section" aria-labelledby="commodity-title">
+        <div class="section-heading compact-section-heading">
+          <div class="section-title-group">
+            <span class="acadia-kicker">Market supports</span>
+            <h2 id="commodity-title" class="acadia-title">Commodities</h2>
+          </div>
+        </div>
+        <div id="commodity-grid" class="metric-grid commodity-grid"></div>
+      </section>
+
       <section class="lower-grid" aria-label="Additional economic context">
         <section class="dashboard-section context-section" aria-labelledby="risk-title">
           <div class="section-heading compact-section-heading">
-            <h2 id="risk-title" class="acadia-title">Risk and confidence</h2>
+            <div class="section-title-group">
+              <span class="acadia-kicker">Risk</span>
+              <h2 id="risk-title" class="acadia-title">Risk &amp; Confidence</h2>
+            </div>
           </div>
           <div id="risk-list" class="indicator-list"></div>
         </section>
 
-        <section class="dashboard-section context-section" aria-labelledby="global-title">
+        <section class="dashboard-section context-section" aria-labelledby="economic-health-title">
           <div class="section-heading compact-section-heading">
-            <h2 id="global-title" class="acadia-title">Regional growth</h2>
+            <div class="section-title-group">
+              <span class="acadia-kicker">Economy</span>
+              <h2 id="economic-health-title" class="acadia-title">Economic Health</h2>
+            </div>
           </div>
-          <div id="region-list" class="region-list"></div>
+          <div id="economic-health-grid" class="metric-grid economic-health-grid"></div>
         </section>
       </section>
 

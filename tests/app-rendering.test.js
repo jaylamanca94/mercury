@@ -46,6 +46,7 @@ function loadAppContext() {
     clearTimeout,
     console,
     document,
+    __elements: elements,
     fetch: async () => {
       throw new Error("No live route in app rendering test");
     },
@@ -123,9 +124,9 @@ test("global fallback cards explain missing market proxies", () => {
   );
 });
 
-test("global supporting cards include Bitcoin after fiat and commodity indicators", () => {
+test("global market support cards split currencies from commodities", () => {
   const context = loadAppContext();
-  const cards = vm.runInContext(
+  const result = vm.runInContext(
     `
       marketPulse = [
         { id: "bitcoin", name: "Bitcoin", viewGroup: "currency", sourceStatus: "Source-backed", history: [] },
@@ -134,22 +135,65 @@ test("global supporting cards include Bitcoin after fiat and commodity indicator
         { id: "dollar-index", name: "U.S. dollar", viewGroup: "currency", sourceStatus: "Source-backed", history: [] },
         { id: "euro", name: "Euro", viewGroup: "currency", sourceStatus: "Source-backed", history: [] },
       ];
-      orderedGlobalCurrencyCards().map((card) => ({
-        hideChart: card.hideChart,
-        id: card.id,
-        name: card.name,
-      }));
+      ({
+        combined: orderedGlobalCurrencyCards().map((card) => card.id),
+        commodities: commodityCards().map((card) => card.id),
+        currencies: currencySupportCards().map((card) => card.id),
+        hideCharts: orderedGlobalCurrencyCards().every((card) => card.hideChart === true),
+      });
     `,
     context,
   );
-  const normalizedCards = JSON.parse(JSON.stringify(cards));
+  const normalizedResult = JSON.parse(JSON.stringify(result));
 
-  assert.deepEqual(
-    normalizedCards.map((card) => card.id),
-    ["dollar-index", "euro", "yen", "oil", "bitcoin"],
+  assert.deepEqual(normalizedResult.combined, ["dollar-index", "euro", "yen", "oil", "bitcoin"]);
+  assert.deepEqual(normalizedResult.currencies, ["dollar-index", "euro", "yen"]);
+  assert.deepEqual(normalizedResult.commodities, ["oil", "bitcoin"]);
+  assert.equal(normalizedResult.hideCharts, true);
+  assert.match(styles, /\.dashboard-global \.economy-grid\s*{[^}]*grid-template-columns: repeat\(3, minmax\(0, 1fr\)\);/s);
+  assert.match(styles, /\.commodity-grid\s*{[^}]*grid-template-columns: repeat\(2, minmax\(0, 1fr\)\);/s);
+});
+
+test("dashboard renders editorial sections instead of one mixed grid", () => {
+  const context = loadAppContext();
+
+  vm.runInContext(
+    `
+      selectedRegion = "Global";
+      marketPulse = [
+        { id: "us-equities", name: "S&P 500", value: "$681.41", change: "+2.2%", ticker: "VOO", viewGroup: "economy", region: "United States", marketRole: "large-cap", sourceStatus: "Source-backed", freshness: { status: "current" }, points: [1, 2], history: [{ value: 1 }, { value: 2 }], comparison: "percent-change" },
+        { id: "europe-equities", name: "Europe", value: "$89.23", change: "+2.9%", ticker: "VGK", viewGroup: "economy", region: "Europe", marketRole: "large-cap", sourceStatus: "Source-backed", freshness: { status: "current" }, points: [1, 2], history: [{ value: 1 }, { value: 2 }], comparison: "percent-change" },
+        { id: "asia-equities", name: "Asia Pacific", value: "$117.16", change: "+7.5%", ticker: "VPL", viewGroup: "economy", region: "Asia", marketRole: "large-cap", sourceStatus: "Source-backed", freshness: { status: "current" }, points: [1, 2], history: [{ value: 1 }, { value: 2 }], comparison: "percent-change" },
+        { id: "dollar-index", name: "U.S. dollar", value: "$28.18", change: "+0.5%", ticker: "UUP", viewGroup: "currency", sourceStatus: "Source-backed", freshness: { status: "current" }, history: [] },
+        { id: "euro", name: "Euro", value: "1.1509", change: "-0.2%", ticker: "EUR/USD", viewGroup: "currency", sourceStatus: "Source-backed", freshness: { status: "current" }, history: [] },
+        { id: "yen", name: "Yen", value: "160.61", change: "+0.1%", ticker: "USD/JPY", viewGroup: "currency", sourceStatus: "Source-backed", freshness: { status: "current" }, history: [] },
+        { id: "oil", name: "Oil", value: "$75.57", change: "-16.1%", ticker: "CL=F", viewGroup: "currency", sourceStatus: "Source-backed", freshness: { status: "current" }, history: [] },
+        { id: "bitcoin", name: "Bitcoin", value: "$64,291", change: "+1.2%", ticker: "BTC", viewGroup: "currency", sourceStatus: "Source-backed", freshness: { status: "current" }, history: [] },
+      ];
+      economicHealth = [
+        { id: "inflation", name: "Inflation", value: "4.3%", change: "-0.65 pts", sourceStatus: "Source-backed", freshness: { status: "current" }, history: [], comparison: "point-change" },
+      ];
+      renderDashboard();
+    `,
+    context,
   );
-  assert.equal(normalizedCards.every((card) => card.hideChart === true), true);
-  assert.match(styles, /\.dashboard-global \.economy-grid > \.metric-card:nth-child\(n \+ 7\)\s*{\s*grid-column: span 6;/);
+
+  const economyHtml = context.__elements.get("#economy-grid").innerHTML;
+  const currencyHtml = context.__elements.get("#currency-grid").innerHTML;
+  const commodityHtml = context.__elements.get("#commodity-grid").innerHTML;
+  const healthHtml = context.__elements.get("#economic-health-grid").innerHTML;
+
+  assert.match(economyHtml, /United States/);
+  assert.match(economyHtml, /Europe/);
+  assert.match(economyHtml, /Asia/);
+  assert.doesNotMatch(economyHtml, /U\.S\. Dollar/);
+  assert.match(currencyHtml, /U\.S\. Dollar/);
+  assert.match(currencyHtml, /Euro/);
+  assert.match(currencyHtml, /Yen/);
+  assert.doesNotMatch(currencyHtml, /Bitcoin/);
+  assert.match(commodityHtml, /Oil/);
+  assert.match(commodityHtml, /Bitcoin/);
+  assert.match(healthHtml, /Inflation/);
 });
 
 test("global regional cards show proxy tickers as inline captions", () => {
@@ -490,8 +534,9 @@ test("five-year period and long sparkline smoothing are available", () => {
   assert.equal(result.yearPoints.length, 96);
   assert.notEqual(result.yearPoints[1], 110);
   assert.match(indexHtml, /<option value="fiveYear">5 years<\/option>/);
-  assert.match(indexHtml, /class="page-controls-row"[\s\S]*economy-period-select[\s\S]*class="page-title-row/s);
+  assert.match(indexHtml, /class="page-title-row[^"]*"[\s\S]*class="page-controls-row"[\s\S]*economy-period-select/s);
   assert.match(styles, /\.page-controls-row\s*{[^}]*justify-content: flex-end;/s);
+  assert.match(styles, /\.page-controls-row\s*{[^}]*border-top: 1px solid var\(--acadia-color-border\);/s);
   assert.doesNotMatch(indexHtml, /page-actions-card/);
   assert.doesNotMatch(styles, /\.hero-panel-row/);
 });
