@@ -62,15 +62,15 @@ Mercury should avoid looking like a brokerage or trading app. Use measured, prof
 
 - Page background: deep neutral or soft off-white depending on theme
 - Content surface: quiet high-contrast panels
-- Positive movement: Acadia Tiffany-family movement color, using the accessible action/brand range
-- Negative movement: soft salmon that pairs with the Tiffany palette
+- Positive movement: Mercury's deeper Acadia green, shared with the product mark and primary live-data accents
+- Negative movement: vibrant soft salmon that pairs with the green palette
 - Neutral or mixed movement: gray or blue-gray
 - Risk or caution: amber
 - Confidence or stability: blue
 
 Use movement color sparingly and always pair it with text labels so color is not the only signal.
 Loading, stable, no-change, and mixed states should use neutral gray or blue-gray treatment, not
-positive Tiffany.
+positive green.
 
 ## Layout
 

@@ -334,14 +334,17 @@ test("metric cards do not expose unavailable previous values", () => {
 });
 
 test("stable and mixed visual states stay neutral", () => {
+  assert.match(styles, /--acadia-color-brand: #007b78;/);
   assert.match(styles, /--mercury-positive: var\(--acadia-color-action\);/);
-  assert.match(styles, /--mercury-negative: #c96861;/);
+  assert.match(styles, /--mercury-negative: #d96f66;/);
   assert.doesNotMatch(styles, /--green:/);
   assert.doesNotMatch(styles, /--red:/);
   assert.match(styles, /\.metric-card-up\s*{\s*--metric-state: var\(--mercury-positive\);/);
   assert.match(styles, /\.metric-card-stable,\s*\.metric-card-mixed\s*{\s*--metric-state: var\(--neutral-state\);/);
   assert.match(styles, /\.trend-stable,\s*\.trend-mixed\s*{\s*color: var\(--muted\);/);
   assert.match(styles, /\.acadia-metric-delta\.is-danger\s*{\s*color: var\(--mercury-negative\);/);
+  assert.match(styles, /\.view-change\.trend-up\s*{[^}]*background: color-mix\(in srgb, var\(--mercury-positive\) 14%, transparent\);/s);
+  assert.match(styles, /\.view-change\.trend-down,\s*\.view-change\.trend-caution\s*{[^}]*background: color-mix\(in srgb, var\(--mercury-negative\) 14%, transparent\);/s);
 });
 
 test("metric cards use Acadia surfaces instead of state-colored borders", () => {

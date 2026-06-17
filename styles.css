@@ -14,10 +14,10 @@
   --acadia-color-text-muted: #667085;
   --acadia-color-border: rgba(15, 23, 42, 0.11);
   --acadia-color-border-strong: rgba(15, 23, 42, 0.18);
-  --acadia-color-brand: #0abab5;
+  --acadia-color-brand: #007b78;
   --acadia-color-brand-ink: #006a67;
-  --acadia-color-brand-bg: rgba(10, 186, 181, 0.1);
-  --acadia-color-brand-border: rgba(10, 186, 181, 0.24);
+  --acadia-color-brand-bg: rgba(0, 123, 120, 0.1);
+  --acadia-color-brand-border: rgba(0, 123, 120, 0.24);
   --acadia-color-action: #007b78;
   --acadia-color-action-hover: #006f6c;
   --acadia-color-action-contrast: #ffffff;
@@ -36,9 +36,9 @@
   --acadia-color-success-bg: rgba(25, 135, 84, 0.1);
   --acadia-color-success-border: rgba(25, 135, 84, 0.24);
   --acadia-color-info: var(--acadia-color-action-ink);
-  --acadia-color-info-bg: rgba(10, 186, 181, 0.1);
-  --acadia-color-info-border: rgba(10, 186, 181, 0.24);
-  --acadia-focus-ring: 0 0 0 0.25rem rgba(10, 186, 181, 0.24);
+  --acadia-color-info-bg: rgba(0, 123, 120, 0.1);
+  --acadia-color-info-border: rgba(0, 123, 120, 0.24);
+  --acadia-focus-ring: 0 0 0 0.25rem rgba(0, 123, 120, 0.24);
   --acadia-shadow-card:
     0 1.5rem 3.5rem rgba(15, 23, 42, 0.08),
     0 0.125rem 0.5rem rgba(15, 23, 42, 0.06);
@@ -67,7 +67,7 @@
   --acadia-control-padding-x: 0.875rem;
   --acadia-motion-fast: 150ms ease;
   --mercury-positive: var(--acadia-color-action);
-  --mercury-negative: #c96861;
+  --mercury-negative: #d96f66;
   --neutral-state: #667085;
   --muted: var(--acadia-color-text-muted);
   --muted-soft: #98a2b3;
@@ -93,8 +93,9 @@
   --acadia-color-text-muted: #aeb6c2;
   --acadia-color-border: rgba(255, 255, 255, 0.11);
   --acadia-color-border-strong: rgba(255, 255, 255, 0.18);
-  --acadia-color-brand-ink: #0abab5;
-  --acadia-color-action-ink: #0abab5;
+  --acadia-color-brand: #23b0a9;
+  --acadia-color-brand-ink: #49d6cd;
+  --acadia-color-action-ink: #49d6cd;
   --acadia-color-danger-bg: rgba(255, 69, 58, 0.14);
   --acadia-color-danger-border: rgba(255, 69, 58, 0.28);
   --acadia-color-warning: #ffd60a;
@@ -102,9 +103,9 @@
   --acadia-color-warning-border: rgba(255, 214, 10, 0.28);
   --acadia-color-success-bg: rgba(48, 209, 88, 0.13);
   --acadia-color-success-border: rgba(48, 209, 88, 0.28);
-  --acadia-color-info-bg: rgba(10, 186, 181, 0.16);
-  --acadia-color-info-border: rgba(10, 186, 181, 0.32);
-  --acadia-focus-ring: 0 0 0 0.25rem rgba(10, 186, 181, 0.32);
+  --acadia-color-info-bg: rgba(35, 176, 169, 0.16);
+  --acadia-color-info-border: rgba(35, 176, 169, 0.32);
+  --acadia-focus-ring: 0 0 0 0.25rem rgba(35, 176, 169, 0.32);
   --acadia-shadow-card:
     0 1.5rem 3.5rem rgba(0, 0, 0, 0.24),
     0 0.125rem 0.625rem rgba(0, 0, 0, 0.22);
@@ -114,7 +115,7 @@
     0 0.25rem 0.75rem rgba(0, 0, 0, 0.1);
   --acadia-shadow-chrome: 0 0.75rem 2rem rgba(0, 0, 0, 0.2);
   --mercury-positive: var(--acadia-color-brand);
-  --mercury-negative: #ff8a80;
+  --mercury-negative: #ff7b70;
   --neutral-state: #aeb6c2;
   --muted-soft: #8c96a3;
 }
@@ -136,8 +137,9 @@
     --acadia-color-text-muted: #aeb6c2;
     --acadia-color-border: rgba(255, 255, 255, 0.11);
     --acadia-color-border-strong: rgba(255, 255, 255, 0.18);
-    --acadia-color-brand-ink: #0abab5;
-    --acadia-color-action-ink: #0abab5;
+    --acadia-color-brand: #23b0a9;
+    --acadia-color-brand-ink: #49d6cd;
+    --acadia-color-action-ink: #49d6cd;
     --acadia-color-danger-bg: rgba(255, 69, 58, 0.14);
     --acadia-color-danger-border: rgba(255, 69, 58, 0.28);
     --acadia-color-warning: #ffd60a;
@@ -145,9 +147,9 @@
     --acadia-color-warning-border: rgba(255, 214, 10, 0.28);
     --acadia-color-success-bg: rgba(48, 209, 88, 0.13);
     --acadia-color-success-border: rgba(48, 209, 88, 0.28);
-    --acadia-color-info-bg: rgba(10, 186, 181, 0.16);
-    --acadia-color-info-border: rgba(10, 186, 181, 0.32);
-    --acadia-focus-ring: 0 0 0 0.25rem rgba(10, 186, 181, 0.32);
+    --acadia-color-info-bg: rgba(35, 176, 169, 0.16);
+    --acadia-color-info-border: rgba(35, 176, 169, 0.32);
+    --acadia-focus-ring: 0 0 0 0.25rem rgba(35, 176, 169, 0.32);
     --acadia-shadow-card:
       0 1.5rem 3.5rem rgba(0, 0, 0, 0.24),
       0 0.125rem 0.625rem rgba(0, 0, 0, 0.22);
@@ -157,7 +159,7 @@
       0 0.25rem 0.75rem rgba(0, 0, 0, 0.1);
     --acadia-shadow-chrome: 0 0.75rem 2rem rgba(0, 0, 0, 0.2);
     --mercury-positive: var(--acadia-color-brand);
-    --mercury-negative: #ff8a80;
+    --mercury-negative: #ff7b70;
     --neutral-state: #aeb6c2;
     --muted-soft: #8c96a3;
   }
@@ -486,12 +488,19 @@ body {
 }
 
 .view-change {
+  background: color-mix(in srgb, var(--neutral-state) 10%, transparent);
+  border-color: color-mix(in srgb, var(--neutral-state) 22%, transparent);
   color: var(--neutral-state);
 }
 
 .view-change.trend-up,
 .trend-text-up {
   color: var(--mercury-positive);
+}
+
+.view-change.trend-up {
+  background: color-mix(in srgb, var(--mercury-positive) 14%, transparent);
+  border-color: color-mix(in srgb, var(--mercury-positive) 26%, transparent);
 }
 
 .view-change.trend-down,
@@ -501,6 +510,12 @@ body {
   color: var(--mercury-negative);
 }
 
+.view-change.trend-down,
+.view-change.trend-caution {
+  background: color-mix(in srgb, var(--mercury-negative) 14%, transparent);
+  border-color: color-mix(in srgb, var(--mercury-negative) 28%, transparent);
+}
+
 .view-change.trend-unavailable,
 .trend-text-unavailable,
 .view-change.trend-stable,
@@ -508,6 +523,13 @@ body {
 .trend-text-stable,
 .trend-text-mixed {
   color: var(--muted);
+}
+
+.view-change.trend-unavailable,
+.view-change.trend-stable,
+.view-change.trend-mixed {
+  background: color-mix(in srgb, var(--muted) 10%, transparent);
+  border-color: color-mix(in srgb, var(--muted) 20%, transparent);
 }
 
 .timestamp-pill {
