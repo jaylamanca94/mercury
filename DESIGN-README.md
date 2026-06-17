@@ -290,6 +290,9 @@ Current source-backed utilities:
 - Metric cards include only short plain-language context when it helps interpretation. Do not show
   previous-value footers in the scannable card grid when the visible percent or point change already
   explains the comparison.
+- Core market cards such as `S&P 500`, `Small Cap`, and `Technology` should stand on their category
+  names without visible ETF/proxy subtitles. Keep proxy details available through hover/source
+  context. Use `business-time` for S&P 500, `shop` for Small Cap, and `microchip` for Technology.
 - Avoid repeating provider names such as `Yahoo Finance` inside every metric card. Use the Data
   coverage section for provider attribution, source freshness, and caveats; use card-level metadata
   only when a date or cadence materially affects trust.

@@ -58,8 +58,8 @@ function pendingRegion(name) {
 }
 
 let marketPulse = [
-  pendingMetric("S&P 500", "Vanguard S&P 500 ETF", "fa-chart-line", "us-equities", "VOO"),
-  pendingMetric("Small Cap", "Vanguard Small-Cap Index Fund", "fa-chart-line", "us-small-cap", "VSMAX"),
+  pendingMetric("S&P 500", "Vanguard S&P 500 ETF", "fa-business-time", "us-equities", "VOO"),
+  pendingMetric("Small Cap", "Vanguard Small-Cap Index Fund", "fa-shop", "us-small-cap", "VSMAX"),
   pendingMetric("Technology", "Vanguard Information Technology ETF", "fa-microchip", "us-technology", "VGT"),
   pendingMetric("Bonds", "Total bond market ETF", "fa-scale-balanced", "bonds", "BND"),
   pendingMetric("U.S. dollar", "Dollar index fund proxy", "fa-dollar-sign", "dollar-index", "UUP"),
@@ -751,6 +751,18 @@ function displayMetricName(metric) {
   return names[metric.name] || metric.name;
 }
 
+function shouldShowMetricContext(metric) {
+  return !["large-cap", "small-cap", "technology"].includes(metric.marketRole);
+}
+
+function displayMetricContext(metric) {
+  if (!shouldShowMetricContext(metric)) {
+    return "";
+  }
+
+  return metric.context || "";
+}
+
 function metricTickerLabel(metric) {
   if (metric.ticker) {
     return metric.ticker;
@@ -782,6 +794,9 @@ function metricIconClass(metric) {
 
   const normalizedName = String(metric.name || "").toLowerCase();
 
+  if (metric.marketRole === "large-cap") return "fa-business-time";
+  if (metric.marketRole === "small-cap") return "fa-shop";
+  if (metric.marketRole === "technology") return "fa-microchip";
   if (normalizedName.includes("credit")) return "fa-credit-card";
   if (normalizedName.includes("stress")) return "fa-chart-line";
   if (normalizedName.includes("volatility")) return "fa-chart-line";
@@ -1050,6 +1065,7 @@ function renderMetricCard(metric) {
   const cardTone = metricCardTone(metric);
   const sparklinePoints = metric.periodPoints || metric.points;
   const hasChart = !metric.hideChart;
+  const metricContext = displayMetricContext(metric);
   const releaseLabel = shouldShowMetricDate(metric) ? metricReleaseLabel(metric) : "";
   const cadenceLabel = metric.cadence && inferDisplayCadence(metric.cadence) !== "daily" ? metric.cadence : "";
   const footerItems = [
@@ -1074,7 +1090,7 @@ function renderMetricCard(metric) {
           <div class="metric-title-line">
             <h3 class="metric-name">${escapeHtml(displayMetricName(metric))}</h3>
           </div>
-          ${metric.context ? `<p class="metric-context">${escapeHtml(metric.context)}</p>` : ""}
+          ${metricContext ? `<p class="metric-context">${escapeHtml(metricContext)}</p>` : ""}
         </div>
         <span class="metric-icon acadia-metric-icon" aria-hidden="true"><i class="fa-solid ${escapeHtml(metricIconClass(metric))} acadia-icon"></i></span>
       </div>

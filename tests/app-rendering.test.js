@@ -182,6 +182,56 @@ test("global regional cards keep proxy tickers off the visible card face", () =>
   assert.doesNotMatch(html, /Vanguard S&amp;P 500 ETF<\/p>/);
 });
 
+test("core market cards use category icons and hide proxy subtitles", () => {
+  const context = loadAppContext();
+  const html = vm.runInContext(
+    `
+      [
+        renderMetricCard({
+          name: "S&P 500",
+          context: "Vanguard S&P 500 ETF",
+          value: "$681.41",
+          change: "+78.0%",
+          tone: "up",
+          ticker: "VOO",
+          icon: "fa-business-time",
+          marketRole: "large-cap",
+          source: "Yahoo Finance: Vanguard S&P 500 ETF chart",
+          cadence: "Daily market close",
+          sourceStatus: "Source-backed",
+          freshness: { status: "current", label: "Current" },
+          points: [600, 681.41],
+          comparison: "percent-change",
+        }),
+        renderMetricCard({
+          name: "Small Cap",
+          context: "Vanguard Small-Cap Index Fund",
+          value: "$142.01",
+          change: "+35.6%",
+          tone: "up",
+          ticker: "VSMAX",
+          icon: "fa-shop",
+          marketRole: "small-cap",
+          source: "Yahoo Finance: Vanguard Small-Cap Index Fund Admiral Shares chart",
+          cadence: "Daily fund close",
+          sourceStatus: "Source-backed",
+          freshness: { status: "current", label: "Current" },
+          points: [110, 142.01],
+          comparison: "percent-change",
+        }),
+      ].join("");
+    `,
+    context,
+  );
+
+  assert.match(html, /fa-business-time/);
+  assert.match(html, /fa-shop/);
+  assert.match(html, /title="S&amp;P 500 - VOO - Vanguard S&amp;P 500 ETF"/);
+  assert.match(html, /title="Small Cap - VSMAX - Vanguard Small-Cap Index Fund"/);
+  assert.doesNotMatch(html, /class="metric-context">Vanguard S&amp;P 500 ETF/);
+  assert.doesNotMatch(html, /class="metric-context">Vanguard Small-Cap Index Fund/);
+});
+
 test("hero insight explains sentiment and top movers", () => {
   const context = loadAppContext();
   const result = vm.runInContext(
@@ -389,32 +439,31 @@ test("stale daily metric cards keep date context without previous footers", () =
   assert.doesNotMatch(html, /Yahoo Finance/);
 });
 
-test("metric cards show compact indicator context", () => {
+test("metric cards show compact indicator context when it clarifies the label", () => {
   const context = loadAppContext();
   const html = vm.runInContext(
     `
       renderMetricCard({
-        name: "United States",
-        context: "Vanguard S&P 500 ETF",
-        value: "$498.10",
-        change: "+1.2%",
-        previous: "$492.18",
-        tone: "up",
-        icon: "fa-chart-line",
-        ticker: "VOO",
-        source: "Yahoo Finance: Vanguard S&P 500 ETF chart",
+        name: "Inflation",
+        context: "Consumer prices",
+        value: "4.3%",
+        change: "-0.65 pts",
+        tone: "down",
+        icon: "fa-receipt",
+        source: "FRED: Consumer Price Index",
         cadence: "Daily market close",
         releaseDate: "2026-06-12",
         sourceStatus: "Source-backed",
         freshness: { status: "current", label: "Current" },
-        points: [492.18, 498.10],
-        comparison: "percent-change",
+        points: [],
+        hideChart: true,
+        comparison: "point-change",
       });
     `,
     context,
   );
 
-  assert.match(html, /Vanguard S&amp;P 500 ETF/);
+  assert.match(html, /Consumer prices/);
 });
 
 test("empty sparklines use calm no-trend copy", () => {
