@@ -66,8 +66,8 @@
   --acadia-control-height: 2.75rem;
   --acadia-control-padding-x: 0.875rem;
   --acadia-motion-fast: 150ms ease;
-  --green: var(--acadia-color-success);
-  --red: var(--acadia-color-danger);
+  --mercury-positive: var(--acadia-color-action);
+  --mercury-negative: #c96861;
   --neutral-state: #667085;
   --muted: var(--acadia-color-text-muted);
   --muted-soft: #98a2b3;
@@ -113,6 +113,8 @@
     0 1px 2px rgba(0, 0, 0, 0.18),
     0 0.25rem 0.75rem rgba(0, 0, 0, 0.1);
   --acadia-shadow-chrome: 0 0.75rem 2rem rgba(0, 0, 0, 0.2);
+  --mercury-positive: var(--acadia-color-brand);
+  --mercury-negative: #ff8a80;
   --neutral-state: #aeb6c2;
   --muted-soft: #8c96a3;
 }
@@ -154,6 +156,8 @@
       0 1px 2px rgba(0, 0, 0, 0.18),
       0 0.25rem 0.75rem rgba(0, 0, 0, 0.1);
     --acadia-shadow-chrome: 0 0.75rem 2rem rgba(0, 0, 0, 0.2);
+    --mercury-positive: var(--acadia-color-brand);
+    --mercury-negative: #ff8a80;
     --neutral-state: #aeb6c2;
     --muted-soft: #8c96a3;
   }
@@ -487,14 +491,14 @@ body {
 
 .view-change.trend-up,
 .trend-text-up {
-  color: var(--green);
+  color: var(--mercury-positive);
 }
 
 .view-change.trend-down,
 .view-change.trend-caution,
 .trend-text-down,
 .trend-text-caution {
-  color: var(--red);
+  color: var(--mercury-negative);
 }
 
 .view-change.trend-unavailable,
@@ -585,12 +589,12 @@ body {
 }
 
 .metric-card-up {
-  --metric-state: var(--green);
+  --metric-state: var(--mercury-positive);
 }
 
 .metric-card-down,
 .metric-card-caution {
-  --metric-state: var(--red);
+  --metric-state: var(--mercury-negative);
 }
 
 .metric-card-stable,
@@ -696,7 +700,7 @@ body {
 .metric-delta,
 .acadia-metric-delta {
   align-items: center;
-  color: var(--acadia-color-success);
+  color: var(--mercury-positive);
   display: inline-flex;
   font-size: 0.875rem;
   font-weight: 800;
@@ -706,7 +710,7 @@ body {
 }
 
 .acadia-metric-delta.is-danger {
-  color: var(--acadia-color-danger);
+  color: var(--mercury-negative);
 }
 
 .acadia-metric-delta.is-warning {
@@ -792,12 +796,12 @@ body {
 }
 
 .trend-up {
-  color: var(--green);
+  color: var(--mercury-positive);
 }
 
 .trend-down,
 .trend-caution {
-  color: var(--red);
+  color: var(--mercury-negative);
 }
 
 .trend-stable,
