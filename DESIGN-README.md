@@ -266,9 +266,12 @@ Current source-backed utilities:
   matching the latest Figma dashboard direction while preserving keyboard and screen-reader access.
 - The hero badge should combine sentiment and movement, such as `Healthy +0.5%`, and the hero copy
   should explain the biggest visible drivers in one sentence. Give the sentiment and signed move
-  enough visual weight to feel like a briefing lead, then use compact mover chips as supporting
-  evidence rather than a separately labeled widget. Use the same visible metric cards for top movers
+  enough visual weight to feel like a briefing lead, then show a period-aware aggregate sparkline
+  built from the same visible cards. Use compact mover chips as supporting evidence rather than a
+  separately labeled widget. Use the same visible metric cards for top movers and the hero trend
   rather than introducing a separate insight dataset.
+- The hero briefing card needs clear vertical rhythm. Keep at least `16px` between title, insight,
+  aggregate chart, and mover chips unless the layout is deliberately compressed on small screens.
 - Metric cards and key signal tiles should use soft neutral surfaces with thin tone accents instead
   of saturated full borders, so direction remains visible without making Mercury feel like a
   trading interface.

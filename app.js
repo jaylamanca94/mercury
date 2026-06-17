@@ -404,10 +404,74 @@ function renderHeroMovers(movers) {
   `;
 }
 
+function resampledPoint(points, index, targetLength) {
+  if (targetLength <= 1 || points.length <= 1) {
+    return points[0];
+  }
+
+  const sourcePosition = (index / (targetLength - 1)) * (points.length - 1);
+  const lowerIndex = Math.floor(sourcePosition);
+  const upperIndex = Math.min(points.length - 1, Math.ceil(sourcePosition));
+  const progress = sourcePosition - lowerIndex;
+
+  return points[lowerIndex] + (points[upperIndex] - points[lowerIndex]) * progress;
+}
+
+function buildHeroTrendPoints(cards) {
+  const trendSeries = cards
+    .filter((card) => card.comparison !== "point-change")
+    .map((card) => ({
+      points: Array.isArray(card.periodPoints) ? card.periodPoints.filter(Number.isFinite) : [],
+      weight: Number.isFinite(card.weight) ? card.weight : 1,
+    }))
+    .filter((series) => series.points.length > 1 && Number.isFinite(series.points[0]) && series.points[0] !== 0);
+
+  if (!trendSeries.length) {
+    return [];
+  }
+
+  const longestSeries = Math.max(...trendSeries.map((series) => series.points.length));
+  const targetLength = Math.min(Math.max(longestSeries, 8), 96);
+
+  return Array.from({ length: targetLength }, (_, index) => {
+    let weightedTotal = 0;
+    let weightTotal = 0;
+
+    trendSeries.forEach((series) => {
+      const baseline = series.points[0];
+      const value = resampledPoint(series.points, index, targetLength);
+
+      if (!Number.isFinite(value) || !Number.isFinite(baseline) || baseline === 0) {
+        return;
+      }
+
+      weightedTotal += ((value - baseline) / baseline) * 100 * series.weight;
+      weightTotal += series.weight;
+    });
+
+    return weightTotal ? weightedTotal / weightTotal : 0;
+  });
+}
+
+function renderHeroSparkline(cards, change) {
+  const points = buildHeroTrendPoints(cards);
+
+  if (points.length < 2) {
+    return "";
+  }
+
+  return renderSparkline(
+    points,
+    change?.tone || "stable",
+    `${viewTitle(selectedRegion)} ${periodOption(selectedEconomyPeriod).label} trend`,
+  );
+}
+
 function updateHeroInsight(cards, change) {
   const movers = heroMoverCards(cards);
 
   setText("#hero-insight", buildHeroInsight(change, movers, selectedEconomyPeriod, selectedRegion));
+  setHtml("#hero-sparkline", renderHeroSparkline(cards, change));
   setHtml("#hero-movers", renderHeroMovers(movers));
 }
 

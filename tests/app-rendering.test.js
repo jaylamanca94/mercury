@@ -214,6 +214,46 @@ test("hero insight explains sentiment and top movers", () => {
   assert.match(styles, /\.hero-condition\s*{[^}]*flex-direction: column;/s);
 });
 
+test("hero trend chart uses period-filtered visible cards", () => {
+  const context = loadAppContext();
+  const result = vm.runInContext(
+    `
+      const cards = [
+        {
+          name: "United States",
+          comparison: "percent-change",
+          periodPoints: [100, 102, 104],
+          weight: 2,
+        },
+        {
+          name: "Europe",
+          comparison: "percent-change",
+          periodPoints: [50, 51, 53],
+          weight: 1,
+        },
+        {
+          name: "GDP",
+          comparison: "point-change",
+          periodPoints: [2, 3, 4],
+          weight: 1,
+        },
+      ];
+      ({
+        points: buildHeroTrendPoints(cards),
+        html: renderHeroSparkline(cards, { tone: "up" }),
+      });
+    `,
+    context,
+  );
+
+  assert.equal(result.points.length, 8);
+  assert.equal(Number(result.points[0].toFixed(3)), 0);
+  assert.equal(Number(result.points.at(-1).toFixed(3)), 4.667);
+  assert.match(result.html, /class="sparkline trend-up"/);
+  assert.match(styles, /\.page-title-group\s*{[^}]*gap: var\(--acadia-space-2\);/s);
+  assert.match(styles, /\.hero-chart-panel\s*{[^}]*height: 4\.75rem;/s);
+});
+
 test("five-year period and long sparkline smoothing are available", () => {
   const context = loadAppContext();
   const result = vm.runInContext(

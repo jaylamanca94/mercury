@@ -16,7 +16,8 @@ Provider attribution, freshness, proxy tickers, and broader source context live 
 hover/detail context. Delayed, stale, or slower-cadence indicators keep date context when it affects trust.
 Economy and market-support sections include Today, Week, Month, Year, and 5-year controls; Economy
 also supports United States, Europe, and Asia market-proxy views. Longer market-history sparklines
-are smoothed so year and 5-year views read as trend lines rather than noisy raw traces.
+are smoothed so year and 5-year views read as trend lines rather than noisy raw traces. The hero
+briefing includes a period-aware aggregate trend built from the currently visible cards.
 
 ## Tech Stack
 

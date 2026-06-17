@@ -479,6 +479,10 @@ body {
   align-content: start;
 }
 
+.page-title-group {
+  gap: var(--acadia-space-2);
+}
+
 .page-actions-card {
   align-content: center;
 }
@@ -586,6 +590,16 @@ body {
   line-height: 1.45;
   margin: 0;
   max-width: 44rem;
+}
+
+.hero-chart-panel {
+  height: 4.75rem;
+  margin-block: 0.125rem;
+  width: 100%;
+}
+
+.hero-chart-panel:empty {
+  display: none;
 }
 
 .hero-movers {
