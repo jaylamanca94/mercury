@@ -150,7 +150,7 @@ Use `8px` or less for normal cards and repeated list items unless a larger conta
 
 ## Chart And Indicator Guidance
 
-- Pair every numeric movement with direction, timeframe, source, and update time when possible.
+- Pair every numeric movement with direction and timeframe when possible.
 - Distinguish direction from economic interpretation. Some moves, such as oil prices falling, are
   contextual rather than automatically good or bad; hero copy should describe those as mixed signals
   instead of primary drags or wins.
@@ -169,7 +169,7 @@ Use `8px` or less for normal cards and repeated list items unless a larger conta
   update when period or region filters change. Treat them as lightweight rollups, not formal
   economic scores.
 - Make stale, delayed, sample, fallback, no-data, and unavailable data visually distinct.
-- Source-backed sections must update their own freshness labels from the current source response, including source observation time, previous-release comparison timing, and dashboard fetch timing when those are different.
+- Source-backed sections must update their own freshness labels from the current source response, including source observation time and dashboard fetch timing when those are different.
 - Show exact daily release dates for daily market/risk data, month-level labels for monthly economic releases, and year-level labels for annual regional releases.
 - In compact metric cards, omit routine dates for current daily market data. Show daily dates when
   freshness is delayed or stale, and keep month/year labels for slower official releases.
@@ -244,11 +244,12 @@ Current source-backed utilities:
   canvas, centered `1160px` content column, title/action row, large current-conditions card, and
   stacked section panels for grouped metric cards.
 - Primary metric groups should be organized by audience-facing categories such as `Economy` and
-  `Market supports`. Economy combines the top market/ticker cards with core macro indicators;
+  `Market supports`. Economy combines the top regional market cards with core macro indicators;
   Market supports hold dollar, FX, oil, and Bitcoin cards. Preserve risk, regional, and freshness
   context elsewhere on the page.
-- Repeated metric cards should show a readable card name plus a compact ticker or series label in
-  the header, for example `Technology` + `VGT` or `Inflation` + `CPI`.
+- Repeated metric cards should show a readable card name on the visible surface. Hide tickers,
+  proxy codes, and series identifiers from the card face unless they are the user's primary label;
+  keep them available through hover/detail/source context instead.
 - Any first-scan metric grouping should reuse live dashboard data rather than introduce a separate
   dataset. It is a presentation layer, not a new scoring model.
 - Primary Market Pulse and Economic Health sections may use larger panel treatment to make the main data areas feel more substantial, while repeated metric tiles remain compact and source-aware.
@@ -278,8 +279,9 @@ Current source-backed utilities:
   a heavy area chart. The chart and footer content should span to the normal card content padding;
   reserve space for the top-right icon only in the card header. Empty sparkline states should use
   calm labels such as `No trend`, not placeholder-like chart labels.
-- Metric cards include their short indicator context and compact previous-value comparisons, so
-  users can understand direction without relying only on the sparkline or ticker.
+- Metric cards include only short plain-language context when it helps interpretation. Do not show
+  previous-value footers in the scannable card grid when the visible percent or point change already
+  explains the comparison.
 - Avoid repeating provider names such as `Yahoo Finance` inside every metric card. Use the Data
   coverage section for provider attribution, source freshness, and caveats; use card-level metadata
   only when a date or cadence materially affects trust.

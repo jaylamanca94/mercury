@@ -758,8 +758,7 @@ body {
   min-width: 0;
 }
 
-.metric-name,
-.metric-ticker {
+.metric-name {
   font-size: 0.875rem;
   line-height: 1rem;
   margin: 0;
@@ -770,13 +769,8 @@ body {
   font-weight: 800;
 }
 
-.metric-ticker,
 .metric-context {
   color: var(--acadia-color-text-muted);
-}
-
-.metric-ticker {
-  font-weight: 700;
 }
 
 .metric-context {

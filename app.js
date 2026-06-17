@@ -776,6 +776,21 @@ function metricPreviousLabel(metric) {
   return `Previous ${previous}`;
 }
 
+function metricTooltip(metric) {
+  const details = [displayMetricName(metric)];
+  const ticker = metricTickerLabel(metric);
+
+  if (ticker) {
+    details.push(ticker);
+  }
+
+  if (metric.context && metric.context !== ticker) {
+    details.push(metric.context);
+  }
+
+  return details.join(" - ");
+}
+
 function renderMetricComparison(metric) {
   return `
     <dl class="metric-comparison" aria-label="${escapeHtml(displayMetricName(metric))} previous value comparison">
@@ -963,13 +978,9 @@ function renderMetricCard(metric) {
   const cardTone = metricCardTone(metric);
   const sparklinePoints = metric.periodPoints || metric.points;
   const hasChart = !metric.hideChart;
-  const previousLabel = metricPreviousLabel(metric);
   const releaseLabel = shouldShowMetricDate(metric) ? metricReleaseLabel(metric) : "";
   const cadenceLabel = metric.cadence && inferDisplayCadence(metric.cadence) !== "daily" ? metric.cadence : "";
   const footerItems = [
-    previousLabel
-      ? `<span class="metric-previous"><i class="fa-solid fa-clock-rotate-left acadia-icon" aria-hidden="true"></i> ${escapeHtml(previousLabel)}</span>`
-      : "",
     releaseLabel
       ? `<span><i class="fa-regular fa-calendar acadia-icon" aria-hidden="true"></i> ${escapeHtml(releaseLabel)}</span>`
       : "",
@@ -985,16 +996,11 @@ function renderMetricCard(metric) {
         : "";
 
   return `
-    <article class="metric-card acadia-metric metric-card-${cardTone}${hasChart ? " metric-card-has-chart" : ""}${metric.isWide ? " metric-card-wide" : ""}">
+    <article class="metric-card acadia-metric metric-card-${cardTone}${hasChart ? " metric-card-has-chart" : ""}${metric.isWide ? " metric-card-wide" : ""}" title="${escapeHtml(metricTooltip(metric))}">
       <div class="metric-top">
         <div>
           <div class="metric-title-line">
             <h3 class="metric-name">${escapeHtml(displayMetricName(metric))}</h3>
-            ${
-              metricTickerLabel(metric)
-                ? `<p class="metric-ticker">${escapeHtml(metricTickerLabel(metric))}</p>`
-                : ""
-            }
           </div>
           ${metric.context ? `<p class="metric-context">${escapeHtml(metric.context)}</p>` : ""}
         </div>
@@ -1044,7 +1050,7 @@ function globalMarketCards() {
     .map(([name, metric]) => ({
       ...withPeriodDelta(metric, selectedEconomyPeriod),
       name,
-      context: metricTickerLabel(metric) || metric.context,
+      context: "",
     }));
 
   if (cards.length) {

@@ -100,7 +100,7 @@ In scope for the MVP:
 - Exact source release-date labels that preserve each indicator's cadence
 - Explainable source-backed breadth score drivers
 - Weighted section gain/loss badges for the cards currently in view
-- Visible previous-release comparisons, including prior observation dates, for live metrics
+- Simple live metric cards focused on name, value, movement, and trend
 - Source-backed Today, Week, Month, Year, and 5-year comparison controls for Economy and Currency cards
 - Region-aware market proxy cards for United States, Europe, and Asia in the Economy section
 - Source-backed Economic Health route using public FRED releases
