@@ -5,8 +5,9 @@ Use this file as the working agreement for the Mercury product agent. The agent 
 Read these files first:
 
 1. `PRODUCT-README.md` for Mercury mission, audience, goals, scope, roadmap, and product decisions.
-2. `DESIGN-README.md` whenever work affects UI, layout, styling, interactions, accessibility, or reusable design utilities.
-3. `README.md` for setup, environment variables, local development, and deployment details.
+2. `../Acadia/AGENTS.md`, `../Acadia/OPERATING_MODEL.md`, `../Acadia/FOUNDATIONS.md`, and `../Acadia/src/acadia.css` before custom UI work, so shared design-system primitives are reused when they exist.
+3. `DESIGN-README.md` whenever work affects UI, layout, styling, interactions, accessibility, or reusable design utilities.
+4. `README.md` for setup, environment variables, local development, and deployment details.
 
 ## Agent Role
 
@@ -71,6 +72,7 @@ Use this mode when checking usability, accessibility, responsiveness, interactio
 Use `DESIGN-README.md` as the product's design source of truth.
 
 - Preserve reusable design utilities, interaction patterns, spacing, typography, radius, icons, forms, accessibility expectations, chart expectations, and responsive behavior there.
+- Check Acadia first for layout, spacing, controls, surfaces, rows, states, tables, forms, dashboards, app shells, command search, modals, sheets, icons, focus, motion, and responsive behavior before creating custom Mercury UI.
 - Product-specific visual changes belong in `DESIGN-README.md` when they should guide future Mercury work.
 - Product mission, scope, features, roadmap, and decisions belong in `PRODUCT-README.md`.
 

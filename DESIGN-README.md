@@ -42,6 +42,15 @@ informational, source-backed, and explicitly not a trading or investment-advice 
 
 Use this file as the visual source of truth for `Mercury`. Update it whenever spacing, color, typography, icon sizing, chart treatments, interaction feel, accessibility, or reusable utilities change.
 
+### Acadia Adapter
+
+Mercury now treats `../Acadia` as the shared coded design-system baseline. Before adding a local UI style, check Acadia's live docs, operating model, foundations, templates, patterns, and CSS primitives for the needed layout, control, surface, state, icon, chart, or responsive behavior.
+
+- Use Acadia primitives for shared product language: control anatomy, select arrows, search inputs, focus rings, raised rows, table/form behavior, dashboard status rows, command search, sheets, dialogs, and responsive spacing.
+- Map Mercury variables onto Acadia-style adapter variables in `styles.css` before creating a new one-off component rule.
+- Keep Mercury-specific economics language, source-trust rules, chart semantics, freshness labels, neutral financial tone, and public-data caveats in this document.
+- If a Mercury pattern becomes useful for another product, graduate the neutral part into Acadia and keep Mercury's economy-specific wording and data treatment here.
+
 ## Color
 
 Mercury should avoid looking like a brokerage or trading app. Use measured, professional economic-dashboard color rather than aggressive red/green market styling.
