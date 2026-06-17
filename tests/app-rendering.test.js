@@ -146,6 +146,35 @@ test("global supporting cards include Bitcoin after fiat and commodity indicator
   assert.match(styles, /\.dashboard-global \.economy-grid > \.metric-card:nth-child\(n \+ 7\)\s*{\s*grid-column: span 6;/);
 });
 
+test("hero insight explains sentiment and top movers", () => {
+  const context = loadAppContext();
+  const result = vm.runInContext(
+    `
+      const cards = [
+        { name: "Asia", periodChange: "+8.5%", periodChangeValue: 8.5, comparison: "percent-change" },
+        { name: "Europe", periodChange: "+3.6%", periodChangeValue: 3.6, comparison: "percent-change" },
+        { name: "Oil", periodChange: "-15.9%", periodChangeValue: -15.9, comparison: "percent-change" },
+      ];
+      const change = { value: 0.5, label: "+0.5%", tone: "up" };
+      ({
+        badge: sentimentForChange(change).label + " " + change.label,
+        insight: buildHeroInsight(change, heroMoverCards(cards), "week", "Global"),
+        movers: renderHeroMovers(heroMoverCards(cards)),
+      });
+    `,
+    context,
+  );
+
+  assert.equal(result.badge, "Healthy +0.5%");
+  assert.equal(
+    result.insight,
+    "Global markets are broadly positive this week, led by Asia (+8.5%) while Oil (-15.9%) is the main drag.",
+  );
+  assert.match(result.movers, /Top movers/);
+  assert.match(result.movers, /hero-mover-down/);
+  assert.match(styles, /\.hero-insight\s*{[^}]*max-width: 44rem;/s);
+});
+
 test("metric cards show source previous values when available", () => {
   const context = loadAppContext();
   const html = vm.runInContext(

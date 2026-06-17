@@ -22,6 +22,8 @@ Mercury should feel like checking the weather, but for the global economy: clear
   at a glance`, `Data coverage`, `Conditions score`, and `What shapes this score` over duplicate
   product labels or model-heavy language such as `Mercury Dashboard`, `Source coverage`,
   `Economy Score`, or `Score inputs`.
+- The first viewport should answer `how is the world doing?` with a short hero insight generated
+  from visible live cards, not just a numeric score.
 - Use charts and sparklines only when they clarify trend or movement.
 - Use calm warning states for risk, uncertainty, stale data, and unavailable sources.
 
@@ -80,10 +82,11 @@ Recommended dashboard order:
 
 1. Slim app header with product identity and lightweight user/context affordance
 2. Page title row with latest-check timestamp and refresh action
-3. Current-conditions summary with a compact conditions score panel
-4. Grouped metric sections for Economy and market supports
-5. Risk and Confidence plus Global Snapshot
-6. Data coverage and freshness
+3. Hero insight with market sentiment, signed change, and top movers
+4. Current-conditions summary with a compact conditions score panel
+5. Grouped metric sections for Economy and market supports
+6. Risk and Confidence plus Global Snapshot
+7. Data coverage and freshness
 
 ### Desktop
 
@@ -249,6 +252,9 @@ Current source-backed utilities:
   column on mobile rather than leaving orphaned cards.
 - Section headers may pair a title with a compact signed badge and right-aligned native selects,
   matching the latest Figma dashboard direction while preserving keyboard and screen-reader access.
+- The hero badge should combine sentiment and movement, such as `Healthy +0.5%`, and the hero copy
+  should explain the biggest visible drivers in one sentence. Use the same visible metric cards for
+  top movers rather than introducing a separate insight dataset.
 - Metric cards and key signal tiles should use soft neutral surfaces with thin tone accents instead
   of saturated full borders, so direction remains visible without making Mercury feel like a
   trading interface.

@@ -532,6 +532,65 @@ body {
   border-color: color-mix(in srgb, var(--muted) 20%, transparent);
 }
 
+.hero-insight {
+  font-size: 0.95rem;
+  line-height: 1.45;
+  margin: 0;
+  max-width: 44rem;
+}
+
+.hero-movers {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  min-height: 1.875rem;
+}
+
+.hero-movers:empty {
+  display: none;
+}
+
+.hero-movers-label {
+  color: var(--acadia-color-text-muted);
+  font-size: 0.75rem;
+  font-weight: 800;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.hero-mover {
+  align-items: center;
+  background: color-mix(in srgb, var(--muted) 8%, transparent);
+  border: 1px solid color-mix(in srgb, var(--muted) 18%, transparent);
+  border-radius: var(--acadia-radius-pill);
+  color: var(--muted);
+  display: inline-flex;
+  font-size: 0.75rem;
+  font-weight: 800;
+  gap: 0.35rem;
+  line-height: 1;
+  min-height: 1.875rem;
+  padding: 0.4rem 0.6rem;
+}
+
+.hero-mover-up {
+  background: color-mix(in srgb, var(--mercury-positive) 10%, transparent);
+  border-color: color-mix(in srgb, var(--mercury-positive) 22%, transparent);
+  color: var(--mercury-positive);
+}
+
+.hero-mover-down {
+  background: color-mix(in srgb, var(--mercury-negative) 10%, transparent);
+  border-color: color-mix(in srgb, var(--mercury-negative) 24%, transparent);
+  color: var(--mercury-negative);
+}
+
+.hero-mover strong {
+  color: currentColor;
+  font-weight: 900;
+}
+
 .timestamp-pill {
   align-self: end;
   min-height: 2.5rem;

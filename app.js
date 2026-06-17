@@ -291,7 +291,99 @@ function sectionChange(cards) {
   };
 }
 
-function updateSectionBadge(selector, change) {
+function sentimentForChange(change) {
+  const value = change?.value;
+
+  if (!Number.isFinite(value)) {
+    return { label: "Unavailable", tone: "unavailable", phrase: "waiting on live data" };
+  }
+
+  if (value >= 2) {
+    return { label: "Strong", tone: "up", phrase: "strongly positive" };
+  }
+
+  if (value > 0.15) {
+    return { label: "Healthy", tone: "up", phrase: "broadly positive" };
+  }
+
+  if (value <= -2) {
+    return { label: "Weak", tone: "down", phrase: "under pressure" };
+  }
+
+  if (value < -0.15) {
+    return { label: "Mixed", tone: "down", phrase: "slightly softer" };
+  }
+
+  return { label: "Mixed", tone: "stable", phrase: "mixed" };
+}
+
+function periodPhrase(period) {
+  if (period === "today") return "today";
+  if (period === "year") return "this year";
+
+  return `this ${periodOption(period).label.toLowerCase()}`;
+}
+
+function heroMoverCards(cards) {
+  return cards
+    .filter((card) => card.comparison !== "point-change" && Number.isFinite(card.periodChangeValue))
+    .sort((a, b) => Math.abs(b.periodChangeValue) - Math.abs(a.periodChangeValue))
+    .slice(0, 3);
+}
+
+function heroMoverLabel(card) {
+  const name = displayMetricName(card);
+  const label = card.periodChange || metricDeltaLabel(card);
+
+  return `${name} (${label})`;
+}
+
+function buildHeroInsight(change, movers, period, scope) {
+  if (!change) {
+    return "Waiting for enough live market data to explain the current global read.";
+  }
+
+  const scopeLabel = scope === "Global" ? "Global markets" : `${scope} conditions`;
+  const verb = scope === "Global" ? "are" : "look";
+  const sentiment = sentimentForChange(change);
+  const leader = movers.find((card) => card.periodChangeValue > 0.05);
+  const drag = movers.find((card) => card.periodChangeValue < -0.05);
+  const leadPhrase = leader ? `, led by ${heroMoverLabel(leader)}` : "";
+  const dragPhrase = drag ? ` while ${heroMoverLabel(drag)} is the main drag` : "";
+
+  return `${scopeLabel} ${verb} ${sentiment.phrase} ${periodPhrase(period)}${leadPhrase}${dragPhrase}.`;
+}
+
+function renderHeroMovers(movers) {
+  if (!movers.length) {
+    return "";
+  }
+
+  return `
+    <span class="hero-movers-label">Top movers</span>
+    ${movers
+      .map((card) => {
+        const tone = periodTone(card.periodChangeValue);
+
+        return `
+          <span class="hero-mover hero-mover-${escapeHtml(tone)}">
+            <span>${escapeHtml(displayMetricName(card))}</span>
+            <strong>${escapeHtml(card.periodChange || metricDeltaLabel(card))}</strong>
+          </span>
+        `;
+      })
+      .join("")}
+  `;
+}
+
+function updateHeroInsight(cards, change) {
+  const movers = heroMoverCards(cards);
+
+  setText("#hero-insight", buildHeroInsight(change, movers, selectedEconomyPeriod, selectedRegion));
+  setHtml("#hero-movers", renderHeroMovers(movers));
+}
+
+function updateSectionBadge(selector, change, options = {}) {
   const element = document.querySelector(selector);
 
   if (!element) {
@@ -306,7 +398,7 @@ function updateSectionBadge(selector, change) {
     return;
   }
 
-  element.textContent = change.label;
+  element.textContent = options.includeSentiment ? `${sentimentForChange(change).label} ${change.label}` : change.label;
   element.classList.add(`trend-${change.tone}`);
 }
 
@@ -1088,6 +1180,7 @@ function renderDashboard() {
   const supportCards = globalView
     ? regions.slice(0, 3).map((region) => regionMetricCard(region))
     : focusedSupportCards();
+  const economyChange = sectionChange(economyCards);
 
   document.body.classList.toggle("dashboard-global", globalView);
   document.body.classList.toggle("dashboard-focused", !globalView);
@@ -1101,7 +1194,8 @@ function renderDashboard() {
     currencyGrid.innerHTML = supportCards.map((item) => renderMetricCard(item)).join("");
   }
 
-  updateSectionBadge("#economy-change-badge", sectionChange(economyCards));
+  updateSectionBadge("#economy-change-badge", economyChange, { includeSentiment: true });
+  updateHeroInsight(economyCards, economyChange);
   updateSectionBadge("#currency-change-badge", sectionChange(supportCards));
   setText("#currency-title", globalView ? "GDP Growth" : "Supporting indicators");
 
