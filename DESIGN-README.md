@@ -256,8 +256,9 @@ Current source-backed utilities:
   mini-cards. Keep chart starts and ends aligned to the card's content padding, avoid separate chart
   backgrounds, borders, and shadows, and include a quiet dotted baseline for the starting/no-change
   level. Use a lightweight line with low-opacity area fill so movement is visible without becoming
-  a heavy area chart. Empty sparkline states should use calm labels such as `No trend`, not
-  placeholder-like chart labels.
+  a heavy area chart. The chart and footer content should span to the normal card content padding;
+  reserve space for the top-right icon only in the card header. Empty sparkline states should use
+  calm labels such as `No trend`, not placeholder-like chart labels.
 - Metric cards include their short indicator context and compact previous-release comparisons with
   prior observation dates, so users can understand direction without relying only on the sparkline
   or ticker.

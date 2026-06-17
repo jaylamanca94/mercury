@@ -781,7 +781,7 @@ function renderMetricCard(metric) {
         : "";
 
   return `
-    <article class="metric-card acadia-metric metric-card-${cardTone}${metric.isWide ? " metric-card-wide" : ""}">
+    <article class="metric-card acadia-metric metric-card-${cardTone}${hasChart ? " metric-card-has-chart" : ""}${metric.isWide ? " metric-card-wide" : ""}">
       <div class="metric-top">
         <div>
           <div class="metric-title-line">

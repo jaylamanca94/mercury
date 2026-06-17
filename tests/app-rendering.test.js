@@ -280,6 +280,7 @@ test("sparklines render as smooth full-width card charts", () => {
     context,
   );
 
+  assert.match(html, /metric-card[^"]*metric-card-has-chart/);
   assert.match(html, /preserveAspectRatio="none"/);
   assert.match(html, /class="sparkline-baseline" x1="0" y1="38\.0" x2="180" y2="38\.0"/);
   assert.match(html, /class="sparkline-area" d="M [^"]* Z"/);
@@ -301,6 +302,9 @@ test("sparklines render as smooth full-width card charts", () => {
   assert.match(styles, /\.metric-chart-panel\s*{[^}]*height: 4\.25rem;/s);
   assert.match(styles, /\.metric-chart-panel\s*{[^}]*margin: 0\.125rem 0 0;/s);
   assert.match(styles, /\.metric-chart-panel\s*{[^}]*width: 100%;/s);
+  assert.doesNotMatch(styles, /padding-right: calc\(var\(--acadia-section-padding-dense\) \+ var\(--metric-icon-reserve\)\);/);
+  assert.match(styles, /\.metric-top\s*{[^}]*padding-right: var\(--metric-icon-reserve\);/s);
+  assert.match(styles, /\.metric-card-has-chart \.metric-footer\s*{[^}]*border-top: 0;/s);
   assert.match(styles, /\.sparkline\s*{[^}]*height: 100%;/s);
   assert.match(styles, /\.sparkline-line\s*{[^}]*stroke-width: 2\.25;/s);
   assert.match(styles, /\.sparkline-baseline\s*{[^}]*stroke-dasharray: 1 5;/s);
