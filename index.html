@@ -36,50 +36,55 @@
     </header>
 
     <main id="main-content" class="dashboard-shell acadia-shell acadia-stack">
-      <section class="page-title-row acadia-surface acadia-panel-dense">
-        <div class="page-title-group acadia-section-header-copy">
-          <span class="acadia-kicker">Global economy at a glance</span>
-          <div class="view-heading">
-            <h1 id="view-title" class="acadia-title">Global Economy</h1>
-            <span id="economy-change-badge" class="view-change hero-condition trend-stable acadia-badge">Loading</span>
+      <section class="hero-panel-row">
+        <section class="page-title-row acadia-surface acadia-panel-dense" aria-labelledby="view-title">
+          <div class="page-title-group acadia-section-header-copy">
+            <span class="acadia-kicker">Global economy at a glance</span>
+            <div class="view-heading">
+              <h1 id="view-title" class="acadia-title">Global Economy</h1>
+              <span id="economy-change-badge" class="view-change hero-condition trend-stable acadia-badge">Loading</span>
+            </div>
+            <p id="hero-insight" class="hero-insight acadia-text-muted">
+              Checking the current global read from live public data.
+            </p>
+            <div id="hero-movers" class="hero-movers" aria-label="Top movers"></div>
           </div>
-          <p id="hero-insight" class="hero-insight acadia-text-muted">
-            Checking the current global read from live public data.
-          </p>
-          <div id="hero-movers" class="hero-movers" aria-label="Top movers"></div>
-        </div>
-        <div class="page-actions acadia-toolbar" aria-label="Dashboard actions">
-          <label class="section-select-label acadia-field" for="economy-period-select">
-            <span class="acadia-label">Period</span>
-            <select id="economy-period-select" class="section-select acadia-control" aria-label="Economy period">
-              <option value="today">Today</option>
-              <option value="week" selected>Week</option>
-              <option value="month">Month</option>
-              <option value="year">Year</option>
-            </select>
-          </label>
-          <label class="section-select-label section-select-label-region acadia-field" for="economy-region-select">
-            <span class="acadia-label">Region</span>
-            <select id="economy-region-select" class="section-select acadia-control" aria-label="Economy region">
-              <option value="Global" selected>Global</option>
-              <option value="United States">United States</option>
-              <option value="Europe">Europe</option>
-              <option value="Asia">Asia</option>
-            </select>
-          </label>
-          <span id="last-updated-pill" class="timestamp-pill acadia-badge" aria-live="polite" aria-atomic="true">
-            Checking latest data
-          </span>
-          <button
-            id="refresh-data-button"
-            class="refresh-button acadia-icon-action"
-            type="button"
-            aria-describedby="dashboard-status"
-          >
-            <i class="fa-solid fa-rotate acadia-icon" aria-hidden="true"></i>
-            <span class="visually-hidden">Refresh data</span>
-          </button>
-        </div>
+        </section>
+        <section class="page-actions-card acadia-surface acadia-panel-dense" aria-label="Dashboard controls">
+          <div class="page-actions acadia-toolbar">
+            <label class="section-select-label acadia-field" for="economy-period-select">
+              <span class="acadia-label">Period</span>
+              <select id="economy-period-select" class="section-select acadia-control" aria-label="Economy period">
+                <option value="today">Today</option>
+                <option value="week" selected>Week</option>
+                <option value="month">Month</option>
+                <option value="year">Year</option>
+                <option value="fiveYear">5 years</option>
+              </select>
+            </label>
+            <label class="section-select-label section-select-label-region acadia-field" for="economy-region-select">
+              <span class="acadia-label">Region</span>
+              <select id="economy-region-select" class="section-select acadia-control" aria-label="Economy region">
+                <option value="Global" selected>Global</option>
+                <option value="United States">United States</option>
+                <option value="Europe">Europe</option>
+                <option value="Asia">Asia</option>
+              </select>
+            </label>
+            <span id="last-updated-pill" class="timestamp-pill acadia-badge" aria-live="polite" aria-atomic="true">
+              Checking latest data
+            </span>
+            <button
+              id="refresh-data-button"
+              class="refresh-button acadia-icon-action"
+              type="button"
+              aria-describedby="dashboard-status"
+            >
+              <i class="fa-solid fa-rotate acadia-icon" aria-hidden="true"></i>
+              <span class="visually-hidden">Refresh data</span>
+            </button>
+          </div>
+        </section>
       </section>
       <p id="dashboard-status" class="visually-hidden" role="status" aria-live="polite" aria-atomic="true">
         Checking latest dashboard data.
@@ -144,6 +149,7 @@
                 <option value="week" selected>Week</option>
                 <option value="month">Month</option>
                 <option value="year">Year</option>
+                <option value="fiveYear">5 years</option>
               </select>
             </label>
           </div>

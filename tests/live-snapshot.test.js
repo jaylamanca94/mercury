@@ -2,6 +2,8 @@ const assert = require("node:assert/strict");
 const test = require("node:test");
 
 const {
+  YAHOO_HISTORY_OBSERVATIONS,
+  YAHOO_HISTORY_RANGE,
   YAHOO_SERIES,
   buildFreshnessSummary,
   buildSummary,
@@ -10,6 +12,11 @@ const {
   classifyTrend,
   parseFredCsv,
 } = require("../api/live-snapshot")._internals;
+
+test("Yahoo bridge keeps enough market history for five-year dashboard views", () => {
+  assert.equal(YAHOO_HISTORY_RANGE, "5y");
+  assert.equal(YAHOO_HISTORY_OBSERVATIONS, 1300);
+});
 
 test("Yahoo market pulse includes Bitcoin as a supporting market indicator", () => {
   const bitcoin = YAHOO_SERIES.find((series) => series.id === "bitcoin");

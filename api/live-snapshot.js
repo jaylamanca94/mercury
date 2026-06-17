@@ -3,6 +3,8 @@ const YAHOO_CHART_BASE_URL = "https://query1.finance.yahoo.com/v8/finance/chart"
 const WORLD_BANK_BASE_URL = "https://api.worldbank.org/v2";
 const UPSTREAM_TIMEOUT_MS = 8000;
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
+const YAHOO_HISTORY_RANGE = "5y";
+const YAHOO_HISTORY_OBSERVATIONS = 1300;
 
 const FRESHNESS_RULES = {
   daily: {
@@ -937,7 +939,7 @@ async function fetchFredSeries(series) {
 }
 
 async function fetchYahooSeries(series) {
-  const url = `${YAHOO_CHART_BASE_URL}/${encodeURIComponent(series.symbol)}?range=1y&interval=1d`;
+  const url = `${YAHOO_CHART_BASE_URL}/${encodeURIComponent(series.symbol)}?range=${YAHOO_HISTORY_RANGE}&interval=1d`;
   const response = await fetchWithTimeout(url, {
     headers: {
       accept: "application/json",
@@ -1003,7 +1005,7 @@ async function fetchYahooSeries(series) {
     previousReleaseDate: previous.date,
     change,
     points: values.slice(-7).map((point) => Number(point.value.toFixed(2))),
-    history: values.slice(-260).map((point) => ({
+    history: values.slice(-YAHOO_HISTORY_OBSERVATIONS).map((point) => ({
       date: point.date,
       value: Number(point.value.toFixed(4)),
     })),
@@ -1245,6 +1247,8 @@ async function handler(req, res) {
 
 module.exports = handler;
 module.exports._internals = {
+  YAHOO_HISTORY_OBSERVATIONS,
+  YAHOO_HISTORY_RANGE,
   YAHOO_SERIES,
   buildFreshnessSummary,
   buildSummary,

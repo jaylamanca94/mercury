@@ -101,7 +101,7 @@ In scope for the MVP:
 - Explainable source-backed breadth score drivers
 - Weighted section gain/loss badges for the cards currently in view
 - Visible previous-release comparisons, including prior observation dates, for live metrics
-- Source-backed Today, Week, Month, and Year comparison controls for Economy and Currency cards
+- Source-backed Today, Week, Month, Year, and 5-year comparison controls for Economy and Currency cards
 - Region-aware market proxy cards for United States, Europe, and Asia in the Economy section
 - Source-backed Economic Health route using public FRED releases
 - Plain-language labels and context
@@ -213,8 +213,8 @@ Recently completed:
   World Bank public data.
 - Added cadence-aware freshness guardrails so connected daily, weekly, monthly, quarterly, and
   annual releases can be labeled current, delayed, or stale.
-- Added active period controls and region-aware Economy market proxies for United States, Europe,
-  and Asia.
+- Added active period controls, including a 5-year horizon, and region-aware Economy market proxies
+  for United States, Europe, and Asia.
 
 Recommended next steps:
 

@@ -122,6 +122,14 @@ const PERIOD_OPTIONS = {
     quarterlyObservations: 4,
     annualObservations: 1,
   },
+  fiveYear: {
+    label: "5 years",
+    dailyObservations: 1260,
+    weeklyObservations: 260,
+    monthlyObservations: 60,
+    quarterlyObservations: 20,
+    annualObservations: 5,
+  },
 };
 
 const MARKET_ROLE_ORDER = ["large-cap", "small-cap", "technology", "bonds"];
@@ -320,6 +328,7 @@ function sentimentForChange(change) {
 function periodPhrase(period) {
   if (period === "today") return "today";
   if (period === "year") return "this year";
+  if (period === "fiveYear") return "over five years";
 
   return `this ${periodOption(period).label.toLowerCase()}`;
 }
@@ -791,13 +800,14 @@ function renderSparkline(points, tone, label) {
     `;
   }
 
+  const chartPoints = smoothSparklineValues(points);
   const width = 180;
   const height = 42;
-  const min = Math.min(...points);
-  const max = Math.max(...points);
+  const min = Math.min(...chartPoints);
+  const max = Math.max(...chartPoints);
   const range = max - min || 1;
-  const step = width / (points.length - 1);
-  const coordinates = points.map((point, index) => ({
+  const step = width / (chartPoints.length - 1);
+  const coordinates = chartPoints.map((point, index) => ({
     x: index * step,
     y: height - ((point - min) / range) * (height - 8) - 4,
   }));
@@ -823,6 +833,52 @@ function sparklineAreaPath(linePath, points, height) {
   const end = points.at(-1);
 
   return `${linePath} L ${end.x.toFixed(1)} ${height.toFixed(1)} L ${start.x.toFixed(1)} ${height.toFixed(1)} Z`;
+}
+
+function smoothSparklineValues(points) {
+  if (points.length <= 90) {
+    return points;
+  }
+
+  const windowSize = points.length >= 500 ? 21 : 9;
+  const radius = Math.floor(windowSize / 2);
+  const smoothed = points.map((point, index) => {
+    if (index === 0 || index === points.length - 1) {
+      return point;
+    }
+
+    const start = Math.max(0, index - radius);
+    const end = Math.min(points.length - 1, index + radius);
+    let weightedTotal = 0;
+    let weightTotal = 0;
+
+    for (let cursor = start; cursor <= end; cursor += 1) {
+      const distance = Math.abs(cursor - index);
+      const weight = radius + 1 - distance;
+
+      weightedTotal += points[cursor] * weight;
+      weightTotal += weight;
+    }
+
+    return weightedTotal / weightTotal;
+  });
+
+  return downsampleSparklineValues(smoothed, 96);
+}
+
+function downsampleSparklineValues(points, maxPoints) {
+  if (points.length <= maxPoints) {
+    return points;
+  }
+
+  return Array.from({ length: maxPoints }, (_, index) => {
+    if (index === 0) return points[0];
+    if (index === maxPoints - 1) return points.at(-1);
+
+    const sourceIndex = Math.round((index / (maxPoints - 1)) * (points.length - 1));
+
+    return points[sourceIndex];
+  });
 }
 
 function smoothSparklinePath(points) {

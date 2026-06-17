@@ -5,6 +5,7 @@ const test = require("node:test");
 const vm = require("node:vm");
 
 const styles = fs.readFileSync(path.join(__dirname, "..", "styles.css"), "utf8");
+const indexHtml = fs.readFileSync(path.join(__dirname, "..", "index.html"), "utf8");
 
 function createElement() {
   return {
@@ -176,6 +177,28 @@ test("hero insight explains sentiment and top movers", () => {
   assert.match(result.movers, /hero-mover-down/);
   assert.match(styles, /\.hero-insight\s*{[^}]*max-width: 44rem;/s);
   assert.match(styles, /\.hero-condition\s*{[^}]*flex-direction: column;/s);
+});
+
+test("five-year period and long sparkline smoothing are available", () => {
+  const context = loadAppContext();
+  const result = vm.runInContext(
+    `
+      ({
+        fiveYear: PERIOD_OPTIONS.fiveYear,
+        monthPoints: smoothSparklineValues(Array.from({ length: 21 }, (_, index) => index)),
+        yearPoints: smoothSparklineValues(Array.from({ length: 252 }, (_, index) => index % 2 === 0 ? 100 : 110)),
+      });
+    `,
+    context,
+  );
+
+  assert.equal(result.fiveYear.label, "5 years");
+  assert.equal(result.fiveYear.dailyObservations, 1260);
+  assert.equal(result.monthPoints.length, 21);
+  assert.equal(result.yearPoints.length, 96);
+  assert.notEqual(result.yearPoints[1], 110);
+  assert.match(indexHtml, /<option value="fiveYear">5 years<\/option>/);
+  assert.match(styles, /\.hero-panel-row\s*{[^}]*grid-template-columns: minmax\(0, 1\.05fr\) minmax\(22rem, 0\.95fr\);/s);
 });
 
 test("metric cards show source previous values when available", () => {

@@ -355,15 +355,15 @@ body {
 
 .acadia-toolbar {
   align-items: end;
-  background: var(--acadia-color-surface-muted);
-  border: 1px solid var(--acadia-color-border);
-  border-radius: var(--acadia-radius-md);
-  box-shadow: var(--acadia-shadow-control);
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
   display: flex;
   flex-wrap: wrap;
   gap: 0.75rem;
   justify-content: flex-end;
-  padding: 0.75rem;
+  padding: 0;
 }
 
 .acadia-field {
@@ -463,7 +463,26 @@ body {
   opacity: 0.56;
 }
 
+.hero-panel-row {
+  align-items: stretch;
+  display: grid;
+  gap: var(--acadia-space-3);
+  grid-template-columns: minmax(0, 1.05fr) minmax(22rem, 0.95fr);
+}
+
 .page-title-row,
+.page-actions-card {
+  display: grid;
+}
+
+.page-title-row {
+  align-content: start;
+}
+
+.page-actions-card {
+  align-content: center;
+}
+
 .section-heading {
   align-items: start;
   display: grid;
@@ -1102,7 +1121,7 @@ body {
     --acadia-page-margin: var(--acadia-page-margin-tablet);
   }
 
-  .page-title-row,
+  .hero-panel-row,
   .section-heading,
   .freshness-band,
   .lower-grid {
@@ -1139,7 +1158,8 @@ body {
     gap: 1rem;
   }
 
-  .page-title-row {
+  .page-title-row,
+  .page-actions-card {
     padding: 1rem;
   }
 

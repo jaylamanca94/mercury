@@ -81,7 +81,7 @@ The first useful dashboard should support fast scanning in less than 60 seconds.
 Recommended dashboard order:
 
 1. Slim app header with product identity and lightweight user/context affordance
-2. Page title row with latest-check timestamp and refresh action
+2. Hero briefing row with a global economy insight card and a separate controls card
 3. Hero insight with market sentiment, signed change, and top movers
 4. Current-conditions summary with a compact conditions score panel
 5. Grouped metric sections for Economy and market supports
@@ -155,6 +155,8 @@ Use `8px` or less for normal cards and repeated list items unless a larger conta
 - Sparkline panels in metric cards should span the full card content width, including the right-side
   icon reserve, let the line enter and exit at the chart edges, and use smoothed curves instead of
   sharp segmented paths, including two-point Today charts.
+- Longer-horizon sparklines such as Year and 5 years should apply a light smoothing/downsampling
+  pass so dense daily market history reads as a calm trend instead of a jagged raw data trace.
 - Sparkline movement should include a subtle low-opacity area fill under the line using the same
   movement color. Keep the fill quiet so it supports scan clarity without becoming a heavy area chart.
 - Avoid chart types that require financial expertise to interpret.
@@ -200,7 +202,7 @@ Use `8px` or less for normal cards and repeated list items unless a larger conta
 - Avoid controls that imply trading, ordering, transactions, portfolio management, or alerts before those workflows are approved.
 - Use compact scope notes instead of dropdowns or segmented controls when a section is not yet
   filterable by source-backed data. Controls must visibly change the dashboard content when present.
-- Period dropdowns use `Today`, `Week`, `Month`, and `Year` labels and should update card deltas,
+- Period dropdowns use `Today`, `Week`, `Month`, `Year`, and `5 years` labels and should update card deltas,
   sparklines, and section rollups together.
 - Clickable rows and cards should have clear pointer, hover, and keyboard focus states.
 - Loading, no-data, stale-data, and error states should be plain, calm, and useful.
@@ -250,6 +252,10 @@ Current source-backed utilities:
   first row, three fiat/currency cards on the second row, and oil plus Bitcoin as a wider
   commodity/digital-asset support pair. Collapse this to two columns near tablet widths and one
   column on mobile rather than leaving orphaned cards.
+- The first dashboard row should split into two horizontal Acadia surfaces on desktop: a briefing
+  card for `Global economy at a glance`, sentiment, top movers, and explanatory copy; and a
+  separate controls card for period, region, freshness timestamp, and refresh action. Stack those
+  cards on tablet and mobile.
 - Section headers may pair a title with a compact signed badge and right-aligned native selects,
   matching the latest Figma dashboard direction while preserving keyboard and screen-reader access.
 - The hero badge should combine sentiment and movement, such as `Healthy +0.5%`, and the hero copy
