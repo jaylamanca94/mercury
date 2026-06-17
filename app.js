@@ -692,19 +692,47 @@ function renderSparkline(points, tone, label) {
   const max = Math.max(...points);
   const range = max - min || 1;
   const step = width / (points.length - 1);
-  const d = points
-    .map((point, index) => {
-      const x = index * step;
-      const y = height - ((point - min) / range) * (height - 8) - 4;
-      return `${index === 0 ? "M" : "L"} ${x.toFixed(1)} ${y.toFixed(1)}`;
-    })
-    .join(" ");
+  const coordinates = points.map((point, index) => ({
+    x: index * step,
+    y: height - ((point - min) / range) * (height - 8) - 4,
+  }));
+  const d = smoothSparklinePath(coordinates);
 
   return `
     <svg class="sparkline trend-${tone}" viewBox="0 0 ${width} ${height}" role="img" aria-label="${accessibleLabel}">
       <path d="${d}"></path>
     </svg>
   `;
+}
+
+function smoothSparklinePath(points) {
+  if (!points.length) {
+    return "";
+  }
+
+  const start = points[0];
+  const commands = [`M ${start.x.toFixed(1)} ${start.y.toFixed(1)}`];
+
+  for (let index = 0; index < points.length - 1; index += 1) {
+    const previous = points[index - 1] || points[index];
+    const current = points[index];
+    const next = points[index + 1];
+    const following = points[index + 2] || next;
+    const controlOne = {
+      x: current.x + (next.x - previous.x) / 6,
+      y: current.y + (next.y - previous.y) / 6,
+    };
+    const controlTwo = {
+      x: next.x - (following.x - current.x) / 6,
+      y: next.y - (following.y - current.y) / 6,
+    };
+
+    commands.push(
+      `C ${controlOne.x.toFixed(1)} ${controlOne.y.toFixed(1)} ${controlTwo.x.toFixed(1)} ${controlTwo.y.toFixed(1)} ${next.x.toFixed(1)} ${next.y.toFixed(1)}`,
+    );
+  }
+
+  return commands.join(" ");
 }
 
 function renderMetricCard(metric) {

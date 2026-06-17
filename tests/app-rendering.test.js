@@ -229,6 +229,33 @@ test("empty sparklines use calm no-trend copy", () => {
   assert.doesNotMatch(html, /Line graph/);
 });
 
+test("sparklines render as smooth full-width card charts", () => {
+  const context = loadAppContext();
+  const html = vm.runInContext(
+    `
+      renderMetricCard({
+        name: "Europe",
+        context: "VGK",
+        value: "$90.56",
+        change: "+4.5%",
+        tone: "up",
+        icon: "fa-globe",
+        source: "Yahoo Finance: Vanguard FTSE Europe ETF chart",
+        cadence: "Daily market close",
+        sourceStatus: "Source-backed",
+        freshness: { status: "current", label: "Current" },
+        points: [87, 88.5, 89, 90.2, 90.1, 90.56],
+        comparison: "percent-change",
+      });
+    `,
+    context,
+  );
+
+  assert.match(html, /<path d="M [^"]* C /);
+  assert.doesNotMatch(html, / L /);
+  assert.match(styles, /\.metric-chart-panel\s*{[^}]*width: calc\(100% \+ var\(--metric-icon-reserve\)\);/s);
+});
+
 test("metric cards do not expose unavailable previous values", () => {
   const context = loadAppContext();
   const html = vm.runInContext(
