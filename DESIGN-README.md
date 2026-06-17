@@ -24,9 +24,10 @@ Mercury should feel like checking the weather, but for the global economy: clear
   `Economy Score`, or `Score inputs`.
 - The first viewport should answer `how is the world doing?` with a short hero insight generated
   from visible live cards, not just a numeric score.
-- Period, region, freshness, and refresh controls belong with the Global Economy hero so the selected
-  scope and the resulting briefing read as one unit. On mobile, the period and region controls should
-  stay in a two-column grid when space allows.
+- Period, region, freshness, and refresh controls belong inside the Global Economy hero so the
+  selected scope and the resulting briefing read as one unit. On desktop, anchor them to the
+  top-right of the hero card to reduce dead space above the briefing. On mobile, the period and
+  region controls should stay in a two-column grid when space allows.
 - Use charts and sparklines only when they clarify trend or movement.
 - Use calm warning states for risk, uncertainty, stale data, and unavailable sources.
 
@@ -265,10 +266,10 @@ Current source-backed utilities:
   first row, three fiat/currency cards on the second row, and oil plus Bitcoin as a wider
   commodity/digital-asset support pair. Collapse this to two columns near tablet widths and one
   column on mobile rather than leaving orphaned cards.
-- Period, region, freshness timestamp, and refresh action should live as page-level controls above
-  the hero, aligned to the right edge on desktop and left-aligned when the controls wrap. Do not put
-  them in a competing top-right card. On mobile, keep Period and Region in a two-column row so
-  controls do not dominate the first viewport.
+- Period, region, freshness timestamp, and refresh action should live inside the hero card, anchored
+  to the top-right on desktop and left-aligned when the controls wrap. Do not put them above the hero
+  as a separate page-level row or in a competing top-right card. On mobile, keep Period and Region in
+  a two-column row so controls do not dominate the first viewport.
 - The global briefing hero should span the dashboard width as one Acadia surface for `Global
   economy at a glance`, sentiment, explanatory copy, aggregate trend, and top movers.
 - Section headers may pair a title with a compact signed badge and right-aligned native selects,

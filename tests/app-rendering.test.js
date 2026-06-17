@@ -536,9 +536,31 @@ test("five-year period and long sparkline smoothing are available", () => {
   assert.match(indexHtml, /<option value="fiveYear">5 years<\/option>/);
   assert.match(indexHtml, /class="page-title-row[^"]*"[\s\S]*class="page-controls-row"[\s\S]*economy-period-select/s);
   assert.match(styles, /\.page-controls-row\s*{[^}]*justify-content: flex-end;/s);
-  assert.match(styles, /\.page-controls-row\s*{[^}]*border-top: 1px solid var\(--acadia-color-border\);/s);
+  assert.match(styles, /\.page-controls-row\s*{[^}]*grid-column: 2;/s);
+  assert.match(styles, /\.page-controls-row\s*{[^}]*grid-row: 1;/s);
   assert.doesNotMatch(indexHtml, /page-actions-card/);
   assert.doesNotMatch(styles, /\.hero-panel-row/);
+});
+
+test("hero controls anchor to the top right on desktop and stack on smaller screens", () => {
+  assert.match(
+    styles,
+    /\.page-title-row\s*{[^}]*display: grid;[^}]*grid-template-columns: minmax\(0, 1fr\) auto;/s,
+  );
+  assert.match(styles, /\.page-title-group\s*{[^}]*grid-column: 1 \/ -1;[^}]*grid-row: 1;/s);
+  assert.match(styles, /\.page-controls-row\s*{[^}]*justify-self: end;/s);
+  assert.match(
+    styles,
+    /@media \(max-width: 1023\.98px\)[\s\S]*\.page-title-row\s*{[^}]*grid-template-columns: 1fr;/s,
+  );
+  assert.match(
+    styles,
+    /@media \(max-width: 1023\.98px\)[\s\S]*\.page-title-group,\s*\.page-controls-row\s*{[^}]*grid-column: 1;[^}]*grid-row: auto;/s,
+  );
+  assert.match(
+    styles,
+    /@media \(max-width: 767\.98px\)[\s\S]*\.page-controls-row\s*{[^}]*border-top: 1px solid var\(--acadia-color-border\);/s,
+  );
 });
 
 test("slower-cadence metric cards keep release context without previous footers", () => {
