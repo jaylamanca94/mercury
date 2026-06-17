@@ -697,12 +697,25 @@ function renderSparkline(points, tone, label) {
     y: height - ((point - min) / range) * (height - 8) - 4,
   }));
   const d = smoothSparklinePath(coordinates);
+  const areaD = sparklineAreaPath(d, coordinates, height);
 
   return `
     <svg class="sparkline trend-${tone}" viewBox="0 0 ${width} ${height}" preserveAspectRatio="none" role="img" aria-label="${accessibleLabel}">
-      <path d="${d}"></path>
+      <path class="sparkline-area" d="${areaD}" aria-hidden="true"></path>
+      <path class="sparkline-line" d="${d}"></path>
     </svg>
   `;
+}
+
+function sparklineAreaPath(linePath, points, height) {
+  if (!linePath || points.length < 2) {
+    return "";
+  }
+
+  const start = points[0];
+  const end = points.at(-1);
+
+  return `${linePath} L ${end.x.toFixed(1)} ${height.toFixed(1)} L ${start.x.toFixed(1)} ${height.toFixed(1)} Z`;
 }
 
 function smoothSparklinePath(points) {

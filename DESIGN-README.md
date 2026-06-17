@@ -152,6 +152,8 @@ Use `8px` or less for normal cards and repeated list items unless a larger conta
 - Sparkline panels in metric cards should span the full card content width, including the right-side
   icon reserve, let the line enter and exit at the chart edges, and use smoothed curves instead of
   sharp segmented paths, including two-point Today charts.
+- Sparkline movement should include a subtle low-opacity area fill under the line using the same
+  movement color. Keep the fill quiet so it supports scan clarity without becoming a heavy area chart.
 - Avoid chart types that require financial expertise to interpret.
 - Prefer labels like `Rising`, `Falling`, `Mixed`, `Stable`, `Elevated risk`, or `Improving confidence`.
 - Do not use language like `buy signal`, `sell signal`, `undervalued`, or `overvalued`.

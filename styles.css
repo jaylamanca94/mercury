@@ -738,12 +738,18 @@ body {
   width: 100%;
 }
 
-.sparkline path {
+.sparkline-line {
   fill: none;
   stroke: currentColor;
   stroke-linecap: round;
   stroke-linejoin: round;
   stroke-width: 4;
+}
+
+.sparkline-area {
+  fill: currentColor;
+  opacity: 0.16;
+  stroke: none;
 }
 
 .sparkline circle {
