@@ -48,7 +48,9 @@ Mercury now treats `../Acadia` as the shared coded design-system baseline. Befor
 
 - Use Acadia primitives for shared product language: control anatomy, select arrows, search inputs, focus rings, raised rows, table/form behavior, dashboard status rows, command search, sheets, dialogs, and responsive spacing.
 - Map Mercury variables onto Acadia-style adapter variables in `styles.css` before creating a new one-off component rule.
+- Mercury's implemented adapter uses Acadia tokens for the app chrome, page shell, translucent surfaces, metric cards, native selects, icon actions, badges, focus rings, status rows, shadows, radius, theme behavior, and responsive page margins.
 - Keep Mercury-specific economics language, source-trust rules, chart semantics, freshness labels, neutral financial tone, and public-data caveats in this document.
+- Keep local exceptions narrow: source freshness semantics, market/economic movement colors, sparklines, score calculations, and dashboard content order may remain Mercury-specific.
 - If a Mercury pattern becomes useful for another product, graduate the neutral part into Acadia and keep Mercury's economy-specific wording and data treatment here.
 
 ## Color
@@ -85,21 +87,21 @@ Recommended dashboard order:
 ### Desktop
 
 - 12-column grid or equivalent wide dashboard shell
-- Page margin: `24px`
-- Column gap: `16px` to `24px`
-- Content padding: `24px`
+- Page margin: Acadia `128px` desktop frame, reducing to `64px` on small desktop
+- Column gap: Acadia dense dashboard gap, usually `24px`
+- Content padding: Acadia dense panel padding, `24px`
 
 ### Tablet
 
 - 8-column grid
-- Page margin: `16px`
-- Column gap: `16px`
-- Content padding: `16px`
+- Page margin: Acadia `32px` tablet frame
+- Column gap: `16px` to `24px`
+- Content padding: `16px` to `24px`
 
 ### Mobile
 
 - 4-column grid
-- Page margin: `16px`
+- Page margin: Acadia `16px` mobile frame
 - Column gap: `16px`
 - Content padding: `16px`
 

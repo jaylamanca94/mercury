@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-acadia-theme="system">
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -11,77 +11,72 @@
     <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
     <link rel="manifest" href="site.webmanifest">
     <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
-      rel="stylesheet"
-    >
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link
-      href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap"
-      rel="stylesheet"
-    >
-    <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
       referrerpolicy="no-referrer"
     >
-    <link rel="stylesheet" href="styles.css?v=20260616-previous-release-date">
+    <link rel="stylesheet" href="styles.css?v=20260617-acadia-adapter">
   </head>
-  <body>
+  <body class="mercury-app">
     <a class="skip-link" href="#main-content">Skip to dashboard</a>
 
-    <header class="app-header">
-      <div class="brand-lockup">
-        <span class="brand-mark" aria-hidden="true">
-          <i class="fa-solid fa-earth-americas"></i>
-        </span>
-        <strong>Mercury</strong>
-      </div>
-      <div class="user-lockup" aria-label="Dashboard context">
-        <span>Public snapshot</span>
-        <i class="fa-solid fa-globe" aria-hidden="true"></i>
+    <header class="app-header acadia-chrome">
+      <div class="app-header-inner acadia-chrome-inner">
+        <div class="brand-lockup acadia-brand">
+          <span class="brand-mark acadia-mark" aria-hidden="true">
+            <i class="fa-solid fa-earth-americas acadia-icon"></i>
+          </span>
+          <strong>Mercury</strong>
+        </div>
+        <div class="user-lockup acadia-badge" aria-label="Dashboard context">
+          <span>Public snapshot</span>
+          <i class="fa-solid fa-globe acadia-icon" aria-hidden="true"></i>
+        </div>
       </div>
     </header>
 
-    <main id="main-content" class="dashboard-shell">
-      <div class="page-title-row">
-        <div class="page-title-group">
-          <h1 id="view-title">Global</h1>
-          <span id="economy-change-badge" class="view-change trend-stable">Loading</span>
+    <main id="main-content" class="dashboard-shell acadia-shell acadia-stack">
+      <section class="page-title-row acadia-surface acadia-panel-dense">
+        <div class="page-title-group acadia-section-header-copy">
+          <span class="acadia-kicker">Global economy at a glance</span>
+          <div class="view-heading">
+            <h1 id="view-title" class="acadia-title">Global</h1>
+            <span id="economy-change-badge" class="view-change trend-stable acadia-badge">Loading</span>
+          </div>
         </div>
-        <div class="page-actions" aria-label="Dashboard actions">
-          <label class="section-select-label" for="economy-period-select">
-            <span class="visually-hidden">Economy period</span>
-            <select id="economy-period-select" class="section-select" aria-label="Economy period">
+        <div class="page-actions acadia-toolbar" aria-label="Dashboard actions">
+          <label class="section-select-label acadia-field" for="economy-period-select">
+            <span class="acadia-label">Period</span>
+            <select id="economy-period-select" class="section-select acadia-control" aria-label="Economy period">
               <option value="today">Today</option>
               <option value="week" selected>Week</option>
               <option value="month">Month</option>
               <option value="year">Year</option>
             </select>
           </label>
-          <label class="section-select-label section-select-label-region" for="economy-region-select">
-            <span class="visually-hidden">Economy region</span>
-            <select id="economy-region-select" class="section-select" aria-label="Economy region">
+          <label class="section-select-label section-select-label-region acadia-field" for="economy-region-select">
+            <span class="acadia-label">Region</span>
+            <select id="economy-region-select" class="section-select acadia-control" aria-label="Economy region">
               <option value="Global" selected>Global</option>
               <option value="United States">United States</option>
               <option value="Europe">Europe</option>
               <option value="Asia">Asia</option>
             </select>
           </label>
-          <span id="last-updated-pill" class="timestamp-pill" aria-live="polite" aria-atomic="true">
+          <span id="last-updated-pill" class="timestamp-pill acadia-badge" aria-live="polite" aria-atomic="true">
             Checking latest data
           </span>
           <button
             id="refresh-data-button"
-            class="refresh-button"
+            class="refresh-button acadia-icon-action"
             type="button"
             aria-describedby="dashboard-status"
           >
-            <i class="fa-solid fa-rotate" aria-hidden="true"></i>
+            <i class="fa-solid fa-rotate acadia-icon" aria-hidden="true"></i>
             <span class="visually-hidden">Refresh data</span>
           </button>
         </div>
-      </div>
+      </section>
       <p id="dashboard-status" class="visually-hidden" role="status" aria-live="polite" aria-atomic="true">
         Checking latest dashboard data.
       </p>
@@ -131,13 +126,16 @@
       <section class="dashboard-section" aria-labelledby="currency-title">
         <div class="section-heading compact-section-heading">
           <div class="section-title-group">
-            <h2 id="currency-title">GDP Growth</h2>
-            <span id="currency-change-badge" class="view-change trend-stable">Loading</span>
+            <span class="acadia-kicker">Context</span>
+            <div class="section-title-line">
+              <h2 id="currency-title" class="acadia-title">GDP Growth</h2>
+              <span id="currency-change-badge" class="view-change trend-stable acadia-badge">Loading</span>
+            </div>
           </div>
           <div class="section-controls visually-hidden" aria-label="Currency controls">
-            <label class="section-select-label" for="currency-period-select">
+            <label class="section-select-label acadia-field" for="currency-period-select">
               <span class="visually-hidden">Currency period</span>
-              <select id="currency-period-select" class="section-select" aria-label="Currency period">
+              <select id="currency-period-select" class="section-select acadia-control" aria-label="Currency period">
                 <option value="today">Today</option>
                 <option value="week" selected>Week</option>
                 <option value="month">Month</option>
@@ -152,25 +150,28 @@
       <section class="lower-grid" aria-label="Additional economic context">
         <section class="dashboard-section context-section" aria-labelledby="risk-title">
           <div class="section-heading compact-section-heading">
-            <h2 id="risk-title">Risk and confidence</h2>
+            <h2 id="risk-title" class="acadia-title">Risk and confidence</h2>
           </div>
           <div id="risk-list" class="indicator-list"></div>
         </section>
 
         <section class="dashboard-section context-section" aria-labelledby="global-title">
           <div class="section-heading compact-section-heading">
-            <h2 id="global-title">Regional growth</h2>
+            <h2 id="global-title" class="acadia-title">Regional growth</h2>
           </div>
           <div id="region-list" class="region-list"></div>
         </section>
       </section>
 
-      <section class="dashboard-section freshness-band" aria-labelledby="source-coverage-title">
-        <div>
+      <section class="dashboard-section freshness-band acadia-surface acadia-panel-dense" aria-labelledby="source-coverage-title">
+        <div class="freshness-copy">
           <div class="section-heading compact-section-heading">
-            <h2 id="source-coverage-title">Data coverage</h2>
+            <div>
+              <span class="acadia-kicker">Live data</span>
+              <h2 id="source-coverage-title" class="acadia-title">Data coverage</h2>
+            </div>
           </div>
-          <p id="source-coverage-copy">
+          <p id="source-coverage-copy" class="acadia-text-muted">
             Mercury is checking public data releases and will show the latest available dates when
             the snapshot loads.
           </p>
@@ -193,39 +194,51 @@
             </div>
           </dl>
         </div>
-        <ul class="freshness-list" aria-label="Live data status">
+        <ul class="freshness-list acadia-status-list" aria-label="Live data status">
           <li>
-            <span>
-              Market data
-              <small id="market-source-detail">Checking public market data</small>
+            <span class="freshness-source">
+              <i class="fa-solid fa-chart-line acadia-icon" aria-hidden="true"></i>
+              <span>
+                Market data
+                <small id="market-source-detail">Checking public market data</small>
+              </span>
             </span>
-            <strong id="market-source-status">Loading</strong>
+            <strong id="market-source-status" class="acadia-badge">Loading</strong>
           </li>
           <li>
-            <span>
-              Economic indicators
-              <small id="macro-source-detail">Checking official economic releases</small>
+            <span class="freshness-source">
+              <i class="fa-solid fa-building-columns acadia-icon" aria-hidden="true"></i>
+              <span>
+                Economic indicators
+                <small id="macro-source-detail">Checking official economic releases</small>
+              </span>
             </span>
-            <strong id="macro-source-status">Loading</strong>
+            <strong id="macro-source-status" class="acadia-badge">Loading</strong>
           </li>
           <li>
-            <span>
-              Risk indicators
-              <small id="risk-source-detail">Checking risk indicators</small>
+            <span class="freshness-source">
+              <i class="fa-solid fa-gauge-high acadia-icon" aria-hidden="true"></i>
+              <span>
+                Risk indicators
+                <small id="risk-source-detail">Checking risk indicators</small>
+              </span>
             </span>
-            <strong id="risk-source-status">Loading</strong>
+            <strong id="risk-source-status" class="acadia-badge">Loading</strong>
           </li>
           <li>
-            <span>
-              Regional coverage
-              <small id="regional-source-detail">Checking World Bank growth data</small>
+            <span class="freshness-source">
+              <i class="fa-solid fa-earth-americas acadia-icon" aria-hidden="true"></i>
+              <span>
+                Regional coverage
+                <small id="regional-source-detail">Checking World Bank growth data</small>
+              </span>
             </span>
-            <strong id="regional-source-status">Loading</strong>
+            <strong id="regional-source-status" class="acadia-badge">Loading</strong>
           </li>
         </ul>
       </section>
     </main>
 
-    <script src="app.js?v=20260616-previous-release-date"></script>
+    <script src="app.js?v=20260617-acadia-adapter"></script>
   </body>
 </html>

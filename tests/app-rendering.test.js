@@ -260,3 +260,9 @@ test("stable and mixed visual states stay neutral", () => {
   assert.match(styles, /\.metric-card-stable,\s*\.metric-card-mixed\s*{\s*--metric-state: var\(--neutral-state\);/);
   assert.match(styles, /\.trend-stable,\s*\.trend-mixed\s*{\s*color: var\(--muted\);/);
 });
+
+test("Acadia header wrapper preserves balanced desktop layout", () => {
+  assert.match(styles, /\.app-header-inner\s*{[^}]*display: flex;/s);
+  assert.match(styles, /\.app-header-inner\s*{[^}]*justify-content: space-between;/s);
+  assert.match(styles, /@media \(max-width: 640px\)[\s\S]*\.app-header-inner\s*{[^}]*flex-direction: column;/);
+});

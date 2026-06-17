@@ -712,9 +712,15 @@ function renderMetricCard(metric) {
   const sparklinePoints = metric.periodPoints || metric.points;
   const hasChart = !metric.hideChart;
   const previousLabel = metricPreviousLabel(metric);
+  const deltaState =
+    cardTone === "down" || cardTone === "caution" || cardTone === "unavailable"
+      ? " is-danger"
+      : cardTone === "mixed"
+        ? " is-warning"
+        : "";
 
   return `
-    <article class="metric-card metric-card-${cardTone}${metric.isWide ? " metric-card-wide" : ""}">
+    <article class="metric-card acadia-metric metric-card-${cardTone}${metric.isWide ? " metric-card-wide" : ""}">
       <div class="metric-top">
         <div>
           <div class="metric-title-line">
@@ -727,11 +733,11 @@ function renderMetricCard(metric) {
           </div>
           ${metric.context ? `<p class="metric-context">${escapeHtml(metric.context)}</p>` : ""}
         </div>
-        <span class="metric-icon" aria-hidden="true"><i class="fa-solid ${escapeHtml(metricIconClass(metric))}"></i></span>
+        <span class="metric-icon acadia-metric-icon" aria-hidden="true"><i class="fa-solid ${escapeHtml(metricIconClass(metric))} acadia-icon"></i></span>
       </div>
       <div class="metric-value-row">
-        <p class="${metricValueClass(metric.value)}">${escapeHtml(metric.value)}</p>
-        <span class="metric-delta trend-text-${escapeHtml(cardTone)}">${escapeHtml(metricDeltaLabel(metric))}</span>
+        <p class="${metricValueClass(metric.value)} acadia-metric-value">${escapeHtml(metric.value)}</p>
+        <span class="metric-delta acadia-metric-delta${deltaState} trend-text-${escapeHtml(cardTone)}">${escapeHtml(metricDeltaLabel(metric))}</span>
       </div>
       ${
         hasChart
@@ -747,16 +753,16 @@ function renderMetricCard(metric) {
       <div class="metric-footer" aria-label="Metric source details">
         ${
           previousLabel
-            ? `<span class="metric-previous"><i class="fa-solid fa-clock-rotate-left" aria-hidden="true"></i> ${escapeHtml(previousLabel)}</span>`
+            ? `<span class="metric-previous"><i class="fa-solid fa-clock-rotate-left acadia-icon" aria-hidden="true"></i> ${escapeHtml(previousLabel)}</span>`
             : ""
         }
-        <span><i class="fa-regular fa-calendar" aria-hidden="true"></i> ${escapeHtml(metricReleaseLabel(metric))}</span>
+        <span><i class="fa-regular fa-calendar acadia-icon" aria-hidden="true"></i> ${escapeHtml(metricReleaseLabel(metric))}</span>
         ${
           metric.cadence && inferDisplayCadence(metric.cadence) !== "daily"
-            ? `<span><i class="fa-solid fa-rotate" aria-hidden="true"></i> ${escapeHtml(metric.cadence)}</span>`
+            ? `<span><i class="fa-solid fa-rotate acadia-icon" aria-hidden="true"></i> ${escapeHtml(metric.cadence)}</span>`
             : ""
         }
-        <span><i class="fa-solid fa-earth-americas" aria-hidden="true"></i> ${escapeHtml(sourceShortName(metric.source))}</span>
+        <span><i class="fa-solid fa-earth-americas acadia-icon" aria-hidden="true"></i> ${escapeHtml(sourceShortName(metric.source))}</span>
       </div>
     </article>
   `;

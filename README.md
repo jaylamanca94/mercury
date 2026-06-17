@@ -22,7 +22,7 @@ United States, Europe, and Asia market-proxy views.
 Recommended starting stack:
 
 - Static HTML, CSS, and JavaScript for the first prototype
-- Bootstrap 5 via CDN for layout and familiar UI patterns
+- Acadia-aligned local CSS adapter for layout, surfaces, controls, states, and responsive behavior
 - Font Awesome Free via CDN for utility icons
 - Vercel Serverless Functions for live data proxies
 - Yahoo Finance chart data for market pulse and daily risk proxies
@@ -68,7 +68,7 @@ Optional validation commands:
 Current files:
 
 - `index.html` - static dashboard entry
-- `styles.css` - Mercury dashboard styling
+- `styles.css` - Acadia-aligned Mercury adapter plus economic dashboard styling
 - `app.js` - live snapshot loading, fallback states, and dashboard rendering
 - `assets/favicon.svg` - vector chart-line favicon/app icon with theme-aware gradient background
 - `site.webmanifest` - browser app manifest pointing to the SVG icon
