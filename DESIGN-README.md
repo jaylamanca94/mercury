@@ -253,9 +253,11 @@ Current source-backed utilities:
   of saturated full borders, so direction remains visible without making Mercury feel like a
   trading interface.
 - Sparkline panels should read as embedded movement marks on the metric card surface, not as nested
-  mini-cards. Avoid separate chart backgrounds, borders, and shadows; let the line and low-opacity
-  area fill carry the movement signal. Empty sparkline states should use calm labels such as
-  `No trend`, not placeholder-like chart labels.
+  mini-cards. Keep chart starts and ends aligned to the card's content padding, avoid separate chart
+  backgrounds, borders, and shadows, and include a quiet dotted baseline for the starting/no-change
+  level. Use a lightweight line with low-opacity area fill so movement is visible without becoming
+  a heavy area chart. Empty sparkline states should use calm labels such as `No trend`, not
+  placeholder-like chart labels.
 - Metric cards include their short indicator context and compact previous-release comparisons with
   prior observation dates, so users can understand direction without relying only on the sparkline
   or ticker.

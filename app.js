@@ -699,9 +699,11 @@ function renderSparkline(points, tone, label) {
   }));
   const d = smoothSparklinePath(coordinates);
   const areaD = sparklineAreaPath(d, coordinates, height);
+  const baselineY = coordinates[0].y.toFixed(1);
 
   return `
     <svg class="sparkline trend-${tone}" viewBox="0 0 ${width} ${height}" preserveAspectRatio="none" role="img" aria-label="${accessibleLabel}">
+      <line class="sparkline-baseline" x1="0" y1="${baselineY}" x2="${width}" y2="${baselineY}" aria-hidden="true"></line>
       <path class="sparkline-area" d="${areaD}" aria-hidden="true"></path>
       <path class="sparkline-line" d="${d}"></path>
     </svg>

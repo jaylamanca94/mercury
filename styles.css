@@ -729,13 +729,12 @@ body {
   box-shadow: none;
   color: var(--muted);
   display: flex;
-  height: 4.75rem;
+  height: 4.25rem;
   justify-content: center;
-  margin-left: calc(var(--acadia-section-padding-dense) * -1);
-  margin-right: calc((var(--acadia-section-padding-dense) + var(--metric-icon-reserve)) * -1);
+  margin: 0.125rem 0 0;
   overflow: hidden;
-  padding: 0.25rem 0 0;
-  width: calc(100% + var(--acadia-section-padding-dense) + var(--acadia-section-padding-dense) + var(--metric-icon-reserve));
+  padding: 0.125rem 0 0;
+  width: 100%;
 }
 
 .sparkline {
@@ -749,7 +748,18 @@ body {
   stroke: currentColor;
   stroke-linecap: round;
   stroke-linejoin: round;
-  stroke-width: 4;
+  stroke-width: 2.25;
+  vector-effect: non-scaling-stroke;
+}
+
+.sparkline-baseline {
+  fill: none;
+  opacity: 0.62;
+  stroke: color-mix(in srgb, var(--acadia-color-text-muted) 54%, transparent);
+  stroke-dasharray: 1 5;
+  stroke-linecap: round;
+  stroke-width: 1.4;
+  vector-effect: non-scaling-stroke;
 }
 
 .sparkline-area {
