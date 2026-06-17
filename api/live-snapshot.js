@@ -310,6 +310,24 @@ const YAHOO_SERIES = [
     trendModel: "commodity",
   },
   {
+    id: "bitcoin",
+    section: "marketPulse",
+    name: "Bitcoin",
+    context: "BTC/USD spot rate",
+    icon: "fa-coins",
+    symbol: "BTC-USD",
+    ticker: "BTC",
+    source: "Yahoo Finance: Bitcoin USD chart",
+    cadence: "Daily crypto close",
+    viewGroup: "currency",
+    weight: 0.5,
+    valueKind: "latest",
+    valueFormat: "currency",
+    decimals: 0,
+    comparison: "percent-change",
+    trendModel: "market",
+  },
+  {
     id: "euro",
     section: "marketPulse",
     name: "Euro",
@@ -1227,6 +1245,7 @@ async function handler(req, res) {
 
 module.exports = handler;
 module.exports._internals = {
+  YAHOO_SERIES,
   buildFreshnessSummary,
   buildSummary,
   buildValues,

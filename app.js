@@ -62,10 +62,11 @@ let marketPulse = [
   pendingMetric("Small Cap", "Vanguard Small-Cap Index Fund", "fa-chart-line", "us-small-cap", "VSMAX"),
   pendingMetric("Technology", "Vanguard Information Technology ETF", "fa-microchip", "us-technology", "VGT"),
   pendingMetric("Bonds", "Total bond market ETF", "fa-scale-balanced", "bonds", "BND"),
-  pendingMetric("Oil", "WTI crude futures", "fa-gas-pump", "oil", "CL=F"),
   pendingMetric("U.S. dollar", "Dollar index fund proxy", "fa-dollar-sign", "dollar-index", "UUP"),
   pendingMetric("Euro", "EUR/USD exchange rate", "fa-euro-sign", "euro", "EUR/USD"),
   pendingMetric("Yen", "USD/JPY exchange rate", "fa-yen-sign", "yen", "USD/JPY"),
+  pendingMetric("Oil", "WTI crude futures", "fa-gas-pump", "oil", "CL=F"),
+  pendingMetric("Bitcoin", "BTC/USD spot rate", "fa-coins", "bitcoin", "BTC"),
 ];
 
 let economicHealth = [
@@ -871,7 +872,7 @@ function globalMarketCards() {
 }
 
 function orderedGlobalCurrencyCards() {
-  const order = ["dollar-index", "euro", "yen", "oil"];
+  const order = ["dollar-index", "euro", "yen", "oil", "bitcoin"];
   const grouped = currencyCards().map((item) => withPeriodDelta(item, selectedEconomyPeriod));
 
   return order
@@ -1064,6 +1065,7 @@ function currencyCards() {
     findMetric(marketPulse, "dollar-index", "U.S. dollar"),
     findMetric(marketPulse, "euro", "Euro"),
     findMetric(marketPulse, "yen", "Yen"),
+    findMetric(marketPulse, "bitcoin", "Bitcoin"),
   ].filter(Boolean);
 }
 
@@ -1249,7 +1251,7 @@ function applyLiveSnapshot(snapshot) {
   setText("#refresh-schedule", "On page load");
   setText("#source-rail-refresh", "On page load");
   setText("#market-source-status", sourceStatusLabel(snapshot.marketPulse, "Yahoo Finance"));
-  setText("#market-source-detail", "Daily market, commodity, and currency data from Yahoo Finance");
+  setText("#market-source-detail", "Daily market, commodity, currency, and crypto data from Yahoo Finance");
   setText("#macro-source-status", sourceStatusLabel(snapshot.economicHealth, "FRED"));
   setText("#macro-source-detail", "Official economic releases from FRED");
   setText("#risk-source-status", sourceStatusLabel(snapshot.riskIndicators, "Yahoo Finance/FRED"));

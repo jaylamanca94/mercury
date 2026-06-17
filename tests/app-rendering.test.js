@@ -117,6 +117,35 @@ test("global fallback cards explain missing market proxies", () => {
   assert.equal(normalizedCards.every((card) => card.sourceStatus === "Unavailable"), true);
 });
 
+test("global supporting cards include Bitcoin after fiat and commodity indicators", () => {
+  const context = loadAppContext();
+  const cards = vm.runInContext(
+    `
+      marketPulse = [
+        { id: "bitcoin", name: "Bitcoin", viewGroup: "currency", sourceStatus: "Source-backed", history: [] },
+        { id: "oil", name: "Oil", viewGroup: "currency", sourceStatus: "Source-backed", history: [] },
+        { id: "yen", name: "Yen", viewGroup: "currency", sourceStatus: "Source-backed", history: [] },
+        { id: "dollar-index", name: "U.S. dollar", viewGroup: "currency", sourceStatus: "Source-backed", history: [] },
+        { id: "euro", name: "Euro", viewGroup: "currency", sourceStatus: "Source-backed", history: [] },
+      ];
+      orderedGlobalCurrencyCards().map((card) => ({
+        hideChart: card.hideChart,
+        id: card.id,
+        name: card.name,
+      }));
+    `,
+    context,
+  );
+  const normalizedCards = JSON.parse(JSON.stringify(cards));
+
+  assert.deepEqual(
+    normalizedCards.map((card) => card.id),
+    ["dollar-index", "euro", "yen", "oil", "bitcoin"],
+  );
+  assert.equal(normalizedCards.every((card) => card.hideChart === true), true);
+  assert.match(styles, /\.dashboard-global \.economy-grid > \.metric-card:nth-child\(n \+ 7\)\s*{\s*grid-column: span 6;/);
+});
+
 test("metric cards show source previous values when available", () => {
   const context = loadAppContext();
   const html = vm.runInContext(

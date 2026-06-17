@@ -541,7 +541,11 @@ body {
 }
 
 .dashboard-global .economy-grid > .metric-card:nth-child(n + 4) {
-  grid-column: span 3;
+  grid-column: span 4;
+}
+
+.dashboard-global .economy-grid > .metric-card:nth-child(n + 7) {
+  grid-column: span 6;
 }
 
 .dashboard-global .currency-grid {

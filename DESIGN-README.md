@@ -81,7 +81,7 @@ Recommended dashboard order:
 1. Slim app header with product identity and lightweight user/context affordance
 2. Page title row with latest-check timestamp and refresh action
 3. Current-conditions summary with a compact conditions score panel
-4. Grouped metric sections for Economy and Currency
+4. Grouped metric sections for Economy and market supports
 5. Risk and Confidence plus Global Snapshot
 6. Data coverage and freshness
 
@@ -234,9 +234,9 @@ Current source-backed utilities:
   canvas, centered `1160px` content column, title/action row, large current-conditions card, and
   stacked section panels for grouped metric cards.
 - Primary metric groups should be organized by audience-facing categories such as `Economy` and
-  `Currency`. Economy combines the top market/ticker cards with core macro indicators; Currency
-  holds oil, dollar, and FX cards. Preserve risk, regional, and freshness context elsewhere on the
-  page.
+  `Market supports`. Economy combines the top market/ticker cards with core macro indicators;
+  Market supports hold dollar, FX, oil, and Bitcoin cards. Preserve risk, regional, and freshness
+  context elsewhere on the page.
 - Repeated metric cards should show a readable card name plus a compact ticker or series label in
   the header, for example `Technology` + `VGT` or `Inflation` + `CPI`.
 - Any first-scan metric grouping should reuse live dashboard data rather than introduce a separate
@@ -244,8 +244,9 @@ Current source-backed utilities:
 - Primary Market Pulse and Economic Health sections may use larger panel treatment to make the main data areas feel more substantial, while repeated metric tiles remain compact and source-aware.
 - Repeated metric cards use `8px` radius, compact labels, source context, status chips, and small sparklines.
 - The global Economy grid uses a deliberate desktop rhythm: three regional market cards on the
-  first row and four secondary currency/oil cards on the second row. Collapse this to two columns
-  near tablet widths and one column on mobile rather than leaving orphaned cards.
+  first row, three fiat/currency cards on the second row, and oil plus Bitcoin as a wider
+  commodity/digital-asset support pair. Collapse this to two columns near tablet widths and one
+  column on mobile rather than leaving orphaned cards.
 - Section headers may pair a title with a compact signed badge and right-aligned native selects,
   matching the latest Figma dashboard direction while preserving keyboard and screen-reader access.
 - Metric cards and key signal tiles should use soft neutral surfaces with thin tone accents instead

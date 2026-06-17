@@ -14,8 +14,8 @@ cadence-aware freshness state, and live indicator counts for partially available
 Source-backed metric cards show the prior source value and its observation date alongside the
 latest release date, source, and cadence so users can judge the displayed movement without opening
 a separate data table.
-Economy and Currency sections include Today, Week, Month, and Year controls; Economy also supports
-United States, Europe, and Asia market-proxy views.
+Economy and market-support sections include Today, Week, Month, and Year controls; Economy also
+supports United States, Europe, and Asia market-proxy views.
 
 ## Tech Stack
 
@@ -25,7 +25,7 @@ Recommended starting stack:
 - Acadia-aligned local CSS adapter for layout, surfaces, controls, states, and responsive behavior
 - Font Awesome Free via CDN for utility icons
 - Vercel Serverless Functions for live data proxies
-- Yahoo Finance chart data for market pulse and daily risk proxies
+- Yahoo Finance chart data for market pulse, Bitcoin/USD, and daily risk proxies
 - Public market proxy funds for comparable U.S., Europe, and Asia Economy market cards
 - Public FRED CSV releases for macro indicators and financial stress
 - World Bank API releases for regional annual GDP growth
@@ -49,7 +49,7 @@ Candidate sources should be reviewed before implementation:
 - Bureau of Economic Analysis
 - U.S. Treasury and central bank sources
 - OECD, World Bank, IMF, and similar public institutions
-- Trusted market data APIs for broad index, commodity, currency, and volatility snapshots
+- Trusted market data APIs for broad index, commodity, currency, digital asset, and volatility snapshots
 
 Every source should be evaluated for trust, cost, licensing, rate limits, update frequency, global coverage, and implementation complexity.
 

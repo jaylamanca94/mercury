@@ -2,6 +2,7 @@ const assert = require("node:assert/strict");
 const test = require("node:test");
 
 const {
+  YAHOO_SERIES,
   buildFreshnessSummary,
   buildSummary,
   buildValues,
@@ -9,6 +10,27 @@ const {
   classifyTrend,
   parseFredCsv,
 } = require("../api/live-snapshot")._internals;
+
+test("Yahoo market pulse includes Bitcoin as a supporting market indicator", () => {
+  const bitcoin = YAHOO_SERIES.find((series) => series.id === "bitcoin");
+
+  assert.deepEqual(
+    {
+      context: bitcoin.context,
+      symbol: bitcoin.symbol,
+      ticker: bitcoin.ticker,
+      viewGroup: bitcoin.viewGroup,
+      weight: bitcoin.weight,
+    },
+    {
+      context: "BTC/USD spot rate",
+      symbol: "BTC-USD",
+      ticker: "BTC",
+      viewGroup: "currency",
+      weight: 0.5,
+    },
+  );
+});
 
 test("parseFredCsv keeps valid rows sorted by date", () => {
   const csv = [
