@@ -251,9 +251,15 @@ test("sparklines render as smooth full-width card charts", () => {
     context,
   );
 
+  assert.match(html, /preserveAspectRatio="none"/);
   assert.match(html, /<path d="M [^"]* C /);
   assert.doesNotMatch(html, / L /);
+  assert.match(
+    vm.runInContext("smoothSparklinePath([{ x: 0, y: 38 }, { x: 180, y: 4 }])", context),
+    /^M 0\.0 38\.0 C 60\.0 38\.0 120\.0 4\.0 180\.0 4\.0$/,
+  );
   assert.match(styles, /\.metric-chart-panel\s*{[^}]*width: calc\(100% \+ var\(--metric-icon-reserve\)\);/s);
+  assert.match(styles, /\.metric-chart-panel\s*{[^}]*padding: 0\.625rem 0;/s);
 });
 
 test("metric cards do not expose unavailable previous values", () => {

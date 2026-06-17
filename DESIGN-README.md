@@ -150,7 +150,8 @@ Use `8px` or less for normal cards and repeated list items unless a larger conta
 - Pair every numeric movement with direction, timeframe, source, and update time when possible.
 - Use sparklines for recent direction, not detailed analysis.
 - Sparkline panels in metric cards should span the full card content width, including the right-side
-  icon reserve, and use smoothed curves instead of sharp segmented paths.
+  icon reserve, let the line enter and exit at the chart edges, and use smoothed curves instead of
+  sharp segmented paths, including two-point Today charts.
 - Avoid chart types that require financial expertise to interpret.
 - Prefer labels like `Rising`, `Falling`, `Mixed`, `Stable`, `Elevated risk`, or `Improving confidence`.
 - Do not use language like `buy signal`, `sell signal`, `undervalued`, or `overvalued`.

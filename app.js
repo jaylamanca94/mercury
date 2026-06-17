@@ -680,7 +680,7 @@ function renderSparkline(points, tone, label) {
 
   if (points.length === 1) {
     return `
-      <svg class="sparkline trend-${tone}" viewBox="0 0 180 42" role="img" aria-label="${accessibleLabel}; one data point available">
+      <svg class="sparkline trend-${tone}" viewBox="0 0 180 42" preserveAspectRatio="none" role="img" aria-label="${accessibleLabel}; one data point available">
         <circle cx="90" cy="21" r="4"></circle>
       </svg>
     `;
@@ -699,7 +699,7 @@ function renderSparkline(points, tone, label) {
   const d = smoothSparklinePath(coordinates);
 
   return `
-    <svg class="sparkline trend-${tone}" viewBox="0 0 ${width} ${height}" role="img" aria-label="${accessibleLabel}">
+    <svg class="sparkline trend-${tone}" viewBox="0 0 ${width} ${height}" preserveAspectRatio="none" role="img" aria-label="${accessibleLabel}">
       <path d="${d}"></path>
     </svg>
   `;
@@ -712,6 +712,23 @@ function smoothSparklinePath(points) {
 
   const start = points[0];
   const commands = [`M ${start.x.toFixed(1)} ${start.y.toFixed(1)}`];
+
+  if (points.length === 2) {
+    const end = points[1];
+    const controlOne = {
+      x: start.x + (end.x - start.x) / 3,
+      y: start.y,
+    };
+    const controlTwo = {
+      x: end.x - (end.x - start.x) / 3,
+      y: end.y,
+    };
+
+    commands.push(
+      `C ${controlOne.x.toFixed(1)} ${controlOne.y.toFixed(1)} ${controlTwo.x.toFixed(1)} ${controlTwo.y.toFixed(1)} ${end.x.toFixed(1)} ${end.y.toFixed(1)}`,
+    );
+    return commands.join(" ");
+  }
 
   for (let index = 0; index < points.length - 1; index += 1) {
     const previous = points[index - 1] || points[index];

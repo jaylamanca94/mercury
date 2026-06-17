@@ -724,7 +724,7 @@ body {
   height: 4rem;
   justify-content: center;
   overflow: hidden;
-  padding: 0.625rem;
+  padding: 0.625rem 0;
   width: calc(100% + var(--metric-icon-reserve));
 }
 
