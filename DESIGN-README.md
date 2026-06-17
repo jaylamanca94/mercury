@@ -154,6 +154,10 @@ Use `8px` or less for normal cards and repeated list items unless a larger conta
 - Distinguish direction from economic interpretation. Some moves, such as oil prices falling, are
   contextual rather than automatically good or bad; hero copy should describe those as mixed signals
   instead of primary drags or wins.
+- Exclude context-only indicators from the Global Economy badge, hero sparkline, and hero mover
+  chips when their direction is not inherently good or bad for global conditions. Oil, FX crosses,
+  inflation, and interest rates can remain visible cards, but they should not vote in the same
+  directional score as regional market proxies or Bitcoin without an explicit interpretation model.
 - Use sparklines for recent direction, not detailed analysis.
 - Sparkline panels in metric cards should span the full card content width, including the right-side
   icon reserve, let the line enter and exit at the chart edges, and use smoothed curves instead of
@@ -267,9 +271,9 @@ Current source-backed utilities:
 - The hero badge should combine sentiment and movement, such as `Healthy +0.5%`, and the hero copy
   should explain the biggest visible drivers in one sentence. Give the sentiment and signed move
   enough visual weight to feel like a briefing lead, then show a period-aware aggregate sparkline
-  built from the same visible cards. Use compact mover chips as supporting evidence rather than a
-  separately labeled widget. Use the same visible metric cards for top movers and the hero trend
-  rather than introducing a separate insight dataset.
+  built from the same visible score-eligible cards. Use compact mover chips as supporting evidence
+  rather than a separately labeled widget. Use visible metric cards for top movers and the hero trend,
+  but only when their movement direction has a clear score interpretation.
 - The hero briefing card needs clear vertical rhythm. Keep at least `16px` between title, insight,
   aggregate chart, and mover chips unless the layout is deliberately compressed on small screens.
 - Metric cards and key signal tiles should use soft neutral surfaces with thin tone accents instead

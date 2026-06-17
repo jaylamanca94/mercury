@@ -196,6 +196,8 @@ Every live data surface should show source, freshness, and caveats when relevant
 - Distinguish movement from interpretation when an indicator can cut both ways. For example, lower
   oil prices can ease costs while pressuring energy markets, so Mercury should not automatically
   frame the move as good or bad.
+- Keep context-only indicators, such as oil, FX, inflation, and interest rates, out of hero scoring
+  unless Mercury has an explicit model for whether the move is constructive or harmful.
 - Prefer concise status labels over dense financial jargon.
 - Use visual encoding for direction, risk, confidence, and freshness.
 - Make source attribution visible enough to build trust without overwhelming the dashboard.

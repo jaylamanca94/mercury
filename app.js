@@ -133,6 +133,8 @@ const PERIOD_OPTIONS = {
 };
 
 const MARKET_ROLE_ORDER = ["large-cap", "small-cap", "technology", "bonds"];
+const CONTEXT_ONLY_METRIC_IDS = new Set(["oil", "dollar-index", "euro", "yen", "inflation", "interest-rates"]);
+const CONTEXT_ONLY_TREND_MODELS = new Set(["commodity", "currency", "dollar", "inflation", "policy-rate"]);
 let selectedEconomyPeriod = "week";
 let selectedCurrencyPeriod = "week";
 let selectedRegion = "Global";
@@ -277,9 +279,21 @@ function withPeriodDelta(metric, period) {
   };
 }
 
+function isEconomyScoreInput(card) {
+  if (card.comparison === "point-change" || !Number.isFinite(card.periodChangeValue)) {
+    return false;
+  }
+
+  if (CONTEXT_ONLY_METRIC_IDS.has(card.id) || CONTEXT_ONLY_TREND_MODELS.has(card.trendModel)) {
+    return false;
+  }
+
+  return true;
+}
+
 function sectionChange(cards) {
   const weighted = cards
-    .filter((card) => card.comparison !== "point-change" && Number.isFinite(card.periodChangeValue))
+    .filter(isEconomyScoreInput)
     .map((card) => ({
       value: card.periodChangeValue,
       weight: Number.isFinite(card.weight) ? card.weight : 1,
@@ -343,7 +357,7 @@ function viewTitle(scope) {
 
 function heroMoverCards(cards) {
   return cards
-    .filter((card) => card.comparison !== "point-change" && Number.isFinite(card.periodChangeValue))
+    .filter(isEconomyScoreInput)
     .sort((a, b) => Math.abs(b.periodChangeValue) - Math.abs(a.periodChangeValue))
     .slice(0, 3);
 }
@@ -369,18 +383,12 @@ function buildHeroInsight(change, movers, period, scope) {
   }
 
   const sentiment = sentimentForChange(change);
-  const directionalMovers = movers.filter((card) => !isContextualMover(card));
-  const leader = directionalMovers.find((card) => card.periodChangeValue > 0.05);
-  const drag = directionalMovers.find((card) => card.periodChangeValue < -0.05);
-  const contextualMover = movers.find(isContextualMover);
+  const leader = movers.find((card) => card.periodChangeValue > 0.05);
+  const drag = movers.find((card) => card.periodChangeValue < -0.05);
   const leadPhrase = leader ? `, led by ${heroMoverLabel(leader)}` : "";
   const dragPhrase = drag ? ` ${heroMoverLabel(drag)} remains the primary drag.` : "";
-  const contextualPhrase =
-    contextualMover && !drag
-      ? ` ${heroMoverLabel(contextualMover)} moved sharply, which is a mixed signal for growth and input costs.`
-      : "";
 
-  return `${sentenceCase(sentiment.phrase)} ${periodPhrase(period)}${leadPhrase}.${dragPhrase}${contextualPhrase}`.trim();
+  return `${sentenceCase(sentiment.phrase)} ${periodPhrase(period)}${leadPhrase}.${dragPhrase}`.trim();
 }
 
 function renderHeroMovers(movers) {
@@ -419,7 +427,7 @@ function resampledPoint(points, index, targetLength) {
 
 function buildHeroTrendPoints(cards) {
   const trendSeries = cards
-    .filter((card) => card.comparison !== "point-change")
+    .filter(isEconomyScoreInput)
     .map((card) => ({
       points: Array.isArray(card.periodPoints) ? card.periodPoints.filter(Number.isFinite) : [],
       weight: Number.isFinite(card.weight) ? card.weight : 1,

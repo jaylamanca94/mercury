@@ -17,7 +17,8 @@ hover/detail context. Delayed, stale, or slower-cadence indicators keep date con
 Economy and market-support sections include Today, Week, Month, Year, and 5-year controls; Economy
 also supports United States, Europe, and Asia market-proxy views. Longer market-history sparklines
 are smoothed so year and 5-year views read as trend lines rather than noisy raw traces. The hero
-briefing includes a period-aware aggregate trend built from the currently visible cards.
+briefing includes a period-aware aggregate trend built from the currently visible score-eligible
+cards, excluding context-only moves such as oil and FX from the global read.
 
 ## Tech Stack
 

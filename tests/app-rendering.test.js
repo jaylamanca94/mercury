@@ -190,12 +190,14 @@ test("hero insight explains sentiment and top movers", () => {
         { name: "Asia", periodChange: "+8.5%", periodChangeValue: 8.5, comparison: "percent-change" },
         { name: "Europe", periodChange: "+3.6%", periodChangeValue: 3.6, comparison: "percent-change" },
         { id: "oil", name: "Oil", periodChange: "-15.9%", periodChangeValue: -15.9, comparison: "percent-change" },
+        { id: "bitcoin", name: "Bitcoin", periodChange: "-2.5%", periodChangeValue: -2.5, comparison: "percent-change" },
       ];
-      const change = { value: 0.5, label: "+0.5%", tone: "up" };
+      const change = sectionChange(cards);
       ({
         badge: '<span>' + sentimentForChange(change).label + '</span><strong>' + change.label + '</strong>',
         insight: buildHeroInsight(change, heroMoverCards(cards), "week", "Global"),
         movers: renderHeroMovers(heroMoverCards(cards)),
+        moverNames: heroMoverCards(cards).map((card) => card.name),
         title: viewTitle("Global"),
       });
     `,
@@ -203,13 +205,15 @@ test("hero insight explains sentiment and top movers", () => {
   );
 
   assert.equal(result.title, "Global Economy");
-  assert.equal(result.badge, "<span>Healthy</span><strong>+0.5%</strong>");
+  assert.equal(result.badge, "<span>Strong</span><strong>+3.2%</strong>");
   assert.equal(
     result.insight,
-    "Broadly positive this week, led by Asia (+8.5%). Oil (-15.9%) moved sharply, which is a mixed signal for growth and input costs.",
+    "Strongly positive this week, led by Asia (+8.5%). Bitcoin (-2.5%) remains the primary drag.",
   );
   assert.doesNotMatch(result.movers, /Top movers/);
-  assert.match(result.movers, /hero-mover-mixed/);
+  assert.deepEqual(JSON.parse(JSON.stringify(result.moverNames)), ["Asia", "Europe", "Bitcoin"]);
+  assert.doesNotMatch(result.movers, /Oil/);
+  assert.match(result.movers, /hero-mover-down/);
   assert.match(styles, /\.hero-insight\s*{[^}]*max-width: 44rem;/s);
   assert.match(styles, /\.hero-condition\s*{[^}]*flex-direction: column;/s);
 });
@@ -223,18 +227,29 @@ test("hero trend chart uses period-filtered visible cards", () => {
           name: "United States",
           comparison: "percent-change",
           periodPoints: [100, 102, 104],
+          periodChangeValue: 4,
           weight: 2,
         },
         {
           name: "Europe",
           comparison: "percent-change",
           periodPoints: [50, 51, 53],
+          periodChangeValue: 6,
           weight: 1,
+        },
+        {
+          id: "oil",
+          name: "Oil",
+          comparison: "percent-change",
+          periodPoints: [80, 70, 60],
+          periodChangeValue: -25,
+          weight: 5,
         },
         {
           name: "GDP",
           comparison: "point-change",
           periodPoints: [2, 3, 4],
+          periodChangeValue: 2,
           weight: 1,
         },
       ];
