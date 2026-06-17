@@ -596,3 +596,15 @@ test("Acadia header wrapper preserves balanced desktop layout", () => {
   assert.match(styles, /\.app-header-inner\s*{[^}]*justify-content: space-between;/s);
   assert.match(styles, /@media \(max-width: 640px\)[\s\S]*\.app-header-inner\s*{[^}]*flex-direction: column;/);
 });
+
+test("mobile page controls keep period and region in two columns", () => {
+  assert.match(
+    styles,
+    /@media \(max-width: 767\.98px\)[\s\S]*\.page-actions\s*{[^}]*display: grid;[^}]*grid-template-columns: repeat\(2, minmax\(0, 1fr\)\);/s,
+  );
+  assert.match(
+    styles,
+    /@media \(max-width: 767\.98px\)[\s\S]*\.section-select,\s*\.section-select-label,\s*\.section-select-label-region \.section-select\s*{[^}]*min-width: 0;[^}]*width: 100%;/s,
+  );
+  assert.match(styles, /@media \(max-width: 767\.98px\)[\s\S]*\.refresh-button\s*{[^}]*width: 2\.5rem;/s);
+});

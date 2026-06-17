@@ -1176,17 +1176,25 @@ body {
 
   .page-actions {
     align-items: stretch;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     width: 100%;
   }
 
   .section-select,
   .section-select-label,
   .section-select-label-region .section-select {
+    min-width: 0;
     width: 100%;
   }
 
+  .timestamp-pill {
+    justify-self: start;
+  }
+
   .refresh-button {
-    width: 100%;
+    justify-self: end;
+    width: 2.5rem;
   }
 
   .metric-grid,

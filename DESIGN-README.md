@@ -264,7 +264,8 @@ Current source-backed utilities:
   column on mobile rather than leaving orphaned cards.
 - Period, region, freshness timestamp, and refresh action should live as page-level controls above
   the hero, aligned to the right edge on desktop and left-aligned when the controls wrap. Do not put
-  them in a competing top-right card.
+  them in a competing top-right card. On mobile, keep Period and Region in a two-column row so
+  controls do not dominate the first viewport.
 - The global briefing hero should span the dashboard width as one Acadia surface for `Global
   economy at a glance`, sentiment, explanatory copy, aggregate trend, and top movers.
 - Section headers may pair a title with a compact signed badge and right-aligned native selects,
