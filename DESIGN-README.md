@@ -252,9 +252,10 @@ Current source-backed utilities:
 - Metric cards and key signal tiles should use soft neutral surfaces with thin tone accents instead
   of saturated full borders, so direction remains visible without making Mercury feel like a
   trading interface.
-- Sparkline panels should read as quiet chart wells: subtle neutral backgrounds, light grid
-  texture, compact height, and restrained line weight rather than heavy gray blocks. Empty
-  sparkline states should use calm labels such as `No trend`, not placeholder-like chart labels.
+- Sparkline panels should read as embedded movement marks on the metric card surface, not as nested
+  mini-cards. Avoid separate chart backgrounds, borders, and shadows; let the line and low-opacity
+  area fill carry the movement signal. Empty sparkline states should use calm labels such as
+  `No trend`, not placeholder-like chart labels.
 - Metric cards include their short indicator context and compact previous-release comparisons with
   prior observation dates, so users can understand direction without relying only on the sparkline
   or ticker.

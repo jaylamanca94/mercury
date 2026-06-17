@@ -722,23 +722,25 @@ body {
 }
 
 .metric-chart-panel {
-  align-items: center;
-  background: color-mix(in srgb, var(--acadia-color-surface) 72%, var(--acadia-color-page));
-  border: 1px solid var(--acadia-color-border);
-  border-radius: var(--acadia-radius-md);
-  box-shadow: var(--acadia-shadow-control);
+  align-items: stretch;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
   color: var(--muted);
   display: flex;
-  height: 4rem;
+  height: 4.75rem;
   justify-content: center;
+  margin-left: calc(var(--acadia-section-padding-dense) * -1);
+  margin-right: calc((var(--acadia-section-padding-dense) + var(--metric-icon-reserve)) * -1);
   overflow: hidden;
-  padding: 0.625rem 0;
-  width: calc(100% + var(--metric-icon-reserve));
+  padding: 0.25rem 0 0;
+  width: calc(100% + var(--acadia-section-padding-dense) + var(--acadia-section-padding-dense) + var(--metric-icon-reserve));
 }
 
 .sparkline {
   color: var(--metric-state);
-  height: 2.75rem;
+  height: 100%;
   width: 100%;
 }
 
