@@ -253,8 +253,10 @@ Current source-backed utilities:
 - Section headers may pair a title with a compact signed badge and right-aligned native selects,
   matching the latest Figma dashboard direction while preserving keyboard and screen-reader access.
 - The hero badge should combine sentiment and movement, such as `Healthy +0.5%`, and the hero copy
-  should explain the biggest visible drivers in one sentence. Use the same visible metric cards for
-  top movers rather than introducing a separate insight dataset.
+  should explain the biggest visible drivers in one sentence. Give the sentiment and signed move
+  enough visual weight to feel like a briefing lead, then use compact mover chips as supporting
+  evidence rather than a separately labeled widget. Use the same visible metric cards for top movers
+  rather than introducing a separate insight dataset.
 - Metric cards and key signal tiles should use soft neutral surfaces with thin tone accents instead
   of saturated full borders, so direction remains visible without making Mercury feel like a
   trading interface.

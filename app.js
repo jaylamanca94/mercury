@@ -324,6 +324,14 @@ function periodPhrase(period) {
   return `this ${periodOption(period).label.toLowerCase()}`;
 }
 
+function sentenceCase(value) {
+  return value ? `${value.charAt(0).toUpperCase()}${value.slice(1)}` : "";
+}
+
+function viewTitle(scope) {
+  return scope === "Global" ? "Global Economy" : `${scope} Economy`;
+}
+
 function heroMoverCards(cards) {
   return cards
     .filter((card) => card.comparison !== "point-change" && Number.isFinite(card.periodChangeValue))
@@ -343,15 +351,13 @@ function buildHeroInsight(change, movers, period, scope) {
     return "Waiting for enough live market data to explain the current global read.";
   }
 
-  const scopeLabel = scope === "Global" ? "Global markets" : `${scope} conditions`;
-  const verb = scope === "Global" ? "are" : "look";
   const sentiment = sentimentForChange(change);
   const leader = movers.find((card) => card.periodChangeValue > 0.05);
   const drag = movers.find((card) => card.periodChangeValue < -0.05);
   const leadPhrase = leader ? `, led by ${heroMoverLabel(leader)}` : "";
-  const dragPhrase = drag ? ` while ${heroMoverLabel(drag)} is the main drag` : "";
+  const dragPhrase = drag ? ` ${heroMoverLabel(drag)} remains the primary drag.` : "";
 
-  return `${scopeLabel} ${verb} ${sentiment.phrase} ${periodPhrase(period)}${leadPhrase}${dragPhrase}.`;
+  return `${sentenceCase(sentiment.phrase)} ${periodPhrase(period)}${leadPhrase}.${dragPhrase}`.trim();
 }
 
 function renderHeroMovers(movers) {
@@ -360,7 +366,6 @@ function renderHeroMovers(movers) {
   }
 
   return `
-    <span class="hero-movers-label">Top movers</span>
     ${movers
       .map((card) => {
         const tone = periodTone(card.periodChangeValue);
@@ -398,7 +403,14 @@ function updateSectionBadge(selector, change, options = {}) {
     return;
   }
 
-  element.textContent = options.includeSentiment ? `${sentimentForChange(change).label} ${change.label}` : change.label;
+  if (options.includeSentiment) {
+    const sentiment = sentimentForChange(change);
+
+    element.innerHTML = `<span>${escapeHtml(sentiment.label)}</span><strong>${escapeHtml(change.label)}</strong>`;
+    element.setAttribute("aria-label", `${sentiment.label} ${change.label}`);
+  } else {
+    element.textContent = change.label;
+  }
   element.classList.add(`trend-${change.tone}`);
 }
 
@@ -1184,7 +1196,7 @@ function renderDashboard() {
 
   document.body.classList.toggle("dashboard-global", globalView);
   document.body.classList.toggle("dashboard-focused", !globalView);
-  setText("#view-title", selectedRegion);
+  setText("#view-title", viewTitle(selectedRegion));
 
   if (economyGrid) {
     economyGrid.innerHTML = economyCards.map(renderMetricCard).join("");

@@ -157,22 +157,25 @@ test("hero insight explains sentiment and top movers", () => {
       ];
       const change = { value: 0.5, label: "+0.5%", tone: "up" };
       ({
-        badge: sentimentForChange(change).label + " " + change.label,
+        badge: '<span>' + sentimentForChange(change).label + '</span><strong>' + change.label + '</strong>',
         insight: buildHeroInsight(change, heroMoverCards(cards), "week", "Global"),
         movers: renderHeroMovers(heroMoverCards(cards)),
+        title: viewTitle("Global"),
       });
     `,
     context,
   );
 
-  assert.equal(result.badge, "Healthy +0.5%");
+  assert.equal(result.title, "Global Economy");
+  assert.equal(result.badge, "<span>Healthy</span><strong>+0.5%</strong>");
   assert.equal(
     result.insight,
-    "Global markets are broadly positive this week, led by Asia (+8.5%) while Oil (-15.9%) is the main drag.",
+    "Broadly positive this week, led by Asia (+8.5%). Oil (-15.9%) remains the primary drag.",
   );
-  assert.match(result.movers, /Top movers/);
+  assert.doesNotMatch(result.movers, /Top movers/);
   assert.match(result.movers, /hero-mover-down/);
   assert.match(styles, /\.hero-insight\s*{[^}]*max-width: 44rem;/s);
+  assert.match(styles, /\.hero-condition\s*{[^}]*flex-direction: column;/s);
 });
 
 test("metric cards show source previous values when available", () => {
