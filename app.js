@@ -1186,6 +1186,14 @@ function findRegionalMarket(region) {
   );
 }
 
+function regionIconClass(region) {
+  if (region === "United States") return "fa-earth-americas";
+  if (region === "Europe") return "fa-earth-europe";
+  if (region === "Asia") return "fa-earth-asia";
+
+  return "fa-earth-americas";
+}
+
 function globalMarketCards() {
   const cards = [
     ["United States", findRegionalMarket("United States")],
@@ -1197,6 +1205,7 @@ function globalMarketCards() {
       ...withPeriodDelta(metric, selectedEconomyPeriod),
       name,
       context: "",
+      icon: regionIconClass(name),
     }));
 
   if (cards.length) {
@@ -1206,6 +1215,7 @@ function globalMarketCards() {
   return ["United States", "Europe", "Asia"].map((name) => ({
     name,
     context: "Market proxy needs live data",
+    icon: regionIconClass(name),
     value: "Unavailable",
     trend: "Unavailable",
     tone: "unavailable",

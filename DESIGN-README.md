@@ -294,6 +294,8 @@ Current source-backed utilities:
   visible percent or point change already explains the comparison.
 - Core market cards such as `S&P 500`, `Small Cap`, and `Technology` should stay category-led. Use
   `business-time` for S&P 500, `shop` for Small Cap, and `microchip` for Technology.
+- Region cards should use specific earth icons: `earth-americas` for United States,
+  `earth-europe` for Europe, and `earth-asia` for Asia.
 - Bitcoin should use the Font Awesome brand Bitcoin mark rather than a generic coin stack.
 - Avoid repeating provider names such as `Yahoo Finance` inside every metric card. Use the Data
   coverage section for provider attribution, source freshness, and caveats; use card-level metadata

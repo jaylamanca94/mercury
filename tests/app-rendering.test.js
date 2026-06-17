@@ -99,6 +99,7 @@ test("global fallback cards explain missing market proxies", () => {
       marketPulse = [];
       globalMarketCards().map((card) => ({
         context: card.context,
+        icon: card.icon,
         name: card.name,
         sourceStatus: card.sourceStatus,
       }));
@@ -116,6 +117,10 @@ test("global fallback cards explain missing market proxies", () => {
     ],
   );
   assert.equal(normalizedCards.every((card) => card.sourceStatus === "Unavailable"), true);
+  assert.deepEqual(
+    normalizedCards.map((card) => card.icon),
+    ["fa-earth-americas", "fa-earth-europe", "fa-earth-asia"],
+  );
 });
 
 test("global supporting cards include Bitcoin after fiat and commodity indicators", () => {
@@ -179,6 +184,64 @@ test("global regional cards show proxy tickers as inline captions", () => {
   assert.match(html, /title="United States - VOO"/);
   assert.match(html, /<span class="metric-caption">VOO<\/span>/);
   assert.doesNotMatch(html, /Vanguard S&amp;P 500 ETF<\/p>/);
+});
+
+test("global region cards use specific earth icons", () => {
+  const context = loadAppContext();
+  const html = vm.runInContext(
+    `
+      marketPulse = [
+        {
+          id: "us-equities",
+          name: "S&P 500",
+          value: "$498.10",
+          change: "+1.2%",
+          ticker: "VOO",
+          viewGroup: "economy",
+          region: "United States",
+          marketRole: "large-cap",
+          sourceStatus: "Source-backed",
+          freshness: { status: "current", label: "Current" },
+          points: [492.18, 498.10],
+          comparison: "percent-change",
+        },
+        {
+          id: "europe-equities",
+          name: "Europe",
+          value: "$90.56",
+          change: "+2.9%",
+          ticker: "VGK",
+          viewGroup: "economy",
+          region: "Europe",
+          marketRole: "large-cap",
+          sourceStatus: "Source-backed",
+          freshness: { status: "current", label: "Current" },
+          points: [88, 90.56],
+          comparison: "percent-change",
+        },
+        {
+          id: "asia-equities",
+          name: "Asia Pacific",
+          value: "$117.16",
+          change: "+7.5%",
+          ticker: "VPL",
+          viewGroup: "economy",
+          region: "Asia",
+          marketRole: "large-cap",
+          sourceStatus: "Source-backed",
+          freshness: { status: "current", label: "Current" },
+          points: [109, 117.16],
+          comparison: "percent-change",
+        },
+      ];
+      globalMarketCards().map(renderMetricCard).join("");
+    `,
+    context,
+  );
+
+  assert.match(html, /fa-solid fa-earth-americas acadia-icon/);
+  assert.match(html, /fa-solid fa-earth-europe acadia-icon/);
+  assert.match(html, /fa-solid fa-earth-asia acadia-icon/);
 });
 
 test("core market cards use category icons and hide proxy subtitles", () => {
