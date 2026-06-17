@@ -66,7 +66,7 @@ let marketPulse = [
   pendingMetric("Euro", "EUR/USD exchange rate", "fa-euro-sign", "euro", "EUR/USD"),
   pendingMetric("Yen", "USD/JPY exchange rate", "fa-yen-sign", "yen", "USD/JPY"),
   pendingMetric("Oil", "WTI crude futures", "fa-gas-pump", "oil", "CL=F"),
-  pendingMetric("Bitcoin", "BTC/USD spot rate", "fa-coins", "bitcoin", "BTC"),
+  pendingMetric("Bitcoin", "BTC/USD spot rate", "fa-brands fa-bitcoin", "bitcoin", "BTC"),
 ];
 
 let economicHealth = [
@@ -856,6 +856,16 @@ function metricIconClass(metric) {
   return "fa-chart-line";
 }
 
+function metricIconClasses(metric) {
+  const iconClass = metricIconClass(metric);
+
+  if (/\bfa-(solid|regular|brands)\b/.test(iconClass)) {
+    return iconClass;
+  }
+
+  return `fa-solid ${iconClass}`;
+}
+
 function metricReleaseLabel(metric) {
   if (metric.releaseDate) {
     return formatReleaseDate(metric.releaseDate, metric.cadence);
@@ -1140,7 +1150,7 @@ function renderMetricCard(metric) {
           </div>
           ${metricContext ? `<p class="metric-context">${escapeHtml(metricContext)}</p>` : ""}
         </div>
-        <span class="metric-icon acadia-metric-icon" aria-hidden="true"><i class="fa-solid ${escapeHtml(metricIconClass(metric))} acadia-icon"></i></span>
+        <span class="metric-icon acadia-metric-icon" aria-hidden="true"><i class="${escapeHtml(metricIconClasses(metric))} acadia-icon"></i></span>
       </div>
       <div class="metric-value-row">
         <p class="${metricValueClass(metric.value)} acadia-metric-value">${escapeHtml(metric.value)}</p>

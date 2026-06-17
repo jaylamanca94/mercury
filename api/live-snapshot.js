@@ -316,7 +316,7 @@ const YAHOO_SERIES = [
     section: "marketPulse",
     name: "Bitcoin",
     context: "BTC/USD spot rate",
-    icon: "fa-coins",
+    icon: "fa-brands fa-bitcoin",
     symbol: "BTC-USD",
     ticker: "BTC",
     source: "Yahoo Finance: Bitcoin USD chart",

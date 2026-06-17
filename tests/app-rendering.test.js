@@ -293,6 +293,34 @@ test("support metric cards use clean inline captions instead of long subtitles",
   assert.doesNotMatch(html, /USD\/JPY exchange rate<\/p>/);
 });
 
+test("bitcoin card uses the bitcoin brand icon", () => {
+  const context = loadAppContext();
+  const html = vm.runInContext(
+    `
+      renderMetricCard({
+        id: "bitcoin",
+        name: "Bitcoin",
+        context: "BTC/USD spot rate",
+        value: "$64,291",
+        change: "+1.2%",
+        tone: "up",
+        ticker: "BTC",
+        icon: "fa-brands fa-bitcoin",
+        sourceStatus: "Source-backed",
+        freshness: { status: "current", label: "Current" },
+        points: [],
+        hideChart: true,
+        comparison: "percent-change",
+      });
+    `,
+    context,
+  );
+
+  assert.match(html, /class="fa-brands fa-bitcoin acadia-icon"/);
+  assert.doesNotMatch(html, /fa-solid fa-brands/);
+  assert.doesNotMatch(html, /fa-coins/);
+});
+
 test("hero insight explains sentiment and top movers", () => {
   const context = loadAppContext();
   const result = vm.runInContext(
