@@ -726,6 +726,7 @@ test("indicators page adds economic read, drivers, and interpretation", () => {
         hero: document.querySelector("#hero-insight").textContent,
         read: document.querySelector("#indicator-read-copy").textContent,
         drivers: document.querySelector("#indicator-drivers-list").innerHTML,
+        movers: document.querySelector("#hero-movers").innerHTML,
         meaning: document.querySelector("#indicator-meaning-copy").textContent,
       });
     `,
@@ -733,14 +734,19 @@ test("indicators page adds economic read, drivers, and interpretation", () => {
   );
 
   assert.equal(result.title, "Economic Indicators");
-  assert.match(result.hero, /Economic conditions remain stable\./);
+  assert.match(result.hero, /Economic releases are mixed\./);
   assert.match(result.read, /GDP growth improved to 1\.6%\./);
   assert.match(result.read, /Unemployment is unchanged at 4\.3%\./);
   assert.match(result.read, /Inflation rose to 4\.3%, keeping price pressure visible\./);
   assert.match(result.read, /Interest rates remain restrictive at 3\.63%\./);
-  assert.match(result.drivers, /Volatility/);
-  assert.match(result.drivers, /Market volatility moved \+2\.03 pts/);
+  assert.match(result.drivers, /Growth support/);
   assert.match(result.drivers, /GDP Growth/);
+  assert.match(result.drivers, /Price pressure/);
+  assert.match(result.drivers, /Inflation/);
+  assert.match(result.drivers, /Stable anchor/);
+  assert.match(result.drivers, /Unemployment/);
+  assert.match(result.movers, /GDP Growth/);
+  assert.match(result.movers, /Inflation/);
   assert.match(result.meaning, /Inflation at 4\.3% and rates at 3\.63% define the constraint on growth/);
   assert.match(result.meaning, /volatility at 18\.4 shows how much market stress is attached to the macro data/);
 });

@@ -1029,6 +1029,14 @@ body {
   font-weight: 900;
 }
 
+.brief-list-item small {
+  color: var(--acadia-color-text-muted);
+  font-size: 0.72rem;
+  font-weight: 900;
+  line-height: 1rem;
+  text-transform: uppercase;
+}
+
 .brief-list-item-up strong {
   color: var(--mercury-positive);
 }

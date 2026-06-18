@@ -1989,8 +1989,11 @@ function renderOverviewTiles({ economyChange, regionalCards, currencyCardsForVie
 }
 
 function briefListItem(item) {
+  const role = item.role ? `<small>${escapeHtml(item.role)}</small>` : "";
+
   return `
     <li class="brief-list-item brief-list-item-${escapeHtml(item.tone || "stable")}">
+      ${role}
       <strong>${escapeHtml(item.label)}</strong>
       <span>${escapeHtml(item.copy)}</span>
     </li>
@@ -2140,8 +2143,19 @@ function buildIndicatorRead(healthCards) {
   const unemployment = findMetric(healthCards, "unemployment", "Unemployment");
   const inflation = findMetric(healthCards, "inflation", "Inflation");
   const rates = findMetric(healthCards, "interest-rates", "Interest rates");
+  const directionalCards = [gdp, unemployment, inflation, rates].filter(
+    (card) => card && card.sourceStatus !== "Unavailable" && card.value !== "Unavailable",
+  );
+  const supportCount = directionalCards.filter((card) => indicatorSignalRole(card).kind === "support").length;
+  const pressureCount = directionalCards.filter((card) => indicatorSignalRole(card).kind === "pressure").length;
+  const lead =
+    supportCount > pressureCount
+      ? "Economic releases are improving."
+      : pressureCount > supportCount
+        ? "Economic releases are under pressure."
+        : "Economic releases are mixed.";
   const sentences = [
-    "Economic conditions remain stable.",
+    lead,
     indicatorReadSentence(gdp),
     indicatorReadSentence(unemployment),
     indicatorReadSentence(inflation),
@@ -2187,21 +2201,111 @@ function indicatorDriverCopy(card) {
   return `${name} moved ${delta}, adding context to the latest release read.`;
 }
 
+function indicatorSignalRole(card) {
+  const name = displayMetricName(card);
+  const numericDelta = numericDeltaValue(card);
+  const absDelta = Math.abs(numericDelta);
+  const tone = metricCardTone(card);
+  const stable = absDelta <= 0.05;
+
+  if (card.id === "inflation") {
+    if (numericDelta > 0.05) {
+      return { label: "Price pressure", kind: "pressure", tone: "down", priority: 1 };
+    }
+
+    if (numericDelta < -0.05) {
+      return { label: "Inflation relief", kind: "support", tone: "up", priority: 2 };
+    }
+
+    return { label: "Price anchor", kind: "stable", tone: "stable", priority: 6 };
+  }
+
+  if (card.id === "interest-rates") {
+    if (numericDelta > 0.05) {
+      return { label: "Policy pressure", kind: "pressure", tone: "down", priority: 3 };
+    }
+
+    if (numericDelta < -0.05) {
+      return { label: "Rate relief", kind: "support", tone: "up", priority: 4 };
+    }
+
+    return { label: "Policy anchor", kind: "stable", tone: "stable", priority: 7 };
+  }
+
+  if (card.id === "unemployment") {
+    if (numericDelta > 0.05) {
+      return { label: "Labor pressure", kind: "pressure", tone: "down", priority: 3 };
+    }
+
+    if (numericDelta < -0.05) {
+      return { label: "Labor support", kind: "support", tone: "up", priority: 4 };
+    }
+
+    return { label: "Stable anchor", kind: "stable", tone: "stable", priority: 5 };
+  }
+
+  if (card.id === "gdp-growth") {
+    if (numericDelta > 0.05) {
+      return { label: "Growth support", kind: "support", tone: "up", priority: 1 };
+    }
+
+    if (numericDelta < -0.05) {
+      return { label: "Growth drag", kind: "pressure", tone: "down", priority: 2 };
+    }
+
+    return { label: "Growth stable", kind: "stable", tone: "stable", priority: 6 };
+  }
+
+  if (name === "Volatility") {
+    if (numericDelta > 0.05) {
+      return { label: "Risk pressure", kind: "pressure", tone: "caution", priority: 2 };
+    }
+
+    if (numericDelta < -0.05) {
+      return { label: "Risk relief", kind: "support", tone: "up", priority: 4 };
+    }
+
+    return { label: "Risk stable", kind: "stable", tone: "stable", priority: 7 };
+  }
+
+  if (name === "Credit" || name === "Stress") {
+    if (tone === "down" || tone === "caution") {
+      return { label: `${name} pressure`, kind: "pressure", tone: "down", priority: 5 };
+    }
+
+    if (tone === "up") {
+      return { label: `${name} support`, kind: "support", tone: "up", priority: 5 };
+    }
+  }
+
+  return { label: "Context signal", kind: stable ? "stable" : "support", tone, priority: 8 };
+}
+
 function buildIndicatorDriverItems(healthCards, riskCards) {
-  return [...healthCards, ...riskCards]
+  const candidates = [...healthCards, ...riskCards]
     .filter((card) => card.sourceStatus !== "Unavailable" && card.value !== "Unavailable")
     .map((card) => ({
       card,
+      role: indicatorSignalRole(card),
       magnitude: Math.abs(numericDeltaValue(card)),
     }))
-    .filter((item) => item.magnitude > 0)
-    .sort((a, b) => b.magnitude - a.magnitude)
-    .slice(0, 3)
-    .map(({ card }) => ({
-      label: displayMetricName(card),
-      copy: indicatorDriverCopy(card),
-      tone: metricCardTone(card),
-    }));
+    .filter((item) => item.magnitude > 0 || item.role.kind === "stable");
+  const sortBySignal = (a, b) => a.role.priority - b.role.priority || b.magnitude - a.magnitude;
+  const strongestSupport = candidates.filter((item) => item.role.kind === "support").sort(sortBySignal)[0];
+  const strongestPressure = candidates.filter((item) => item.role.kind === "pressure").sort(sortBySignal)[0];
+  const stableAnchor = candidates.filter((item) => item.role.kind === "stable").sort(sortBySignal)[0];
+  const remaining = candidates
+    .filter((item) => ![strongestSupport, strongestPressure, stableAnchor].includes(item))
+    .sort(sortBySignal);
+  const selected = [strongestSupport, strongestPressure, stableAnchor, ...remaining].filter(Boolean).slice(0, 3);
+
+  return selected.map(({ card, role }) => ({
+    card,
+    role: role.label,
+    label: displayMetricName(card),
+    copy: indicatorDriverCopy(card),
+    tone: role.tone,
+  }));
 }
 
 function buildIndicatorMeaning(healthCards, riskCards) {
@@ -2220,17 +2324,16 @@ function buildIndicatorMeaning(healthCards, riskCards) {
 
 function renderIndicatorBriefing(healthCards, riskCards) {
   const driversList = document.querySelector("#indicator-drivers-list");
+  const drivers = buildIndicatorDriverItems(healthCards, riskCards);
 
   setText("#view-title", "Economic Indicators");
   setText("#hero-insight", buildIndicatorRead(healthCards));
-  setHtml("#hero-movers", "");
+  setHtml("#hero-movers", renderHeroMovers(drivers.map((item) => item.card).filter(Boolean)));
   setHtml("#hero-sparkline", "");
   setText("#indicator-read-copy", buildIndicatorRead(healthCards));
   setText("#indicator-meaning-copy", buildIndicatorMeaning(healthCards, riskCards));
 
   if (driversList) {
-    const drivers = buildIndicatorDriverItems(healthCards, riskCards);
-
     driversList.innerHTML = drivers.length
       ? drivers.map(briefListItem).join("")
       : '<li class="brief-list-item brief-list-item-unavailable"><strong>Waiting for releases</strong><span>Indicator drivers will appear when source data is available.</span></li>';
