@@ -417,6 +417,74 @@ function renderHeroMovers(movers) {
   `;
 }
 
+function marketHeroCardsForView(globalView, regionalCards, marketCards) {
+  return globalView ? regionalCards : marketCards;
+}
+
+function marketDriverLabel(card) {
+  if (selectedRegion === "Global") return "Region";
+  if (card.marketRole === "large-cap") return "Core market";
+  if (card.marketRole === "small-cap") return "Small cap";
+  if (card.marketRole === "technology") return "Sector";
+  if (card.marketRole === "bonds") return "Defensive asset";
+
+  return "Driver";
+}
+
+function marketDriverCopy(card, index) {
+  if (card.sourceStatus === "Unavailable" || card.value === "Unavailable") {
+    return "Waiting for source-backed market data.";
+  }
+
+  const scope = selectedRegion === "Global" ? "global market read" : `${selectedRegion} market read`;
+  const direction =
+    card.periodChangeValue > 0.05
+      ? index === 0
+        ? "is the strongest contributor to"
+        : "is supporting"
+      : card.periodChangeValue < -0.05
+        ? index === 0
+          ? "is the primary pressure on"
+          : "is weighing on"
+        : "is holding steady inside";
+
+  return `${displayMetricName(card)} ${direction} the ${scope} ${periodPhrase(selectedEconomyPeriod)}.`;
+}
+
+function renderMarketDriverCard(card, index) {
+  const tone = card.sourceStatus === "Unavailable" || card.value === "Unavailable" ? "unavailable" : heroMoverTone(card);
+
+  return `
+    <article class="market-driver-card market-driver-card-${escapeHtml(tone)} acadia-surface acadia-panel-dense">
+      <span class="market-driver-label">${escapeHtml(marketDriverLabel(card))}</span>
+      <div class="market-driver-heading">
+        <strong>${escapeHtml(displayMetricName(card))}</strong>
+        <span>${escapeHtml(card.periodChange || metricDeltaLabel(card))}</span>
+      </div>
+      <p class="market-driver-copy">${escapeHtml(marketDriverCopy(card, index))}</p>
+    </article>
+  `;
+}
+
+function renderMarketDrivers(cards) {
+  const driversGrid = document.querySelector("#market-drivers-grid");
+  const driversKicker = document.querySelector("#market-drivers-kicker");
+
+  if (!driversGrid) {
+    return;
+  }
+
+  const drivers = heroMoverCards(cards);
+
+  if (driversKicker) {
+    driversKicker.textContent = selectedRegion === "Global" ? "Regions" : "Drivers";
+  }
+
+  driversGrid.innerHTML = drivers.length
+    ? drivers.map(renderMarketDriverCard).join("")
+    : '<article class="market-driver-card market-driver-card-unavailable acadia-surface acadia-panel-dense">Waiting for comparable market drivers.</article>';
+}
+
 function resampledPoint(points, index, targetLength) {
   if (targetLength <= 1 || points.length <= 1) {
     return points[0];
@@ -1677,12 +1745,15 @@ function renderDashboard() {
   const currencyCardsForView = currencySupportCards();
   const commodityCardsForView = commodityCards();
   const healthCards = economicHealthCards();
+  const marketHeroCards = marketHeroCardsForView(globalView, regionalCards, marketCards);
   const heroCards =
     currentPage === "indicators"
       ? [...healthCards, ...riskMetricCards()].filter(Boolean)
-      : globalView
-        ? [...regionalCards, ...currencyCardsForView, ...commodityCardsForView]
-        : [...regionalCards, ...healthCards].filter(Boolean);
+      : currentPage === "markets"
+        ? marketHeroCards
+        : globalView
+          ? [...regionalCards, ...currencyCardsForView, ...commodityCardsForView]
+          : [...regionalCards, ...healthCards].filter(Boolean);
   const economyChange = sectionChange(heroCards);
 
   document.body.classList.toggle("dashboard-global", globalView);
@@ -1723,6 +1794,7 @@ function renderDashboard() {
   updateSectionBadge("#economy-change-badge", economyChange, { includeSentiment: true });
   updateHeroInsight(heroCards, economyChange);
   updateSectionBadge("#currency-change-badge", sectionChange(currencyCardsForView));
+  renderMarketDrivers(marketHeroCards);
 
   if (riskList) {
     riskList.innerHTML = riskMetricCards()

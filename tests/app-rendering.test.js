@@ -6,6 +6,7 @@ const vm = require("node:vm");
 
 const styles = fs.readFileSync(path.join(__dirname, "..", "styles.css"), "utf8");
 const indexHtml = fs.readFileSync(path.join(__dirname, "..", "index.html"), "utf8");
+const marketsHtml = fs.readFileSync(path.join(__dirname, "..", "markets.html"), "utf8");
 
 function createElement() {
   return {
@@ -27,10 +28,15 @@ function createElement() {
   };
 }
 
-function loadAppContext() {
+function loadAppContext(page = "dashboard") {
   const elements = new Map();
   const document = {
-    body: createElement(),
+    body: {
+      ...createElement(),
+      dataset: {
+        mercuryPage: page,
+      },
+    },
     querySelector(selector) {
       if (!elements.has(selector)) {
         elements.set(selector, createElement());
@@ -220,6 +226,61 @@ test("dashboard summary adds key signals and briefing sections", () => {
     styles,
     /\.mercury-page-dashboard \.currency-section,\s*\.mercury-page-dashboard \.commodity-section,\s*\.mercury-page-dashboard \.lower-grid\s*{[^}]*display: none;/s,
   );
+});
+
+test("markets page adds contextual key drivers for global and focused regions", () => {
+  assert.match(marketsHtml, /id="market-drivers-grid"/);
+  assert.match(styles, /\.market-drivers-grid\s*{[^}]*grid-template-columns: repeat\(3, minmax\(0, 1fr\)\);/s);
+
+  const context = loadAppContext("markets");
+  const result = vm.runInContext(
+    `
+      selectedEconomyPeriod = "week";
+      marketPulse = [
+        { id: "us-equities", name: "S&P 500", value: "$681.41", change: "+2.2%", ticker: "VOO", viewGroup: "economy", region: "United States", marketRole: "large-cap", sourceStatus: "Source-backed", freshness: { status: "current" }, history: [{ value: 666 }, { value: 681.41 }], comparison: "percent-change" },
+        { id: "us-small-cap", name: "Small Cap", value: "$142.01", change: "+1.7%", ticker: "VSMAX", viewGroup: "economy", region: "United States", marketRole: "small-cap", sourceStatus: "Source-backed", freshness: { status: "current" }, history: [{ value: 139.6 }, { value: 142.01 }], comparison: "percent-change" },
+        { id: "us-technology", name: "Technology", value: "$116.93", change: "+4.1%", ticker: "VGT", viewGroup: "economy", region: "United States", marketRole: "technology", sourceStatus: "Source-backed", freshness: { status: "current" }, history: [{ value: 112.33 }, { value: 116.93 }], comparison: "percent-change" },
+        { id: "bonds", name: "Bonds", value: "$73.14", change: "+0.3%", ticker: "BND", viewGroup: "economy", region: "United States", marketRole: "bonds", sourceStatus: "Source-backed", freshness: { status: "current" }, history: [{ value: 72.92 }, { value: 73.14 }], comparison: "percent-change" },
+        { id: "europe-equities", name: "Europe", value: "$89.23", change: "+2.9%", ticker: "VGK", viewGroup: "economy", region: "Europe", marketRole: "large-cap", sourceStatus: "Source-backed", freshness: { status: "current" }, history: [{ value: 86.74 }, { value: 89.23 }], comparison: "percent-change" },
+        { id: "asia-equities", name: "Asia Pacific", value: "$117.16", change: "+7.5%", ticker: "VPL", viewGroup: "economy", region: "Asia", marketRole: "large-cap", sourceStatus: "Source-backed", freshness: { status: "current" }, history: [{ value: 108.99 }, { value: 117.16 }], comparison: "percent-change" },
+      ];
+      selectedRegion = "Global";
+      renderDashboard();
+      const global = {
+        title: document.querySelector("#view-title").textContent,
+        kicker: document.querySelector("#market-drivers-kicker").textContent,
+        drivers: document.querySelector("#market-drivers-grid").innerHTML,
+        insight: document.querySelector("#hero-insight").textContent,
+      };
+      selectedRegion = "United States";
+      renderDashboard();
+      ({
+        global,
+        focused: {
+          title: document.querySelector("#view-title").textContent,
+          kicker: document.querySelector("#market-drivers-kicker").textContent,
+          drivers: document.querySelector("#market-drivers-grid").innerHTML,
+          insight: document.querySelector("#hero-insight").textContent,
+          economyTitle: document.querySelector("#economy-title").textContent,
+        },
+      });
+    `,
+    context,
+  );
+
+  assert.equal(result.global.title, "Global Economy Markets");
+  assert.equal(result.global.kicker, "Regions");
+  assert.match(result.global.drivers, /Region/);
+  assert.match(result.global.drivers, /Asia/);
+  assert.doesNotMatch(result.global.drivers, /Technology/);
+  assert.match(result.global.insight, /led by Asia/);
+  assert.equal(result.focused.title, "United States Economy Markets");
+  assert.equal(result.focused.kicker, "Drivers");
+  assert.equal(result.focused.economyTitle, "United States Markets");
+  assert.match(result.focused.drivers, /Sector/);
+  assert.match(result.focused.drivers, /Technology/);
+  assert.doesNotMatch(result.focused.drivers, /Asia/);
+  assert.match(result.focused.insight, /led by Technology/);
 });
 
 test("dashboard briefing is generated from visible economy and risk signals", () => {

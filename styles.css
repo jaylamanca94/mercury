@@ -869,6 +869,66 @@ body {
   gap: var(--acadia-space-2);
 }
 
+.market-drivers-grid {
+  display: grid;
+  gap: var(--acadia-space-2);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.market-driver-card {
+  --driver-state: var(--neutral-state);
+  align-content: start;
+  display: grid;
+  gap: 0.35rem;
+  min-width: 0;
+}
+
+.market-driver-card-up {
+  --driver-state: var(--mercury-positive);
+}
+
+.market-driver-card-down {
+  --driver-state: var(--mercury-negative);
+}
+
+.market-driver-card-unavailable {
+  --driver-state: var(--muted-soft);
+}
+
+.market-driver-label {
+  color: var(--acadia-color-text-muted);
+  font-size: 0.75rem;
+  font-weight: 900;
+  line-height: 1rem;
+  text-transform: uppercase;
+}
+
+.market-driver-heading {
+  align-items: baseline;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+.market-driver-heading strong {
+  color: var(--acadia-color-text);
+  font-size: 1.05rem;
+  font-weight: 900;
+  line-height: 1.2;
+}
+
+.market-driver-heading span {
+  color: var(--driver-state);
+  font-weight: 900;
+}
+
+.market-driver-copy {
+  color: var(--acadia-color-text-muted);
+  line-height: 1.35;
+  margin: 0;
+}
+
 .mercury-page-dashboard .currency-section,
 .mercury-page-dashboard .commodity-section,
 .mercury-page-dashboard .lower-grid {
@@ -1443,6 +1503,7 @@ body {
   .dashboard-global .currency-grid,
   .dashboard-focused .economy-grid,
   .dashboard-focused .currency-grid,
+  .market-drivers-grid,
   .commodity-grid,
   .economic-health-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1560,6 +1621,7 @@ body {
   .dashboard-global .currency-grid,
   .dashboard-focused .economy-grid,
   .dashboard-focused .currency-grid,
+  .market-drivers-grid,
   .commodity-grid,
   .economic-health-grid,
     .snapshot-meta {
