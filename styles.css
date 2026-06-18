@@ -1839,6 +1839,10 @@ body {
     grid-template-columns: minmax(0, 2fr) repeat(2, minmax(0, 1fr));
   }
 
+  .mercury-page-dashboard.dashboard-focused .economy-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .mercury-page-dashboard .hero-chart-panel {
     height: clamp(8rem, 7.5vw, 11.25rem);
   }

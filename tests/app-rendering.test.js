@@ -286,6 +286,10 @@ test("dashboard summary adds key signals and briefing sections", () => {
   );
   assert.match(
     styles,
+    /@media \(min-width: 1600px\)[\s\S]*\.mercury-page-dashboard\.dashboard-focused \.economy-grid\s*{[^}]*grid-template-columns: repeat\(2, minmax\(0, 1fr\)\);/s,
+  );
+  assert.match(
+    styles,
     /@media \(min-width: 1600px\)[\s\S]*\.mercury-page-dashboard \.hero-chart-panel\s*{[^}]*height: clamp\(8rem, 7\.5vw, 11\.25rem\);/s,
   );
   assert.match(
