@@ -17,17 +17,24 @@
     >
     <link rel="stylesheet" href="styles.css?v=20260617-acadia-adapter">
   </head>
-  <body class="mercury-app">
+  <body class="mercury-app mercury-page-dashboard" data-mercury-page="dashboard">
     <a class="skip-link" href="#main-content">Skip to dashboard</a>
 
     <header class="app-header acadia-chrome">
       <div class="app-header-inner acadia-chrome-inner">
-        <div class="brand-lockup acadia-brand">
+        <a class="brand-lockup acadia-brand" href="index.html" aria-label="Mercury dashboard">
           <span class="brand-mark acadia-mark" aria-hidden="true">
             <i class="fa-solid fa-earth-americas acadia-icon"></i>
           </span>
           <strong>Mercury</strong>
-        </div>
+        </a>
+        <nav class="primary-nav acadia-nav" aria-label="Mercury pages">
+          <a class="primary-nav-link acadia-nav-item is-active" href="index.html" aria-current="page">Dashboard</a>
+          <a class="primary-nav-link acadia-nav-item" href="markets.html">Markets</a>
+          <a class="primary-nav-link acadia-nav-item" href="supports.html">Supports</a>
+          <a class="primary-nav-link acadia-nav-item" href="indicators.html">Indicators</a>
+          <a class="primary-nav-link acadia-nav-item" href="data.html">Data</a>
+        </nav>
         <div class="user-lockup acadia-badge" aria-label="Dashboard context">
           <span>Public snapshot</span>
           <i class="fa-solid fa-globe acadia-icon" aria-hidden="true"></i>
@@ -89,6 +96,11 @@
         Checking latest dashboard data.
       </p>
 
+      <section class="overview-tiles" aria-labelledby="overview-tiles-title">
+        <h2 id="overview-tiles-title" class="visually-hidden">Mercury overview</h2>
+        <div id="overview-tiles-grid" class="overview-tiles-grid" aria-live="polite" aria-busy="true"></div>
+      </section>
+
       <section class="summary-band visually-hidden" aria-labelledby="global-status-title">
         <div class="summary-copy">
           <p>Current conditions</p>
@@ -122,7 +134,7 @@
         </div>
       </section>
 
-      <section class="dashboard-section economy-section" aria-labelledby="economy-title">
+      <section class="dashboard-section economy-section overview-panel" aria-labelledby="economy-title">
         <div class="section-heading compact-section-heading">
           <div class="section-title-group">
             <span class="acadia-kicker">Markets</span>
@@ -132,7 +144,7 @@
         <div id="economy-grid" class="metric-grid economy-grid"></div>
       </section>
 
-      <section class="dashboard-section" aria-labelledby="currency-title">
+      <section class="dashboard-section currency-section overview-panel" aria-labelledby="currency-title">
         <div class="section-heading compact-section-heading">
           <div class="section-title-group">
             <span class="acadia-kicker">Market supports</span>
@@ -157,7 +169,7 @@
         <div id="currency-grid" class="metric-grid currency-grid"></div>
       </section>
 
-      <section class="dashboard-section" aria-labelledby="commodity-title">
+      <section class="dashboard-section commodity-section overview-panel" aria-labelledby="commodity-title">
         <div class="section-heading compact-section-heading">
           <div class="section-title-group">
             <span class="acadia-kicker">Market supports</span>
@@ -167,7 +179,7 @@
         <div id="commodity-grid" class="metric-grid commodity-grid"></div>
       </section>
 
-      <section class="lower-grid" aria-label="Additional economic context">
+      <section class="lower-grid overview-panel" aria-label="Additional economic context">
         <section class="dashboard-section context-section" aria-labelledby="risk-title">
           <div class="section-heading compact-section-heading">
             <div class="section-title-group">
@@ -189,7 +201,7 @@
         </section>
       </section>
 
-      <section class="dashboard-section freshness-band acadia-surface acadia-panel-dense" aria-labelledby="source-coverage-title">
+      <section class="dashboard-section freshness-band data-section acadia-surface acadia-panel-dense" aria-labelledby="source-coverage-title">
         <div class="freshness-copy">
           <div class="section-heading compact-section-heading">
             <div>

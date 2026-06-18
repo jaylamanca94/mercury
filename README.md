@@ -11,6 +11,9 @@ risk, and regional growth from public data routes when `/api/live-snapshot` is a
 route is unavailable, the UI shows loading or unavailable source states instead of fabricated
 figures. Data coverage shows the latest available source release window, page-load check time,
 cadence-aware freshness state, and live indicator counts for partially available source groups.
+The product now follows the same high-level information architecture direction as Apollo: the home
+page is a compact at-a-glance command center, while deeper pages carry the richer detail surfaces
+for Markets, Market Supports, Indicators, and Data Coverage.
 Source-backed metric cards keep the visible surface focused on name, value, change, and trend.
 Provider attribution, freshness, proxy tickers, and broader source context live in Data coverage or
 hover/detail context. Delayed, stale, or slower-cadence indicators keep date context when it affects trust.
@@ -72,6 +75,10 @@ Optional validation commands:
 Current files:
 
 - `index.html` - static dashboard entry
+- `markets.html` - regional and focused market detail page
+- `supports.html` - currency, commodity, and Bitcoin detail page
+- `indicators.html` - economic health plus risk and confidence detail page
+- `data.html` - source coverage, provider, and freshness detail page
 - `styles.css` - Acadia-aligned Mercury adapter plus economic dashboard styling
 - `app.js` - live snapshot loading, fallback states, and dashboard rendering
 - `assets/favicon.svg` - vector chart-line favicon/app icon with theme-aware gradient background

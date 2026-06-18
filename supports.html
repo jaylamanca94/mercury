@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en" data-acadia-theme="system">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Mercury market-support detail page for currencies, commodities, and Bitcoin.">
+    <title>Market Supports | Mercury</title>
+    <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+    <link rel="manifest" href="site.webmanifest">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" referrerpolicy="no-referrer">
+    <link rel="stylesheet" href="styles.css?v=20260618-apollo-direction">
+  </head>
+  <body class="mercury-app mercury-page-detail mercury-page-supports" data-mercury-page="supports">
+    <a class="skip-link" href="#main-content">Skip to market supports</a>
+
+    <header class="app-header acadia-chrome">
+      <div class="app-header-inner acadia-chrome-inner">
+        <a class="brand-lockup acadia-brand" href="index.html" aria-label="Mercury dashboard">
+          <span class="brand-mark acadia-mark" aria-hidden="true">
+            <i class="fa-solid fa-earth-americas acadia-icon"></i>
+          </span>
+          <strong>Mercury</strong>
+        </a>
+        <nav class="primary-nav acadia-nav" aria-label="Mercury pages">
+          <a class="primary-nav-link acadia-nav-item" href="index.html">Dashboard</a>
+          <a class="primary-nav-link acadia-nav-item" href="markets.html">Markets</a>
+          <a class="primary-nav-link acadia-nav-item is-active" href="supports.html" aria-current="page">Supports</a>
+          <a class="primary-nav-link acadia-nav-item" href="indicators.html">Indicators</a>
+          <a class="primary-nav-link acadia-nav-item" href="data.html">Data</a>
+        </nav>
+        <div class="user-lockup acadia-badge" aria-label="Dashboard context">
+          <span>Public snapshot</span>
+          <i class="fa-solid fa-globe acadia-icon" aria-hidden="true"></i>
+        </div>
+      </div>
+    </header>
+
+    <main id="main-content" class="dashboard-shell detail-shell acadia-shell acadia-stack">
+      <section class="page-title-row acadia-surface acadia-panel-dense" aria-labelledby="view-title">
+        <div class="page-title-group acadia-section-header-copy">
+          <span class="acadia-kicker">Deep dive</span>
+          <div class="view-heading">
+            <h1 id="view-title" class="acadia-title">Market Supports</h1>
+            <span id="currency-change-badge" class="view-change hero-condition trend-stable acadia-badge">Loading</span>
+          </div>
+          <p class="hero-insight acadia-text-muted">
+            Follow the supporting signals that often shape the global read without turning Mercury into a trading tool.
+          </p>
+        </div>
+        <div class="page-controls-row" aria-label="Market support controls">
+          <div class="page-actions acadia-toolbar">
+            <label class="section-select-label acadia-field" for="economy-period-select">
+              <span class="acadia-label">Period</span>
+              <select id="economy-period-select" class="section-select acadia-control" aria-label="Market support period">
+                <option value="today">Today</option>
+                <option value="week" selected>Week</option>
+                <option value="month">Month</option>
+                <option value="year">Year</option>
+                <option value="fiveYear">5 years</option>
+              </select>
+            </label>
+            <span id="last-updated-pill" class="timestamp-pill acadia-badge" aria-live="polite" aria-atomic="true">Checking latest data</span>
+            <button id="refresh-data-button" class="refresh-button acadia-icon-action" type="button" aria-describedby="dashboard-status">
+              <i class="fa-solid fa-rotate acadia-icon" aria-hidden="true"></i>
+              <span class="visually-hidden">Refresh data</span>
+            </button>
+          </div>
+        </div>
+      </section>
+      <p id="dashboard-status" class="visually-hidden" role="status" aria-live="polite" aria-atomic="true">
+        Checking latest market-support data.
+      </p>
+
+      <section class="dashboard-section currency-section detail-panel" aria-labelledby="currency-title">
+        <div class="section-heading compact-section-heading">
+          <div class="section-title-group">
+            <span class="acadia-kicker">Currencies</span>
+            <h2 id="currency-title" class="acadia-title">Currency Conditions</h2>
+          </div>
+        </div>
+        <div id="currency-grid" class="metric-grid currency-grid"></div>
+      </section>
+
+      <section class="dashboard-section commodity-section detail-panel" aria-labelledby="commodity-title">
+        <div class="section-heading compact-section-heading">
+          <div class="section-title-group">
+            <span class="acadia-kicker">Commodities</span>
+            <h2 id="commodity-title" class="acadia-title">Commodity And Digital Supports</h2>
+          </div>
+        </div>
+        <div id="commodity-grid" class="metric-grid commodity-grid"></div>
+      </section>
+    </main>
+
+    <script src="app.js?v=20260618-apollo-direction"></script>
+  </body>
+</html>

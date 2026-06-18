@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en" data-acadia-theme="system">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Mercury market detail page for global and regional market conditions.">
+    <title>Markets | Mercury</title>
+    <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+    <link rel="manifest" href="site.webmanifest">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" referrerpolicy="no-referrer">
+    <link rel="stylesheet" href="styles.css?v=20260618-apollo-direction">
+  </head>
+  <body class="mercury-app mercury-page-detail mercury-page-markets" data-mercury-page="markets">
+    <a class="skip-link" href="#main-content">Skip to markets</a>
+
+    <header class="app-header acadia-chrome">
+      <div class="app-header-inner acadia-chrome-inner">
+        <a class="brand-lockup acadia-brand" href="index.html" aria-label="Mercury dashboard">
+          <span class="brand-mark acadia-mark" aria-hidden="true">
+            <i class="fa-solid fa-earth-americas acadia-icon"></i>
+          </span>
+          <strong>Mercury</strong>
+        </a>
+        <nav class="primary-nav acadia-nav" aria-label="Mercury pages">
+          <a class="primary-nav-link acadia-nav-item" href="index.html">Dashboard</a>
+          <a class="primary-nav-link acadia-nav-item is-active" href="markets.html" aria-current="page">Markets</a>
+          <a class="primary-nav-link acadia-nav-item" href="supports.html">Supports</a>
+          <a class="primary-nav-link acadia-nav-item" href="indicators.html">Indicators</a>
+          <a class="primary-nav-link acadia-nav-item" href="data.html">Data</a>
+        </nav>
+        <div class="user-lockup acadia-badge" aria-label="Dashboard context">
+          <span>Public snapshot</span>
+          <i class="fa-solid fa-globe acadia-icon" aria-hidden="true"></i>
+        </div>
+      </div>
+    </header>
+
+    <main id="main-content" class="dashboard-shell detail-shell acadia-shell acadia-stack">
+      <section class="page-title-row acadia-surface acadia-panel-dense" aria-labelledby="view-title">
+        <div class="page-title-group acadia-section-header-copy">
+          <span class="acadia-kicker">Deep dive</span>
+          <div class="view-heading">
+            <h1 id="view-title" class="acadia-title">Markets</h1>
+            <span id="economy-change-badge" class="view-change hero-condition trend-stable acadia-badge">Loading</span>
+          </div>
+          <p id="hero-insight" class="hero-insight acadia-text-muted">
+            Checking the current market read from live public data.
+          </p>
+          <div id="hero-sparkline" class="hero-chart-panel" aria-label="Market trend"></div>
+          <div id="hero-movers" class="hero-movers" aria-label="Top market movers"></div>
+        </div>
+        <div class="page-controls-row" aria-label="Market controls">
+          <div class="page-actions acadia-toolbar">
+            <label class="section-select-label acadia-field" for="economy-period-select">
+              <span class="acadia-label">Period</span>
+              <select id="economy-period-select" class="section-select acadia-control" aria-label="Market period">
+                <option value="today">Today</option>
+                <option value="week" selected>Week</option>
+                <option value="month">Month</option>
+                <option value="year">Year</option>
+                <option value="fiveYear">5 years</option>
+              </select>
+            </label>
+            <label class="section-select-label section-select-label-region acadia-field" for="economy-region-select">
+              <span class="acadia-label">Region</span>
+              <select id="economy-region-select" class="section-select acadia-control" aria-label="Market region">
+                <option value="Global" selected>Global</option>
+                <option value="United States">United States</option>
+                <option value="Europe">Europe</option>
+                <option value="Asia">Asia</option>
+              </select>
+            </label>
+            <span id="last-updated-pill" class="timestamp-pill acadia-badge" aria-live="polite" aria-atomic="true">Checking latest data</span>
+            <button id="refresh-data-button" class="refresh-button acadia-icon-action" type="button" aria-describedby="dashboard-status">
+              <i class="fa-solid fa-rotate acadia-icon" aria-hidden="true"></i>
+              <span class="visually-hidden">Refresh data</span>
+            </button>
+          </div>
+        </div>
+      </section>
+      <p id="dashboard-status" class="visually-hidden" role="status" aria-live="polite" aria-atomic="true">
+        Checking latest market data.
+      </p>
+
+      <section class="dashboard-section economy-section detail-panel" aria-labelledby="economy-title">
+        <div class="section-heading compact-section-heading">
+          <div class="section-title-group">
+            <span class="acadia-kicker">Markets</span>
+            <h2 id="economy-title" class="acadia-title">Regional Markets</h2>
+          </div>
+        </div>
+        <div id="economy-grid" class="metric-grid economy-grid"></div>
+      </section>
+    </main>
+
+    <script src="app.js?v=20260618-apollo-direction"></script>
+  </body>
+</html>

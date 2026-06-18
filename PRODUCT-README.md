@@ -10,6 +10,10 @@ What is happening in the global economy right now?
 
 Mercury aggregates market, economic, and global indicators into an easy-to-understand dashboard that helps users quickly understand trends, sentiment, and economic conditions.
 
+Mercury's product shape should mirror Apollo's successful information architecture: a dense home
+dashboard that summarizes the whole product in one scan, backed by focused pages for deeper
+market, support-signal, indicator, and source-coverage review.
+
 ## Mission
 
 Make the global economy understandable through clear, real-time data visualization.
@@ -93,6 +97,8 @@ In scope for the MVP:
 - Economic Health
 - Global Snapshot
 - Risk and Confidence
+- A compact home dashboard with deeper detail pages for Markets, Market Supports, Indicators, and
+  Data Coverage
 - Clear source attribution
 - Update timestamps
 - Visible source freshness and last-checked states
@@ -220,6 +226,8 @@ Recently completed:
   annual releases can be labeled current, delayed, or stale.
 - Added active period controls, including a 5-year horizon, and region-aware Economy market proxies
   for United States, Europe, and Asia.
+- Reframed Mercury from a single-page report into an Apollo-style overview dashboard with focused
+  deeper pages.
 
 Recommended next steps:
 

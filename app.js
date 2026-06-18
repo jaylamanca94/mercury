@@ -135,9 +135,14 @@ const PERIOD_OPTIONS = {
 const MARKET_ROLE_ORDER = ["large-cap", "small-cap", "technology", "bonds"];
 const CONTEXT_ONLY_METRIC_IDS = new Set(["oil", "dollar-index", "euro", "yen", "inflation", "interest-rates"]);
 const CONTEXT_ONLY_TREND_MODELS = new Set(["commodity", "currency", "dollar", "inflation", "policy-rate"]);
+const currentPage = document.body?.dataset?.mercuryPage || "dashboard";
 let selectedEconomyPeriod = "week";
 let selectedCurrencyPeriod = "week";
 let selectedRegion = "Global";
+
+function isDashboardPage() {
+  return currentPage === "dashboard";
+}
 
 function trendClass(tone) {
   return `trend-label trend-${tone}`;
@@ -1176,6 +1181,111 @@ function renderMetricCard(metric) {
   `;
 }
 
+function sourceSummary(items, fallback = "Loading") {
+  const total = items.filter(Boolean).length;
+
+  if (!total) {
+    return fallback;
+  }
+
+  const backed = items.filter((item) => item.sourceStatus === "Source-backed").length;
+
+  if (backed === total) {
+    return "Live";
+  }
+
+  if (backed > 0) {
+    return `${backed}/${total} live`;
+  }
+
+  if (items.some((item) => item.sourceStatus === "Unavailable")) {
+    return "Unavailable";
+  }
+
+  return fallback;
+}
+
+function overviewTileTone(value, fallback = "stable") {
+  if (value === "Unavailable") return "unavailable";
+  if (value === "Live" || String(value).includes("live")) return "up";
+  return fallback;
+}
+
+function renderOverviewTile(tile) {
+  return `
+    <a class="overview-tile overview-tile-${escapeHtml(tile.tone || "stable")}" href="${escapeHtml(tile.href)}">
+      <span class="overview-tile-icon" aria-hidden="true"><i class="fa-solid ${escapeHtml(tile.icon)} acadia-icon"></i></span>
+      <span class="overview-tile-copy">
+        <span class="overview-tile-label">${escapeHtml(tile.label)}</span>
+        <strong>${escapeHtml(tile.value)}</strong>
+        <small>${escapeHtml(tile.detail)}</small>
+      </span>
+    </a>
+  `;
+}
+
+function renderOverviewTiles({ economyChange, regionalCards, currencyCardsForView, commodityCardsForView, healthCards }) {
+  const overviewGrid = document.querySelector("#overview-tiles-grid");
+
+  if (!overviewGrid) {
+    return;
+  }
+
+  const sentiment = sentimentForChange(economyChange);
+  const marketSource = sourceSummary(regionalCards);
+  const supportCards = [...currencyCardsForView, ...commodityCardsForView];
+  const supportSource = sourceSummary(supportCards);
+  const indicatorCards = [...healthCards, ...riskIndicators];
+  const indicatorSource = sourceSummary(indicatorCards);
+  const dataSource = sourceSummary([...marketPulse, ...economicHealth, ...riskIndicators, ...regions]);
+  const riskLeader = riskIndicators.find((item) => item.name === "Volatility") || riskIndicators[0];
+  const tiles = [
+    {
+      label: "Global read",
+      value: economyChange?.label || sentiment.label,
+      detail: sentiment.phrase === "waiting on live data" ? "Waiting on comparable live inputs" : sentiment.phrase,
+      href: "markets.html",
+      icon: "fa-earth-americas",
+      tone: sentiment.tone,
+    },
+    {
+      label: "Markets",
+      value: marketSource,
+      detail: isGlobalView() ? "United States, Europe, and Asia" : `${selectedRegion} market proxies`,
+      href: "markets.html",
+      icon: "fa-chart-line",
+      tone: overviewTileTone(marketSource, sentiment.tone),
+    },
+    {
+      label: "Supports",
+      value: supportSource,
+      detail: "Currencies, oil, and Bitcoin",
+      href: "supports.html",
+      icon: "fa-coins",
+      tone: overviewTileTone(supportSource),
+    },
+    {
+      label: "Indicators",
+      value: indicatorSource,
+      detail: riskLeader ? `${riskLeader.name}: ${riskLeader.trend || riskLeader.value || "Loading"}` : "Macro and risk",
+      href: "indicators.html",
+      icon: "fa-gauge-high",
+      tone: overviewTileTone(indicatorSource, riskLeader?.tone || "stable"),
+    },
+    {
+      label: "Data",
+      value: dataSource,
+      detail: "Freshness and source coverage",
+      href: "data.html",
+      icon: "fa-database",
+      tone: overviewTileTone(dataSource),
+    },
+  ];
+
+  overviewGrid.setAttribute("aria-busy", "false");
+  overviewGrid.innerHTML = tiles.map(renderOverviewTile).join("");
+}
+
 function isGlobalView() {
   return selectedRegion === "Global";
 }
@@ -1423,30 +1533,47 @@ function renderDashboard() {
   const currencyCardsForView = currencySupportCards();
   const commodityCardsForView = commodityCards();
   const healthCards = economicHealthCards();
-  const heroCards = globalView
-    ? [...regionalCards, ...currencyCardsForView, ...commodityCardsForView]
-    : [...regionalCards, ...healthCards].filter(Boolean);
+  const heroCards =
+    currentPage === "indicators"
+      ? [...healthCards, ...riskMetricCards()].filter(Boolean)
+      : globalView
+        ? [...regionalCards, ...currencyCardsForView, ...commodityCardsForView]
+        : [...regionalCards, ...healthCards].filter(Boolean);
   const economyChange = sectionChange(heroCards);
 
   document.body.classList.toggle("dashboard-global", globalView);
   document.body.classList.toggle("dashboard-focused", !globalView);
-  setText("#view-title", viewTitle(selectedRegion));
+  if (currentPage === "markets" || currentPage === "dashboard") {
+    setText("#view-title", currentPage === "markets" ? `${viewTitle(selectedRegion)} Markets` : viewTitle(selectedRegion));
+  }
   setText("#economy-title", globalView ? "Regional Markets" : `${selectedRegion} Markets`);
 
   if (economyGrid) {
-    economyGrid.innerHTML = regionalCards.map(renderMetricCard).join("");
+    economyGrid.innerHTML = regionalCards
+      .map((item) => (isDashboardPage() ? { ...item, isOverview: true } : item))
+      .map(renderMetricCard)
+      .join("");
   }
 
   if (currencyGrid) {
-    currencyGrid.innerHTML = currencyCardsForView.map((item) => renderMetricCard(item)).join("");
+    currencyGrid.innerHTML = currencyCardsForView
+      .map((item) => (isDashboardPage() ? { ...item, hideChart: true, isOverview: true } : item))
+      .map((item) => renderMetricCard(item))
+      .join("");
   }
 
   if (commodityGrid) {
-    commodityGrid.innerHTML = commodityCardsForView.map((item) => renderMetricCard(item)).join("");
+    commodityGrid.innerHTML = commodityCardsForView
+      .map((item) => (isDashboardPage() ? { ...item, hideChart: true, isOverview: true } : item))
+      .map((item) => renderMetricCard(item))
+      .join("");
   }
 
   if (economicHealthGrid) {
-    economicHealthGrid.innerHTML = healthCards.map((item) => renderMetricCard(item)).join("");
+    economicHealthGrid.innerHTML = healthCards
+      .map((item) => (isDashboardPage() ? { ...item, isOverview: true } : item))
+      .map((item) => renderMetricCard(item))
+      .join("");
   }
 
   updateSectionBadge("#economy-change-badge", economyChange, { includeSentiment: true });
@@ -1454,8 +1581,19 @@ function renderDashboard() {
   updateSectionBadge("#currency-change-badge", sectionChange(currencyCardsForView));
 
   if (riskList) {
-    riskList.innerHTML = riskMetricCards().map(renderMetricCard).join("");
+    riskList.innerHTML = riskMetricCards()
+      .map((item) => (isDashboardPage() ? { ...item, isOverview: true } : item))
+      .map(renderMetricCard)
+      .join("");
   }
+
+  renderOverviewTiles({
+    economyChange,
+    regionalCards,
+    currencyCardsForView,
+    commodityCardsForView,
+    healthCards,
+  });
 }
 
 function renderSummaryDrivers(drivers) {

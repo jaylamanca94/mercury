@@ -24,6 +24,9 @@ Mercury should feel like checking the weather, but for the global economy: clear
   `Economy Score`, or `Score inputs`.
 - The first viewport should answer `how is the world doing?` with a short hero insight generated
   from visible live cards, not just a numeric score.
+- Match Apollo's product-level structure: Mercury's home page should be a compact whole-product
+  dashboard with top-level navigation and clear paths into deeper pages, while detail pages can
+  carry fuller card treatments, source context, and focused controls.
 - Period, region, freshness, and refresh controls belong inside the Global Economy hero so the
   selected scope and the resulting briefing read as one unit. On desktop, anchor them to the
   top-right of the hero card to reduce dead space above the briefing. On mobile, the period and
@@ -86,11 +89,9 @@ Recommended dashboard order:
 
 1. Slim app header with product identity and lightweight user/context affordance
 2. Full-width hero insight with market sentiment, signed change, aggregate trend, top movers, and the period/region/freshness controls attached to the same surface
-3. Regional Markets
-4. Currencies
-5. Commodities
-6. Risk & Confidence plus Economic Health
-7. Data coverage and freshness
+3. Overview tiles that link to Markets, Supports, Indicators, and Data
+4. Compact home panels for Regional Markets, Currencies, Commodities, Risk & Confidence, Economic Health, and Data coverage
+5. Deeper pages for the fuller focused views
 
 ### Desktop
 
@@ -98,6 +99,9 @@ Recommended dashboard order:
 - Page margin: Acadia `128px` desktop frame, reducing to `64px` on small desktop
 - Column gap: Acadia dense dashboard gap, usually `24px`
 - Content padding: Acadia dense panel padding, `24px`
+- The home dashboard may use tighter card padding and shorter sparkline panels so the main product
+  surfaces fit into a single command-center view on wide desktop screens. Detail pages should keep
+  the fuller Acadia card rhythm.
 
 ### Tablet
 

@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en" data-acadia-theme="system">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Mercury indicator detail page for economic health, risk, and confidence.">
+    <title>Indicators | Mercury</title>
+    <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+    <link rel="manifest" href="site.webmanifest">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" referrerpolicy="no-referrer">
+    <link rel="stylesheet" href="styles.css?v=20260618-apollo-direction">
+  </head>
+  <body class="mercury-app mercury-page-detail mercury-page-indicators" data-mercury-page="indicators">
+    <a class="skip-link" href="#main-content">Skip to indicators</a>
+
+    <header class="app-header acadia-chrome">
+      <div class="app-header-inner acadia-chrome-inner">
+        <a class="brand-lockup acadia-brand" href="index.html" aria-label="Mercury dashboard">
+          <span class="brand-mark acadia-mark" aria-hidden="true">
+            <i class="fa-solid fa-earth-americas acadia-icon"></i>
+          </span>
+          <strong>Mercury</strong>
+        </a>
+        <nav class="primary-nav acadia-nav" aria-label="Mercury pages">
+          <a class="primary-nav-link acadia-nav-item" href="index.html">Dashboard</a>
+          <a class="primary-nav-link acadia-nav-item" href="markets.html">Markets</a>
+          <a class="primary-nav-link acadia-nav-item" href="supports.html">Supports</a>
+          <a class="primary-nav-link acadia-nav-item is-active" href="indicators.html" aria-current="page">Indicators</a>
+          <a class="primary-nav-link acadia-nav-item" href="data.html">Data</a>
+        </nav>
+        <div class="user-lockup acadia-badge" aria-label="Dashboard context">
+          <span>Public snapshot</span>
+          <i class="fa-solid fa-globe acadia-icon" aria-hidden="true"></i>
+        </div>
+      </div>
+    </header>
+
+    <main id="main-content" class="dashboard-shell detail-shell acadia-shell acadia-stack">
+      <section class="page-title-row acadia-surface acadia-panel-dense" aria-labelledby="view-title">
+        <div class="page-title-group acadia-section-header-copy">
+          <span class="acadia-kicker">Deep dive</span>
+          <div class="view-heading">
+            <h1 id="view-title" class="acadia-title">Indicators</h1>
+            <span id="economy-change-badge" class="view-change hero-condition trend-stable acadia-badge">Loading</span>
+          </div>
+          <p id="hero-insight" class="hero-insight acadia-text-muted">
+            Checking the macro and risk read from live public data.
+          </p>
+          <div id="hero-sparkline" class="hero-chart-panel" aria-label="Indicator trend"></div>
+          <div id="hero-movers" class="hero-movers" aria-label="Top indicator movers"></div>
+        </div>
+        <div class="page-controls-row" aria-label="Indicator controls">
+          <div class="page-actions acadia-toolbar">
+            <label class="section-select-label acadia-field" for="economy-period-select">
+              <span class="acadia-label">Period</span>
+              <select id="economy-period-select" class="section-select acadia-control" aria-label="Indicator period">
+                <option value="today">Today</option>
+                <option value="week" selected>Week</option>
+                <option value="month">Month</option>
+                <option value="year">Year</option>
+                <option value="fiveYear">5 years</option>
+              </select>
+            </label>
+            <span id="last-updated-pill" class="timestamp-pill acadia-badge" aria-live="polite" aria-atomic="true">Checking latest data</span>
+            <button id="refresh-data-button" class="refresh-button acadia-icon-action" type="button" aria-describedby="dashboard-status">
+              <i class="fa-solid fa-rotate acadia-icon" aria-hidden="true"></i>
+              <span class="visually-hidden">Refresh data</span>
+            </button>
+          </div>
+        </div>
+      </section>
+      <p id="dashboard-status" class="visually-hidden" role="status" aria-live="polite" aria-atomic="true">
+        Checking latest indicator data.
+      </p>
+
+      <section class="lower-grid detail-panel" aria-label="Economic health and risk">
+        <section class="dashboard-section context-section" aria-labelledby="risk-title">
+          <div class="section-heading compact-section-heading">
+            <div class="section-title-group">
+              <span class="acadia-kicker">Risk</span>
+              <h2 id="risk-title" class="acadia-title">Risk &amp; Confidence</h2>
+            </div>
+          </div>
+          <div id="risk-list" class="indicator-list"></div>
+        </section>
+
+        <section class="dashboard-section context-section" aria-labelledby="economic-health-title">
+          <div class="section-heading compact-section-heading">
+            <div class="section-title-group">
+              <span class="acadia-kicker">Economy</span>
+              <h2 id="economic-health-title" class="acadia-title">Economic Health</h2>
+            </div>
+          </div>
+          <div id="economic-health-grid" class="metric-grid economic-health-grid"></div>
+        </section>
+      </section>
+    </main>
+
+    <script src="app.js?v=20260618-apollo-direction"></script>
+  </body>
+</html>

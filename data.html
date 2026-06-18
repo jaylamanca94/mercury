@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="en" data-acadia-theme="system">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Mercury data coverage and source freshness page.">
+    <title>Data Coverage | Mercury</title>
+    <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+    <link rel="manifest" href="site.webmanifest">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" referrerpolicy="no-referrer">
+    <link rel="stylesheet" href="styles.css?v=20260618-apollo-direction">
+  </head>
+  <body class="mercury-app mercury-page-detail mercury-page-data" data-mercury-page="data">
+    <a class="skip-link" href="#main-content">Skip to data coverage</a>
+
+    <header class="app-header acadia-chrome">
+      <div class="app-header-inner acadia-chrome-inner">
+        <a class="brand-lockup acadia-brand" href="index.html" aria-label="Mercury dashboard">
+          <span class="brand-mark acadia-mark" aria-hidden="true">
+            <i class="fa-solid fa-earth-americas acadia-icon"></i>
+          </span>
+          <strong>Mercury</strong>
+        </a>
+        <nav class="primary-nav acadia-nav" aria-label="Mercury pages">
+          <a class="primary-nav-link acadia-nav-item" href="index.html">Dashboard</a>
+          <a class="primary-nav-link acadia-nav-item" href="markets.html">Markets</a>
+          <a class="primary-nav-link acadia-nav-item" href="supports.html">Supports</a>
+          <a class="primary-nav-link acadia-nav-item" href="indicators.html">Indicators</a>
+          <a class="primary-nav-link acadia-nav-item is-active" href="data.html" aria-current="page">Data</a>
+        </nav>
+        <div class="user-lockup acadia-badge" aria-label="Dashboard context">
+          <span>Public snapshot</span>
+          <i class="fa-solid fa-globe acadia-icon" aria-hidden="true"></i>
+        </div>
+      </div>
+    </header>
+
+    <main id="main-content" class="dashboard-shell detail-shell acadia-shell acadia-stack">
+      <section class="page-title-row acadia-surface acadia-panel-dense" aria-labelledby="view-title">
+        <div class="page-title-group acadia-section-header-copy">
+          <span class="acadia-kicker">Deep dive</span>
+          <div class="view-heading">
+            <h1 id="view-title" class="acadia-title">Data Coverage</h1>
+          </div>
+          <p class="hero-insight acadia-text-muted">
+            See source status, latest release windows, freshness, and provider context for the public data behind Mercury.
+          </p>
+        </div>
+        <div class="page-controls-row" aria-label="Data controls">
+          <div class="page-actions acadia-toolbar">
+            <span id="last-updated-pill" class="timestamp-pill acadia-badge" aria-live="polite" aria-atomic="true">Checking latest data</span>
+            <button id="refresh-data-button" class="refresh-button acadia-icon-action" type="button" aria-describedby="dashboard-status">
+              <i class="fa-solid fa-rotate acadia-icon" aria-hidden="true"></i>
+              <span class="visually-hidden">Refresh data</span>
+            </button>
+          </div>
+        </div>
+      </section>
+      <p id="dashboard-status" class="visually-hidden" role="status" aria-live="polite" aria-atomic="true">
+        Checking latest source coverage.
+      </p>
+
+      <section class="dashboard-section freshness-band data-section detail-panel acadia-surface acadia-panel-dense" aria-labelledby="source-coverage-title">
+        <div class="freshness-copy">
+          <div class="section-heading compact-section-heading">
+            <div>
+              <span class="acadia-kicker">Live data</span>
+              <h2 id="source-coverage-title" class="acadia-title">Data coverage</h2>
+            </div>
+          </div>
+          <p id="source-coverage-copy" class="acadia-text-muted">
+            Mercury is checking public data releases and will show the latest available dates when
+            the snapshot loads.
+          </p>
+          <p id="source-provider-copy" class="source-provider-copy acadia-text-muted">
+            Financial data provided by Yahoo Finance. Economic releases provided by FRED. Regional
+            growth provided by World Bank.
+          </p>
+          <dl class="snapshot-meta" aria-label="Live snapshot status">
+            <div>
+              <dt>Latest data release</dt>
+              <dd id="latest-release-window">Loading</dd>
+            </div>
+            <div>
+              <dt>Data freshness</dt>
+              <dd id="snapshot-freshness">Loading</dd>
+            </div>
+            <div>
+              <dt>Last checked</dt>
+              <dd id="live-last-checked">Loading</dd>
+            </div>
+            <div>
+              <dt>Check timing</dt>
+              <dd id="refresh-schedule">Loading</dd>
+            </div>
+          </dl>
+        </div>
+        <ul class="freshness-list acadia-status-list" aria-label="Live data status">
+          <li>
+            <span class="freshness-source">
+              <i class="fa-solid fa-chart-line acadia-icon" aria-hidden="true"></i>
+              <span>
+                Market data
+                <small id="market-source-detail">Checking public market data</small>
+              </span>
+            </span>
+            <strong id="market-source-status" class="acadia-badge">Loading</strong>
+          </li>
+          <li>
+            <span class="freshness-source">
+              <i class="fa-solid fa-building-columns acadia-icon" aria-hidden="true"></i>
+              <span>
+                Economic indicators
+                <small id="macro-source-detail">Checking official economic releases</small>
+              </span>
+            </span>
+            <strong id="macro-source-status" class="acadia-badge">Loading</strong>
+          </li>
+          <li>
+            <span class="freshness-source">
+              <i class="fa-solid fa-gauge-high acadia-icon" aria-hidden="true"></i>
+              <span>
+                Risk indicators
+                <small id="risk-source-detail">Checking risk indicators</small>
+              </span>
+            </span>
+            <strong id="risk-source-status" class="acadia-badge">Loading</strong>
+          </li>
+          <li>
+            <span class="freshness-source">
+              <i class="fa-solid fa-earth-americas acadia-icon" aria-hidden="true"></i>
+              <span>
+                Regional coverage
+                <small id="regional-source-detail">Checking World Bank growth data</small>
+              </span>
+            </span>
+            <strong id="regional-source-status" class="acadia-badge">Loading</strong>
+          </li>
+        </ul>
+      </section>
+    </main>
+
+    <script src="app.js?v=20260618-apollo-direction"></script>
+  </body>
+</html>
