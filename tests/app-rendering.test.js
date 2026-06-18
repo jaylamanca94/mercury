@@ -220,6 +220,9 @@ test("dashboard summary adds key signals and briefing sections", () => {
   assert.match(indexHtml, /id="economic-brief-copy"/);
   assert.match(indexHtml, /id="what-changed-list"/);
   assert.match(indexHtml, /id="risk-watch-list"/);
+  assert.match(styles, /\.overview-tiles\s*{[^}]*gap: var\(--acadia-space-3\);/s);
+  assert.match(styles, /\.section-heading h2,\s*\.brief-card h2\s*{[^}]*font-size: clamp\(1\.5rem, 2vw, 1\.75rem\);/s);
+  assert.match(styles, /\.page-title-row h1\s*{[^}]*font-size: clamp\(1\.875rem, 3vw, 2\.5rem\);/s);
   assert.match(styles, /\.overview-tiles-grid\s*{[^}]*grid-template-columns: repeat\(4, minmax\(0, 1fr\)\);/s);
   assert.match(styles, /\.briefing-grid\s*{[^}]*grid-template-columns: minmax\(0, 1\.5fr\) minmax\(0, 1fr\) minmax\(0, 1fr\);/s);
   assert.match(

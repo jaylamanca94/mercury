@@ -580,6 +580,16 @@ body {
   margin: 0;
 }
 
+.section-heading h2,
+.brief-card h2 {
+  font-size: clamp(1.5rem, 2vw, 1.75rem);
+  line-height: 1.15;
+}
+
+.page-title-row h1 {
+  font-size: clamp(1.875rem, 3vw, 2.5rem);
+}
+
 .view-change {
   background: color-mix(in srgb, var(--neutral-state) 10%, transparent);
   border-color: color-mix(in srgb, var(--neutral-state) 22%, transparent);
@@ -722,6 +732,11 @@ body {
 
 .summary-band {
   display: none;
+}
+
+.overview-tiles {
+  display: grid;
+  gap: var(--acadia-space-3);
 }
 
 .overview-tiles-grid {
