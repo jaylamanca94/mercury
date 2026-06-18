@@ -1274,3 +1274,26 @@ test("mobile page controls keep period and region in two columns", () => {
   );
   assert.match(styles, /@media \(max-width: 767\.98px\)[\s\S]*\.refresh-button\s*{[^}]*width: 2\.5rem;/s);
 });
+
+test("mobile dashboards use swipeable exploration rails", () => {
+  assert.match(
+    styles,
+    /@media \(max-width: 767\.98px\)[\s\S]*\.hero-chart-panel\s*{[^}]*height: clamp\(8\.5rem, 42vw, 12rem\);/s,
+  );
+  assert.match(
+    styles,
+    /@media \(max-width: 767\.98px\)[\s\S]*\.hero-movers\s*{[^}]*flex-wrap: nowrap;[^}]*overflow-x: auto;/s,
+  );
+  assert.match(
+    styles,
+    /@media \(max-width: 767\.98px\)[\s\S]*\.hero-movers::before\s*{[^}]*content: "Movers";/s,
+  );
+  assert.match(
+    styles,
+    /@media \(max-width: 767\.98px\)[\s\S]*\.overview-tiles-grid,\s*\.mercury-page-markets \.market-drivers-grid,\s*\.dashboard-global \.economy-grid,[\s\S]*\.mercury-page-supports \.digital-assets-grid\s*{[^}]*display: flex;[^}]*overflow-x: auto;[^}]*scroll-snap-type: x mandatory;/s,
+  );
+  assert.match(
+    styles,
+    /@media \(max-width: 767\.98px\)[\s\S]*\.overview-tiles-grid > \*,[\s\S]*\.mercury-page-supports \.digital-assets-grid > \*\s*{[^}]*flex: 0 0 min\(82vw, 21rem\);[^}]*scroll-snap-align: start;/s,
+  );
+});

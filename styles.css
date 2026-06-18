@@ -1932,6 +1932,67 @@ body {
     padding: var(--acadia-space-3);
   }
 
+  .primary-nav,
+  .acadia-nav {
+    margin-inline: calc(var(--acadia-page-margin) * -1);
+    padding-inline: var(--acadia-page-margin);
+    scroll-padding-inline: var(--acadia-page-margin);
+  }
+
+  .primary-nav-link,
+  .acadia-nav-item {
+    background: color-mix(in srgb, var(--acadia-color-surface-muted) 54%, transparent);
+    border-color: color-mix(in srgb, var(--acadia-color-border) 76%, transparent);
+    min-height: 2.625rem;
+    padding-inline: 0.95rem;
+  }
+
+  .page-title-group {
+    gap: 1rem;
+  }
+
+  .hero-insight {
+    font-size: 1rem;
+    max-width: none;
+  }
+
+  .hero-chart-panel {
+    height: clamp(8.5rem, 42vw, 12rem);
+    margin-block: 0.25rem;
+  }
+
+  .hero-movers {
+    flex-wrap: nowrap;
+    gap: 0.5rem;
+    margin-inline: -0.25rem;
+    min-height: 2.25rem;
+    overflow-x: auto;
+    padding-inline: 0.25rem;
+    scroll-padding-inline: 0.25rem;
+    scroll-snap-type: x proximity;
+    scrollbar-width: none;
+  }
+
+  .hero-movers::-webkit-scrollbar {
+    display: none;
+  }
+
+  .hero-movers::before {
+    color: var(--acadia-color-text-muted);
+    content: "Movers";
+    flex: 0 0 auto;
+    font-size: 0.75rem;
+    font-weight: 900;
+    letter-spacing: 0;
+    line-height: 2.25rem;
+    text-transform: uppercase;
+  }
+
+  .hero-mover {
+    flex: 0 0 auto;
+    scroll-snap-align: start;
+  }
+
   .page-controls-row {
     border-top: 1px solid var(--acadia-color-border);
     padding-top: var(--acadia-space-2);
@@ -1980,6 +2041,56 @@ body {
 
   .overview-tiles-grid {
     grid-template-columns: 1fr;
+  }
+
+  .overview-tiles-grid,
+  .mercury-page-markets .market-drivers-grid,
+  .dashboard-global .economy-grid,
+  .dashboard-focused .economy-grid,
+  .mercury-page-supports .support-signals-grid,
+  .mercury-page-supports .currency-grid,
+  .mercury-page-supports .commodity-grid,
+  .mercury-page-supports .digital-assets-grid {
+    display: flex;
+    gap: var(--acadia-space-2);
+    margin-inline: calc(var(--acadia-page-margin) * -1);
+    overflow-x: auto;
+    padding-inline: var(--acadia-page-margin);
+    scroll-padding-inline: var(--acadia-page-margin);
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+  }
+
+  .overview-tiles-grid::-webkit-scrollbar,
+  .mercury-page-markets .market-drivers-grid::-webkit-scrollbar,
+  .dashboard-global .economy-grid::-webkit-scrollbar,
+  .dashboard-focused .economy-grid::-webkit-scrollbar,
+  .mercury-page-supports .support-signals-grid::-webkit-scrollbar,
+  .mercury-page-supports .currency-grid::-webkit-scrollbar,
+  .mercury-page-supports .commodity-grid::-webkit-scrollbar,
+  .mercury-page-supports .digital-assets-grid::-webkit-scrollbar {
+    display: none;
+  }
+
+  .overview-tiles-grid > *,
+  .mercury-page-markets .market-drivers-grid > *,
+  .dashboard-global .economy-grid > *,
+  .dashboard-focused .economy-grid > *,
+  .mercury-page-supports .support-signals-grid > *,
+  .mercury-page-supports .currency-grid > *,
+  .mercury-page-supports .commodity-grid > *,
+  .mercury-page-supports .digital-assets-grid > * {
+    flex: 0 0 min(82vw, 21rem);
+    scroll-snap-align: start;
+  }
+
+  .overview-tiles-grid > *,
+  .mercury-page-supports .support-signals-grid > * {
+    flex-basis: min(72vw, 16rem);
+  }
+
+  .mercury-page-markets .market-drivers-grid > * {
+    flex-basis: min(84vw, 21rem);
   }
 
   .freshness-list li {
