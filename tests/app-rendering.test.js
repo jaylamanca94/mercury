@@ -7,6 +7,18 @@ const vm = require("node:vm");
 const styles = fs.readFileSync(path.join(__dirname, "..", "styles.css"), "utf8");
 const indexHtml = fs.readFileSync(path.join(__dirname, "..", "index.html"), "utf8");
 const marketsHtml = fs.readFileSync(path.join(__dirname, "..", "markets.html"), "utf8");
+const supportsHtml = fs.readFileSync(path.join(__dirname, "..", "supports.html"), "utf8");
+const indicatorsHtml = fs.readFileSync(path.join(__dirname, "..", "indicators.html"), "utf8");
+const dataHtml = fs.readFileSync(path.join(__dirname, "..", "data.html"), "utf8");
+const faviconSvg = fs.readFileSync(path.join(__dirname, "..", "assets", "favicon.svg"), "utf8");
+
+function headerBrandIcon(html) {
+  const match = html.match(
+    /<span class="brand-mark acadia-mark"[^>]*>[\s\S]*?<i class="([^"]+)"/,
+  );
+
+  return match?.[1] ?? "";
+}
 
 function createElement() {
   return {
@@ -972,6 +984,18 @@ test("Acadia header wrapper preserves balanced desktop layout", () => {
   assert.match(styles, /\.app-header-inner\s*{[^}]*display: flex;/s);
   assert.match(styles, /\.app-header-inner\s*{[^}]*justify-content: space-between;/s);
   assert.match(styles, /@media \(max-width: 640px\)[\s\S]*\.app-header-inner\s*{[^}]*flex-direction: column;/);
+});
+
+test("Mercury brand and favicon use the money bill wave mark", () => {
+  for (const html of [indexHtml, marketsHtml, supportsHtml, indicatorsHtml, dataHtml]) {
+    assert.match(headerBrandIcon(html), /fa-money-bill-wave/);
+    assert.doesNotMatch(headerBrandIcon(html), /fa-earth-americas/);
+  }
+
+  assert.match(styles, /\.brand-mark\s*{[^}]*color: var\(--acadia-color-brand\);/s);
+  assert.match(faviconSvg, /Mercury money bill icon/);
+  assert.match(faviconSvg, /M0 419\.6L0 109\.5/);
+  assert.doesNotMatch(faviconSvg, /Mercury chart icon/);
 });
 
 test("tablet dashboard stacks lower context sections before cards get cramped", () => {

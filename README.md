@@ -81,7 +81,7 @@ Current files:
 - `data.html` - source coverage, provider, and freshness detail page
 - `styles.css` - Acadia-aligned Mercury adapter plus economic dashboard styling
 - `app.js` - live snapshot loading, fallback states, and dashboard rendering
-- `assets/favicon.svg` - vector chart-line favicon/app icon with theme-aware gradient background
+- `assets/favicon.svg` - vector money-bill-wave favicon/app icon with theme-aware gradient background
 - `site.webmanifest` - browser app manifest pointing to the SVG icon
 - `api/live-snapshot.js` - Vercel Serverless Function for public Yahoo Finance, FRED, and World Bank releases
 - `api/fred-snapshot.js` - compatibility export for the live snapshot handler

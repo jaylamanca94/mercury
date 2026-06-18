@@ -200,7 +200,7 @@ Use `8px` or less for normal cards and repeated list items unless a larger conta
 
 ## Favicon And App Icon
 
-- Mercury uses a Font Awesome chart-line mark for its favicon/app icon because it represents a source-backed global economy dashboard.
+- Mercury uses a Font Awesome money-bill-wave mark for its favicon/app icon because it represents a source-backed economy briefing centered on money flows and market movement.
 - App icons and favicons must be vector-first, not screenshots.
 - The icon background uses a theme-aware vertical gradient: Dark Mode moves from slightly lighter gray on top to very dark black on bottom; Light Mode moves from very light gray on top to slightly darker light gray on bottom.
 - The centered chart mark uses Mercury blue in Light Mode and white in Dark Mode for contrast.
