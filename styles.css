@@ -725,6 +725,50 @@ body {
   font-weight: 900;
 }
 
+@media (min-width: 1024px) {
+  .mercury-page-markets .view-heading,
+  .mercury-page-markets .hero-insight {
+    max-width: min(100%, calc(100% - 38rem));
+  }
+}
+
+@media (min-width: 1024px) and (max-width: 1380px) {
+  .mercury-page-markets .page-title-row h1 {
+    font-size: clamp(1.75rem, 2.55vw, 2.25rem);
+  }
+
+  .mercury-page-markets .view-heading,
+  .mercury-page-markets .hero-insight {
+    max-width: calc(100% - 35rem);
+  }
+}
+
+@media (min-width: 1024px) and (max-width: 1240px) {
+  .mercury-page-markets .page-title-row {
+    grid-template-columns: 1fr;
+  }
+
+  .mercury-page-markets .page-title-group,
+  .mercury-page-markets .page-controls-row {
+    grid-column: 1;
+    grid-row: auto;
+  }
+
+  .mercury-page-markets .page-controls-row {
+    justify-self: stretch;
+    padding-top: 0;
+  }
+
+  .mercury-page-markets .page-controls-row .page-actions {
+    width: 100%;
+  }
+
+  .mercury-page-markets .view-heading,
+  .mercury-page-markets .hero-insight {
+    max-width: 44rem;
+  }
+}
+
 .timestamp-pill {
   align-self: end;
   min-height: 2.5rem;

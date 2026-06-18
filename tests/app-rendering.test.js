@@ -852,6 +852,25 @@ test("hero controls anchor to the top right on desktop and stack on smaller scre
   );
 });
 
+test("markets hero controls avoid long regional titles at tablet desktop widths", () => {
+  assert.match(
+    styles,
+    /@media \(min-width: 1024px\)[\s\S]*\.mercury-page-markets \.view-heading,\s*\.mercury-page-markets \.hero-insight\s*{[^}]*max-width: min\(100%, calc\(100% - 38rem\)\);/s,
+  );
+  assert.match(
+    styles,
+    /@media \(min-width: 1024px\) and \(max-width: 1380px\)[\s\S]*\.mercury-page-markets \.page-title-row h1\s*{[^}]*font-size: clamp\(1\.75rem, 2\.55vw, 2\.25rem\);/s,
+  );
+  assert.match(
+    styles,
+    /@media \(min-width: 1024px\) and \(max-width: 1240px\)[\s\S]*\.mercury-page-markets \.page-title-row\s*{[^}]*grid-template-columns: 1fr;/s,
+  );
+  assert.match(
+    styles,
+    /@media \(min-width: 1024px\) and \(max-width: 1240px\)[\s\S]*\.mercury-page-markets \.page-title-group,\s*\.mercury-page-markets \.page-controls-row\s*{[^}]*grid-column: 1;[^}]*grid-row: auto;/s,
+  );
+});
+
 test("slower-cadence metric cards keep release context without previous footers", () => {
   const context = loadAppContext();
   const html = vm.runInContext(
