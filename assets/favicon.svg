@@ -4,7 +4,7 @@
     :root {
       --bg-top: #f8fafc;
       --bg-bottom: #edf0f4;
-      --mark: #2f6fbb;
+      --mark: #007b78;
     }
 
     @media (prefers-color-scheme: dark) {
