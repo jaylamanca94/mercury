@@ -1010,7 +1010,7 @@ test("hero controls anchor to the top right on desktop and stack on smaller scre
   );
   assert.match(
     styles,
-    /@media \(max-width: 767\.98px\)[\s\S]*\.mercury-page-dashboard \.page-title-row\s*{[^}]*padding: var\(--acadia-space-3\);/s,
+    /@media \(max-width: 767\.98px\)[\s\S]*\.page-title-row,\s*\.mercury-page-dashboard \.page-title-row\s*{[^}]*padding: 1rem;/s,
   );
 });
 
@@ -1319,13 +1319,21 @@ test("mobile page controls keep period and region in two columns", () => {
     styles,
     /@media \(max-width: 767\.98px\)[\s\S]*\.section-select,\s*\.section-select-label,\s*\.section-select-label-region \.section-select\s*{[^}]*min-width: 0;[^}]*width: 100%;/s,
   );
-  assert.match(styles, /@media \(max-width: 767\.98px\)[\s\S]*\.refresh-button\s*{[^}]*width: 2\.5rem;/s);
+  assert.match(
+    styles,
+    /@media \(max-width: 767\.98px\)[\s\S]*\.page-actions \.section-select\s*{[^}]*font-size: 0\.9rem;[^}]*min-height: 2\.35rem;/s,
+  );
+  assert.match(styles, /@media \(max-width: 767\.98px\)[\s\S]*\.refresh-button\s*{[^}]*width: 2\.35rem;/s);
 });
 
 test("mobile dashboards use swipeable exploration rails", () => {
   assert.match(
     styles,
-    /@media \(max-width: 767\.98px\)[\s\S]*\.hero-chart-panel\s*{[^}]*height: clamp\(8\.5rem, 42vw, 12rem\);/s,
+    /@media \(max-width: 767\.98px\)[\s\S]*\.page-title-row h1\s*{[^}]*font-size: clamp\(1\.95rem, 8vw, 2\.35rem\);/s,
+  );
+  assert.match(
+    styles,
+    /@media \(max-width: 767\.98px\)[\s\S]*\.hero-chart-panel\s*{[^}]*height: clamp\(5\.75rem, 28vw, 7\.25rem\);/s,
   );
   assert.match(
     styles,
