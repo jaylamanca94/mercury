@@ -625,6 +625,10 @@ test("hero controls anchor to the top right on desktop and stack on smaller scre
     styles,
     /\.page-title-row\s*{[^}]*display: grid;[^}]*grid-template-columns: minmax\(0, 1fr\) auto;/s,
   );
+  assert.match(
+    styles,
+    /@media \(min-width: 1180px\)[\s\S]*\.mercury-page-dashboard \.page-title-row\s*{[^}]*padding: var\(--acadia-space-3\);/s,
+  );
   assert.match(styles, /\.page-title-group\s*{[^}]*grid-column: 1 \/ -1;[^}]*grid-row: 1;/s);
   assert.match(styles, /\.page-controls-row\s*{[^}]*justify-self: end;/s);
   assert.match(styles, /\.page-controls-row \.page-actions\s*{[^}]*align-items: start;/s);
@@ -639,6 +643,10 @@ test("hero controls anchor to the top right on desktop and stack on smaller scre
   assert.match(
     styles,
     /@media \(max-width: 767\.98px\)[\s\S]*\.page-controls-row\s*{[^}]*border-top: 1px solid var\(--acadia-color-border\);/s,
+  );
+  assert.match(
+    styles,
+    /@media \(max-width: 767\.98px\)[\s\S]*\.mercury-page-dashboard \.page-title-row\s*{[^}]*padding: var\(--acadia-space-3\);/s,
   );
 });
 

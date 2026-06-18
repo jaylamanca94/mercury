@@ -1341,7 +1341,7 @@ body {
 
   .mercury-page-dashboard .page-title-row {
     min-height: 0;
-    padding: 1rem;
+    padding: var(--acadia-space-3);
   }
 
   .mercury-page-dashboard .page-title-group {
@@ -1504,6 +1504,10 @@ body {
 
   .page-title-row {
     padding: 1rem;
+  }
+
+  .mercury-page-dashboard .page-title-row {
+    padding: var(--acadia-space-3);
   }
 
   .page-controls-row {
