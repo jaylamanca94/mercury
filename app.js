@@ -2065,18 +2065,83 @@ function buildRiskWatchItems(riskCards, healthCards) {
     .slice(0, 3);
 }
 
-function buildEconomicBrief(change, movers, riskCards) {
+function buildBreadthSentence(cards) {
+  const breadthCards =
+    selectedRegion === "Global"
+      ? cards.filter((card) => ["United States", "Europe", "Asia"].includes(displayMetricName(card)))
+      : cards.filter(isEconomyScoreInput);
+  const usableCards = breadthCards.filter((card) => Number.isFinite(card.periodChangeValue));
+
+  if (!usableCards.length) {
+    return "";
+  }
+
+  const positiveCount = usableCards.filter((card) => card.periodChangeValue > 0.05).length;
+
+  if (selectedRegion === "Global") {
+    if (positiveCount === usableCards.length) {
+      const countLabel = usableCards.length === 3 ? "three" : usableCards.length;
+
+      return `Market breadth remains healthy with all ${countLabel} major regions participating.`;
+    }
+
+    return `Market breadth is mixed, with ${positiveCount} of ${usableCards.length} major regions positive.`;
+  }
+
+  if (positiveCount === usableCards.length) {
+    return `Participation is broad, with all ${usableCards.length} visible segments positive.`;
+  }
+
+  return `Participation is mixed, with ${positiveCount} of ${usableCards.length} visible segments positive.`;
+}
+
+function buildOilContextSentence(commodityCardsForView) {
+  const oil = commodityCardsForView.find((card) => card.id === "oil");
+
+  if (!oil || !Number.isFinite(oil.periodChangeValue)) {
+    return "";
+  }
+
+  const change = oil.periodChange || metricDeltaLabel(oil);
+
+  if (oil.periodChangeValue < -0.05) {
+    return `Oil prices declined (${change}), easing input-cost pressure but also hinting at softer demand expectations.`;
+  }
+
+  if (oil.periodChangeValue > 0.05) {
+    return `Oil prices rose (${change}), adding input-cost pressure to the broader read.`;
+  }
+
+  return `Oil is little changed (${change}), so input-cost pressure is not the main story.`;
+}
+
+function buildEconomicBrief(change, movers, riskCards, heroCards = [], commodityCardsForView = []) {
   if (!change) {
     return "Mercury is waiting for enough live data to explain the current economic read.";
   }
 
-  const summary = buildHeroInsight(change, movers, selectedEconomyPeriod, selectedRegion);
+  const sentiment = sentimentForChange(change);
+  const scope = selectedRegion === "Global" ? "Global growth signals" : `${selectedRegion} market signals`;
+  const direction =
+    sentiment.tone === "up"
+      ? "remain positive"
+      : sentiment.tone === "down"
+        ? "are under pressure"
+        : "are mixed";
+  const leader = movers.find((card) => card.periodChangeValue > 0.05);
+  const leaderSentence = leader
+    ? `${displayMetricName(leader)} led the move (${leader.periodChange || metricDeltaLabel(leader)}).`
+    : "";
+  const oilSentence = buildOilContextSentence(commodityCardsForView);
+  const breadthSentence = buildBreadthSentence(heroCards);
   const risk = riskCards.find((item) => item.name === "Volatility") || riskCards[0];
   const riskSentence = risk
-    ? `${risk.name} is at ${risk.value || risk.trend || "a pending read"}, keeping risk context visible.`
+    ? `${risk.name} is at ${risk.value || risk.trend || "a pending read"}, keeping the risk backdrop visible.`
     : "Mercury is watching risk, inflation, and support signals for the next shift.";
 
-  return `${summary} ${riskSentence}`;
+  return [`${scope} ${direction} ${periodPhrase(selectedEconomyPeriod)}.`, leaderSentence, oilSentence, breadthSentence, riskSentence]
+    .filter(Boolean)
+    .join(" ");
 }
 
 function renderEconomicBrief({ economyChange, heroCards, healthCards, commodityCardsForView }) {
@@ -2087,7 +2152,7 @@ function renderEconomicBrief({ economyChange, heroCards, healthCards, commodityC
   const riskList = document.querySelector("#risk-watch-list");
 
   if (briefCopy) {
-    briefCopy.textContent = buildEconomicBrief(economyChange, movers, riskCards);
+    briefCopy.textContent = buildEconomicBrief(economyChange, movers, riskCards, heroCards, commodityCardsForView);
   }
 
   if (changedList) {

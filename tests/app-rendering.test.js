@@ -267,6 +267,27 @@ test("dashboard summary adds key signals and briefing sections", () => {
     styles,
     /@media \(min-width: 1180px\)[\s\S]*\.mercury-page-dashboard \.dashboard-shell\s*{[^}]*gap: var\(--acadia-space-4\);/s,
   );
+  assert.match(styles, /--acadia-content-max: 106\.25rem;/);
+  assert.match(
+    styles,
+    /\.acadia-shell\s*{[^}]*width: min\(calc\(100% - \(var\(--acadia-page-margin\) \* 2\)\), var\(--acadia-content-max\)\);/s,
+  );
+  assert.match(
+    styles,
+    /@media \(min-width: 1180px\)[\s\S]*\.mercury-page-dashboard \.hero-chart-panel\s*{[^}]*height: clamp\(6rem, 7vw, 8\.5rem\);/s,
+  );
+  assert.match(
+    styles,
+    /@media \(min-width: 1600px\)[\s\S]*\.mercury-page-dashboard \.overview-tiles-grid\s*{[^}]*grid-template-columns: repeat\(8, minmax\(0, 1fr\)\);/s,
+  );
+  assert.match(
+    styles,
+    /@media \(min-width: 1600px\)[\s\S]*\.mercury-page-dashboard \.briefing-grid\s*{[^}]*grid-template-columns: minmax\(0, 2fr\) repeat\(2, minmax\(0, 1fr\)\);/s,
+  );
+  assert.match(
+    styles,
+    /@media \(min-width: 1600px\)[\s\S]*\.mercury-page-dashboard \.hero-chart-panel\s*{[^}]*height: clamp\(8rem, 7\.5vw, 11\.25rem\);/s,
+  );
   assert.match(
     styles,
     /@media \(max-width: 767\.98px\)[\s\S]*\.mercury-page-dashboard \.dashboard-shell\s*{[^}]*gap: var\(--acadia-space-3\);/s,
@@ -400,8 +421,11 @@ test("dashboard briefing is generated from visible economy and risk signals", ()
     context,
   );
 
-  assert.match(result.brief, /Strongly positive this week, led by Asia \(\+7\.5%\)\./);
-  assert.match(result.brief, /Volatility is at 18\.4/);
+  assert.match(result.brief, /Global growth signals remain positive this week\./);
+  assert.match(result.brief, /Asia led the move \(\+7\.5%\)\./);
+  assert.match(result.brief, /Oil prices declined \(-16\.4%\), easing input-cost pressure/);
+  assert.match(result.brief, /Market breadth remains healthy with all three major regions participating\./);
+  assert.match(result.brief, /Volatility is at 18\.4, keeping the risk backdrop visible\./);
   assert.match(result.changed, /Asia/);
   assert.match(result.changed, /Inflation/);
   assert.match(result.changed, /Oil/);
