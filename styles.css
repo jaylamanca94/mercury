@@ -1406,6 +1406,135 @@ body {
   line-height: 1.25rem;
 }
 
+.source-health-summary {
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: minmax(10rem, 0.32fr) minmax(0, 1fr);
+}
+
+.source-health-score,
+.source-health-list li,
+.coverage-summary-list div {
+  background: var(--acadia-color-surface-muted);
+  border: 1px solid var(--acadia-color-border);
+  border-radius: var(--acadia-radius-md);
+  box-shadow: var(--acadia-shadow-control);
+  min-width: 0;
+}
+
+.source-health-score {
+  align-content: start;
+  display: grid;
+  gap: 0.25rem;
+  padding: 0.875rem;
+}
+
+.source-health-score strong {
+  color: var(--acadia-color-text);
+  font-size: 2rem;
+  font-weight: 900;
+  letter-spacing: 0;
+  line-height: 2.15rem;
+}
+
+.source-health-score small {
+  color: var(--acadia-color-text-muted);
+  font-size: 0.75rem;
+  font-weight: 800;
+  line-height: 1rem;
+}
+
+.source-health-list {
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.source-health-list li {
+  align-items: center;
+  color: var(--acadia-color-text);
+  display: flex;
+  gap: 0.625rem;
+  min-height: 3.25rem;
+  padding: 0.75rem;
+}
+
+.source-health-list .acadia-icon {
+  color: var(--source-health-color, var(--muted));
+}
+
+.source-health-current {
+  --source-health-color: var(--mercury-positive);
+}
+
+.source-health-caution {
+  --source-health-color: var(--acadia-color-warning);
+}
+
+.source-health-unavailable {
+  --source-health-color: var(--mercury-negative);
+}
+
+.source-health-list span {
+  font-size: 0.8125rem;
+  font-weight: 800;
+  line-height: 1.1rem;
+  min-width: 0;
+}
+
+.coverage-summary {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.coverage-summary-heading {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.coverage-summary h3 {
+  color: var(--acadia-color-text);
+  font-size: 1rem;
+  font-weight: 900;
+  line-height: 1.25rem;
+  margin: 0;
+}
+
+.coverage-summary-list {
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin: 0;
+}
+
+.coverage-summary-list div {
+  padding: 0.75rem;
+}
+
+.coverage-summary-list dt,
+.coverage-summary-list dd {
+  margin: 0;
+}
+
+.coverage-summary-list dt {
+  color: var(--acadia-color-text-muted);
+  font-size: 0.75rem;
+  font-weight: 800;
+  line-height: 1rem;
+  text-transform: uppercase;
+}
+
+.coverage-summary-list dd {
+  color: var(--acadia-color-text);
+  font-size: 0.875rem;
+  font-weight: 900;
+  line-height: 1.15rem;
+  margin-top: 0.2rem;
+}
+
 .snapshot-meta {
   display: grid;
   gap: 0.75rem;
@@ -1680,6 +1809,10 @@ body {
   .snapshot-meta {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+
+  .source-health-summary {
+    grid-template-columns: 1fr;
+  }
 }
 
 @media (max-width: 767.98px) {
@@ -1756,7 +1889,9 @@ body {
   .commodity-grid,
   .digital-assets-grid,
   .economic-health-grid,
-    .snapshot-meta {
+  .source-health-list,
+  .coverage-summary-list,
+  .snapshot-meta {
     grid-template-columns: 1fr;
   }
 

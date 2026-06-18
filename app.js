@@ -1129,6 +1129,110 @@ function sourceStatusLabel(items, sourceName) {
   return "Unavailable";
 }
 
+function sourceGroupHealth(items) {
+  if (!items?.length) {
+    return "unavailable";
+  }
+
+  const liveCount = items.filter((item) => item.sourceStatus === "Source-backed").length;
+  const delayedCount = items.filter((item) => item.freshness?.status === "delayed").length;
+  const staleCount = items.filter((item) => item.freshness?.status === "stale").length;
+
+  if (liveCount === 0) {
+    return "unavailable";
+  }
+
+  if (liveCount < items.length || delayedCount > 0 || staleCount > 0) {
+    return "caution";
+  }
+
+  return "current";
+}
+
+function sourceHealthGroups(snapshot) {
+  return [
+    {
+      id: "markets",
+      label: "Market data",
+      current: "Market data updated today",
+      caution: "Market data partially connected",
+      unavailable: "Market data unavailable",
+      items: snapshot.marketPulse || [],
+    },
+    {
+      id: "economic-releases",
+      label: "Economic releases",
+      current: "Economic releases current",
+      caution: "Economic releases need review",
+      unavailable: "Economic releases unavailable",
+      items: snapshot.economicHealth || [],
+    },
+    {
+      id: "risk-indicators",
+      label: "Risk indicators",
+      current: "Risk indicators current",
+      caution: "Risk indicators partially connected",
+      unavailable: "Risk indicators unavailable",
+      items: snapshot.riskIndicators || [],
+    },
+    {
+      id: "regional-coverage",
+      label: "Regional coverage",
+      current: "Regional coverage current",
+      caution: "Regional coverage cadence needs review",
+      unavailable: "Regional coverage unavailable",
+      items: snapshot.regions || [],
+    },
+  ].map((group) => ({
+    ...group,
+    health: sourceGroupHealth(group.items),
+  }));
+}
+
+function sourceHealthCopy(groups, snapshot) {
+  const unavailableCount = groups.filter((group) => group.health === "unavailable").length;
+  const cautionCount = groups.filter((group) => group.health === "caution").length;
+
+  if (unavailableCount === groups.length) {
+    return "Public data sources are unavailable right now.";
+  }
+
+  if (snapshot?.status === "partial" || unavailableCount > 0 || cautionCount > 0) {
+    return "Some connected data sources need attention.";
+  }
+
+  return "All connected data sources are current.";
+}
+
+function renderSourceHealth(snapshot) {
+  const groups = sourceHealthGroups(snapshot);
+  const operationalCount = groups.filter((group) => group.health !== "unavailable").length;
+  const cautionCount = groups.filter((group) => group.health === "caution").length;
+  const detail =
+    cautionCount > 0
+      ? `${operationalCount} of ${groups.length} source groups operational with ${cautionCount} flagged`
+      : `${operationalCount} of ${groups.length} source groups operational`;
+
+  setText("#source-health-score", `${operationalCount}/${groups.length}`);
+  setText("#source-health-detail", detail);
+  setHtml(
+    "#source-health-list",
+    groups
+      .map((group) => {
+        const label = group[group.health] || group.current;
+
+        return `
+          <li class="source-health-item source-health-${group.health}">
+            <i class="fa-solid ${group.health === "current" ? "fa-circle-check" : group.health === "caution" ? "fa-clock" : "fa-circle-exclamation"} acadia-icon" aria-hidden="true"></i>
+            <span>${escapeHtml(label)}</span>
+          </li>
+        `;
+      })
+      .join(""),
+  );
+  setText("#source-coverage-copy", sourceHealthCopy(groups, snapshot));
+}
+
 function formatReleaseWindow(releaseRange) {
   const latest = formatReleaseDate(releaseRange?.latest, releaseRange?.latestCadence);
   const earliest = formatReleaseDate(releaseRange?.earliest, releaseRange?.earliestCadence);
@@ -2327,12 +2431,8 @@ function applyLiveSnapshot(snapshot) {
   setText("#economy-title", "Economy");
   setText("#risk-title", "Risk and confidence");
   setText("#global-title", "Regional growth");
-  setText("#source-coverage-title", "Data coverage");
-  setText(
-    "#source-coverage-copy",
-    snapshot.freshness?.copy ||
-      "Connected source freshness is summarized here so individual cards can stay compact.",
-  );
+  setText("#source-coverage-title", "Source Health");
+  renderSourceHealth(snapshot);
   setText(
     "#source-provider-copy",
     "Financial data provided by Yahoo Finance. Economic releases provided by FRED. Regional growth provided by World Bank.",
@@ -2415,6 +2515,26 @@ function applyLiveFallback() {
   setText(
     "#source-coverage-copy",
     "Live data is unavailable in this view. Current values will appear when public sources respond.",
+  );
+  setText("#source-health-score", "0/4");
+  setText("#source-health-detail", "Source groups unavailable");
+  setHtml(
+    "#source-health-list",
+    [
+      "Market data unavailable",
+      "Economic releases unavailable",
+      "Risk indicators unavailable",
+      "Regional coverage unavailable",
+    ]
+      .map(
+        (label) => `
+          <li class="source-health-item source-health-unavailable">
+            <i class="fa-solid fa-circle-exclamation acadia-icon" aria-hidden="true"></i>
+            <span>${escapeHtml(label)}</span>
+          </li>
+        `,
+      )
+      .join(""),
   );
   setText("#latest-release-window", "Unavailable");
   setText("#live-last-checked", "Unavailable");

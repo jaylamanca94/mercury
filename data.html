@@ -3,15 +3,15 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="Mercury data coverage and source freshness page.">
-    <title>Data Coverage | Mercury</title>
+    <meta name="description" content="Mercury data status and source freshness page.">
+    <title>Data Status | Mercury</title>
     <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
     <link rel="manifest" href="site.webmanifest">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" referrerpolicy="no-referrer">
     <link rel="stylesheet" href="styles.css?v=20260618-apollo-direction">
   </head>
   <body class="mercury-app mercury-page-detail mercury-page-data" data-mercury-page="data">
-    <a class="skip-link" href="#main-content">Skip to data coverage</a>
+    <a class="skip-link" href="#main-content">Skip to data status</a>
 
     <header class="app-header acadia-chrome">
       <div class="app-header-inner acadia-chrome-inner">
@@ -40,10 +40,10 @@
         <div class="page-title-group acadia-section-header-copy">
           <span class="acadia-kicker">Deep dive</span>
           <div class="view-heading">
-            <h1 id="view-title" class="acadia-title">Data Coverage</h1>
+            <h1 id="view-title" class="acadia-title">Data Status</h1>
           </div>
           <p class="hero-insight acadia-text-muted">
-            See source status, latest release windows, freshness, and provider context for the public data behind Mercury.
+            Check source health, release freshness, and coverage behind Mercury's public economy read.
           </p>
         </div>
         <div class="page-controls-row" aria-label="Data controls">
@@ -65,17 +65,66 @@
           <div class="section-heading compact-section-heading">
             <div>
               <span class="acadia-kicker">Live data</span>
-              <h2 id="source-coverage-title" class="acadia-title">Data coverage</h2>
+              <h2 id="source-coverage-title" class="acadia-title">Source Health</h2>
             </div>
           </div>
           <p id="source-coverage-copy" class="acadia-text-muted">
             Mercury is checking public data releases and will show the latest available dates when
             the snapshot loads.
           </p>
+          <div class="source-health-summary" aria-label="Source health summary">
+            <div class="source-health-score">
+              <span class="acadia-kicker">Coverage score</span>
+              <strong id="source-health-score">Checking</strong>
+              <small id="source-health-detail">Checking provider availability</small>
+            </div>
+            <ul id="source-health-list" class="source-health-list">
+              <li>Checking market data.</li>
+              <li>Checking economic releases.</li>
+              <li>Checking risk indicators.</li>
+              <li>Checking regional coverage.</li>
+            </ul>
+          </div>
           <p id="source-provider-copy" class="source-provider-copy acadia-text-muted">
             Financial data provided by Yahoo Finance. Economic releases provided by FRED. Regional
             growth provided by World Bank.
           </p>
+          <div class="coverage-summary" aria-labelledby="coverage-summary-title">
+            <div class="coverage-summary-heading">
+              <span class="acadia-kicker">Coverage summary</span>
+              <h3 id="coverage-summary-title">What powers each signal</h3>
+            </div>
+            <dl id="coverage-summary-list" class="coverage-summary-list">
+              <div>
+                <dt>Markets</dt>
+                <dd>Yahoo Finance</dd>
+              </div>
+              <div>
+                <dt>Commodities</dt>
+                <dd>Yahoo Finance</dd>
+              </div>
+              <div>
+                <dt>Currencies</dt>
+                <dd>Yahoo Finance</dd>
+              </div>
+              <div>
+                <dt>Inflation</dt>
+                <dd>FRED</dd>
+              </div>
+              <div>
+                <dt>GDP</dt>
+                <dd>FRED</dd>
+              </div>
+              <div>
+                <dt>Unemployment</dt>
+                <dd>FRED</dd>
+              </div>
+              <div>
+                <dt>Regional Growth</dt>
+                <dd>World Bank</dd>
+              </div>
+            </dl>
+          </div>
           <dl class="snapshot-meta" aria-label="Live snapshot status">
             <div>
               <dt>Latest data release</dt>

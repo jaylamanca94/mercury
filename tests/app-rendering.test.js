@@ -630,6 +630,55 @@ test("supports page adds interpreted signals, context, and split asset sections"
   assert.doesNotMatch(result.digital, /Oil/);
 });
 
+test("data page summarizes source health and coverage", () => {
+  assert.match(dataHtml, /<title>Data Status \| Mercury<\/title>/);
+  assert.match(dataHtml, /id="view-title" class="acadia-title">Data Status<\/h1>/);
+  assert.match(dataHtml, /id="source-health-score"/);
+  assert.match(dataHtml, /id="source-health-list"/);
+  assert.match(dataHtml, /id="coverage-summary-list"/);
+  assert.match(dataHtml, /<dt>Markets<\/dt>\s*<dd>Yahoo Finance<\/dd>/);
+  assert.match(dataHtml, /<dt>Inflation<\/dt>\s*<dd>FRED<\/dd>/);
+  assert.match(dataHtml, /<dt>Regional Growth<\/dt>\s*<dd>World Bank<\/dd>/);
+  assert.match(styles, /\.source-health-summary\s*{[^}]*grid-template-columns: minmax\(10rem, 0\.32fr\) minmax\(0, 1fr\);/s);
+  assert.match(styles, /\.coverage-summary-list\s*{[^}]*grid-template-columns: repeat\(2, minmax\(0, 1fr\)\);/s);
+
+  const context = loadAppContext("data");
+  const result = vm.runInContext(
+    `
+      renderSourceHealth({
+        status: "ready",
+        marketPulse: [
+          { sourceStatus: "Source-backed", freshness: { status: "current" } },
+        ],
+        economicHealth: [
+          { sourceStatus: "Source-backed", freshness: { status: "current" } },
+        ],
+        riskIndicators: [
+          { sourceStatus: "Source-backed", freshness: { status: "current" } },
+        ],
+        regions: [
+          { sourceStatus: "Source-backed", freshness: { status: "current" } },
+        ],
+      });
+      ({
+        score: document.querySelector("#source-health-score").textContent,
+        detail: document.querySelector("#source-health-detail").textContent,
+        copy: document.querySelector("#source-coverage-copy").textContent,
+        list: document.querySelector("#source-health-list").innerHTML,
+      });
+    `,
+    context,
+  );
+
+  assert.equal(result.score, "4/4");
+  assert.match(result.detail, /4 of 4 source groups operational/);
+  assert.equal(result.copy, "All connected data sources are current.");
+  assert.match(result.list, /Market data updated today/);
+  assert.match(result.list, /Economic releases current/);
+  assert.match(result.list, /Risk indicators current/);
+  assert.match(result.list, /Regional coverage current/);
+});
+
 test("bitcoin card uses the bitcoin brand icon", () => {
   const context = loadAppContext();
   const html = vm.runInContext(
