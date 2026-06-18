@@ -86,29 +86,63 @@ function loadAppContext(page = "dashboard") {
   return context;
 }
 
-test("focused regional fallback does not reuse U.S. starter cards", () => {
+test("focused regional markets expose region-specific economy lenses", () => {
   const context = loadAppContext();
-  const cards = vm.runInContext(
+  const cardsByRegion = vm.runInContext(
     `
       selectedRegion = "Europe";
-      regionalMarketCards().map((card) => ({
-        context: card.context,
+      const europe = regionalMarketCards().map((card) => ({
+        marketRole: card.marketRole,
         name: card.name,
         region: card.region,
-        sourceStatus: card.sourceStatus,
+        ticker: card.ticker,
       }));
+      selectedRegion = "Asia";
+      const asia = regionalMarketCards().map((card) => ({
+        marketRole: card.marketRole,
+        name: card.name,
+        region: card.region,
+        ticker: card.ticker,
+      }));
+      selectedRegion = "United States";
+      const unitedStates = regionalMarketCards().map((card) => ({
+        marketRole: card.marketRole,
+        name: card.name,
+        region: card.region,
+        ticker: card.ticker,
+      }));
+      ({ asia, europe, unitedStates });
     `,
     context,
   );
-  const normalizedCards = JSON.parse(JSON.stringify(cards));
+  const normalizedCards = JSON.parse(JSON.stringify(cardsByRegion));
 
   assert.deepEqual(
-    normalizedCards.map((card) => card.name),
-    ["Europe", "Small Cap", "Technology", "Bonds"],
+    normalizedCards.unitedStates.map((card) => card.name),
+    ["S&P 500", "Small Cap", "Technology", "Financials", "Industrials", "Bonds"],
   );
-  assert.equal(normalizedCards.some((card) => card.name === "S&P 500"), false);
-  assert.equal(normalizedCards.every((card) => card.region === "Europe"), true);
-  assert.equal(normalizedCards.every((card) => card.sourceStatus === "Unavailable"), true);
+  assert.deepEqual(
+    normalizedCards.unitedStates.map((card) => card.ticker),
+    ["VOO", "VSMAX", "VGT", "VFH", "VIS", "BND"],
+  );
+  assert.deepEqual(
+    normalizedCards.europe.map((card) => card.name),
+    ["Europe", "Financials", "Industrials", "Healthcare", "Consumer", "Energy"],
+  );
+  assert.deepEqual(
+    normalizedCards.europe.map((card) => card.ticker),
+    ["VGK", "SX7P", "SXNP", "SXDP", "SXQP", "SXEP"],
+  );
+  assert.deepEqual(
+    normalizedCards.asia.map((card) => card.name),
+    ["Japan", "China", "India", "Taiwan", "South Korea", "Asia Broad"],
+  );
+  assert.deepEqual(
+    normalizedCards.asia.map((card) => card.ticker),
+    ["EWJ", "MCHI", "INDA", "EWT", "EWY", "VPL"],
+  );
+  assert.equal(normalizedCards.europe.every((card) => card.region === "Europe"), true);
+  assert.equal(normalizedCards.asia.every((card) => card.region === "Asia"), true);
 });
 
 test("global fallback cards explain missing market proxies", () => {
@@ -255,9 +289,11 @@ test("markets page adds contextual key drivers for global and focused regions", 
         { id: "us-equities", name: "S&P 500", value: "$681.41", change: "+2.2%", ticker: "VOO", viewGroup: "economy", region: "United States", marketRole: "large-cap", sourceStatus: "Source-backed", freshness: { status: "current" }, history: [{ value: 666 }, { value: 681.41 }], comparison: "percent-change" },
         { id: "us-small-cap", name: "Small Cap", value: "$142.01", change: "+1.7%", ticker: "VSMAX", viewGroup: "economy", region: "United States", marketRole: "small-cap", sourceStatus: "Source-backed", freshness: { status: "current" }, history: [{ value: 139.6 }, { value: 142.01 }], comparison: "percent-change" },
         { id: "us-technology", name: "Technology", value: "$116.93", change: "+4.1%", ticker: "VGT", viewGroup: "economy", region: "United States", marketRole: "technology", sourceStatus: "Source-backed", freshness: { status: "current" }, history: [{ value: 112.33 }, { value: 116.93 }], comparison: "percent-change" },
+        { id: "us-financials", name: "Financials", value: "$108.12", change: "+1.1%", ticker: "VFH", viewGroup: "economy", region: "United States", marketRole: "financials", sourceStatus: "Source-backed", freshness: { status: "current" }, history: [{ value: 106.94 }, { value: 108.12 }], comparison: "percent-change" },
+        { id: "us-industrials", name: "Industrials", value: "$238.33", change: "+0.9%", ticker: "VIS", viewGroup: "economy", region: "United States", marketRole: "industrials", sourceStatus: "Source-backed", freshness: { status: "current" }, history: [{ value: 236.2 }, { value: 238.33 }], comparison: "percent-change" },
         { id: "bonds", name: "Bonds", value: "$73.14", change: "+0.3%", ticker: "BND", viewGroup: "economy", region: "United States", marketRole: "bonds", sourceStatus: "Source-backed", freshness: { status: "current" }, history: [{ value: 72.92 }, { value: 73.14 }], comparison: "percent-change" },
         { id: "europe-equities", name: "Europe", value: "$89.23", change: "+2.9%", ticker: "VGK", viewGroup: "economy", region: "Europe", marketRole: "large-cap", sourceStatus: "Source-backed", freshness: { status: "current" }, history: [{ value: 86.74 }, { value: 89.23 }], comparison: "percent-change" },
-        { id: "asia-equities", name: "Asia Pacific", value: "$117.16", change: "+7.5%", ticker: "VPL", viewGroup: "economy", region: "Asia", marketRole: "large-cap", sourceStatus: "Source-backed", freshness: { status: "current" }, history: [{ value: 108.99 }, { value: 117.16 }], comparison: "percent-change" },
+        { id: "asia-equities", name: "Asia Broad", value: "$117.16", change: "+7.5%", ticker: "VPL", viewGroup: "economy", region: "Asia", marketRole: "large-cap", sourceStatus: "Source-backed", freshness: { status: "current" }, history: [{ value: 108.99 }, { value: 117.16 }], comparison: "percent-change" },
       ];
       selectedRegion = "Global";
       renderDashboard();

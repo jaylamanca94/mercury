@@ -1,9 +1,10 @@
-function pendingMetric(name, context, icon, id, ticker) {
+function pendingMetric(name, context, icon, id, ticker, options = {}) {
   return {
     ...(id ? { id } : {}),
     name,
     context,
     ...(ticker ? { ticker } : {}),
+    ...options,
     value: "Loading",
     trend: "Pending",
     tone: "stable",
@@ -58,10 +59,114 @@ function pendingRegion(name) {
 }
 
 let marketPulse = [
-  pendingMetric("S&P 500", "Vanguard S&P 500 ETF", "fa-building", "us-equities", "VOO"),
-  pendingMetric("Small Cap", "Vanguard Small-Cap Index Fund", "fa-shop", "us-small-cap", "VSMAX"),
-  pendingMetric("Technology", "Vanguard Information Technology ETF", "fa-microchip", "us-technology", "VGT"),
-  pendingMetric("Bonds", "Total bond market ETF", "fa-scale-balanced", "bonds", "BND"),
+  pendingMetric("S&P 500", "Vanguard S&P 500 ETF", "fa-building", "us-equities", "VOO", {
+    marketOrder: 10,
+    marketRole: "large-cap",
+    region: "United States",
+    viewGroup: "economy",
+  }),
+  pendingMetric("Small Cap", "Vanguard Small-Cap Index Fund", "fa-shop", "us-small-cap", "VSMAX", {
+    marketOrder: 20,
+    marketRole: "small-cap",
+    region: "United States",
+    viewGroup: "economy",
+  }),
+  pendingMetric("Technology", "Vanguard Information Technology ETF", "fa-microchip", "us-technology", "VGT", {
+    marketOrder: 30,
+    marketRole: "technology",
+    region: "United States",
+    viewGroup: "economy",
+  }),
+  pendingMetric("Financials", "Vanguard Financials ETF", "fa-building-columns", "us-financials", "VFH", {
+    marketOrder: 40,
+    marketRole: "financials",
+    region: "United States",
+    viewGroup: "economy",
+  }),
+  pendingMetric("Industrials", "Vanguard Industrials ETF", "fa-industry", "us-industrials", "VIS", {
+    marketOrder: 50,
+    marketRole: "industrials",
+    region: "United States",
+    viewGroup: "economy",
+  }),
+  pendingMetric("Bonds", "Total bond market ETF", "fa-scale-balanced", "bonds", "BND", {
+    marketOrder: 60,
+    marketRole: "bonds",
+    region: "United States",
+    viewGroup: "economy",
+  }),
+  pendingMetric("Europe", "Vanguard FTSE Europe ETF", "fa-earth-europe", "europe-equities", "VGK", {
+    marketOrder: 10,
+    marketRole: "large-cap",
+    region: "Europe",
+    viewGroup: "economy",
+  }),
+  pendingMetric("Financials", "STOXX Europe banks index", "fa-building-columns", "europe-financials", "SX7P", {
+    marketOrder: 20,
+    marketRole: "financials",
+    region: "Europe",
+    viewGroup: "economy",
+  }),
+  pendingMetric("Industrials", "STOXX Europe industrials index", "fa-industry", "europe-industrials", "SXNP", {
+    marketOrder: 30,
+    marketRole: "industrials",
+    region: "Europe",
+    viewGroup: "economy",
+  }),
+  pendingMetric("Healthcare", "STOXX Europe healthcare index", "fa-heart-pulse", "europe-healthcare", "SXDP", {
+    marketOrder: 40,
+    marketRole: "healthcare",
+    region: "Europe",
+    viewGroup: "economy",
+  }),
+  pendingMetric("Consumer", "STOXX Europe consumer index", "fa-bag-shopping", "europe-consumer", "SXQP", {
+    marketOrder: 50,
+    marketRole: "consumer",
+    region: "Europe",
+    viewGroup: "economy",
+  }),
+  pendingMetric("Energy", "STOXX Europe energy index", "fa-bolt", "europe-energy", "SXEP", {
+    marketOrder: 60,
+    marketRole: "energy",
+    region: "Europe",
+    viewGroup: "economy",
+  }),
+  pendingMetric("Japan", "iShares MSCI Japan ETF", "fa-torii-gate", "asia-japan", "EWJ", {
+    marketOrder: 10,
+    marketRole: "country",
+    region: "Asia",
+    viewGroup: "economy",
+  }),
+  pendingMetric("China", "iShares MSCI China ETF", "fa-city", "asia-china", "MCHI", {
+    marketOrder: 20,
+    marketRole: "country",
+    region: "Asia",
+    viewGroup: "economy",
+  }),
+  pendingMetric("India", "iShares MSCI India ETF", "fa-landmark-dome", "asia-india", "INDA", {
+    marketOrder: 30,
+    marketRole: "country",
+    region: "Asia",
+    viewGroup: "economy",
+  }),
+  pendingMetric("Taiwan", "iShares MSCI Taiwan ETF", "fa-microchip", "asia-taiwan", "EWT", {
+    marketOrder: 40,
+    marketRole: "country",
+    region: "Asia",
+    viewGroup: "economy",
+  }),
+  pendingMetric("South Korea", "iShares MSCI South Korea ETF", "fa-industry", "asia-south-korea", "EWY", {
+    marketOrder: 50,
+    marketRole: "country",
+    region: "Asia",
+    viewGroup: "economy",
+  }),
+  pendingMetric("Asia Broad", "Vanguard FTSE Pacific ETF", "fa-earth-asia", "asia-equities", "VPL", {
+    marketOrder: 60,
+    marketRole: "large-cap",
+    region: "Asia",
+    viewGroup: "economy",
+  }),
   pendingMetric("U.S. dollar", "Dollar index fund proxy", "fa-dollar-sign", "dollar-index", "UUP"),
   pendingMetric("Euro", "EUR/USD exchange rate", "fa-euro-sign", "euro", "EUR/USD"),
   pendingMetric("Yen", "USD/JPY exchange rate", "fa-yen-sign", "yen", "USD/JPY"),
@@ -132,7 +237,18 @@ const PERIOD_OPTIONS = {
   },
 };
 
-const MARKET_ROLE_ORDER = ["large-cap", "small-cap", "technology", "bonds"];
+const MARKET_ROLE_ORDER = [
+  "large-cap",
+  "small-cap",
+  "technology",
+  "financials",
+  "industrials",
+  "healthcare",
+  "consumer",
+  "energy",
+  "country",
+  "bonds",
+];
 const CONTEXT_ONLY_METRIC_IDS = new Set(["oil", "dollar-index", "euro", "yen", "inflation", "interest-rates"]);
 const CONTEXT_ONLY_TREND_MODELS = new Set(["commodity", "currency", "dollar", "inflation", "policy-rate"]);
 const currentPage = document.body?.dataset?.mercuryPage || "dashboard";
@@ -444,6 +560,12 @@ function marketDriverCategory(card) {
   if (card.marketRole === "large-cap") return "Core market";
   if (card.marketRole === "small-cap") return "Small cap";
   if (card.marketRole === "technology") return "Sector";
+  if (card.marketRole === "financials") return "Financial system";
+  if (card.marketRole === "industrials") return "Production";
+  if (card.marketRole === "healthcare") return "Defensive sector";
+  if (card.marketRole === "consumer") return "Demand signal";
+  if (card.marketRole === "energy") return "Input costs";
+  if (card.marketRole === "country") return "Country";
   if (card.marketRole === "bonds") return "Defensive asset";
 
   return "Driver";
@@ -1389,6 +1511,12 @@ function metricIconClass(metric) {
   if (metric.marketRole === "large-cap") return "fa-building";
   if (metric.marketRole === "small-cap") return "fa-shop";
   if (metric.marketRole === "technology") return "fa-microchip";
+  if (metric.marketRole === "financials") return "fa-building-columns";
+  if (metric.marketRole === "industrials") return "fa-industry";
+  if (metric.marketRole === "healthcare") return "fa-heart-pulse";
+  if (metric.marketRole === "consumer") return "fa-bag-shopping";
+  if (metric.marketRole === "energy") return "fa-bolt";
+  if (metric.marketRole === "country") return "fa-earth-asia";
   if (normalizedName.includes("credit")) return "fa-credit-card";
   if (normalizedName.includes("stress")) return "fa-chart-line";
   if (normalizedName.includes("volatility")) return "fa-chart-line";
@@ -2137,17 +2265,16 @@ function findMetric(items, id, name) {
 }
 
 function marketRoleRank(metric) {
+  if (Number.isFinite(metric.marketOrder)) {
+    return metric.marketOrder;
+  }
+
   const index = MARKET_ROLE_ORDER.indexOf(metric.marketRole);
   return index === -1 ? MARKET_ROLE_ORDER.length : index;
 }
 
-function unavailableRegionalMarketCards(region) {
-  return [
-    { name: region, context: "Large-cap market proxy", marketRole: "large-cap" },
-    { name: "Small Cap", context: `${region} small-cap proxy`, marketRole: "small-cap" },
-    { name: "Technology", context: `${region} technology proxy`, marketRole: "technology" },
-    { name: "Bonds", context: `${region} bond proxy`, marketRole: "bonds" },
-  ].map((metric) => ({
+function unavailableRegionalMetric(metric, region) {
+  return {
     ...metric,
     value: "Unavailable",
     trend: "Unavailable",
@@ -2166,7 +2293,40 @@ function unavailableRegionalMarketCards(region) {
     history: [],
     comparison: "percent-change",
     region,
-  }));
+  };
+}
+
+function unavailableRegionalMarketCards(region) {
+  if (region === "Europe") {
+    return [
+      { name: "Europe", context: "Broad Europe proxy", marketRole: "large-cap", marketOrder: 10 },
+      { name: "Financials", context: "Europe financial system proxy", marketRole: "financials", marketOrder: 20 },
+      { name: "Industrials", context: "Europe production proxy", marketRole: "industrials", marketOrder: 30 },
+      { name: "Healthcare", context: "Europe defensive sector proxy", marketRole: "healthcare", marketOrder: 40 },
+      { name: "Consumer", context: "Europe demand proxy", marketRole: "consumer", marketOrder: 50 },
+      { name: "Energy", context: "Europe energy proxy", marketRole: "energy", marketOrder: 60 },
+    ].map((metric) => unavailableRegionalMetric(metric, region));
+  }
+
+  if (region === "Asia") {
+    return [
+      { name: "Japan", context: "Japan market proxy", marketRole: "country", marketOrder: 10 },
+      { name: "China", context: "China market proxy", marketRole: "country", marketOrder: 20 },
+      { name: "India", context: "India market proxy", marketRole: "country", marketOrder: 30 },
+      { name: "Taiwan", context: "Taiwan market proxy", marketRole: "country", marketOrder: 40 },
+      { name: "South Korea", context: "South Korea market proxy", marketRole: "country", marketOrder: 50 },
+      { name: "Asia Broad", context: "Broad Asia-Pacific proxy", marketRole: "large-cap", marketOrder: 60 },
+    ].map((metric) => unavailableRegionalMetric(metric, region));
+  }
+
+  return [
+    { name: "S&P 500", context: "Broad U.S. economy proxy", marketRole: "large-cap", marketOrder: 10 },
+    { name: "Small Cap", context: "Domestic growth sensitivity proxy", marketRole: "small-cap", marketOrder: 20 },
+    { name: "Technology", context: "Innovation and risk appetite proxy", marketRole: "technology", marketOrder: 30 },
+    { name: "Financials", context: "Credit and banking proxy", marketRole: "financials", marketOrder: 40 },
+    { name: "Industrials", context: "Production and capex proxy", marketRole: "industrials", marketOrder: 50 },
+    { name: "Bonds", context: "Interest rate environment proxy", marketRole: "bonds", marketOrder: 60 },
+  ].map((metric) => unavailableRegionalMetric(metric, region));
 }
 
 function regionalMarketCards() {
