@@ -464,6 +464,7 @@ body {
 }
 
 .page-controls-row {
+  align-self: start;
   display: flex;
   grid-column: 2;
   grid-row: 1;
@@ -471,6 +472,10 @@ body {
   justify-content: flex-end;
   padding-top: 0.125rem;
   z-index: 1;
+}
+
+.page-controls-row .page-actions {
+  align-items: start;
 }
 
 .page-title-row {

@@ -536,6 +536,7 @@ test("five-year period and long sparkline smoothing are available", () => {
   assert.match(indexHtml, /<option value="fiveYear">5 years<\/option>/);
   assert.match(indexHtml, /class="page-title-row[^"]*"[\s\S]*class="page-controls-row"[\s\S]*economy-period-select/s);
   assert.match(styles, /\.page-controls-row\s*{[^}]*justify-content: flex-end;/s);
+  assert.match(styles, /\.page-controls-row\s*{[^}]*align-self: start;/s);
   assert.match(styles, /\.page-controls-row\s*{[^}]*grid-column: 2;/s);
   assert.match(styles, /\.page-controls-row\s*{[^}]*grid-row: 1;/s);
   assert.doesNotMatch(indexHtml, /page-actions-card/);
@@ -549,6 +550,7 @@ test("hero controls anchor to the top right on desktop and stack on smaller scre
   );
   assert.match(styles, /\.page-title-group\s*{[^}]*grid-column: 1 \/ -1;[^}]*grid-row: 1;/s);
   assert.match(styles, /\.page-controls-row\s*{[^}]*justify-self: end;/s);
+  assert.match(styles, /\.page-controls-row \.page-actions\s*{[^}]*align-items: start;/s);
   assert.match(
     styles,
     /@media \(max-width: 1023\.98px\)[\s\S]*\.page-title-row\s*{[^}]*grid-template-columns: 1fr;/s,
