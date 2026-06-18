@@ -690,6 +690,61 @@ test("supports page adds interpreted signals, context, and split asset sections"
   assert.doesNotMatch(result.digital, /Oil/);
 });
 
+test("indicators page adds economic read, drivers, and interpretation", () => {
+  assert.match(indicatorsHtml, /id="indicator-read-copy"/);
+  assert.match(indicatorsHtml, /id="indicator-drivers-list"/);
+  assert.match(indicatorsHtml, /id="indicator-meaning-copy"/);
+  assert.match(indicatorsHtml, /Economic Read/);
+  assert.match(indicatorsHtml, /Key Drivers/);
+  assert.match(indicatorsHtml, /What It Means/);
+  assert.match(
+    styles,
+    /\.indicator-briefing-grid\s*{[^}]*grid-template-columns: minmax\(0, 1\.35fr\) repeat\(2, minmax\(0, 1fr\)\);/s,
+  );
+  assert.match(
+    styles,
+    /@media \(max-width: 1023\.98px\)[\s\S]*\.briefing-grid,\s*\.indicator-briefing-grid,\s*\.supports-briefing-grid\s*{[^}]*grid-template-columns: 1fr;/s,
+  );
+
+  const context = loadAppContext("indicators");
+  const result = vm.runInContext(
+    `
+      selectedEconomyPeriod = "week";
+      economicHealth = [
+        { id: "inflation", name: "Inflation", value: "4.3%", change: "+0.32 pts", icon: "fa-receipt", sourceStatus: "Source-backed", freshness: { status: "current" }, history: [{ value: 4.0 }, { value: 4.3 }], comparison: "point-change", trendModel: "inflation" },
+        { id: "interest-rates", name: "Interest rates", value: "3.63%", change: "-0.01 pts", icon: "fa-percent", sourceStatus: "Source-backed", freshness: { status: "current" }, history: [{ value: 3.64 }, { value: 3.63 }], comparison: "point-change", trendModel: "policy-rate" },
+        { id: "unemployment", name: "Unemployment", value: "4.3%", change: "No change", icon: "fa-briefcase", sourceStatus: "Source-backed", freshness: { status: "current" }, history: [{ value: 4.3 }, { value: 4.3 }], comparison: "point-change" },
+        { id: "gdp-growth", name: "GDP growth", value: "1.6%", change: "+1.10 pts", icon: "fa-seedling", sourceStatus: "Source-backed", freshness: { status: "current" }, history: [{ value: 0.5 }, { value: 1.6 }], comparison: "point-change" },
+      ];
+      riskIndicators = [
+        { name: "Volatility", value: "18.4", change: "+2.03 pts", tone: "caution", sourceStatus: "Source-backed", freshness: { status: "current" }, comparison: "point-change" },
+        { name: "Credit stress", value: "$79.73", change: "-0.4%", tone: "down", sourceStatus: "Source-backed", freshness: { status: "current" }, comparison: "percent-change" },
+      ];
+      renderDashboard();
+      ({
+        title: document.querySelector("#view-title").textContent,
+        hero: document.querySelector("#hero-insight").textContent,
+        read: document.querySelector("#indicator-read-copy").textContent,
+        drivers: document.querySelector("#indicator-drivers-list").innerHTML,
+        meaning: document.querySelector("#indicator-meaning-copy").textContent,
+      });
+    `,
+    context,
+  );
+
+  assert.equal(result.title, "Economic Indicators");
+  assert.match(result.hero, /Economic conditions remain stable\./);
+  assert.match(result.read, /GDP growth improved to 1\.6%\./);
+  assert.match(result.read, /Unemployment is unchanged at 4\.3%\./);
+  assert.match(result.read, /Inflation rose to 4\.3%, keeping price pressure visible\./);
+  assert.match(result.read, /Interest rates remain restrictive at 3\.63%\./);
+  assert.match(result.drivers, /Volatility/);
+  assert.match(result.drivers, /Market volatility moved \+2\.03 pts/);
+  assert.match(result.drivers, /GDP Growth/);
+  assert.match(result.meaning, /Inflation at 4\.3% and rates at 3\.63% define the constraint on growth/);
+  assert.match(result.meaning, /volatility at 18\.4 shows how much market stress is attached to the macro data/);
+});
+
 test("data page summarizes source health and coverage", () => {
   assert.match(dataHtml, /<title>Data Status \| Mercury<\/title>/);
   assert.match(dataHtml, /id="view-title" class="acadia-title">Data Status<\/h1>/);

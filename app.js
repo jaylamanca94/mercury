@@ -2065,6 +2065,178 @@ function buildRiskWatchItems(riskCards, healthCards) {
     .slice(0, 3);
 }
 
+function numericDeltaValue(card) {
+  if (Number.isFinite(card?.periodChangeValue)) {
+    return card.periodChangeValue;
+  }
+
+  const value = Number.parseFloat(String(card?.periodChange || card?.change || "").replace(/,/g, ""));
+
+  return Number.isFinite(value) ? value : 0;
+}
+
+function indicatorReadSentence(card) {
+  if (!card || card.sourceStatus === "Unavailable" || card.value === "Unavailable") {
+    return "";
+  }
+
+  const value = card.value || "Loading";
+  const delta = card.periodChange || metricDeltaLabel(card);
+  const numericDelta = numericDeltaValue(card);
+
+  if (card.id === "gdp-growth") {
+    if (numericDelta > 0.05) {
+      return `GDP growth improved to ${value}.`;
+    }
+
+    if (numericDelta < -0.05) {
+      return `GDP growth softened to ${value}.`;
+    }
+
+    return `GDP growth is steady at ${value}.`;
+  }
+
+  if (card.id === "unemployment") {
+    if (numericDelta < -0.05) {
+      return `Unemployment improved to ${value}.`;
+    }
+
+    if (numericDelta > 0.05) {
+      return `Unemployment rose to ${value}, adding labor-market pressure.`;
+    }
+
+    return `Unemployment is unchanged at ${value}.`;
+  }
+
+  if (card.id === "inflation") {
+    if (numericDelta < -0.05) {
+      return `Inflation cooled to ${value}, but still matters for household purchasing power.`;
+    }
+
+    if (numericDelta > 0.05) {
+      return `Inflation rose to ${value}, keeping price pressure visible.`;
+    }
+
+    return `Inflation is steady at ${value}, keeping price pressure in view.`;
+  }
+
+  if (card.id === "interest-rates") {
+    if (numericDelta < -0.05) {
+      return `Interest rates eased to ${value}, but policy is still restrictive.`;
+    }
+
+    if (numericDelta > 0.05) {
+      return `Interest rates moved higher to ${value}, keeping policy restrictive.`;
+    }
+
+    return `Interest rates remain restrictive at ${value}.`;
+  }
+
+  return `${displayMetricName(card)} is ${value} with ${delta} change.`;
+}
+
+function buildIndicatorRead(healthCards) {
+  const gdp = findMetric(healthCards, "gdp-growth", "GDP growth");
+  const unemployment = findMetric(healthCards, "unemployment", "Unemployment");
+  const inflation = findMetric(healthCards, "inflation", "Inflation");
+  const rates = findMetric(healthCards, "interest-rates", "Interest rates");
+  const sentences = [
+    "Economic conditions remain stable.",
+    indicatorReadSentence(gdp),
+    indicatorReadSentence(unemployment),
+    indicatorReadSentence(inflation),
+    indicatorReadSentence(rates),
+  ].filter(Boolean);
+
+  return sentences.join(" ");
+}
+
+function indicatorDriverCopy(card) {
+  const name = displayMetricName(card);
+  const delta = card.periodChange || metricDeltaLabel(card);
+  const numericDelta = numericDeltaValue(card);
+
+  if (card.id === "inflation") {
+    return numericDelta > 0
+      ? `Price pressure increased by ${delta}, making inflation the release to watch.`
+      : `Price pressure cooled by ${delta}, easing part of the macro read.`;
+  }
+
+  if (card.id === "interest-rates") {
+    return numericDelta > 0
+      ? `Policy moved tighter by ${delta}, which can pressure credit-sensitive activity.`
+      : `Policy eased by ${delta}, reducing some rate pressure.`;
+  }
+
+  if (card.id === "unemployment") {
+    return Math.abs(numericDelta) <= 0.05
+      ? `Labor conditions were unchanged, keeping employment risk stable.`
+      : `Labor conditions moved ${delta}, changing the employment backdrop.`;
+  }
+
+  if (card.id === "gdp-growth") {
+    return numericDelta >= 0
+      ? `Growth improved by ${delta}, adding support to the economic read.`
+      : `Growth softened by ${delta}, weighing on the economic read.`;
+  }
+
+  if (name === "Volatility") {
+    return `Market volatility moved ${delta}, shaping the risk backdrop.`;
+  }
+
+  return `${name} moved ${delta}, adding context to the latest release read.`;
+}
+
+function buildIndicatorDriverItems(healthCards, riskCards) {
+  return [...healthCards, ...riskCards]
+    .filter((card) => card.sourceStatus !== "Unavailable" && card.value !== "Unavailable")
+    .map((card) => ({
+      card,
+      magnitude: Math.abs(numericDeltaValue(card)),
+    }))
+    .filter((item) => item.magnitude > 0)
+    .sort((a, b) => b.magnitude - a.magnitude)
+    .slice(0, 3)
+    .map(({ card }) => ({
+      label: displayMetricName(card),
+      copy: indicatorDriverCopy(card),
+      tone: metricCardTone(card),
+    }));
+}
+
+function buildIndicatorMeaning(healthCards, riskCards) {
+  const inflation = findMetric(healthCards, "inflation", "Inflation");
+  const rates = findMetric(healthCards, "interest-rates", "Interest rates");
+  const unemployment = findMetric(healthCards, "unemployment", "Unemployment");
+  const volatility = riskCards.find((item) => item.name === "Volatility");
+  const inflationValue = inflation?.value && inflation.value !== "Unavailable" ? inflation.value : "inflation";
+  const ratesValue = rates?.value && rates.value !== "Unavailable" ? rates.value : "policy rates";
+  const unemploymentValue =
+    unemployment?.value && unemployment.value !== "Unavailable" ? unemployment.value : "the labor market";
+  const volatilityValue = volatility?.value && volatility.value !== "Unavailable" ? volatility.value : "market risk";
+
+  return `Inflation at ${inflationValue} and rates at ${ratesValue} define the constraint on growth. Unemployment at ${unemploymentValue} keeps the labor read stable, while volatility at ${volatilityValue} shows how much market stress is attached to the macro data.`;
+}
+
+function renderIndicatorBriefing(healthCards, riskCards) {
+  const driversList = document.querySelector("#indicator-drivers-list");
+
+  setText("#view-title", "Economic Indicators");
+  setText("#hero-insight", buildIndicatorRead(healthCards));
+  setHtml("#hero-movers", "");
+  setHtml("#hero-sparkline", "");
+  setText("#indicator-read-copy", buildIndicatorRead(healthCards));
+  setText("#indicator-meaning-copy", buildIndicatorMeaning(healthCards, riskCards));
+
+  if (driversList) {
+    const drivers = buildIndicatorDriverItems(healthCards, riskCards);
+
+    driversList.innerHTML = drivers.length
+      ? drivers.map(briefListItem).join("")
+      : '<li class="brief-list-item brief-list-item-unavailable"><strong>Waiting for releases</strong><span>Indicator drivers will appear when source data is available.</span></li>';
+  }
+}
+
 function buildBreadthSentence(cards) {
   const breadthCards =
     selectedRegion === "Global"
@@ -2444,10 +2616,11 @@ function renderDashboard() {
   const currencyCardsForView = currencySupportCards();
   const commodityCardsForView = commodityCards();
   const healthCards = economicHealthCards();
+  const riskCardsForView = riskMetricCards();
   const marketHeroCards = marketHeroCardsForView(globalView, regionalCards, marketCards);
   const heroCards =
     currentPage === "indicators"
-      ? [...healthCards, ...riskMetricCards()].filter(Boolean)
+      ? [...healthCards, ...riskCardsForView].filter(Boolean)
       : currentPage === "markets"
         ? marketHeroCards
         : globalView
@@ -2505,6 +2678,8 @@ function renderDashboard() {
   updateSectionBadge("#economy-change-badge", economyChange, { includeSentiment: true });
   if (currentPage === "supports") {
     renderSupportBriefing([...currencyCardsForView, ...commodityCardsForView]);
+  } else if (currentPage === "indicators") {
+    renderIndicatorBriefing(healthCards, riskCardsForView);
   } else {
     updateHeroInsight(heroCards, economyChange);
     updateSectionBadge("#currency-change-badge", sectionChange(currencyCardsForView));
@@ -2512,7 +2687,7 @@ function renderDashboard() {
   renderMarketDrivers(marketHeroCards);
 
   if (riskList) {
-    riskList.innerHTML = riskMetricCards()
+    riskList.innerHTML = riskCardsForView
       .map((item) => (isDashboardPage() ? { ...item, isOverview: true } : item))
       .map(renderMetricCard)
       .join("");

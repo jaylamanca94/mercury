@@ -981,6 +981,10 @@ body {
   grid-template-columns: minmax(0, 1.25fr) minmax(0, 0.85fr);
 }
 
+.indicator-briefing-grid {
+  grid-template-columns: minmax(0, 1.35fr) repeat(2, minmax(0, 1fr));
+}
+
 .brief-card {
   align-content: start;
   display: grid;
@@ -1861,6 +1865,7 @@ body {
   }
 
   .briefing-grid,
+  .indicator-briefing-grid,
   .supports-briefing-grid {
     grid-template-columns: 1fr;
   }
