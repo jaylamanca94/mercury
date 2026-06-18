@@ -756,6 +756,29 @@ test("indicators page adds economic read, drivers, and interpretation", () => {
   assert.match(result.meaning, /volatility at 18\.4 shows how much market stress is attached to the macro data/);
 });
 
+test("indicators briefing does not interpret loading or unavailable data", () => {
+  const context = loadAppContext("indicators");
+  const result = vm.runInContext(
+    `
+      renderDashboard();
+      ({
+        hero: document.querySelector("#hero-insight").textContent,
+        read: document.querySelector("#indicator-read-copy").textContent,
+        drivers: document.querySelector("#indicator-drivers-list").innerHTML,
+        meaning: document.querySelector("#indicator-meaning-copy").textContent,
+      });
+    `,
+    context,
+  );
+
+  assert.match(result.hero, /waiting for live economic releases/i);
+  assert.match(result.read, /waiting for live economic releases/i);
+  assert.doesNotMatch(result.read, /mixed|improving|under pressure/i);
+  assert.match(result.drivers, /Waiting for releases/);
+  assert.doesNotMatch(result.drivers, /Stable anchor|Risk stable|Growth stable/);
+  assert.match(result.meaning, /needs live economic releases and risk indicators/i);
+});
+
 test("data page summarizes source health and coverage", () => {
   assert.match(dataHtml, /<title>Data Status \| Mercury<\/title>/);
   assert.match(dataHtml, /id="view-title" class="acadia-title">Data Status<\/h1>/);

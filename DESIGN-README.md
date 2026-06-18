@@ -185,6 +185,9 @@ Use `8px` or less for normal cards and repeated list items unless a larger conta
 - Show exact daily release dates for daily market/risk data, month-level labels for monthly economic releases, and year-level labels for annual regional releases.
 - In compact metric cards, omit routine dates for current daily market data. Show daily dates when
   freshness is delayed or stale, and keep month/year labels for slower official releases.
+- Narrative indicator briefings must only interpret source-backed values. While economic releases
+  or risk indicators are still loading or unavailable, use waiting/unavailable copy and do not
+  describe the read as mixed, stable, improving, or under pressure.
 - Pair source release dates with cadence-aware freshness labels: `Current`, `Delayed`, or `Stale`.
   Daily, weekly, monthly, quarterly, and annual data must use different thresholds so slower
   official releases are not treated like market charts.

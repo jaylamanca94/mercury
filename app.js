@@ -2079,7 +2079,7 @@ function numericDeltaValue(card) {
 }
 
 function indicatorReadSentence(card) {
-  if (!card || card.sourceStatus === "Unavailable" || card.value === "Unavailable") {
+  if (!isInterpretableIndicatorCard(card)) {
     return "";
   }
 
@@ -2138,14 +2138,27 @@ function indicatorReadSentence(card) {
   return `${displayMetricName(card)} is ${value} with ${delta} change.`;
 }
 
+function isInterpretableIndicatorCard(card) {
+  return Boolean(
+    card &&
+      card.sourceStatus === "Source-backed" &&
+      card.value &&
+      card.value !== "Unavailable" &&
+      card.value !== "Loading",
+  );
+}
+
 function buildIndicatorRead(healthCards) {
   const gdp = findMetric(healthCards, "gdp-growth", "GDP growth");
   const unemployment = findMetric(healthCards, "unemployment", "Unemployment");
   const inflation = findMetric(healthCards, "inflation", "Inflation");
   const rates = findMetric(healthCards, "interest-rates", "Interest rates");
-  const directionalCards = [gdp, unemployment, inflation, rates].filter(
-    (card) => card && card.sourceStatus !== "Unavailable" && card.value !== "Unavailable",
-  );
+  const directionalCards = [gdp, unemployment, inflation, rates].filter(isInterpretableIndicatorCard);
+
+  if (!directionalCards.length) {
+    return "Mercury is waiting for live economic releases before interpreting this read.";
+  }
+
   const supportCount = directionalCards.filter((card) => indicatorSignalRole(card).kind === "support").length;
   const pressureCount = directionalCards.filter((card) => indicatorSignalRole(card).kind === "pressure").length;
   const lead =
@@ -2283,7 +2296,7 @@ function indicatorSignalRole(card) {
 
 function buildIndicatorDriverItems(healthCards, riskCards) {
   const candidates = [...healthCards, ...riskCards]
-    .filter((card) => card.sourceStatus !== "Unavailable" && card.value !== "Unavailable")
+    .filter(isInterpretableIndicatorCard)
     .map((card) => ({
       card,
       role: indicatorSignalRole(card),
@@ -2313,6 +2326,12 @@ function buildIndicatorMeaning(healthCards, riskCards) {
   const rates = findMetric(healthCards, "interest-rates", "Interest rates");
   const unemployment = findMetric(healthCards, "unemployment", "Unemployment");
   const volatility = riskCards.find((item) => item.name === "Volatility");
+  const interpretableCards = [inflation, rates, unemployment, volatility].filter(isInterpretableIndicatorCard);
+
+  if (!interpretableCards.length) {
+    return "Mercury needs live economic releases and risk indicators before explaining what matters in this read.";
+  }
+
   const inflationValue = inflation?.value && inflation.value !== "Unavailable" ? inflation.value : "inflation";
   const ratesValue = rates?.value && rates.value !== "Unavailable" ? rates.value : "policy rates";
   const unemploymentValue =
