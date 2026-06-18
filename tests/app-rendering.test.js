@@ -559,6 +559,60 @@ test("support metric cards use clean inline captions instead of long subtitles",
   assert.doesNotMatch(html, /USD\/JPY exchange rate<\/p>/);
 });
 
+test("supports page adds interpreted signals, context, and split asset sections", () => {
+  assert.match(supportsHtml, /id="support-signals-grid"/);
+  assert.match(supportsHtml, /id="support-brief-copy"/);
+  assert.match(supportsHtml, /id="support-pressure-list"/);
+  assert.match(supportsHtml, /id="digital-assets-grid"/);
+  assert.match(supportsHtml, /Commodity Conditions/);
+  assert.match(supportsHtml, /Digital Asset Conditions/);
+  assert.match(styles, /\.support-signals-grid\s*{[^}]*grid-template-columns: repeat\(5, minmax\(0, 1fr\)\);/s);
+  assert.match(styles, /\.supports-briefing-grid\s*{[^}]*grid-template-columns: minmax\(0, 1\.25fr\) minmax\(0, 0\.85fr\);/s);
+
+  const context = loadAppContext("supports");
+  const result = vm.runInContext(
+    `
+      selectedEconomyPeriod = "week";
+      marketPulse = [
+        { id: "dollar-index", name: "U.S. dollar", value: "$28.18", change: "+0.5%", ticker: "UUP", icon: "fa-dollar-sign", viewGroup: "currency", sourceStatus: "Source-backed", freshness: { status: "current" }, history: [{ value: 28.04 }, { value: 28.18 }], comparison: "percent-change", trendModel: "dollar" },
+        { id: "euro", name: "Euro", value: "1.1523", change: "-0.1%", ticker: "EUR/USD", icon: "fa-euro-sign", viewGroup: "currency", sourceStatus: "Source-backed", freshness: { status: "current" }, history: [{ value: 1.1534 }, { value: 1.1523 }], comparison: "percent-change", trendModel: "currency" },
+        { id: "yen", name: "Yen", value: "160.67", change: "+0.1%", ticker: "USD/JPY", icon: "fa-yen-sign", viewGroup: "currency", sourceStatus: "Source-backed", freshness: { status: "current" }, history: [{ value: 160.51 }, { value: 160.67 }], comparison: "percent-change", trendModel: "currency" },
+        { id: "oil", name: "Oil", value: "$75.24", change: "-16.4%", ticker: "CL=F", icon: "fa-gas-pump", viewGroup: "currency", sourceStatus: "Source-backed", freshness: { status: "current" }, history: [{ value: 90 }, { value: 75.24 }], comparison: "percent-change", trendModel: "commodity" },
+        { id: "bitcoin", name: "Bitcoin", value: "$64,617", change: "+1.7%", ticker: "BTC", icon: "fa-brands fa-bitcoin", viewGroup: "currency", sourceStatus: "Source-backed", freshness: { status: "current" }, history: [{ value: 63536 }, { value: 64617 }], comparison: "percent-change", trendModel: "market" },
+      ];
+      renderDashboard();
+      ({
+        badge: document.querySelector("#support-change-badge").textContent,
+        insight: document.querySelector("#hero-insight").textContent,
+        signals: document.querySelector("#support-signals-grid").innerHTML,
+        brief: document.querySelector("#support-brief-copy").textContent,
+        pressures: document.querySelector("#support-pressure-list").innerHTML,
+        commodities: document.querySelector("#commodity-grid").innerHTML,
+        digital: document.querySelector("#digital-assets-grid").innerHTML,
+        badgeHtml: document.querySelector("#support-change-badge").innerHTML,
+      });
+    `,
+    context,
+  );
+
+  assert.match(result.badgeHtml, /Support/);
+  assert.match(result.badgeHtml, /Mixed/);
+  assert.match(result.insight, /Mixed support conditions this week/);
+  assert.match(result.insight, /U\.S\. Dollar \(\+0\.5%\) is the clearest positive signal/);
+  assert.match(result.insight, /Oil \(-16\.4%\) moved sharply/);
+  assert.match(result.signals, /U\.S\. Dollar/);
+  assert.match(result.signals, /Positive/);
+  assert.match(result.signals, /Oil/);
+  assert.match(result.signals, /Falling sharply/);
+  assert.match(result.brief, /Oil declined 16\.4% this week/);
+  assert.match(result.brief, /A stronger dollar can help contain imported inflation/);
+  assert.match(result.pressures, /Oil/);
+  assert.match(result.commodities, /Oil/);
+  assert.doesNotMatch(result.commodities, /Bitcoin/);
+  assert.match(result.digital, /Bitcoin/);
+  assert.doesNotMatch(result.digital, /Oil/);
+});
+
 test("bitcoin card uses the bitcoin brand icon", () => {
   const context = loadAppContext();
   const html = vm.runInContext(

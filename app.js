@@ -485,6 +485,333 @@ function renderMarketDrivers(cards) {
     : '<article class="market-driver-card market-driver-card-unavailable acadia-surface acadia-panel-dense">Waiting for comparable market drivers.</article>';
 }
 
+function supportSignalProfile(card) {
+  const value = card?.periodChangeValue;
+  const unavailable = !card || card.sourceStatus === "Unavailable" || card.value === "Unavailable" || !Number.isFinite(value);
+
+  if (unavailable) {
+    return {
+      label: "Awaiting data",
+      tone: "unavailable",
+      impact: "unavailable",
+      copy: "Waiting for source-backed support data.",
+    };
+  }
+
+  const name = displayMetricName(card);
+  const magnitude = Math.abs(value);
+
+  if (card.id === "oil") {
+    if (value <= -5) {
+      return {
+        label: "Falling sharply",
+        tone: "mixed",
+        impact: "mixed",
+        copy: "Lower oil can ease inflation pressure, but sharp declines can also point to softer demand.",
+      };
+    }
+
+    if (value >= 5) {
+      return {
+        label: "Input-cost pressure",
+        tone: "caution",
+        impact: "pressure",
+        copy: "Rising oil can push input costs higher and keep inflation pressure visible.",
+      };
+    }
+
+    return {
+      label: "Stable",
+      tone: "stable",
+      impact: "neutral",
+      copy: "Oil is not sending a strong input-cost signal right now.",
+    };
+  }
+
+  if (card.id === "dollar-index") {
+    if (value > 0.15) {
+      return {
+        label: "Positive",
+        tone: "up",
+        impact: "positive",
+        copy: "Dollar strength can help contain imported inflation, though it may weigh on exports.",
+      };
+    }
+
+    if (value < -0.15) {
+      return {
+        label: "Softening",
+        tone: "down",
+        impact: "pressure",
+        copy: "Dollar weakness can ease global dollar pressure but may lift import costs.",
+      };
+    }
+  }
+
+  if (card.id === "bitcoin") {
+    if (value > 0.15) {
+      return {
+        label: "Positive",
+        tone: "up",
+        impact: "positive",
+        copy: "Bitcoin strength can point to better risk appetite in speculative assets.",
+      };
+    }
+
+    if (value < -0.15) {
+      return {
+        label: "Risk appetite weaker",
+        tone: "down",
+        impact: "pressure",
+        copy: "Bitcoin weakness can point to softer risk appetite in speculative assets.",
+      };
+    }
+  }
+
+  if (card.id === "euro" || card.id === "yen") {
+    if (magnitude < 0.5) {
+      return {
+        label: "Neutral",
+        tone: "stable",
+        impact: "neutral",
+        copy: `${name} is moving lightly enough to read as background currency context.`,
+      };
+    }
+
+    return {
+      label: value > 0 ? "Firming" : "Softening",
+      tone: "mixed",
+      impact: "neutral",
+      copy: `${name} is moving, but Mercury treats this as context rather than a direct growth score input.`,
+    };
+  }
+
+  if (value > 0.15) {
+    return {
+      label: "Positive",
+      tone: "up",
+      impact: "positive",
+      copy: `${name} is adding support ${periodPhrase(selectedEconomyPeriod)}.`,
+    };
+  }
+
+  if (value < -0.15) {
+    return {
+      label: "Pressure",
+      tone: "down",
+      impact: "pressure",
+      copy: `${name} is adding pressure ${periodPhrase(selectedEconomyPeriod)}.`,
+    };
+  }
+
+  return {
+    label: "Neutral",
+    tone: "stable",
+    impact: "neutral",
+    copy: `${name} is steady enough to read as background context.`,
+  };
+}
+
+function supportScore(cards) {
+  const profiles = cards.map((card) => supportSignalProfile(card)).filter((profile) => profile.impact !== "unavailable");
+
+  if (!profiles.length) {
+    return {
+      label: "Unavailable",
+      tone: "unavailable",
+      phrase: "Waiting for support conditions",
+      detail: "Support",
+    };
+  }
+
+  const positives = profiles.filter((profile) => profile.impact === "positive").length;
+  const pressures = profiles.filter((profile) => profile.impact === "pressure").length;
+  const mixed = profiles.filter((profile) => profile.impact === "mixed").length;
+
+  if (pressures > positives) {
+    return {
+      label: "Pressured",
+      tone: "down",
+      phrase: "Support conditions are under pressure",
+      detail: `${pressures} pressure${pressures === 1 ? "" : "s"}`,
+    };
+  }
+
+  if (positives > 0 && (pressures > 0 || mixed > 0)) {
+    return {
+      label: "Mixed",
+      tone: "mixed",
+      phrase: "Mixed support conditions",
+      detail: `${positives} positive`,
+    };
+  }
+
+  if (positives > 0) {
+    return {
+      label: "Supportive",
+      tone: "up",
+      phrase: "Supportive conditions",
+      detail: `${positives} positive`,
+    };
+  }
+
+  if (mixed > 0) {
+    return {
+      label: "Mixed",
+      tone: "mixed",
+      phrase: "Mixed support conditions",
+      detail: "Contextual",
+    };
+  }
+
+  return {
+    label: "Stable",
+    tone: "stable",
+    phrase: "Stable support conditions",
+    detail: "Neutral",
+  };
+}
+
+function strongestSupportCard(cards, impact) {
+  return cards
+    .filter((card) => supportSignalProfile(card).impact === impact && Number.isFinite(card.periodChangeValue))
+    .sort((a, b) => Math.abs(b.periodChangeValue) - Math.abs(a.periodChangeValue))[0];
+}
+
+function supportMovementLabel(card) {
+  return `${displayMetricName(card)} (${card.periodChange || metricDeltaLabel(card)})`;
+}
+
+function buildSupportHeroInsight(cards) {
+  const score = supportScore(cards);
+
+  if (score.tone === "unavailable") {
+    return "Waiting for enough live support data to explain currencies, commodities, and digital assets.";
+  }
+
+  const dollar = cards.find((card) => card.id === "dollar-index" && supportSignalProfile(card).impact === "positive");
+  const positive = dollar || strongestSupportCard(cards, "positive");
+  const pressure = strongestSupportCard(cards, "pressure");
+  const mixed = strongestSupportCard(cards, "mixed");
+  const primaryContext = pressure || mixed;
+  const positivePhrase = positive ? ` ${supportMovementLabel(positive)} is the clearest positive signal.` : "";
+  const contextPhrase = primaryContext
+    ? primaryContext.id === "oil"
+      ? ` ${supportMovementLabel(primaryContext)} moved sharply, which is a mixed signal for input costs and demand.`
+      : ` ${supportMovementLabel(primaryContext)} is the main pressure.`
+    : "";
+
+  return `${score.phrase} ${periodPhrase(selectedEconomyPeriod)}.${positivePhrase}${contextPhrase}`.trim();
+}
+
+function renderSupportSignalCard(card) {
+  const profile = supportSignalProfile(card);
+
+  return `
+    <article class="support-signal-card support-signal-card-${escapeHtml(profile.tone)} acadia-surface acadia-panel-dense">
+      <div class="support-signal-heading">
+        <span class="support-signal-icon" aria-hidden="true"><i class="${escapeHtml(metricIconClasses(card))} acadia-icon"></i></span>
+        <div>
+          <h3>${escapeHtml(displayMetricName(card))}</h3>
+          <p>${escapeHtml(metricCaptionLabel(card) || card.context || "Support signal")}</p>
+        </div>
+      </div>
+      <div class="support-signal-status">
+        <strong>${escapeHtml(profile.label)}</strong>
+        <span>${escapeHtml(card.periodChange || metricDeltaLabel(card))}</span>
+      </div>
+      <p class="support-signal-copy">${escapeHtml(profile.copy)}</p>
+    </article>
+  `;
+}
+
+function supportBriefCopy(cards) {
+  const oil = cards.find((card) => card.id === "oil");
+  const dollar = cards.find((card) => card.id === "dollar-index");
+  const bitcoin = cards.find((card) => card.id === "bitcoin");
+  const sentences = [];
+
+  if (oil && Number.isFinite(oil.periodChangeValue) && Math.abs(oil.periodChangeValue) >= 5) {
+    const verb = oil.periodChangeValue < 0 ? "declined" : "rose";
+    const implication =
+      oil.periodChangeValue < 0
+        ? "which can reduce inflation pressure but may also signal weaker demand expectations"
+        : "which can raise input-cost pressure across the economy";
+
+    sentences.push(`Oil ${verb} ${String(oil.periodChange || metricDeltaLabel(oil)).replace("-", "")} ${periodPhrase(selectedEconomyPeriod)}, ${implication}.`);
+  }
+
+  if (dollar && Number.isFinite(dollar.periodChangeValue) && Math.abs(dollar.periodChangeValue) >= 0.15) {
+    sentences.push(
+      dollar.periodChangeValue > 0
+        ? "A stronger dollar can help contain imported inflation, but it may weigh on exports and global borrowers."
+        : "A softer dollar can ease global dollar pressure, but it may lift import costs.",
+    );
+  }
+
+  if (bitcoin && Number.isFinite(bitcoin.periodChangeValue) && Math.abs(bitcoin.periodChangeValue) >= 0.15) {
+    sentences.push(
+      bitcoin.periodChangeValue > 0
+        ? "Bitcoin strength adds a risk-appetite signal, but Mercury keeps it separate from core economic health."
+        : "Bitcoin weakness points to softer risk appetite, but Mercury keeps it separate from core economic health.",
+    );
+  }
+
+  return sentences.slice(0, 2).join(" ") || "Support conditions are quiet right now, so Mercury is treating them as context rather than a primary driver.";
+}
+
+function buildSupportPressureItems(cards) {
+  return cards
+    .map((card) => ({
+      card,
+      profile: supportSignalProfile(card),
+    }))
+    .filter(({ profile }) => profile.impact === "pressure" || profile.impact === "mixed")
+    .sort((a, b) => Math.abs(b.card.periodChangeValue || 0) - Math.abs(a.card.periodChangeValue || 0))
+    .slice(0, 3)
+    .map(({ card, profile }) => ({
+      label: displayMetricName(card),
+      copy: `${profile.label}: ${card.periodChange || metricDeltaLabel(card)} ${periodPhrase(selectedEconomyPeriod)}.`,
+      tone: profile.tone,
+    }));
+}
+
+function updateSupportBadge(score) {
+  const element = document.querySelector("#support-change-badge");
+
+  if (!element) {
+    return;
+  }
+
+  element.classList.remove("trend-up", "trend-down", "trend-stable", "trend-mixed", "trend-caution", "trend-unavailable");
+  element.innerHTML = `<span>Support</span><strong>${escapeHtml(score.label)}</strong>`;
+  element.setAttribute("aria-label", `Support conditions ${score.label}`);
+  element.classList.add(`trend-${score.tone}`);
+}
+
+function renderSupportBriefing(cards) {
+  const signalsGrid = document.querySelector("#support-signals-grid");
+  const pressureList = document.querySelector("#support-pressure-list");
+
+  setText("#hero-insight", buildSupportHeroInsight(cards));
+  setText("#support-brief-copy", supportBriefCopy(cards));
+  updateSupportBadge(supportScore(cards));
+
+  if (signalsGrid) {
+    signalsGrid.innerHTML = cards.length
+      ? cards.map(renderSupportSignalCard).join("")
+      : '<article class="support-signal-card support-signal-card-unavailable acadia-surface acadia-panel-dense">Waiting for support signals.</article>';
+  }
+
+  if (pressureList) {
+    const pressureItems = buildSupportPressureItems(cards);
+
+    pressureList.innerHTML = pressureItems.length
+      ? pressureItems.map(briefListItem).join("")
+      : '<li class="brief-list-item brief-list-item-stable"><strong>None elevated</strong><span>No major support pressure is standing out right now.</span></li>';
+  }
+}
+
 function resampledPoint(points, index, targetLength) {
   if (targetLength <= 1 || points.length <= 1) {
     return points[0];
@@ -1737,6 +2064,7 @@ function renderDashboard() {
   const economyGrid = document.querySelector("#economy-grid");
   const currencyGrid = document.querySelector("#currency-grid");
   const commodityGrid = document.querySelector("#commodity-grid");
+  const digitalAssetsGrid = document.querySelector("#digital-assets-grid");
   const riskList = document.querySelector("#risk-list");
   const economicHealthGrid = document.querySelector("#economic-health-grid");
   const globalView = isGlobalView();
@@ -1778,8 +2106,20 @@ function renderDashboard() {
   }
 
   if (commodityGrid) {
-    commodityGrid.innerHTML = commodityCardsForView
+    const commodityGridCards =
+      currentPage === "supports" && digitalAssetsGrid
+        ? commodityCardsForView.filter((item) => item.id !== "bitcoin")
+        : commodityCardsForView;
+
+    commodityGrid.innerHTML = commodityGridCards
       .map((item) => (isDashboardPage() ? { ...item, hideChart: true, isOverview: true } : item))
+      .map((item) => renderMetricCard(item))
+      .join("");
+  }
+
+  if (digitalAssetsGrid) {
+    digitalAssetsGrid.innerHTML = commodityCardsForView
+      .filter((item) => item.id === "bitcoin")
       .map((item) => renderMetricCard(item))
       .join("");
   }
@@ -1792,8 +2132,12 @@ function renderDashboard() {
   }
 
   updateSectionBadge("#economy-change-badge", economyChange, { includeSentiment: true });
-  updateHeroInsight(heroCards, economyChange);
-  updateSectionBadge("#currency-change-badge", sectionChange(currencyCardsForView));
+  if (currentPage === "supports") {
+    renderSupportBriefing([...currencyCardsForView, ...commodityCardsForView]);
+  } else {
+    updateHeroInsight(heroCards, economyChange);
+    updateSectionBadge("#currency-change-badge", sectionChange(currencyCardsForView));
+  }
   renderMarketDrivers(marketHeroCards);
 
   if (riskList) {

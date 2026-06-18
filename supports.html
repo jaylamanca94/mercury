@@ -41,10 +41,10 @@
           <span class="acadia-kicker">Deep dive</span>
           <div class="view-heading">
             <h1 id="view-title" class="acadia-title">Market Supports</h1>
-            <span id="currency-change-badge" class="view-change hero-condition trend-stable acadia-badge">Loading</span>
+            <span id="support-change-badge" class="view-change hero-condition trend-stable acadia-badge">Loading</span>
           </div>
-          <p class="hero-insight acadia-text-muted">
-            Follow the supporting signals that often shape the global read without turning Mercury into a trading tool.
+          <p id="hero-insight" class="hero-insight acadia-text-muted">
+            Checking currencies, commodities, and digital assets that shape the global read.
           </p>
         </div>
         <div class="page-controls-row" aria-label="Market support controls">
@@ -71,6 +71,35 @@
         Checking latest market-support data.
       </p>
 
+      <section class="dashboard-section support-signals-section detail-panel" aria-labelledby="support-signals-title">
+        <div class="section-heading compact-section-heading">
+          <div class="section-title-group">
+            <span class="acadia-kicker">Support signals</span>
+            <h2 id="support-signals-title" class="acadia-title">Current Conditions</h2>
+          </div>
+        </div>
+        <div id="support-signals-grid" class="support-signals-grid" aria-live="polite">
+          <article class="support-signal-card acadia-surface acadia-panel-dense">Checking support signals.</article>
+        </div>
+      </section>
+
+      <section class="briefing-grid supports-briefing-grid" aria-label="Market support briefing">
+        <article class="brief-card support-brief-card acadia-surface acadia-panel-dense">
+          <span class="acadia-kicker">Context</span>
+          <h2 class="acadia-title">Why It Matters</h2>
+          <p id="support-brief-copy" class="brief-copy acadia-text-muted">
+            Mercury is waiting for enough support data to explain the current conditions.
+          </p>
+        </article>
+        <article class="brief-card acadia-surface acadia-panel-dense">
+          <span class="acadia-kicker">Pressure watch</span>
+          <h2 class="acadia-title">Current Pressures</h2>
+          <ul id="support-pressure-list" class="brief-list" aria-live="polite">
+            <li>Checking currencies, commodities, and digital assets.</li>
+          </ul>
+        </article>
+      </section>
+
       <section class="dashboard-section currency-section detail-panel" aria-labelledby="currency-title">
         <div class="section-heading compact-section-heading">
           <div class="section-title-group">
@@ -85,10 +114,20 @@
         <div class="section-heading compact-section-heading">
           <div class="section-title-group">
             <span class="acadia-kicker">Commodities</span>
-            <h2 id="commodity-title" class="acadia-title">Commodity And Digital Supports</h2>
+            <h2 id="commodity-title" class="acadia-title">Commodity Conditions</h2>
           </div>
         </div>
         <div id="commodity-grid" class="metric-grid commodity-grid"></div>
+      </section>
+
+      <section class="dashboard-section digital-assets-section detail-panel" aria-labelledby="digital-assets-title">
+        <div class="section-heading compact-section-heading">
+          <div class="section-title-group">
+            <span class="acadia-kicker">Digital assets</span>
+            <h2 id="digital-assets-title" class="acadia-title">Digital Asset Conditions</h2>
+          </div>
+        </div>
+        <div id="digital-assets-grid" class="metric-grid digital-assets-grid"></div>
       </section>
     </main>
 
