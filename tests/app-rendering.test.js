@@ -868,6 +868,19 @@ test("hero insight explains sentiment and top movers", () => {
   assert.match(styles, /\.hero-condition\s*{[^}]*flex-direction: column;/s);
 });
 
+test("hero mover pills sit between the insight and chart", () => {
+  for (const html of [indexHtml, marketsHtml, indicatorsHtml]) {
+    assert.match(
+      html,
+      /id="hero-insight"[\s\S]*id="hero-movers"[\s\S]*id="hero-sparkline"/,
+    );
+    assert.doesNotMatch(
+      html,
+      /id="hero-sparkline"[\s\S]*id="hero-movers"/,
+    );
+  }
+});
+
 test("hero trend chart uses period-filtered visible cards", () => {
   const context = loadAppContext();
   const result = vm.runInContext(
