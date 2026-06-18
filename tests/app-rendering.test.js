@@ -263,6 +263,7 @@ test("markets page adds contextual key drivers for global and focused regions", 
       renderDashboard();
       const global = {
         title: document.querySelector("#view-title").textContent,
+        driversTitle: document.querySelector("#market-drivers-title").textContent,
         kicker: document.querySelector("#market-drivers-kicker").textContent,
         drivers: document.querySelector("#market-drivers-grid").innerHTML,
         insight: document.querySelector("#hero-insight").textContent,
@@ -273,6 +274,7 @@ test("markets page adds contextual key drivers for global and focused regions", 
         global,
         focused: {
           title: document.querySelector("#view-title").textContent,
+          driversTitle: document.querySelector("#market-drivers-title").textContent,
           kicker: document.querySelector("#market-drivers-kicker").textContent,
           drivers: document.querySelector("#market-drivers-grid").innerHTML,
           insight: document.querySelector("#hero-insight").textContent,
@@ -284,16 +286,28 @@ test("markets page adds contextual key drivers for global and focused regions", 
   );
 
   assert.equal(result.global.title, "Global Economy Markets");
+  assert.equal(result.global.driversTitle, "Key Drivers This Week");
   assert.equal(result.global.kicker, "Regions");
+  assert.match(result.global.drivers, /1st Region/);
+  assert.match(result.global.drivers, /2nd Region/);
+  assert.match(result.global.drivers, /3rd Region/);
   assert.match(result.global.drivers, /Region/);
   assert.match(result.global.drivers, /Asia/);
+  assert.match(result.global.drivers, /Asia is the strongest contributor this week \(\+7\.5%\)/);
+  assert.match(result.global.drivers, /Europe shows steady participation \(\+2\.9%\), supporting the broader trend/);
+  assert.match(result.global.drivers, /United States is positive \(\+2\.3%\), but trailing Asia momentum/);
   assert.doesNotMatch(result.global.drivers, /Technology/);
   assert.match(result.global.insight, /led by Asia/);
   assert.equal(result.focused.title, "United States Economy Markets");
+  assert.equal(result.focused.driversTitle, "Key Drivers This Week");
   assert.equal(result.focused.kicker, "Drivers");
   assert.equal(result.focused.economyTitle, "United States Markets");
+  assert.match(result.focused.drivers, /1st Sector/);
+  assert.match(result.focused.drivers, /2nd Core market/);
   assert.match(result.focused.drivers, /Sector/);
   assert.match(result.focused.drivers, /Technology/);
+  assert.match(result.focused.drivers, /Technology is the strongest contributor this week \(\+4\.1%\)/);
+  assert.match(result.focused.drivers, /S&amp;P 500 shows steady participation \(\+2\.3%\), supporting the broader trend/);
   assert.doesNotMatch(result.focused.drivers, /Asia/);
   assert.match(result.focused.insight, /led by Technology/);
 });
