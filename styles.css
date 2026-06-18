@@ -797,7 +797,7 @@ body {
 .briefing-grid {
   display: grid;
   gap: var(--acadia-space-3);
-  grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr) minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr) minmax(0, 1fr);
 }
 
 .brief-card {
@@ -1329,7 +1329,7 @@ body {
 
   .mercury-page-dashboard .dashboard-shell {
     align-items: start;
-    gap: 1rem;
+    gap: var(--acadia-space-4);
     grid-template-columns: repeat(12, minmax(0, 1fr));
   }
 
@@ -1500,6 +1500,10 @@ body {
 
   .dashboard-shell {
     gap: 1rem;
+  }
+
+  .mercury-page-dashboard .dashboard-shell {
+    gap: var(--acadia-space-3);
   }
 
   .page-title-row {

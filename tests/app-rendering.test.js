@@ -198,14 +198,23 @@ test("dashboard renders editorial sections instead of one mixed grid", () => {
 
 test("dashboard summary adds key signals and briefing sections", () => {
   assert.match(indexHtml, /id="overview-tiles-title" class="acadia-title">Key Signals<\/h2>/);
+  assert.match(indexHtml, /<h2 class="acadia-title">Executive Summary<\/h2>/);
   assert.match(indexHtml, /id="economic-brief-copy"/);
   assert.match(indexHtml, /id="what-changed-list"/);
   assert.match(indexHtml, /id="risk-watch-list"/);
   assert.match(styles, /\.overview-tiles-grid\s*{[^}]*grid-template-columns: repeat\(4, minmax\(0, 1fr\)\);/s);
-  assert.match(styles, /\.briefing-grid\s*{[^}]*grid-template-columns: minmax\(0, 1\.25fr\) minmax\(0, 1fr\) minmax\(0, 1fr\);/s);
+  assert.match(styles, /\.briefing-grid\s*{[^}]*grid-template-columns: minmax\(0, 1\.5fr\) minmax\(0, 1fr\) minmax\(0, 1fr\);/s);
   assert.match(
     styles,
     /@media \(min-width: 1180px\)[\s\S]*\.mercury-page-dashboard \.briefing-grid\s*{[^}]*grid-column: 1 \/ -1;/s,
+  );
+  assert.match(
+    styles,
+    /@media \(min-width: 1180px\)[\s\S]*\.mercury-page-dashboard \.dashboard-shell\s*{[^}]*gap: var\(--acadia-space-4\);/s,
+  );
+  assert.match(
+    styles,
+    /@media \(max-width: 767\.98px\)[\s\S]*\.mercury-page-dashboard \.dashboard-shell\s*{[^}]*gap: var\(--acadia-space-3\);/s,
   );
   assert.match(
     styles,
