@@ -716,7 +716,7 @@ body {
 .overview-tiles-grid {
   display: grid;
   gap: var(--acadia-space-2);
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
 }
 
 .overview-tile {
@@ -794,9 +794,74 @@ body {
   --overview-state: var(--muted-soft);
 }
 
+.briefing-grid {
+  display: grid;
+  gap: var(--acadia-space-3);
+  grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr) minmax(0, 1fr);
+}
+
+.brief-card {
+  align-content: start;
+  display: grid;
+  gap: var(--acadia-space-1);
+  min-width: 0;
+}
+
+.brief-card h2,
+.brief-card p {
+  margin: 0;
+}
+
+.brief-copy {
+  font-size: 1rem;
+  line-height: 1.55;
+}
+
+.brief-list {
+  display: grid;
+  gap: 0.65rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.brief-list-item {
+  border-top: 1px solid var(--acadia-color-border);
+  color: var(--acadia-color-text-muted);
+  display: grid;
+  gap: 0.2rem;
+  line-height: 1.35;
+  padding-top: 0.65rem;
+}
+
+.brief-list-item:first-child {
+  border-top: 0;
+  padding-top: 0;
+}
+
+.brief-list-item strong {
+  color: var(--acadia-color-text);
+  font-weight: 900;
+}
+
+.brief-list-item-up strong {
+  color: var(--mercury-positive);
+}
+
+.brief-list-item-down strong,
+.brief-list-item-caution strong {
+  color: var(--mercury-negative);
+}
+
 .dashboard-section {
   display: grid;
   gap: var(--acadia-space-2);
+}
+
+.mercury-page-dashboard .currency-section,
+.mercury-page-dashboard .commodity-section,
+.mercury-page-dashboard .lower-grid {
+  display: none;
 }
 
 .metric-grid,
@@ -1269,7 +1334,8 @@ body {
   }
 
   .mercury-page-dashboard .page-title-row,
-  .mercury-page-dashboard .overview-tiles {
+  .mercury-page-dashboard .overview-tiles,
+  .mercury-page-dashboard .briefing-grid {
     grid-column: 1 / -1;
   }
 
@@ -1297,18 +1363,6 @@ body {
   }
 
   .mercury-page-dashboard .economy-section {
-    grid-column: 1 / 5;
-  }
-
-  .mercury-page-dashboard .currency-section {
-    grid-column: 5 / 9;
-  }
-
-  .mercury-page-dashboard .commodity-section {
-    grid-column: 9 / 13;
-  }
-
-  .mercury-page-dashboard .lower-grid {
     grid-column: 1 / 9;
   }
 
@@ -1324,11 +1378,6 @@ body {
   .mercury-page-dashboard .economic-health-grid {
     gap: 0.75rem;
     grid-template-columns: 1fr;
-  }
-
-  .mercury-page-dashboard .lower-grid {
-    gap: 1rem;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .mercury-page-dashboard .metric-card {
@@ -1401,6 +1450,10 @@ body {
 
   .overview-tiles-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .briefing-grid {
+    grid-template-columns: 1fr;
   }
 
   .page-title-row {

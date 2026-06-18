@@ -196,6 +196,83 @@ test("dashboard renders editorial sections instead of one mixed grid", () => {
   assert.match(healthHtml, /Inflation/);
 });
 
+test("dashboard summary adds key signals and briefing sections", () => {
+  assert.match(indexHtml, /id="overview-tiles-title" class="acadia-title">Key Signals<\/h2>/);
+  assert.match(indexHtml, /id="economic-brief-copy"/);
+  assert.match(indexHtml, /id="what-changed-list"/);
+  assert.match(indexHtml, /id="risk-watch-list"/);
+  assert.match(styles, /\.overview-tiles-grid\s*{[^}]*grid-template-columns: repeat\(4, minmax\(0, 1fr\)\);/s);
+  assert.match(styles, /\.briefing-grid\s*{[^}]*grid-template-columns: minmax\(0, 1\.25fr\) minmax\(0, 1fr\) minmax\(0, 1fr\);/s);
+  assert.match(
+    styles,
+    /@media \(min-width: 1180px\)[\s\S]*\.mercury-page-dashboard \.briefing-grid\s*{[^}]*grid-column: 1 \/ -1;/s,
+  );
+  assert.match(
+    styles,
+    /\.mercury-page-dashboard \.currency-section,\s*\.mercury-page-dashboard \.commodity-section,\s*\.mercury-page-dashboard \.lower-grid\s*{[^}]*display: none;/s,
+  );
+});
+
+test("dashboard briefing is generated from visible economy and risk signals", () => {
+  const context = loadAppContext();
+  const result = vm.runInContext(
+    `
+      selectedEconomyPeriod = "week";
+      riskIndicators = [
+        {
+          name: "Volatility",
+          value: "18.4",
+          change: "+2.03 pts",
+          tone: "caution",
+          sourceStatus: "Source-backed",
+          comparison: "point-change",
+        },
+      ];
+      const heroCards = [
+        { name: "Asia", periodChange: "+7.5%", periodChangeValue: 7.5, comparison: "percent-change" },
+        { name: "Europe", periodChange: "+2.9%", periodChangeValue: 2.9, comparison: "percent-change" },
+        { name: "United States", periodChange: "+2.2%", periodChangeValue: 2.2, comparison: "percent-change" },
+      ];
+      const healthCards = [
+        {
+          id: "inflation",
+          name: "Inflation",
+          value: "4.3%",
+          periodChange: "+0.32 pts",
+          periodChangeValue: 0.32,
+          comparison: "point-change",
+          tone: "caution",
+        },
+      ];
+      const commodityCardsForView = [
+        {
+          id: "oil",
+          name: "Oil",
+          value: "$75.23",
+          periodChange: "-16.4%",
+          periodChangeValue: -16.4,
+          comparison: "percent-change",
+        },
+      ];
+      const economyChange = sectionChange(heroCards);
+      renderEconomicBrief({ economyChange, heroCards, healthCards, commodityCardsForView });
+      ({
+        brief: document.querySelector("#economic-brief-copy").textContent,
+        changed: document.querySelector("#what-changed-list").innerHTML,
+        risk: document.querySelector("#risk-watch-list").innerHTML,
+      });
+    `,
+    context,
+  );
+
+  assert.match(result.brief, /Strongly positive this week, led by Asia \(\+7\.5%\)\./);
+  assert.match(result.brief, /Volatility is at 18\.4/);
+  assert.match(result.changed, /Asia/);
+  assert.match(result.changed, /Inflation/);
+  assert.match(result.changed, /Oil/);
+  assert.match(result.risk, /Volatility/);
+});
+
 test("global regional cards show proxy tickers as inline captions", () => {
   const context = loadAppContext();
   const html = vm.runInContext(

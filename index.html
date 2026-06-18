@@ -97,8 +97,37 @@
       </p>
 
       <section class="overview-tiles" aria-labelledby="overview-tiles-title">
-        <h2 id="overview-tiles-title" class="visually-hidden">Mercury overview</h2>
+        <div class="section-heading compact-section-heading">
+          <div class="section-title-group">
+            <span class="acadia-kicker">Dashboard</span>
+            <h2 id="overview-tiles-title" class="acadia-title">Key Signals</h2>
+          </div>
+        </div>
         <div id="overview-tiles-grid" class="overview-tiles-grid" aria-live="polite" aria-busy="true"></div>
+      </section>
+
+      <section class="briefing-grid" aria-label="Current economic briefing">
+        <article class="brief-card economic-brief-card acadia-surface acadia-panel-dense">
+          <span class="acadia-kicker">Economic brief</span>
+          <h2 class="acadia-title">What to know</h2>
+          <p id="economic-brief-copy" class="brief-copy acadia-text-muted">
+            Mercury is waiting for enough live data to explain the current economic read.
+          </p>
+        </article>
+        <article class="brief-card acadia-surface acadia-panel-dense">
+          <span class="acadia-kicker">What changed</span>
+          <h2 class="acadia-title">This week</h2>
+          <ul id="what-changed-list" class="brief-list" aria-live="polite">
+            <li>Checking live market movement.</li>
+          </ul>
+        </article>
+        <article class="brief-card acadia-surface acadia-panel-dense">
+          <span class="acadia-kicker">Risk watch</span>
+          <h2 class="acadia-title">Current pressures</h2>
+          <ul id="risk-watch-list" class="brief-list" aria-live="polite">
+            <li>Checking risk indicators.</li>
+          </ul>
+        </article>
       </section>
 
       <section class="summary-band visually-hidden" aria-labelledby="global-status-title">
