@@ -251,7 +251,7 @@ body {
 .acadia-nav {
   align-items: center;
   display: flex;
-  gap: 0.25rem;
+  gap: 0.5rem;
   min-width: 0;
   overflow-x: auto;
   scrollbar-width: none;
@@ -265,19 +265,24 @@ body {
 .primary-nav-link,
 .acadia-nav-item {
   align-items: center;
+  background: transparent;
+  border: 1px solid transparent;
   border-radius: var(--acadia-radius-md);
   color: var(--acadia-color-text-muted);
   display: inline-flex;
   flex: 0 0 auto;
-  font-size: 0.875rem;
+  font-size: 0.9375rem;
   font-weight: 800;
-  line-height: 1;
-  min-height: 2.375rem;
-  padding: 0.65rem 0.8rem;
+  line-height: 1.25;
+  min-height: 2.5rem;
+  padding: 0.55rem 0.85rem;
   text-decoration: none;
   transition:
     background-color var(--acadia-motion-fast),
-    color var(--acadia-motion-fast);
+    border-color var(--acadia-motion-fast),
+    box-shadow var(--acadia-motion-fast),
+    color var(--acadia-motion-fast),
+    transform var(--acadia-motion-fast);
 }
 
 .primary-nav-link:hover,
@@ -285,14 +290,20 @@ body {
 .acadia-nav-item:hover,
 .acadia-nav-item:focus-visible {
   background: var(--acadia-color-surface-muted);
+  border-color: var(--acadia-color-border);
+  box-shadow: var(--acadia-shadow-control);
   color: var(--acadia-color-text);
   outline: 0;
+  transform: translateY(-1px);
 }
 
 .primary-nav-link.is-active,
+.primary-nav-link[aria-current="page"],
+.acadia-nav-item[aria-current="page"],
 .acadia-nav-item.is-active {
   background: var(--acadia-color-brand-bg);
-  border: 1px solid var(--acadia-color-brand-border);
+  border-color: var(--acadia-color-brand-border);
+  box-shadow: var(--acadia-shadow-control);
   color: var(--acadia-color-brand-ink);
 }
 
