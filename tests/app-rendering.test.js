@@ -447,7 +447,7 @@ test("core market cards use category icons and hide proxy subtitles", () => {
           change: "+78.0%",
           tone: "up",
           ticker: "VOO",
-          icon: "fa-business-time",
+          icon: "fa-building",
           marketRole: "large-cap",
           source: "Yahoo Finance: Vanguard S&P 500 ETF chart",
           cadence: "Daily market close",
@@ -477,7 +477,7 @@ test("core market cards use category icons and hide proxy subtitles", () => {
     context,
   );
 
-  assert.match(html, /fa-business-time/);
+  assert.match(html, /fa-building/);
   assert.match(html, /fa-shop/);
   assert.match(html, /title="S&amp;P 500 - VOO - Vanguard S&amp;P 500 ETF"/);
   assert.match(html, /title="Small Cap - VSMAX - Vanguard Small-Cap Index Fund"/);

@@ -58,7 +58,7 @@ function pendingRegion(name) {
 }
 
 let marketPulse = [
-  pendingMetric("S&P 500", "Vanguard S&P 500 ETF", "fa-business-time", "us-equities", "VOO"),
+  pendingMetric("S&P 500", "Vanguard S&P 500 ETF", "fa-building", "us-equities", "VOO"),
   pendingMetric("Small Cap", "Vanguard Small-Cap Index Fund", "fa-shop", "us-small-cap", "VSMAX"),
   pendingMetric("Technology", "Vanguard Information Technology ETF", "fa-microchip", "us-technology", "VGT"),
   pendingMetric("Bonds", "Total bond market ETF", "fa-scale-balanced", "bonds", "BND"),
@@ -913,7 +913,7 @@ function metricIconClass(metric) {
 
   const normalizedName = String(metric.name || "").toLowerCase();
 
-  if (metric.marketRole === "large-cap") return "fa-business-time";
+  if (metric.marketRole === "large-cap") return "fa-building";
   if (metric.marketRole === "small-cap") return "fa-shop";
   if (metric.marketRole === "technology") return "fa-microchip";
   if (normalizedName.includes("credit")) return "fa-credit-card";

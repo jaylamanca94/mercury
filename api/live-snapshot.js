@@ -40,7 +40,7 @@ const YAHOO_SERIES = [
     section: "marketPulse",
     name: "S&P 500",
     context: "Vanguard S&P 500 ETF",
-    icon: "fa-business-time",
+    icon: "fa-building",
     symbol: "VOO",
     ticker: "VOO",
     source: "Yahoo Finance: Vanguard S&P 500 ETF chart",
