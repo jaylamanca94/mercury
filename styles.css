@@ -1116,6 +1116,10 @@ body {
   :root {
     --acadia-page-margin: var(--acadia-page-margin-small-desktop);
   }
+
+  .lower-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 @media (max-width: 1120px) {
@@ -1135,8 +1139,7 @@ body {
   }
 
   .section-heading,
-  .freshness-band,
-  .lower-grid {
+  .freshness-band {
     grid-template-columns: 1fr;
   }
 

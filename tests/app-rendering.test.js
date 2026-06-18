@@ -817,6 +817,17 @@ test("Acadia header wrapper preserves balanced desktop layout", () => {
   assert.match(styles, /@media \(max-width: 640px\)[\s\S]*\.app-header-inner\s*{[^}]*flex-direction: column;/);
 });
 
+test("tablet dashboard stacks lower context sections before cards get cramped", () => {
+  assert.match(
+    styles,
+    /@media \(max-width: 1439\.98px\)[\s\S]*\.lower-grid\s*{[^}]*grid-template-columns: 1fr;/s,
+  );
+  assert.match(
+    styles,
+    /@media \(max-width: 1120px\)[\s\S]*\.economic-health-grid\s*{[^}]*grid-template-columns: repeat\(2, minmax\(0, 1fr\)\);/s,
+  );
+});
+
 test("mobile page controls keep period and region in two columns", () => {
   assert.match(
     styles,
