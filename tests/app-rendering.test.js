@@ -1329,6 +1329,10 @@ test("mobile page controls keep period and region in two columns", () => {
 test("mobile dashboards use swipeable exploration rails", () => {
   assert.match(
     styles,
+    /@media \(max-width: 767\.98px\)[\s\S]*\.page-title-row > \.page-title-group > \.acadia-kicker,\s*\.section-heading \.acadia-kicker\s*{[^}]*display: none;/s,
+  );
+  assert.match(
+    styles,
     /@media \(max-width: 767\.98px\)[\s\S]*\.page-title-row h1\s*{[^}]*font-size: clamp\(1\.95rem, 8vw, 2\.35rem\);/s,
   );
   assert.match(
@@ -1341,7 +1345,7 @@ test("mobile dashboards use swipeable exploration rails", () => {
   );
   assert.match(
     styles,
-    /@media \(max-width: 767\.98px\)[\s\S]*\.hero-movers::before\s*{[^}]*content: "Movers";/s,
+    /@media \(max-width: 767\.98px\)[\s\S]*\.hero-movers::before\s*{[^}]*content: none;[^}]*display: none;/s,
   );
   assert.match(
     styles,
