@@ -700,7 +700,8 @@ test("indicators page adds economic read, drivers, and interpretation", () => {
   assert.match(indicatorsHtml, /id="indicator-meaning-copy"/);
   assert.match(indicatorsHtml, /Economic Read/);
   assert.match(indicatorsHtml, /Key Drivers/);
-  assert.match(indicatorsHtml, /What It Means/);
+  assert.match(indicatorsHtml, /Why It Matters/);
+  assert.doesNotMatch(indicatorsHtml, /What It Means/);
   assert.match(
     styles,
     /\.indicator-briefing-grid\s*{[^}]*grid-template-columns: minmax\(0, 1\.35fr\) repeat\(2, minmax\(0, 1fr\)\);/s,
