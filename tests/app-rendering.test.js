@@ -1356,3 +1356,15 @@ test("mobile dashboards use swipeable exploration rails", () => {
     /@media \(max-width: 767\.98px\)[\s\S]*\.overview-tiles-grid > \*,[\s\S]*\.mercury-page-supports \.digital-assets-grid > \*\s*{[^}]*flex: 0 0 min\(82vw, 21rem\);[^}]*scroll-snap-align: start;/s,
   );
 });
+
+test("mobile dock clears the device safe area", () => {
+  assert.match(
+    styles,
+    /@media \(max-width: 767\.98px\)[\s\S]*\.primary-nav\.acadia-mobile-dock,\s*\.acadia-nav\.acadia-mobile-dock\s*{[^}]*bottom: 0\.75rem;[^}]*bottom: calc\(0\.75rem \+ env\(safe-area-inset-bottom\)\);[^}]*top: auto;/s,
+  );
+  assert.doesNotMatch(styles, /bottom: max\(0\.75rem, env\(safe-area-inset-bottom\)\);/);
+  assert.match(
+    styles,
+    /@media \(max-width: 767\.98px\)[\s\S]*\.dashboard-shell\s*{[^}]*padding-bottom: calc\(6\.5rem \+ env\(safe-area-inset-bottom\)\);/s,
+  );
+});
