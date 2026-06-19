@@ -302,6 +302,16 @@ test("dashboard summary adds key signals and briefing sections", () => {
   );
 });
 
+test("static pages reference the current mobile dock assets", () => {
+  const pages = [indexHtml, marketsHtml, supportsHtml, indicatorsHtml, dataHtml];
+
+  for (const html of pages) {
+    assert.match(html, /styles\.css\?v=20260619-mobile-dock/);
+    assert.match(html, /app\.js\?v=20260619-mobile-dock/);
+    assert.match(html, /class="primary-nav acadia-nav acadia-mobile-dock"/);
+  }
+});
+
 test("markets page adds contextual key drivers for global and focused regions", () => {
   assert.match(marketsHtml, /id="market-drivers-grid"/);
   assert.match(styles, /\.market-drivers-grid\s*{[^}]*grid-template-columns: repeat\(3, minmax\(0, 1fr\)\);/s);
