@@ -59,6 +59,18 @@ function pendingRegion(name) {
 }
 
 let marketPulse = [
+  pendingMetric("U.S. Total", "Vanguard Total Stock Market ETF", "fa-earth-americas", "global-us-total", "VTI", {
+    marketOrder: 5,
+    marketRole: "global-allocation",
+    region: "Global",
+    viewGroup: "economy",
+  }),
+  pendingMetric("International", "Vanguard Total International Stock ETF", "fa-globe", "global-international", "VXUS", {
+    marketOrder: 6,
+    marketRole: "global-allocation",
+    region: "Global",
+    viewGroup: "economy",
+  }),
   pendingMetric("S&P 500", "Vanguard S&P 500 ETF", "fa-building", "us-equities", "VOO", {
     marketOrder: 10,
     marketRole: "large-cap",
@@ -92,6 +104,48 @@ let marketPulse = [
   pendingMetric("Bonds", "Total bond market ETF", "fa-scale-balanced", "bonds", "BND", {
     marketOrder: 60,
     marketRole: "bonds",
+    region: "United States",
+    viewGroup: "economy",
+  }),
+  pendingMetric("Energy", "Vanguard Energy ETF", "fa-bolt", "us-energy", "VDE", {
+    marketOrder: 70,
+    marketRole: "energy",
+    region: "United States",
+    viewGroup: "economy",
+  }),
+  pendingMetric("REIT", "Vanguard Real Estate ETF", "fa-city", "us-reit", "VNQ", {
+    marketOrder: 80,
+    marketRole: "real-estate",
+    region: "United States",
+    viewGroup: "economy",
+  }),
+  pendingMetric("Healthcare", "Vanguard Health Care ETF", "fa-heart-pulse", "us-healthcare", "VHT", {
+    marketOrder: 90,
+    marketRole: "healthcare",
+    region: "United States",
+    viewGroup: "economy",
+  }),
+  pendingMetric("Consumer", "Vanguard Consumer Discretionary ETF", "fa-bag-shopping", "us-consumer", "VCR", {
+    marketOrder: 100,
+    marketRole: "consumer",
+    region: "United States",
+    viewGroup: "economy",
+  }),
+  pendingMetric("Communications", "Vanguard Communication Services ETF", "fa-tower-broadcast", "us-communications", "VOX", {
+    marketOrder: 110,
+    marketRole: "communications",
+    region: "United States",
+    viewGroup: "economy",
+  }),
+  pendingMetric("Growth", "Vanguard Growth ETF", "fa-chart-line", "us-growth", "VUG", {
+    marketOrder: 120,
+    marketRole: "growth",
+    region: "United States",
+    viewGroup: "economy",
+  }),
+  pendingMetric("Materials", "Vanguard Materials ETF", "fa-flask", "us-materials", "VAW", {
+    marketOrder: 130,
+    marketRole: "materials",
     region: "United States",
     viewGroup: "economy",
   }),
@@ -246,6 +300,10 @@ const MARKET_ROLE_ORDER = [
   "healthcare",
   "consumer",
   "energy",
+  "real-estate",
+  "communications",
+  "growth",
+  "materials",
   "country",
   "bonds",
 ];
@@ -556,7 +614,7 @@ function marketDriverTitle() {
 }
 
 function marketDriverCategory(card) {
-  if (selectedRegion === "Global") return "Region";
+  if (selectedRegion === "Global") return card.marketRole === "global-allocation" ? "Allocation" : "Region";
   if (card.marketRole === "large-cap") return "Core market";
   if (card.marketRole === "small-cap") return "Small cap";
   if (card.marketRole === "technology") return "Sector";
@@ -565,6 +623,10 @@ function marketDriverCategory(card) {
   if (card.marketRole === "healthcare") return "Defensive sector";
   if (card.marketRole === "consumer") return "Demand signal";
   if (card.marketRole === "energy") return "Input costs";
+  if (card.marketRole === "real-estate") return "Rate sensitive";
+  if (card.marketRole === "communications") return "Services";
+  if (card.marketRole === "growth") return "Growth style";
+  if (card.marketRole === "materials") return "Materials";
   if (card.marketRole === "country") return "Country";
   if (card.marketRole === "bonds") return "Defensive asset";
 
@@ -1516,6 +1578,11 @@ function metricIconClass(metric) {
   if (metric.marketRole === "healthcare") return "fa-heart-pulse";
   if (metric.marketRole === "consumer") return "fa-bag-shopping";
   if (metric.marketRole === "energy") return "fa-bolt";
+  if (metric.marketRole === "real-estate") return "fa-city";
+  if (metric.marketRole === "communications") return "fa-tower-broadcast";
+  if (metric.marketRole === "growth") return "fa-chart-line";
+  if (metric.marketRole === "materials") return "fa-flask";
+  if (metric.marketRole === "global-allocation") return "fa-globe";
   if (metric.marketRole === "country") return "fa-earth-asia";
   if (normalizedName.includes("credit")) return "fa-credit-card";
   if (normalizedName.includes("stress")) return "fa-chart-line";
@@ -2469,6 +2536,8 @@ function findRegionalMarket(region) {
 }
 
 function regionIconClass(region) {
+  if (region === "U.S. Total") return "fa-earth-americas";
+  if (region === "International") return "fa-globe";
   if (region === "United States") return "fa-earth-americas";
   if (region === "Europe") return "fa-earth-europe";
   if (region === "Asia") return "fa-earth-asia";
@@ -2477,7 +2546,12 @@ function regionIconClass(region) {
 }
 
 function globalMarketCards() {
+  const globalAllocationCards = [
+    ["U.S. Total", findMetric(marketPulse, "global-us-total", "U.S. Total")],
+    ["International", findMetric(marketPulse, "global-international", "International")],
+  ];
   const cards = [
+    ...globalAllocationCards,
     ["United States", findRegionalMarket("United States")],
     ["Europe", findRegionalMarket("Europe")],
     ["Asia", findRegionalMarket("Asia")],
@@ -2494,7 +2568,7 @@ function globalMarketCards() {
     return cards;
   }
 
-  return ["United States", "Europe", "Asia"].map((name) => ({
+  return ["U.S. Total", "International", "United States", "Europe", "Asia"].map((name) => ({
     name,
     context: "Market proxy needs live data",
     icon: regionIconClass(name),
@@ -2685,6 +2759,13 @@ function unavailableRegionalMarketCards(region) {
     { name: "Financials", context: "Credit and banking proxy", marketRole: "financials", marketOrder: 40 },
     { name: "Industrials", context: "Production and capex proxy", marketRole: "industrials", marketOrder: 50 },
     { name: "Bonds", context: "Interest rate environment proxy", marketRole: "bonds", marketOrder: 60 },
+    { name: "Energy", context: "U.S. energy sector proxy", marketRole: "energy", marketOrder: 70 },
+    { name: "REIT", context: "U.S. real estate proxy", marketRole: "real-estate", marketOrder: 80 },
+    { name: "Healthcare", context: "U.S. healthcare sector proxy", marketRole: "healthcare", marketOrder: 90 },
+    { name: "Consumer", context: "U.S. consumer discretionary proxy", marketRole: "consumer", marketOrder: 100 },
+    { name: "Communications", context: "U.S. communication services proxy", marketRole: "communications", marketOrder: 110 },
+    { name: "Growth", context: "U.S. growth style proxy", marketRole: "growth", marketOrder: 120 },
+    { name: "Materials", context: "U.S. materials sector proxy", marketRole: "materials", marketOrder: 130 },
   ].map((metric) => unavailableRegionalMetric(metric, region));
 }
 

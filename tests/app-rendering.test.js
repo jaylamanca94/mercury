@@ -119,11 +119,25 @@ test("focused regional markets expose region-specific economy lenses", () => {
 
   assert.deepEqual(
     normalizedCards.unitedStates.map((card) => card.name),
-    ["S&P 500", "Small Cap", "Technology", "Financials", "Industrials", "Bonds"],
+    [
+      "S&P 500",
+      "Small Cap",
+      "Technology",
+      "Financials",
+      "Industrials",
+      "Bonds",
+      "Energy",
+      "REIT",
+      "Healthcare",
+      "Consumer",
+      "Communications",
+      "Growth",
+      "Materials",
+    ],
   );
   assert.deepEqual(
     normalizedCards.unitedStates.map((card) => card.ticker),
-    ["VOO", "VSMAX", "VGT", "VFH", "VIS", "BND"],
+    ["VOO", "VSMAX", "VGT", "VFH", "VIS", "BND", "VDE", "VNQ", "VHT", "VCR", "VOX", "VUG", "VAW"],
   );
   assert.deepEqual(
     normalizedCards.europe.map((card) => card.name),
@@ -167,12 +181,36 @@ test("global fallback cards explain missing market proxies", () => {
       "Market proxy needs live data",
       "Market proxy needs live data",
       "Market proxy needs live data",
+      "Market proxy needs live data",
+      "Market proxy needs live data",
     ],
   );
   assert.equal(normalizedCards.every((card) => card.sourceStatus === "Unavailable"), true);
   assert.deepEqual(
     normalizedCards.map((card) => card.icon),
-    ["fa-earth-americas", "fa-earth-europe", "fa-earth-asia"],
+    ["fa-earth-americas", "fa-globe", "fa-earth-americas", "fa-earth-europe", "fa-earth-asia"],
+  );
+});
+
+test("global market cards include total U.S. and international ETFs", () => {
+  const context = loadAppContext();
+  const cards = vm.runInContext(
+    `
+      globalMarketCards().map((card) => ({
+        name: card.name,
+        ticker: card.ticker,
+      }));
+    `,
+    context,
+  );
+  const normalizedCards = JSON.parse(JSON.stringify(cards));
+
+  assert.deepEqual(
+    normalizedCards.slice(0, 2),
+    [
+      { name: "U.S. Total", ticker: "VTI" },
+      { name: "International", ticker: "VXUS" },
+    ],
   );
 });
 
@@ -202,7 +240,7 @@ test("global market support cards split currencies from commodities", () => {
   assert.deepEqual(normalizedResult.currencies, ["dollar-index", "euro", "yen"]);
   assert.deepEqual(normalizedResult.commodities, ["oil", "bitcoin"]);
   assert.equal(normalizedResult.hideCharts, true);
-  assert.match(styles, /\.dashboard-global \.economy-grid\s*{[^}]*grid-template-columns: repeat\(3, minmax\(0, 1fr\)\);/s);
+  assert.match(styles, /\.dashboard-global \.economy-grid\s*{[^}]*grid-template-columns: repeat\(auto-fit, minmax\(14rem, 1fr\)\);/s);
   assert.match(styles, /\.commodity-grid\s*{[^}]*grid-template-columns: repeat\(2, minmax\(0, 1fr\)\);/s);
 });
 
@@ -213,6 +251,8 @@ test("dashboard renders editorial sections instead of one mixed grid", () => {
     `
       selectedRegion = "Global";
       marketPulse = [
+        { id: "global-us-total", name: "U.S. Total", value: "$311.10", change: "+2.4%", ticker: "VTI", viewGroup: "economy", region: "Global", marketRole: "global-allocation", sourceStatus: "Source-backed", freshness: { status: "current" }, points: [1, 2], history: [{ value: 1 }, { value: 2 }], comparison: "percent-change" },
+        { id: "global-international", name: "International", value: "$71.20", change: "+1.9%", ticker: "VXUS", viewGroup: "economy", region: "Global", marketRole: "global-allocation", sourceStatus: "Source-backed", freshness: { status: "current" }, points: [1, 2], history: [{ value: 1 }, { value: 2 }], comparison: "percent-change" },
         { id: "us-equities", name: "S&P 500", value: "$681.41", change: "+2.2%", ticker: "VOO", viewGroup: "economy", region: "United States", marketRole: "large-cap", sourceStatus: "Source-backed", freshness: { status: "current" }, points: [1, 2], history: [{ value: 1 }, { value: 2 }], comparison: "percent-change" },
         { id: "europe-equities", name: "Europe", value: "$89.23", change: "+2.9%", ticker: "VGK", viewGroup: "economy", region: "Europe", marketRole: "large-cap", sourceStatus: "Source-backed", freshness: { status: "current" }, points: [1, 2], history: [{ value: 1 }, { value: 2 }], comparison: "percent-change" },
         { id: "asia-equities", name: "Asia Pacific", value: "$117.16", change: "+7.5%", ticker: "VPL", viewGroup: "economy", region: "Asia", marketRole: "large-cap", sourceStatus: "Source-backed", freshness: { status: "current" }, points: [1, 2], history: [{ value: 1 }, { value: 2 }], comparison: "percent-change" },
@@ -236,6 +276,10 @@ test("dashboard renders editorial sections instead of one mixed grid", () => {
   const healthHtml = context.__elements.get("#economic-health-grid").innerHTML;
 
   assert.match(economyHtml, /United States/);
+  assert.match(economyHtml, /U\.S\. Total/);
+  assert.match(economyHtml, /VTI/);
+  assert.match(economyHtml, /International/);
+  assert.match(economyHtml, /VXUS/);
   assert.match(economyHtml, /Europe/);
   assert.match(economyHtml, /Asia/);
   assert.doesNotMatch(economyHtml, /U\.S\. Dollar/);

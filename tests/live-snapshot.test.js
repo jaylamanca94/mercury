@@ -61,6 +61,18 @@ test("Yahoo market pulse uses economic-segment proxies for focused market views"
     { id: "us-financials", marketRole: "financials", symbol: "VFH" },
     { id: "us-industrials", marketRole: "industrials", symbol: "VIS" },
     { id: "bonds", marketRole: "bonds", symbol: "BND" },
+    { id: "us-energy", marketRole: "energy", symbol: "VDE" },
+    { id: "us-reit", marketRole: "real-estate", symbol: "VNQ" },
+    { id: "us-healthcare", marketRole: "healthcare", symbol: "VHT" },
+    { id: "us-consumer", marketRole: "consumer", symbol: "VCR" },
+    { id: "us-communications", marketRole: "communications", symbol: "VOX" },
+    { id: "us-growth", marketRole: "growth", symbol: "VUG" },
+    { id: "us-materials", marketRole: "materials", symbol: "VAW" },
+  ]);
+
+  assert.deepEqual(economySeriesFor("Global"), [
+    { id: "global-us-total", marketRole: "global-allocation", symbol: "VTI" },
+    { id: "global-international", marketRole: "global-allocation", symbol: "VXUS" },
   ]);
 
   assert.deepEqual(economySeriesFor("Europe"), [
