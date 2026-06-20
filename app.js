@@ -155,19 +155,19 @@ let marketPulse = [
     region: "Europe",
     viewGroup: "economy",
   }),
-  pendingMetric("Financials", "STOXX Europe banks index", "fa-building-columns", "europe-financials", "SX7P", {
+  pendingMetric("Financials", "iShares STOXX Europe 600 Banks UCITS ETF", "fa-building-columns", "europe-financials", "EXV1.DE", {
     marketOrder: 20,
     marketRole: "financials",
     region: "Europe",
     viewGroup: "economy",
   }),
-  pendingMetric("Industrials", "STOXX Europe industrials index", "fa-industry", "europe-industrials", "SXNP", {
+  pendingMetric("Industrials", "iShares STOXX Europe 600 Industrial Goods & Services UCITS ETF", "fa-industry", "europe-industrials", "EXH4.DE", {
     marketOrder: 30,
     marketRole: "industrials",
     region: "Europe",
     viewGroup: "economy",
   }),
-  pendingMetric("Healthcare", "STOXX Europe healthcare index", "fa-heart-pulse", "europe-healthcare", "SXDP", {
+  pendingMetric("Healthcare", "iShares STOXX Europe 600 Health Care UCITS ETF", "fa-heart-pulse", "europe-healthcare", "EXV4.DE", {
     marketOrder: 40,
     marketRole: "healthcare",
     region: "Europe",
@@ -179,7 +179,7 @@ let marketPulse = [
     region: "Europe",
     viewGroup: "economy",
   }),
-  pendingMetric("Energy", "STOXX Europe energy index", "fa-bolt", "europe-energy", "SXEP", {
+  pendingMetric("Energy", "iShares STOXX Europe 600 Oil & Gas UCITS ETF", "fa-bolt", "europe-energy", "EXH1.DE", {
     marketOrder: 60,
     marketRole: "energy",
     region: "Europe",

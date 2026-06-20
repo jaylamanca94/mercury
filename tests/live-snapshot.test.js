@@ -77,11 +77,11 @@ test("Yahoo market pulse uses economic-segment proxies for focused market views"
 
   assert.deepEqual(economySeriesFor("Europe"), [
     { id: "europe-equities", marketRole: "large-cap", symbol: "VGK" },
-    { id: "europe-financials", marketRole: "financials", symbol: "^SX7P" },
-    { id: "europe-industrials", marketRole: "industrials", symbol: "^SXNP" },
-    { id: "europe-healthcare", marketRole: "healthcare", symbol: "^SXDP" },
+    { id: "europe-financials", marketRole: "financials", symbol: "EXV1.DE" },
+    { id: "europe-industrials", marketRole: "industrials", symbol: "EXH4.DE" },
+    { id: "europe-healthcare", marketRole: "healthcare", symbol: "EXV4.DE" },
     { id: "europe-consumer", marketRole: "consumer", symbol: "^SXQP" },
-    { id: "europe-energy", marketRole: "energy", symbol: "^SXEP" },
+    { id: "europe-energy", marketRole: "energy", symbol: "EXH1.DE" },
   ]);
 
   assert.deepEqual(economySeriesFor("Asia"), [
@@ -92,6 +92,21 @@ test("Yahoo market pulse uses economic-segment proxies for focused market views"
     { id: "asia-south-korea", marketRole: "country", symbol: "EWY" },
     { id: "asia-equities", marketRole: "large-cap", symbol: "VPL" },
   ]);
+});
+
+test("Europe sector proxies avoid Yahoo index symbols with empty chart histories", () => {
+  const failingIndexSymbols = new Set(["^SX7P", "^SXNP", "^SXDP", "^SXEP"]);
+  const europeSectorSeries = YAHOO_SERIES.filter(
+    (series) =>
+      series.section === "marketPulse" &&
+      series.viewGroup === "economy" &&
+      series.region === "Europe" &&
+      series.marketRole !== "large-cap",
+  );
+
+  assert.equal(europeSectorSeries.length, 5);
+  assert.equal(europeSectorSeries.every((series) => !failingIndexSymbols.has(series.symbol)), true);
+  assert.equal(europeSectorSeries.every((series) => series.source.includes("Yahoo Finance")), true);
 });
 
 test("parseFredCsv keeps valid rows sorted by date", () => {

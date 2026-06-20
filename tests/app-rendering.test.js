@@ -145,7 +145,7 @@ test("focused regional markets expose region-specific economy lenses", () => {
   );
   assert.deepEqual(
     normalizedCards.europe.map((card) => card.ticker),
-    ["VGK", "SX7P", "SXNP", "SXDP", "SXQP", "SXEP"],
+    ["VGK", "EXV1.DE", "EXH4.DE", "EXV4.DE", "SXQP", "EXH1.DE"],
   );
   assert.deepEqual(
     normalizedCards.asia.map((card) => card.name),
