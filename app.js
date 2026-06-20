@@ -313,6 +313,7 @@ const currentPage = document.body?.dataset?.mercuryPage || "dashboard";
 let selectedEconomyPeriod = "week";
 let selectedCurrencyPeriod = "week";
 let selectedRegion = "Global";
+let selectedMarketSort = "relevance";
 
 function isDashboardPage() {
   return currentPage === "dashboard";
@@ -1101,6 +1102,177 @@ function renderHeroSparkline(cards, change) {
   );
 }
 
+const MOBILE_REGION_TABS = [
+  { value: "Global", label: "Global" },
+  { value: "United States", label: "U.S." },
+  { value: "Europe", label: "Europe" },
+  { value: "Asia", label: "Asia" },
+];
+
+function regionalMarketCardsForScope(region) {
+  if (region === "Global") {
+    return globalMarketCards();
+  }
+
+  const scopedCards = marketPulse
+    .filter((item) => item.viewGroup === "economy" && item.region === region)
+    .sort((a, b) => marketRoleRank(a) - marketRoleRank(b));
+
+  if (scopedCards.length) {
+    return scopedCards.map((item) => withPeriodDelta(item, selectedEconomyPeriod));
+  }
+
+  return unavailableRegionalMarketCards(region).map((item) => withPeriodDelta(item, selectedEconomyPeriod));
+}
+
+function economyHeroCardsForScope(region) {
+  const regionalCards = regionalMarketCardsForScope(region);
+
+  if (region === "Global") {
+    return [...regionalCards, ...currencySupportCards(), ...commodityCards()];
+  }
+
+  return [...regionalCards, ...economicHealthCards()].filter(Boolean);
+}
+
+function mobileTabChangeLabel(region) {
+  const change = sectionChange(economyHeroCardsForScope(region));
+
+  if (!change) {
+    return "Loading";
+  }
+
+  return change.label;
+}
+
+function renderMobileRegionTabs() {
+  return MOBILE_REGION_TABS.map((tab) => {
+    const isActive = tab.value === selectedRegion;
+    const changeLabel = mobileTabChangeLabel(tab.value);
+
+    return `
+      <button
+        class="mobile-dashboard-tab${isActive ? " is-active" : ""}"
+        type="button"
+        data-region="${escapeHtml(tab.value)}"
+        aria-pressed="${isActive ? "true" : "false"}"
+        aria-label="${escapeHtml(`${tab.label} economy, ${changeLabel}`)}"
+      >
+        <span class="mobile-dashboard-tab-name">${escapeHtml(tab.label)}</span>
+        <strong>${escapeHtml(changeLabel)}</strong>
+      </button>
+    `;
+  }).join("");
+}
+
+function mobileAxisLabels(period) {
+  if (period === "today") return ["Open", "Midday", "Now"];
+  if (period === "month") return ["4 weeks ago", "2 weeks", "Now"];
+  if (period === "year") return ["Jan", "Midyear", "Now"];
+  if (period === "fiveYear") return ["5 years", "2.5 years", "Now"];
+
+  return ["5 days ago", "Midweek", "Now"];
+}
+
+function mobileFreshnessSummary() {
+  const items = snapshotItems({ marketPulse, economicHealth, riskIndicators, regions });
+  const liveCount = items.filter((item) => item.sourceStatus === "Source-backed").length;
+  const delayedCount = items.filter((item) => item.freshness?.status === "delayed").length;
+  const staleCount = items.filter((item) => item.freshness?.status === "stale").length;
+
+  if (!items.length || liveCount === 0) {
+    return { label: "Unavailable", tone: "unavailable" };
+  }
+
+  if (staleCount > 0) {
+    return { label: "Stale", tone: "stale" };
+  }
+
+  if (delayedCount > 0 || liveCount < items.length) {
+    return { label: "Partial", tone: "caution" };
+  }
+
+  return { label: "Current", tone: "current" };
+}
+
+function mobileSourceGroups() {
+  return sourceHealthGroups({ marketPulse, economicHealth, riskIndicators, regions });
+}
+
+function renderMobileSourceDots(groups) {
+  return groups
+    .map(
+      (group) => `
+        <span class="mobile-source-dot mobile-source-${escapeHtml(group.health)}"></span>
+      `,
+    )
+    .join("");
+}
+
+function renderMobileSourceIcons(groups) {
+  const icons = {
+    markets: "fa-chart-line",
+    "economic-releases": "fa-building-columns",
+    "risk-indicators": "fa-gauge-high",
+    "regional-coverage": "fa-earth-americas",
+  };
+
+  return groups
+    .map(
+      (group) => `
+        <i class="fa-solid ${icons[group.id] || "fa-database"} mobile-source-${escapeHtml(group.health)}" aria-hidden="true"></i>
+      `,
+    )
+    .join("");
+}
+
+function renderMobileDashboardCard(cards, change) {
+  const card = document.querySelector("#mobile-dashboard-card");
+
+  if (!card) {
+    return;
+  }
+
+  const movers = heroMoverCards(cards);
+  const sentiment = sentimentForChange(change);
+  const periodLabel = periodOption(selectedEconomyPeriod).label;
+  const freshness = mobileFreshnessSummary();
+  const sourceGroups = mobileSourceGroups();
+  const axisLabels = mobileAxisLabels(selectedEconomyPeriod);
+  const title =
+    change && sentiment.label !== "Unavailable"
+      ? `${sentiment.label} conditions`
+      : "Checking conditions";
+  const comparison =
+    change && sentiment.label !== "Unavailable"
+      ? `${change.label} - ${periodLabel} view`
+      : "Waiting for comparable live inputs";
+  const copy = buildHeroInsight(change, movers, selectedEconomyPeriod, selectedRegion);
+  const chart = renderHeroSparkline(cards, change);
+
+  card.classList.remove(
+    "mobile-dashboard-card-up",
+    "mobile-dashboard-card-down",
+    "mobile-dashboard-card-stable",
+    "mobile-dashboard-card-mixed",
+    "mobile-dashboard-card-unavailable",
+    "mobile-dashboard-card-caution",
+  );
+  card.classList.add(`mobile-dashboard-card-${change?.tone || "unavailable"}`);
+  card.setAttribute("data-freshness", freshness.tone);
+  setHtml("#mobile-dashboard-tabs", renderMobileRegionTabs());
+  setText("#mobile-dashboard-title", title);
+  setText("#mobile-dashboard-comparison", comparison);
+  setText("#mobile-dashboard-copy", copy);
+  setHtml("#mobile-dashboard-chart", chart || renderSparkline([], "unavailable", `${viewTitle(selectedRegion)} trend`));
+  setText("#mobile-axis-start", axisLabels[0]);
+  setText("#mobile-axis-middle", axisLabels[1]);
+  setText("#mobile-axis-end", axisLabels[2]);
+  setText("#mobile-dashboard-freshness", freshness.label);
+  setHtml("#mobile-source-dots", renderMobileSourceDots(sourceGroups));
+  setHtml("#mobile-source-icons", renderMobileSourceIcons(sourceGroups));
+}
+
 function updateHeroInsight(cards, change) {
   const movers = heroMoverCards(cards);
 
@@ -1139,6 +1311,7 @@ function syncControlValues() {
   const economyPeriodSelect = document.querySelector("#economy-period-select");
   const currencyPeriodSelect = document.querySelector("#currency-period-select");
   const economyRegionSelect = document.querySelector("#economy-region-select");
+  const marketSortSelect = document.querySelector("#market-sort-select");
 
   if (economyPeriodSelect) {
     economyPeriodSelect.value = selectedEconomyPeriod;
@@ -1150,6 +1323,10 @@ function syncControlValues() {
 
   if (economyRegionSelect) {
     economyRegionSelect.value = selectedRegion;
+  }
+
+  if (marketSortSelect) {
+    marketSortSelect.value = selectedMarketSort;
   }
 }
 
@@ -1170,6 +1347,25 @@ function bindDashboardControls() {
     selectedRegion = event.target.value;
     renderDashboard();
     announceDashboardStatus(`Economy region changed to ${event.target.selectedOptions[0]?.textContent || event.target.value}.`);
+  });
+
+  document.querySelector("#mobile-dashboard-tabs")?.addEventListener("click", (event) => {
+    const tab = event.target.closest("[data-region]");
+
+    if (!tab) {
+      return;
+    }
+
+    selectedRegion = tab.dataset.region || "Global";
+    syncControlValues();
+    renderDashboard();
+    announceDashboardStatus(`Economy region changed to ${tab.textContent.trim()}.`);
+  });
+
+  document.querySelector("#market-sort-select")?.addEventListener("change", (event) => {
+    selectedMarketSort = event.target.value;
+    renderDashboard();
+    announceDashboardStatus(`Market sort changed to ${event.target.selectedOptions[0]?.textContent || event.target.value}.`);
   });
 }
 
@@ -2790,6 +2986,32 @@ function regionalMarketCards() {
   ].filter(Boolean);
 }
 
+function marketSortValue(card) {
+  return Number.isFinite(card.periodChangeValue) ? card.periodChangeValue : null;
+}
+
+function sortMarketCardsForDisplay(cards) {
+  if (selectedMarketSort === "relevance") {
+    return cards;
+  }
+
+  const direction = selectedMarketSort === "return-asc" ? 1 : -1;
+
+  return [...cards].sort((a, b) => {
+    const aValue = marketSortValue(a);
+    const bValue = marketSortValue(b);
+
+    if (aValue === null && bValue === null) {
+      return marketRoleRank(a) - marketRoleRank(b);
+    }
+
+    if (aValue === null) return 1;
+    if (bValue === null) return -1;
+
+    return (aValue - bValue) * direction || marketRoleRank(a) - marketRoleRank(b);
+  });
+}
+
 function currencyCards() {
   const grouped = marketPulse.filter((item) => item.viewGroup === "currency");
 
@@ -2816,6 +3038,7 @@ function renderDashboard() {
   const globalView = isGlobalView();
   const marketCards = regionalMarketCards().map((item) => withPeriodDelta(item, selectedEconomyPeriod));
   const regionalCards = globalView ? globalMarketCards() : marketCards;
+  const displayedMarketCards = sortMarketCardsForDisplay(regionalCards);
   const currencyCardsForView = currencySupportCards();
   const commodityCardsForView = commodityCards();
   const healthCards = economicHealthCards();
@@ -2839,7 +3062,7 @@ function renderDashboard() {
   setText("#economy-title", globalView ? "Regional Markets" : `${selectedRegion} Markets`);
 
   if (economyGrid) {
-    economyGrid.innerHTML = regionalCards
+    economyGrid.innerHTML = displayedMarketCards
       .map((item) => (isDashboardPage() ? { ...item, isOverview: true } : item))
       .map(renderMetricCard)
       .join("");
@@ -2887,6 +3110,7 @@ function renderDashboard() {
     updateHeroInsight(heroCards, economyChange);
     updateSectionBadge("#currency-change-badge", sectionChange(currencyCardsForView));
   }
+  renderMobileDashboardCard(heroCards, economyChange);
   renderMarketDrivers(marketHeroCards);
 
   if (riskList) {

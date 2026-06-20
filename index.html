@@ -15,7 +15,7 @@
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
       referrerpolicy="no-referrer"
     >
-    <link rel="stylesheet" href="styles.css?v=20260619-mobile-dock">
+    <link rel="stylesheet" href="styles.css?v=20260620-dock-placement">
   </head>
   <body class="mercury-app mercury-page-dashboard" data-mercury-page="dashboard">
     <a class="skip-link" href="#main-content">Skip to dashboard</a>
@@ -28,7 +28,7 @@
           </span>
           <strong>Mercury</strong>
         </a>
-        <nav class="primary-nav acadia-nav acadia-mobile-dock" aria-label="Mercury pages">
+        <nav class="primary-nav acadia-nav" aria-label="Mercury pages">
           <a class="primary-nav-link acadia-nav-item is-active" href="index.html" aria-current="page"><i class="fa-solid fa-chart-line acadia-icon" aria-hidden="true"></i><span>Dashboard</span></a>
           <a class="primary-nav-link acadia-nav-item" href="markets.html"><i class="fa-solid fa-arrow-trend-up acadia-icon" aria-hidden="true"></i><span>Markets</span></a>
           <a class="primary-nav-link acadia-nav-item" href="supports.html"><i class="fa-solid fa-hand-holding-dollar acadia-icon" aria-hidden="true"></i><span>Supports</span></a>
@@ -41,6 +41,13 @@
         </div>
       </div>
     </header>
+    <nav class="primary-nav acadia-nav acadia-mobile-dock" aria-label="Mercury pages">
+      <a class="primary-nav-link acadia-nav-item is-active" href="index.html" aria-current="page"><i class="fa-solid fa-chart-line acadia-icon" aria-hidden="true"></i><span>Dashboard</span></a>
+      <a class="primary-nav-link acadia-nav-item" href="markets.html"><i class="fa-solid fa-arrow-trend-up acadia-icon" aria-hidden="true"></i><span>Markets</span></a>
+      <a class="primary-nav-link acadia-nav-item" href="supports.html"><i class="fa-solid fa-hand-holding-dollar acadia-icon" aria-hidden="true"></i><span>Supports</span></a>
+      <a class="primary-nav-link acadia-nav-item" href="indicators.html"><i class="fa-solid fa-gauge-high acadia-icon" aria-hidden="true"></i><span>Indicators</span></a>
+      <a class="primary-nav-link acadia-nav-item" href="data.html"><i class="fa-solid fa-table acadia-icon" aria-hidden="true"></i><span>Data</span></a>
+    </nav>
 
     <main id="main-content" class="dashboard-shell acadia-shell acadia-stack">
       <section class="page-title-row acadia-surface acadia-panel-dense" aria-labelledby="view-title">
@@ -56,6 +63,35 @@
           <div id="hero-movers" class="hero-movers" aria-label="Top movers"></div>
           <div id="hero-sparkline" class="hero-chart-panel" aria-label="Global economy trend"></div>
         </div>
+        <article id="mobile-dashboard-card" class="mobile-dashboard-card" aria-labelledby="mobile-dashboard-title">
+          <div id="mobile-dashboard-tabs" class="mobile-dashboard-tabs" aria-label="Economy region shortcuts"></div>
+          <div class="mobile-dashboard-heading">
+            <div>
+              <h2 id="mobile-dashboard-title">Checking conditions</h2>
+              <p id="mobile-dashboard-comparison">Waiting for live public data.</p>
+            </div>
+            <i class="fa-solid fa-chevron-right" aria-hidden="true"></i>
+          </div>
+          <p id="mobile-dashboard-copy" class="mobile-dashboard-copy">
+            Mercury is checking source-backed market, support, and economic indicators.
+          </p>
+          <div id="mobile-dashboard-chart" class="mobile-dashboard-chart" aria-label="Mobile economy trend"></div>
+          <div class="mobile-dashboard-axis" aria-hidden="true">
+            <span id="mobile-axis-start">Start</span>
+            <span id="mobile-axis-middle">Middle</span>
+            <span id="mobile-axis-end">Now</span>
+          </div>
+          <div class="mobile-dashboard-band">
+            <div>
+              <span>Source freshness</span>
+              <strong id="mobile-dashboard-freshness">Checking</strong>
+            </div>
+            <div class="mobile-source-stack" aria-label="Source group status">
+              <span id="mobile-source-dots" class="mobile-source-dots" aria-hidden="true"></span>
+              <span id="mobile-source-icons" class="mobile-source-icons" aria-hidden="true"></span>
+            </div>
+          </div>
+        </article>
         <div class="page-controls-row" aria-label="Dashboard controls">
           <div class="page-actions acadia-toolbar">
             <label class="section-select-label acadia-field" for="economy-period-select">
@@ -168,6 +204,16 @@
           <div class="section-title-group">
             <span class="acadia-kicker">Markets</span>
             <h2 id="economy-title" class="acadia-title">Regional Markets</h2>
+          </div>
+          <div class="section-controls market-sort-controls" aria-label="Market sort controls">
+            <label class="section-select-label acadia-field" for="market-sort-select">
+              <span class="acadia-label">Sort</span>
+              <select id="market-sort-select" class="section-select acadia-control" aria-label="Sort markets">
+                <option value="relevance" selected>Economy order</option>
+                <option value="return-desc">Return high to low</option>
+                <option value="return-asc">Return low to high</option>
+              </select>
+            </label>
           </div>
         </div>
         <div id="economy-grid" class="metric-grid economy-grid"></div>
@@ -310,6 +356,6 @@
       </section>
     </main>
 
-    <script src="app.js?v=20260619-mobile-dock"></script>
+    <script src="app.js?v=20260620-market-sort"></script>
   </body>
 </html>

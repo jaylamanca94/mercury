@@ -277,6 +277,9 @@ Current source-backed utilities:
   to the top-right on desktop and left-aligned when the controls wrap. Do not put them above the hero
   as a separate page-level row or in a competing top-right card. On mobile, keep Period and Region in
   a two-column row so controls do not dominate the first viewport.
+- Mobile economy command cards should read as embedded instrument panels, not separate heavy cards:
+  keep region shortcuts split into a compact label plus movement value, use a single calm trend
+  chart, and group source freshness in a soft tray.
 - The global briefing hero should span the dashboard width as one Acadia surface for `Global
   economy at a glance`, sentiment, explanatory copy, aggregate trend, and top movers.
 - Section headers may pair a title with a compact signed badge and right-aligned native selects,

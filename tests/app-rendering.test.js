@@ -292,6 +292,32 @@ test("dashboard renders editorial sections instead of one mixed grid", () => {
   assert.match(healthHtml, /Inflation/);
 });
 
+test("market section exposes economy-order and return sorting", () => {
+  const context = loadAppContext("markets");
+  const result = vm.runInContext(
+    `
+      const cards = [
+        { name: "S&P 500", marketOrder: 10, periodChangeValue: 2.2 },
+        { name: "Technology", marketOrder: 30, periodChangeValue: 7.6 },
+        { name: "Energy", marketOrder: 70, periodChangeValue: -12.4 },
+      ];
+      selectedMarketSort = "relevance";
+      const relevance = sortMarketCardsForDisplay(cards).map((card) => card.name);
+      selectedMarketSort = "return-desc";
+      const descending = sortMarketCardsForDisplay(cards).map((card) => card.name);
+      selectedMarketSort = "return-asc";
+      const ascending = sortMarketCardsForDisplay(cards).map((card) => card.name);
+      ({ relevance, descending, ascending });
+    `,
+    context,
+  );
+  const normalizedResult = JSON.parse(JSON.stringify(result));
+
+  assert.deepEqual(normalizedResult.relevance, ["S&P 500", "Technology", "Energy"]);
+  assert.deepEqual(normalizedResult.descending, ["Technology", "S&P 500", "Energy"]);
+  assert.deepEqual(normalizedResult.ascending, ["Energy", "S&P 500", "Technology"]);
+});
+
 test("dashboard summary adds key signals and briefing sections", () => {
   assert.match(indexHtml, /id="overview-tiles-title" class="acadia-title">Key Signals<\/h2>/);
   assert.match(indexHtml, /<h2 class="acadia-title">Executive Summary<\/h2>/);
@@ -350,15 +376,21 @@ test("static pages reference the current mobile dock assets", () => {
   const pages = [indexHtml, marketsHtml, supportsHtml, indicatorsHtml, dataHtml];
 
   for (const html of pages) {
-    assert.match(html, /styles\.css\?v=20260619-mobile-dock/);
-    assert.match(html, /app\.js\?v=20260619-mobile-dock/);
+    assert.match(html, /styles\.css\?v=20260620-dock-placement/);
+    assert.match(html, /app\.js\?v=20260620-market-sort/);
+    assert.match(html, /class="primary-nav acadia-nav"/);
     assert.match(html, /class="primary-nav acadia-nav acadia-mobile-dock"/);
+    assert.match(html, /<\/header>\s*<nav class="primary-nav acadia-nav acadia-mobile-dock" aria-label="Mercury pages">/);
   }
 });
 
 test("markets page adds contextual key drivers for global and focused regions", () => {
   assert.match(marketsHtml, /id="market-drivers-grid"/);
+  assert.match(marketsHtml, /id="market-sort-select"/);
+  assert.match(marketsHtml, /<option value="relevance" selected>Economy order<\/option>/);
+  assert.match(indexHtml, /id="market-sort-select"/);
   assert.match(styles, /\.market-drivers-grid\s*{[^}]*grid-template-columns: repeat\(3, minmax\(0, 1fr\)\);/s);
+  assert.match(styles, /\.market-sort-controls\s*{[^}]*justify-self: end;[^}]*width: min\(100%, 14rem\);/s);
 
   const context = loadAppContext("markets");
   const result = vm.runInContext(
@@ -1380,6 +1412,22 @@ test("mobile page controls keep period and region in two columns", () => {
   assert.match(styles, /@media \(max-width: 767\.98px\)[\s\S]*\.refresh-button\s*{[^}]*width: 2\.35rem;/s);
 });
 
+test("mobile dashboard card separates region labels from movement values", () => {
+  const context = loadAppContext();
+  const html = vm.runInContext("renderMobileRegionTabs()", context);
+
+  assert.match(html, /aria-label="Global economy, Loading"/);
+  assert.match(html, /class="mobile-dashboard-tab-name">Global<\/span>/);
+  assert.match(html, /<strong>Loading<\/strong>/);
+  assert.match(styles, /\.mobile-dashboard-tab\s*{[^}]*display: grid;[^}]*min-height: 2\.8rem;/s);
+  assert.match(styles, /\.mobile-dashboard-tab-name\s*{[^}]*text-transform: uppercase;/s);
+  assert.match(styles, /\.mobile-dashboard-tab\.is-active strong\s*{[^}]*color: var\(--mobile-dashboard-state\);/s);
+  assert.match(
+    styles,
+    /\.mobile-dashboard-band \.mobile-source-icons\s*{[^}]*border-radius: var\(--acadia-radius-pill\);[^}]*padding: 0\.32rem 0\.45rem;/s,
+  );
+});
+
 test("mobile dashboards use swipeable exploration rails", () => {
   assert.match(
     styles,
@@ -1412,6 +1460,18 @@ test("mobile dashboards use swipeable exploration rails", () => {
 });
 
 test("mobile dock clears the device safe area", () => {
+  assert.match(
+    styles,
+    /\.primary-nav\.acadia-mobile-dock,\s*\.acadia-nav\.acadia-mobile-dock\s*{[^}]*display: none;/s,
+  );
+  assert.match(
+    styles,
+    /@media \(max-width: 767\.98px\)[\s\S]*\.acadia-chrome\s*{[^}]*-webkit-backdrop-filter: none;[^}]*backdrop-filter: none;/s,
+  );
+  assert.match(
+    styles,
+    /@media \(max-width: 767\.98px\)[\s\S]*\.acadia-chrome \.primary-nav:not\(\.acadia-mobile-dock\),\s*\.acadia-chrome \.acadia-nav:not\(\.acadia-mobile-dock\)\s*{[^}]*display: none;/s,
+  );
   assert.match(
     styles,
     /@media \(max-width: 767\.98px\)[\s\S]*\.primary-nav\.acadia-mobile-dock,\s*\.acadia-nav\.acadia-mobile-dock\s*{[^}]*bottom: var\(--acadia-mobile-tabbar-bottom, 1\.25rem\);[^}]*bottom: calc\(var\(--acadia-mobile-tabbar-bottom, 1\.25rem\) \+ env\(safe-area-inset-bottom\)\);[^}]*top: auto;/s,
