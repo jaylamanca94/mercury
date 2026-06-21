@@ -1419,6 +1419,15 @@ test("mobile dashboard card separates region labels from movement values", () =>
   assert.match(html, /aria-label="Global economy, Loading"/);
   assert.match(html, /class="mobile-dashboard-tab-name">Global<\/span>/);
   assert.match(html, /<strong>Loading<\/strong>/);
+  assert.match(styles, /\.mobile-dashboard-card\s*{[^}]*display: none;/s);
+  assert.match(
+    styles,
+    /@media \(max-width: 767\.98px\)[\s\S]*\.mercury-page-dashboard \.page-title-group\s*{[^}]*display: none;/s,
+  );
+  assert.match(
+    styles,
+    /@media \(max-width: 767\.98px\)[\s\S]*\.mercury-page-dashboard \.mobile-dashboard-card\s*{[^}]*display: grid;/s,
+  );
   assert.match(styles, /\.mobile-dashboard-tab\s*{[^}]*display: grid;[^}]*min-height: 2\.8rem;/s);
   assert.match(styles, /\.mobile-dashboard-tab-name\s*{[^}]*text-transform: uppercase;/s);
   assert.match(styles, /\.mobile-dashboard-tab\.is-active strong\s*{[^}]*color: var\(--mobile-dashboard-state\);/s);

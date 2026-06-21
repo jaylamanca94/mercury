@@ -761,7 +761,7 @@ body {
     var(--acadia-shadow-control),
     inset 0 1px 0 rgba(255, 255, 255, 0.1);
   color: var(--acadia-color-text);
-  display: grid;
+  display: none;
   gap: 1rem;
   min-height: 26.25rem;
   overflow: hidden;
@@ -2030,29 +2030,8 @@ body {
   }
 
   .mercury-page-dashboard .page-title-row {
-    gap: var(--acadia-space-4);
-    grid-template-columns: minmax(0, 1fr) minmax(19rem, 24.75rem);
     min-height: 0;
     padding: var(--acadia-space-3);
-  }
-
-  .mercury-page-dashboard .page-title-group {
-    gap: 0.65rem;
-    grid-column: 1;
-    grid-row: 1;
-  }
-
-  .mercury-page-dashboard .page-controls-row {
-    grid-column: 1;
-    grid-row: 2;
-    justify-self: start;
-    padding-top: 0;
-  }
-
-  .mercury-page-dashboard .mobile-dashboard-card {
-    grid-column: 2;
-    grid-row: 1 / span 2;
-    justify-self: end;
   }
 
   .mercury-page-dashboard .hero-insight {
@@ -2190,15 +2169,9 @@ body {
   }
 
   .mercury-page-dashboard .page-title-group,
-  .mercury-page-dashboard .mobile-dashboard-card,
   .mercury-page-dashboard .page-controls-row {
     grid-column: 1;
     grid-row: auto;
-  }
-
-  .mercury-page-dashboard .mobile-dashboard-card {
-    justify-self: center;
-    width: min(100%, 26rem);
   }
 }
 
@@ -2224,18 +2197,6 @@ body {
 
   .page-title-row {
     grid-template-columns: 1fr;
-  }
-
-  .page-title-group,
-  .mobile-dashboard-card,
-  .page-controls-row {
-    grid-column: 1;
-    grid-row: auto;
-  }
-
-  .mobile-dashboard-card {
-    justify-self: center;
-    width: min(100%, 26rem);
   }
 
   .page-title-group,
@@ -2330,6 +2291,10 @@ body {
     padding: 1rem;
   }
 
+  .mercury-page-dashboard .page-title-group {
+    display: none;
+  }
+
   .primary-nav.acadia-mobile-dock .primary-nav-link,
   .acadia-nav.acadia-mobile-dock .acadia-nav-item {
     background: transparent;
@@ -2415,7 +2380,10 @@ body {
   }
 
   .mercury-page-dashboard .mobile-dashboard-card {
+    display: grid;
+    justify-self: center;
     min-height: 25.5rem;
+    width: min(100%, 26rem);
   }
 
   .mercury-page-dashboard .mobile-dashboard-chart {
