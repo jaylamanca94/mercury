@@ -376,12 +376,26 @@ test("static pages reference the current mobile dock assets", () => {
   const pages = [indexHtml, marketsHtml, supportsHtml, indicatorsHtml, dataHtml];
 
   for (const html of pages) {
-    assert.match(html, /styles\.css\?v=20260620-dock-placement/);
+    assert.match(html, /data-acadia-theme-storage-key="mercury-theme"/);
+    assert.match(html, /theme\.js\?v=20260621/);
+    assert.match(html, /styles\.css\?v=20260621-theme-dock/);
     assert.match(html, /app\.js\?v=20260620-market-sort/);
     assert.match(html, /class="primary-nav acadia-nav"/);
     assert.match(html, /class="primary-nav acadia-nav acadia-mobile-dock"/);
     assert.match(html, /<\/header>\s*<nav class="primary-nav acadia-nav acadia-mobile-dock" aria-label="Mercury pages">/);
+    assert.match(html, /class="acadia-icon-action acadia-theme-toggle"[^>]*data-acadia-theme-toggle/);
   }
+});
+
+test("theme toggle uses a visible Acadia control surface", () => {
+  assert.match(
+    styles,
+    /\.acadia-theme-toggle\s*{[^}]*background: var\(--acadia-color-control\);[^}]*border: 1px solid var\(--acadia-color-control-border\);[^}]*box-shadow: var\(--acadia-shadow-control\);/s,
+  );
+  assert.match(
+    styles,
+    /\.acadia-theme-toggle:focus-visible\s*{[^}]*border-color: var\(--acadia-color-action\);[^}]*var\(--acadia-focus-ring\);/s,
+  );
 });
 
 test("markets page adds contextual key drivers for global and focused regions", () => {
@@ -1485,6 +1499,13 @@ test("mobile dock clears the device safe area", () => {
     styles,
     /@media \(max-width: 767\.98px\)[\s\S]*\.primary-nav\.acadia-mobile-dock,\s*\.acadia-nav\.acadia-mobile-dock\s*{[^}]*bottom: var\(--acadia-mobile-tabbar-bottom, 1\.25rem\);[^}]*bottom: calc\(var\(--acadia-mobile-tabbar-bottom, 1\.25rem\) \+ env\(safe-area-inset-bottom\)\);[^}]*top: auto;/s,
   );
+  assert.match(
+    styles,
+    /@media \(max-width: 767\.98px\)[\s\S]*\.primary-nav\.acadia-mobile-dock,\s*\.acadia-nav\.acadia-mobile-dock\s*{[^}]*background: var\(--acadia-mobile-nav-background\);[^}]*border: 1px solid var\(--acadia-mobile-nav-border\);[^}]*box-shadow: var\(--acadia-mobile-nav-shadow\);[^}]*color: var\(--acadia-mobile-nav-color\);/s,
+  );
+  assert.match(styles, /--acadia-mobile-nav-background: rgba\(250, 250, 252, 0\.84\);/);
+  assert.match(styles, /--acadia-mobile-nav-active-background: rgba\(15, 23, 42, 0\.1\);/);
+  assert.match(styles, /--acadia-mobile-nav-focus-halo: rgba\(255, 255, 255, 0\.22\);/);
   assert.doesNotMatch(styles, /bottom: max\(0\.75rem, env\(safe-area-inset-bottom\)\);/);
   assert.match(
     styles,

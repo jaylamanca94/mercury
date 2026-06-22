@@ -47,6 +47,20 @@
     0 1px 2px rgba(15, 23, 42, 0.04),
     0 0.25rem 0.75rem rgba(15, 23, 42, 0.025);
   --acadia-shadow-chrome: 0 0.75rem 2rem rgba(15, 23, 42, 0.08);
+  --acadia-mobile-nav-background: rgba(250, 250, 252, 0.84);
+  --acadia-mobile-nav-border: rgba(15, 23, 42, 0.08);
+  --acadia-mobile-nav-shadow:
+    0 1.125rem 2.75rem rgba(15, 23, 42, 0.14),
+    0 0.125rem 0.75rem rgba(15, 23, 42, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.88),
+    inset 0 -1px 0 rgba(15, 23, 42, 0.04);
+  --acadia-mobile-nav-color: rgba(15, 23, 42, 0.82);
+  --acadia-mobile-nav-hover-background: rgba(15, 23, 42, 0.06);
+  --acadia-mobile-nav-hover-color: var(--acadia-color-text);
+  --acadia-mobile-nav-active-background: rgba(15, 23, 42, 0.1);
+  --acadia-mobile-nav-active-border: rgba(15, 23, 42, 0.06);
+  --acadia-mobile-nav-active-color: var(--acadia-color-text);
+  --acadia-mobile-nav-focus-halo: rgba(15, 23, 42, 0.16);
   --acadia-vibrancy: saturate(1.28) blur(20px);
   --acadia-font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   --acadia-space-1: 0.5rem;
@@ -115,6 +129,20 @@
     0 1px 2px rgba(0, 0, 0, 0.18),
     0 0.25rem 0.75rem rgba(0, 0, 0, 0.1);
   --acadia-shadow-chrome: 0 0.75rem 2rem rgba(0, 0, 0, 0.2);
+  --acadia-mobile-nav-background: color-mix(in srgb, #11151b 86%, transparent);
+  --acadia-mobile-nav-border: rgba(255, 255, 255, 0.12);
+  --acadia-mobile-nav-shadow:
+    0 1.25rem 2.75rem rgba(0, 0, 0, 0.34),
+    0 0.125rem 0.75rem rgba(0, 0, 0, 0.24),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.34);
+  --acadia-mobile-nav-color: rgba(255, 255, 255, 0.88);
+  --acadia-mobile-nav-hover-background: rgba(255, 255, 255, 0.1);
+  --acadia-mobile-nav-hover-color: #ffffff;
+  --acadia-mobile-nav-active-background: rgba(255, 255, 255, 0.16);
+  --acadia-mobile-nav-active-border: rgba(255, 255, 255, 0.08);
+  --acadia-mobile-nav-active-color: #ffffff;
+  --acadia-mobile-nav-focus-halo: rgba(255, 255, 255, 0.22);
   --mercury-positive: var(--acadia-color-brand);
   --mercury-negative: #ff7b70;
   --neutral-state: #aeb6c2;
@@ -159,6 +187,20 @@
       0 1px 2px rgba(0, 0, 0, 0.18),
       0 0.25rem 0.75rem rgba(0, 0, 0, 0.1);
     --acadia-shadow-chrome: 0 0.75rem 2rem rgba(0, 0, 0, 0.2);
+    --acadia-mobile-nav-background: color-mix(in srgb, #11151b 86%, transparent);
+    --acadia-mobile-nav-border: rgba(255, 255, 255, 0.12);
+    --acadia-mobile-nav-shadow:
+      0 1.25rem 2.75rem rgba(0, 0, 0, 0.34),
+      0 0.125rem 0.75rem rgba(0, 0, 0, 0.24),
+      inset 0 1px 0 rgba(255, 255, 255, 0.12),
+      inset 0 -1px 0 rgba(0, 0, 0, 0.34);
+    --acadia-mobile-nav-color: rgba(255, 255, 255, 0.88);
+    --acadia-mobile-nav-hover-background: rgba(255, 255, 255, 0.1);
+    --acadia-mobile-nav-hover-color: #ffffff;
+    --acadia-mobile-nav-active-background: rgba(255, 255, 255, 0.16);
+    --acadia-mobile-nav-active-border: rgba(255, 255, 255, 0.08);
+    --acadia-mobile-nav-active-color: #ffffff;
+    --acadia-mobile-nav-focus-halo: rgba(255, 255, 255, 0.22);
     --mercury-positive: var(--acadia-color-brand);
     --mercury-negative: #ff7b70;
     --neutral-state: #aeb6c2;
@@ -318,6 +360,53 @@ body {
   border-color: var(--acadia-color-brand-border);
   box-shadow: var(--acadia-shadow-control);
   color: var(--acadia-color-brand-ink);
+}
+
+.acadia-theme-toggle {
+  background: var(--acadia-color-control);
+  border: 1px solid var(--acadia-color-control-border);
+  box-shadow: var(--acadia-shadow-control);
+  color: var(--acadia-color-text-muted);
+  transition:
+    background-color var(--acadia-motion-fast),
+    border-color var(--acadia-motion-fast),
+    box-shadow var(--acadia-motion-fast),
+    color var(--acadia-motion-fast),
+    transform var(--acadia-motion-fast);
+}
+
+.acadia-theme-toggle:hover {
+  background: var(--acadia-color-control-hover);
+  border-color: var(--acadia-color-border-strong);
+  box-shadow: var(--acadia-shadow-control);
+  color: var(--acadia-color-text);
+  transform: translateY(-1px);
+}
+
+.acadia-theme-toggle:focus-visible {
+  background: var(--acadia-color-control-hover);
+  border-color: var(--acadia-color-action);
+  box-shadow:
+    var(--acadia-shadow-control),
+    var(--acadia-focus-ring);
+  color: var(--acadia-color-text);
+  outline: 0;
+}
+
+.acadia-theme-toggle:active {
+  background: var(--acadia-color-control);
+  transform: translateY(0);
+}
+
+.acadia-theme-toggle.is-dark {
+  color: var(--acadia-color-brand-ink);
+}
+
+.acadia-theme-toggle .acadia-icon {
+  display: inline-flex;
+  font-size: 1.25rem;
+  height: 1.25rem;
+  width: 1.25rem;
 }
 
 .acadia-brand,
@@ -2252,17 +2341,16 @@ body {
 
   .primary-nav.acadia-mobile-dock,
   .acadia-nav.acadia-mobile-dock {
-    -webkit-backdrop-filter: blur(1.125rem) saturate(145%);
+    -webkit-backdrop-filter: blur(1.25rem) saturate(170%);
     align-items: center;
-    backdrop-filter: blur(1.125rem) saturate(145%);
-    background: color-mix(in srgb, #101316 84%, transparent);
-    border: 1px solid rgba(255, 255, 255, 0.14);
+    backdrop-filter: blur(1.25rem) saturate(170%);
+    background: var(--acadia-mobile-nav-background);
+    border: 1px solid var(--acadia-mobile-nav-border);
     border-radius: var(--acadia-radius-pill);
     bottom: var(--acadia-mobile-tabbar-bottom, 1.25rem);
     bottom: calc(var(--acadia-mobile-tabbar-bottom, 1.25rem) + env(safe-area-inset-bottom));
-    box-shadow:
-      0 1.125rem 2.75rem rgba(0, 0, 0, 0.28),
-      inset 0 1px 0 rgba(255, 255, 255, 0.12);
+    box-shadow: var(--acadia-mobile-nav-shadow);
+    color: var(--acadia-mobile-nav-color);
     display: grid;
     gap: 0.25rem;
     grid-template-columns: repeat(var(--acadia-mobile-tab-count), minmax(0, 1fr));
@@ -2300,7 +2388,7 @@ body {
     background: transparent;
     border-color: transparent;
     border-radius: var(--acadia-radius-pill);
-    color: rgba(255, 255, 255, 0.78);
+    color: inherit;
     font-size: 0;
     justify-content: center;
     min-height: 3rem;
@@ -2316,13 +2404,23 @@ body {
   }
 
   .primary-nav.acadia-mobile-dock .primary-nav-link:hover,
-  .primary-nav.acadia-mobile-dock .primary-nav-link:focus-visible,
-  .acadia-nav.acadia-mobile-dock .acadia-nav-item:hover,
-  .acadia-nav.acadia-mobile-dock .acadia-nav-item:focus-visible {
-    background: rgba(255, 255, 255, 0.1);
+  .acadia-nav.acadia-mobile-dock .acadia-nav-item:hover {
+    background: var(--acadia-mobile-nav-hover-background);
     border-color: transparent;
     box-shadow: none;
-    color: #ffffff;
+    color: var(--acadia-mobile-nav-hover-color);
+    transform: none;
+  }
+
+  .primary-nav.acadia-mobile-dock .primary-nav-link:focus-visible,
+  .acadia-nav.acadia-mobile-dock .acadia-nav-item:focus-visible {
+    background: var(--acadia-mobile-nav-hover-background);
+    border-color: transparent;
+    box-shadow:
+      0 0 0 0.1875rem var(--acadia-mobile-nav-focus-halo),
+      var(--acadia-focus-ring);
+    color: var(--acadia-mobile-nav-hover-color);
+    outline: 0;
     transform: none;
   }
 
@@ -2330,10 +2428,10 @@ body {
   .primary-nav.acadia-mobile-dock .primary-nav-link[aria-current="page"],
   .acadia-nav.acadia-mobile-dock .acadia-nav-item[aria-current="page"],
   .acadia-nav.acadia-mobile-dock .acadia-nav-item.is-active {
-    background: rgba(255, 255, 255, 0.18);
-    border-color: rgba(255, 255, 255, 0.16);
+    background: var(--acadia-mobile-nav-active-background);
+    border-color: var(--acadia-mobile-nav-active-border);
     box-shadow: none;
-    color: #ffffff;
+    color: var(--acadia-mobile-nav-active-color);
   }
 
   .page-title-group {

@@ -80,6 +80,7 @@ Current files:
 - `indicators.html` - economic health plus risk and confidence detail page
 - `data.html` - source coverage, provider, and freshness detail page
 - `styles.css` - Acadia-aligned Mercury adapter plus economic dashboard styling
+- `theme.js` - system-first light/dark theme preference sync for the static pages
 - `app.js` - live snapshot loading, fallback states, and dashboard rendering
 - `assets/favicon.svg` - vector money-bill-wave favicon/app icon with theme-aware gradient background
 - `site.webmanifest` - browser app manifest pointing to the SVG icon
