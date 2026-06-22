@@ -11,6 +11,7 @@ const supportsHtml = fs.readFileSync(path.join(__dirname, "..", "supports.html")
 const indicatorsHtml = fs.readFileSync(path.join(__dirname, "..", "indicators.html"), "utf8");
 const dataHtml = fs.readFileSync(path.join(__dirname, "..", "data.html"), "utf8");
 const faviconSvg = fs.readFileSync(path.join(__dirname, "..", "assets", "favicon.svg"), "utf8");
+const liveSnapshotInternals = require("../api/live-snapshot.js")._internals;
 
 function headerBrandIcon(html) {
   const match = html.match(
@@ -926,6 +927,52 @@ test("data page summarizes source health and coverage", () => {
   assert.match(result.list, /Economic releases current/);
   assert.match(result.list, /Risk indicators current/);
   assert.match(result.list, /Regional coverage current/);
+});
+
+test("World Bank regional fetch retries transient failures", async () => {
+  const originalFetch = global.fetch;
+  let calls = 0;
+
+  global.fetch = async (url, options) => {
+    calls += 1;
+    assert.match(url, /country\/EUU\/indicator\/NY\.GDP\.MKTP\.KD\.ZG/);
+    assert.equal(options.headers.accept, "application/json");
+    assert.ok(options.signal);
+
+    if (calls === 1) {
+      const error = new Error("The operation was aborted");
+      error.name = "AbortError";
+      throw error;
+    }
+
+    return {
+      ok: true,
+      json: async () => [
+        { page: 1, pages: 1, per_page: 2, total: 2 },
+        [
+          { date: "2024", value: 1.06455789818651 },
+          { date: "2023", value: 0.454322708045197 },
+        ],
+      ],
+    };
+  };
+
+  try {
+    const result = await liveSnapshotInternals.fetchWorldBankRegion({
+      id: "european-union",
+      name: "European Union",
+      countryCode: "EUU",
+      source: "World Bank: GDP growth (annual %)",
+    });
+
+    assert.equal(calls, 2);
+    assert.equal(result.sourceStatus, "Source-backed");
+    assert.equal(result.name, "European Union");
+    assert.equal(result.releaseDate, "2024");
+    assert.equal(result.previousReleaseDate, "2023");
+  } finally {
+    global.fetch = originalFetch;
+  }
 });
 
 test("bitcoin card uses the bitcoin brand icon", () => {

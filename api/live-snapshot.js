@@ -864,6 +864,22 @@ async function fetchWithTimeout(url, options = {}) {
   }
 }
 
+async function fetchWorldBankResponse(url, options = {}, retriesRemaining = 1) {
+  try {
+    const response = await fetchWithTimeout(url, options);
+
+    if (response.ok || retriesRemaining <= 0 || (response.status >= 400 && response.status < 500)) {
+      return response;
+    }
+  } catch (error) {
+    if (retriesRemaining <= 0) {
+      throw error;
+    }
+  }
+
+  return fetchWorldBankResponse(url, options, retriesRemaining - 1);
+}
+
 function percentChange(current, previous) {
   if (!previous) {
     return null;
@@ -1374,7 +1390,7 @@ function classifyRegionalGrowth(latest, previous) {
 
 async function fetchWorldBankRegion(region) {
   const url = `${WORLD_BANK_BASE_URL}/country/${region.countryCode}/indicator/NY.GDP.MKTP.KD.ZG?format=json&per_page=80`;
-  const response = await fetchWithTimeout(url, {
+  const response = await fetchWorldBankResponse(url, {
     headers: {
       accept: "application/json",
     },
