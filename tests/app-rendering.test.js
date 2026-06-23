@@ -378,7 +378,9 @@ test("static pages reference the current mobile dock assets", () => {
 
   for (const html of pages) {
     assert.match(html, /data-acadia-theme-storage-key="mercury-theme"/);
-    assert.match(html, /theme\.js\?v=20260621/);
+    assert.match(html, /<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">/);
+    assert.match(html, /<meta name="theme-color" content="#e8eaed" data-acadia-theme-color>/);
+    assert.match(html, /theme\.js\?v=20260623-safe-theme/);
     assert.match(html, /styles\.css\?v=20260621-theme-dock/);
     assert.match(html, /app\.js\?v=20260620-market-sort/);
     assert.match(html, /class="primary-nav acadia-nav"/);
@@ -397,6 +399,15 @@ test("theme toggle uses a visible Acadia control surface", () => {
     styles,
     /\.acadia-theme-toggle:focus-visible\s*{[^}]*border-color: var\(--acadia-color-action\);[^}]*var\(--acadia-focus-ring\);/s,
   );
+});
+
+test("theme script syncs browser chrome color with the active theme", () => {
+  const themeScript = fs.readFileSync(path.join(__dirname, "..", "theme.js"), "utf8");
+
+  assert.match(themeScript, /function themeColorFor\(effectiveTheme\)/);
+  assert.match(themeScript, /return effectiveTheme === "dark" \? "#1f2427" : "#e8eaed";/);
+  assert.match(themeScript, /document\.querySelectorAll\("\[data-acadia-theme-color\]"\)\.forEach/);
+  assert.match(themeScript, /meta\.setAttribute\("content", themeColorFor\(effectiveTheme\)\);/);
 });
 
 test("markets page adds contextual key drivers for global and focused regions", () => {

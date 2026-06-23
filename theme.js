@@ -27,6 +27,10 @@
     return isThemeMode(mode) ? mode : getSystemTheme();
   }
 
+  function themeColorFor(effectiveTheme) {
+    return effectiveTheme === "dark" ? "#1f2427" : "#e8eaed";
+  }
+
   function setStoredTheme(mode) {
     try {
       if (isThemeMode(mode)) {
@@ -65,6 +69,10 @@
     if (root.hasAttribute("data-bs-theme")) {
       root.setAttribute("data-bs-theme", effectiveTheme);
     }
+
+    document.querySelectorAll("[data-acadia-theme-color]").forEach((meta) => {
+      meta.setAttribute("content", themeColorFor(effectiveTheme));
+    });
 
     document.querySelectorAll("[data-acadia-theme-toggle]").forEach((toggle) => {
       updateToggle(toggle, nextPreference, effectiveTheme);

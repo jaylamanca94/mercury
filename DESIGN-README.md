@@ -58,6 +58,9 @@ Mercury now treats `../Acadia` as the shared coded design-system baseline. Befor
 - Use Acadia primitives for shared product language: control anatomy, select arrows, search inputs, focus rings, raised rows, table/form behavior, dashboard status rows, command search, sheets, dialogs, and responsive spacing.
 - Map Mercury variables onto Acadia-style adapter variables in `styles.css` before creating a new one-off component rule.
 - Mercury's implemented adapter uses Acadia tokens for the app chrome, no-capsule desktop header navigation, floating glass mobile dock navigation, page shell, translucent surfaces, metric cards, native selects, icon actions, badges, focus rings, status rows, shadows, radius, system-first theme toggle behavior, and responsive page margins.
+- Static pages with the floating mobile dock must opt into `viewport-fit=cover` and keep the
+  browser `theme-color` synchronized with the effective Light or Dark theme, so iOS safe-area
+  spacing and mobile browser chrome match the visible app canvas.
 - Keep Mercury-specific economics language, source-trust rules, chart semantics, freshness labels, neutral financial tone, and public-data caveats in this document.
 - Keep local exceptions narrow: source freshness semantics, market/economic movement colors, sparklines, score calculations, and dashboard content order may remain Mercury-specific.
 - Do not use state-colored card borders, top rails, or outlines on metric cards. Match Acadia's neutral metric surface; show movement through text labels, deltas, and sparklines instead.
