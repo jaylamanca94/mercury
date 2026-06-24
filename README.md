@@ -34,7 +34,7 @@ Recommended starting stack:
 - Yahoo Finance chart data for market pulse, Bitcoin/USD, and daily risk proxies, including enough
   daily history for 5-year dashboard comparisons
 - Public market proxy funds for comparable U.S., Europe, and Asia Economy market cards
-- Public FRED CSV releases for macro indicators and financial stress
+- Public FRED CSV releases for economic indicators and financial stress
 - World Bank API releases for regional annual GDP growth
 - Environment variables for future API keys
 
@@ -78,7 +78,7 @@ Current files:
 - `markets.html` - regional and focused market detail page
 - `supports.html` - currency, commodity, and Bitcoin detail page
 - `indicators.html` - economic health plus risk and confidence detail page
-- `data.html` - source coverage, provider, and freshness detail page
+- `data.html` - data coverage, provider, and freshness detail page
 - `styles.css` - Acadia-aligned Mercury adapter plus economic dashboard styling
 - `theme.js` - system-first light/dark theme preference and browser chrome sync for the static pages
 - `app.js` - live snapshot loading, fallback states, and dashboard rendering

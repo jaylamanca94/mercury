@@ -382,7 +382,7 @@ test("static pages reference the current mobile dock assets", () => {
     assert.match(html, /<meta name="theme-color" content="#e8eaed" data-acadia-theme-color>/);
     assert.match(html, /theme\.js\?v=20260623-safe-theme/);
     assert.match(html, /styles\.css\?v=20260621-theme-dock/);
-    assert.match(html, /app\.js\?v=20260620-market-sort/);
+    assert.match(html, /app\.js\?v=20260624-coverage-copy/);
     assert.match(html, /class="primary-nav acadia-nav"/);
     assert.match(html, /class="primary-nav acadia-nav acadia-mobile-dock"/);
     assert.match(html, /<\/header>\s*<nav class="primary-nav acadia-nav acadia-mobile-dock" aria-label="Mercury pages">/);
@@ -865,7 +865,7 @@ test("indicators page adds economic read, drivers, and interpretation", () => {
   assert.match(result.movers, /GDP Growth/);
   assert.match(result.movers, /Inflation/);
   assert.match(result.meaning, /Inflation at 4\.3% and rates at 3\.63% define the constraint on growth/);
-  assert.match(result.meaning, /volatility at 18\.4 shows how much market stress is attached to the macro data/);
+  assert.match(result.meaning, /volatility at 18\.4 shows how much market stress is attached to the economic data/);
 });
 
 test("indicators briefing does not interpret loading or unavailable data", () => {
@@ -891,9 +891,9 @@ test("indicators briefing does not interpret loading or unavailable data", () =>
   assert.match(result.meaning, /needs live economic releases and risk indicators/i);
 });
 
-test("data page summarizes source health and coverage", () => {
-  assert.match(dataHtml, /<title>Data Status \| Mercury<\/title>/);
-  assert.match(dataHtml, /id="view-title" class="acadia-title">Data Status<\/h1>/);
+test("data page summarizes data coverage and source freshness", () => {
+  assert.match(dataHtml, /<title>Data Coverage \| Mercury<\/title>/);
+  assert.match(dataHtml, /id="view-title" class="acadia-title">Data Coverage<\/h1>/);
   assert.match(dataHtml, /id="source-health-score"/);
   assert.match(dataHtml, /id="source-health-list"/);
   assert.match(dataHtml, /id="coverage-summary-list"/);
@@ -932,9 +932,9 @@ test("data page summarizes source health and coverage", () => {
   );
 
   assert.equal(result.score, "4/4");
-  assert.match(result.detail, /4 of 4 source groups operational/);
-  assert.equal(result.copy, "All connected data sources are current.");
-  assert.match(result.list, /Market data updated today/);
+  assert.match(result.detail, /4 of 4 data groups available/);
+  assert.equal(result.copy, "All connected data groups are current.");
+  assert.match(result.list, /Market data current/);
   assert.match(result.list, /Economic releases current/);
   assert.match(result.list, /Risk indicators current/);
   assert.match(result.list, /Regional coverage current/);

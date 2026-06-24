@@ -186,7 +186,7 @@ Prefer official, trusted, and durable sources before niche third-party APIs.
 Candidate source categories:
 
 - Market index and asset category data from reliable market data providers
-- Federal Reserve Economic Data for U.S. macro indicators
+- Federal Reserve Economic Data for U.S. economic indicators
 - Bureau of Labor Statistics for labor and inflation data
 - Bureau of Economic Analysis for GDP and national accounts
 - OECD, World Bank, IMF, and similar public institutions for global indicators
@@ -211,7 +211,7 @@ Every live data surface should show source, freshness, and caveats when relevant
 - Show scope notes instead of filters when a dashboard section mixes several source-backed
   geographies or asset categories without a source-backed filtering model.
 - Region controls may use clearly labeled ETF or fund proxies for comparable market categories, but
-  must not imply investment advice, complete regional coverage, or official macro equivalence.
+  must not imply investment advice, complete regional coverage, or official economic equivalence.
 - Start with the smallest working dashboard before adding integrations.
 
 ## Roadmap
@@ -257,7 +257,7 @@ Future opportunities:
 - Market Pulse uses Yahoo Finance chart data as a public market-data bridge; production licensing
   should be reviewed before a public launch.
 - Regional Economy controls use public market proxy funds to keep the comparison source-backed.
-  These proxies are not investment recommendations and do not represent complete regional macro
+  These proxies are not investment recommendations and do not represent complete regional economic
   coverage.
 - Economic Health loads source-backed public FRED releases through `/api/live-snapshot`.
 - Risk and Confidence combines Yahoo Finance daily proxies with the FRED Financial Stress Index.

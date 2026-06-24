@@ -262,7 +262,7 @@ Current source-backed utilities:
   canvas, centered `1160px` content column, title/action row, large current-conditions card, and
   stacked section panels for grouped metric cards.
 - Primary metric groups should be organized by audience-facing categories such as `Economy` and
-  `Market supports`. Economy combines the top regional market cards with core macro indicators;
+  `Market supports`. Economy combines the top regional market cards with core economic indicators;
   Market supports hold dollar, FX, oil, and Bitcoin cards. Preserve risk, regional, and freshness
   context elsewhere on the page.
 - Repeated metric cards should show a readable card name on the visible surface. Hide tickers,

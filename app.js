@@ -1534,8 +1534,8 @@ function sourceHealthGroups(snapshot) {
     {
       id: "markets",
       label: "Market data",
-      current: "Market data updated today",
-      caution: "Market data partially connected",
+      current: "Market data current",
+      caution: "Some market data delayed or missing",
       unavailable: "Market data unavailable",
       items: snapshot.marketPulse || [],
     },
@@ -1543,7 +1543,7 @@ function sourceHealthGroups(snapshot) {
       id: "economic-releases",
       label: "Economic releases",
       current: "Economic releases current",
-      caution: "Economic releases need review",
+      caution: "Some economic releases delayed or missing",
       unavailable: "Economic releases unavailable",
       items: snapshot.economicHealth || [],
     },
@@ -1551,7 +1551,7 @@ function sourceHealthGroups(snapshot) {
       id: "risk-indicators",
       label: "Risk indicators",
       current: "Risk indicators current",
-      caution: "Risk indicators partially connected",
+      caution: "Some risk indicators delayed or missing",
       unavailable: "Risk indicators unavailable",
       items: snapshot.riskIndicators || [],
     },
@@ -1559,7 +1559,7 @@ function sourceHealthGroups(snapshot) {
       id: "regional-coverage",
       label: "Regional coverage",
       current: "Regional coverage current",
-      caution: "Regional coverage cadence needs review",
+      caution: "Some regional growth data delayed or missing",
       unavailable: "Regional coverage unavailable",
       items: snapshot.regions || [],
     },
@@ -1574,14 +1574,14 @@ function sourceHealthCopy(groups, snapshot) {
   const cautionCount = groups.filter((group) => group.health === "caution").length;
 
   if (unavailableCount === groups.length) {
-    return "Public data sources are unavailable right now.";
+    return "Public data is unavailable right now.";
   }
 
   if (snapshot?.status === "partial" || unavailableCount > 0 || cautionCount > 0) {
-    return "Some connected data sources need attention.";
+    return "Some data groups are delayed, stale, or unavailable.";
   }
 
-  return "All connected data sources are current.";
+  return "All connected data groups are current.";
 }
 
 function renderSourceHealth(snapshot) {
@@ -1590,8 +1590,8 @@ function renderSourceHealth(snapshot) {
   const cautionCount = groups.filter((group) => group.health === "caution").length;
   const detail =
     cautionCount > 0
-      ? `${operationalCount} of ${groups.length} source groups operational with ${cautionCount} flagged`
-      : `${operationalCount} of ${groups.length} source groups operational`;
+      ? `${operationalCount} of ${groups.length} data groups available; ${cautionCount} need attention`
+      : `${operationalCount} of ${groups.length} data groups available`;
 
   setText("#source-health-score", `${operationalCount}/${groups.length}`);
   setText("#source-health-detail", detail);
@@ -2449,7 +2449,7 @@ function indicatorDriverCopy(card) {
   if (card.id === "inflation") {
     return numericDelta > 0
       ? `Price pressure increased by ${delta}, making inflation the release to watch.`
-      : `Price pressure cooled by ${delta}, easing part of the macro read.`;
+      : `Price pressure cooled by ${delta}, easing part of the economic read.`;
   }
 
   if (card.id === "interest-rates") {
@@ -2601,7 +2601,7 @@ function buildIndicatorMeaning(healthCards, riskCards) {
     unemployment?.value && unemployment.value !== "Unavailable" ? unemployment.value : "the labor market";
   const volatilityValue = volatility?.value && volatility.value !== "Unavailable" ? volatility.value : "market risk";
 
-  return `Inflation at ${inflationValue} and rates at ${ratesValue} define the constraint on growth. Unemployment at ${unemploymentValue} keeps the labor read stable, while volatility at ${volatilityValue} shows how much market stress is attached to the macro data.`;
+  return `Inflation at ${inflationValue} and rates at ${ratesValue} define the constraint on growth. Unemployment at ${unemploymentValue} keeps the labor read stable, while volatility at ${volatilityValue} shows how much market stress is attached to the economic data.`;
 }
 
 function renderIndicatorBriefing(healthCards, riskCards) {
@@ -3258,7 +3258,7 @@ function applyLiveSnapshot(snapshot) {
   setText("#economy-title", "Economy");
   setText("#risk-title", "Risk and confidence");
   setText("#global-title", "Regional growth");
-  setText("#source-coverage-title", "Source Health");
+  setText("#source-coverage-title", "Data Coverage");
   renderSourceHealth(snapshot);
   setText(
     "#source-provider-copy",
@@ -3344,7 +3344,7 @@ function applyLiveFallback() {
     "Live data is unavailable in this view. Current values will appear when public sources respond.",
   );
   setText("#source-health-score", "0/4");
-  setText("#source-health-detail", "Source groups unavailable");
+  setText("#source-health-detail", "Data groups unavailable");
   setHtml(
     "#source-health-list",
     [
