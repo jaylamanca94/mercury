@@ -675,9 +675,15 @@ function marketDriverCopy(card, index, drivers = []) {
 
 function renderMarketDriverCard(card, index, drivers) {
   const tone = card.sourceStatus === "Unavailable" || card.value === "Unavailable" ? "unavailable" : heroMoverTone(card);
+  const summary = sentenceSummary([
+    marketDriverLabel(card, index),
+    displayMetricName(card),
+    card.periodChange || metricDeltaLabel(card),
+    marketDriverCopy(card, index, drivers),
+  ]);
 
   return `
-    <article class="market-driver-card market-driver-card-${escapeHtml(tone)} acadia-surface acadia-panel-dense">
+    <article class="market-driver-card market-driver-card-${escapeHtml(tone)} acadia-surface acadia-panel-dense" aria-label="${escapeHtml(summary)}">
       <span class="market-driver-label">${escapeHtml(marketDriverLabel(card, index))}</span>
       <div class="market-driver-heading">
         <strong>${escapeHtml(displayMetricName(card))}</strong>
@@ -707,9 +713,9 @@ function renderMarketDrivers(cards) {
     driversTitle.textContent = marketDriverTitle();
   }
 
-  driversGrid.innerHTML = drivers.length
+  setDynamicContent(driversGrid, drivers.length
     ? drivers.map((card, index) => renderMarketDriverCard(card, index, drivers)).join("")
-    : '<article class="market-driver-card market-driver-card-unavailable acadia-surface acadia-panel-dense">Waiting for comparable market drivers.</article>';
+    : '<article class="market-driver-card market-driver-card-unavailable acadia-surface acadia-panel-dense" aria-label="Waiting for comparable market drivers">Waiting for comparable market drivers.</article>');
 }
 
 function supportSignalProfile(card) {
@@ -933,9 +939,16 @@ function buildSupportHeroInsight(cards) {
 
 function renderSupportSignalCard(card) {
   const profile = supportSignalProfile(card);
+  const summary = sentenceSummary([
+    displayMetricName(card),
+    metricCaptionLabel(card) || card.context || "Support signal",
+    profile.label,
+    card.periodChange || metricDeltaLabel(card),
+    profile.copy,
+  ]);
 
   return `
-    <article class="support-signal-card support-signal-card-${escapeHtml(profile.tone)} acadia-surface acadia-panel-dense">
+    <article class="support-signal-card support-signal-card-${escapeHtml(profile.tone)} acadia-surface acadia-panel-dense" aria-label="${escapeHtml(summary)}">
       <div class="support-signal-heading">
         <span class="support-signal-icon" aria-hidden="true"><i class="${escapeHtml(metricIconClasses(card))} acadia-icon"></i></span>
         <div>
@@ -1025,17 +1038,17 @@ function renderSupportBriefing(cards) {
   updateSupportBadge(supportScore(cards));
 
   if (signalsGrid) {
-    signalsGrid.innerHTML = cards.length
+    setDynamicContent(signalsGrid, cards.length
       ? cards.map(renderSupportSignalCard).join("")
-      : '<article class="support-signal-card support-signal-card-unavailable acadia-surface acadia-panel-dense">Waiting for support signals.</article>';
+      : '<article class="support-signal-card support-signal-card-unavailable acadia-surface acadia-panel-dense" aria-label="Waiting for support signals">Waiting for support signals.</article>');
   }
 
   if (pressureList) {
     const pressureItems = buildSupportPressureItems(cards);
 
-    pressureList.innerHTML = pressureItems.length
+    setDynamicContent(pressureList, pressureItems.length
       ? pressureItems.map(briefListItem).join("")
-      : '<li class="brief-list-item brief-list-item-stable"><strong>None elevated</strong><span>No major support pressure is standing out right now.</span></li>';
+      : '<li class="brief-list-item brief-list-item-stable"><strong>None elevated</strong><span>No major support pressure is standing out right now.</span></li>');
   }
 }
 
@@ -1378,6 +1391,47 @@ function escapeHtml(value) {
     .replaceAll("'", "&#039;");
 }
 
+function sentenceSummary(parts) {
+  return parts
+    .map((part) => String(part || "").replace(/\s+/g, " ").trim())
+    .filter(Boolean)
+    .join(". ");
+}
+
+function metricAccessibleSummary(metric) {
+  const details = [
+    displayMetricName(metric),
+    metricCaptionLabel(metric),
+    displayMetricContext(metric),
+    `Value ${displayMetricDetail(metric.value)}`,
+    `Change ${metricDeltaLabel(metric)}`,
+  ];
+
+  if (metric.trend && metric.trend !== metricDeltaLabel(metric)) {
+    details.push(`Trend ${metric.trend}`);
+  }
+
+  if (metric.sourceStatus && metric.sourceStatus !== "Source-backed") {
+    details.push(`Source ${displaySourceStatus(metric.sourceStatus)}`);
+  }
+
+  if (metric.freshness?.label && metric.freshness.status !== "loading") {
+    details.push(metric.freshness.label);
+  }
+
+  return sentenceSummary(details);
+}
+
+function setDynamicContent(element, html) {
+  if (!element) {
+    return;
+  }
+
+  element.setAttribute("aria-busy", "true");
+  element.innerHTML = html;
+  element.setAttribute("aria-busy", "false");
+}
+
 function inferDisplayCadence(cadence) {
   const normalizedCadence = String(cadence || "").toLowerCase();
 
@@ -1461,9 +1515,7 @@ function setText(selector, text) {
 function setHtml(selector, html) {
   const element = document.querySelector(selector);
 
-  if (element) {
-    element.innerHTML = html;
-  }
+  setDynamicContent(element, html);
 }
 
 function announceDashboardStatus(message) {
@@ -2060,6 +2112,7 @@ function renderMetricCard(metric) {
   const hasChart = !metric.hideChart;
   const metricCaption = metricCaptionLabel(metric);
   const metricContext = displayMetricContext(metric);
+  const accessibleSummary = metricAccessibleSummary(metric);
   const releaseLabel = shouldShowMetricDate(metric) ? metricReleaseLabel(metric) : "";
   const cadenceLabel = metric.cadence && inferDisplayCadence(metric.cadence) !== "daily" ? metric.cadence : "";
   const footerItems = [
@@ -2078,7 +2131,7 @@ function renderMetricCard(metric) {
         : "";
 
   return `
-    <article class="metric-card acadia-metric metric-card-${cardTone}${hasChart ? " metric-card-has-chart" : ""}${metric.isWide ? " metric-card-wide" : ""}" title="${escapeHtml(metricTooltip(metric))}">
+    <article class="metric-card acadia-metric metric-card-${cardTone}${hasChart ? " metric-card-has-chart" : ""}${metric.isWide ? " metric-card-wide" : ""}" title="${escapeHtml(metricTooltip(metric))}" aria-label="${escapeHtml(accessibleSummary)}">
       <div class="metric-top">
         <div>
           <div class="metric-title-line">
@@ -2144,8 +2197,10 @@ function overviewTileTone(value, fallback = "stable") {
 }
 
 function renderOverviewTile(tile) {
+  const summary = sentenceSummary([tile.label, tile.value, tile.detail]);
+
   return `
-    <a class="overview-tile overview-tile-${escapeHtml(tile.tone || "stable")}" href="${escapeHtml(tile.href)}">
+    <a class="overview-tile overview-tile-${escapeHtml(tile.tone || "stable")}" href="${escapeHtml(tile.href)}" aria-label="${escapeHtml(summary)}">
       <span class="overview-tile-icon" aria-hidden="true"><i class="fa-solid ${escapeHtml(tile.icon)} acadia-icon"></i></span>
       <span class="overview-tile-copy">
         <span class="overview-tile-label">${escapeHtml(tile.label)}</span>
@@ -2247,8 +2302,7 @@ function renderOverviewTiles({ economyChange, regionalCards, currencyCardsForVie
     marketBreadthTile(regionalCards, economyChange),
   ];
 
-  overviewGrid.setAttribute("aria-busy", "false");
-  overviewGrid.innerHTML = tiles.map(renderOverviewTile).join("");
+  setDynamicContent(overviewGrid, tiles.map(renderOverviewTile).join(""));
 }
 
 function briefListItem(item) {
@@ -2616,9 +2670,9 @@ function renderIndicatorBriefing(healthCards, riskCards) {
   setText("#indicator-meaning-copy", buildIndicatorMeaning(healthCards, riskCards));
 
   if (driversList) {
-    driversList.innerHTML = drivers.length
+    setDynamicContent(driversList, drivers.length
       ? drivers.map(briefListItem).join("")
-      : '<li class="brief-list-item brief-list-item-unavailable"><strong>Waiting for releases</strong><span>Indicator drivers will appear when source data is available.</span></li>';
+      : '<li class="brief-list-item brief-list-item-unavailable"><strong>Waiting for releases</strong><span>Indicator drivers will appear when source data is available.</span></li>');
   }
 }
 
@@ -2713,11 +2767,11 @@ function renderEconomicBrief({ economyChange, heroCards, healthCards, commodityC
   }
 
   if (changedList) {
-    changedList.innerHTML = buildWhatChangedItems(movers, healthCards, commodityCardsForView).map(briefListItem).join("");
+    setDynamicContent(changedList, buildWhatChangedItems(movers, healthCards, commodityCardsForView).map(briefListItem).join(""));
   }
 
   if (riskList) {
-    riskList.innerHTML = buildRiskWatchItems(riskCards, healthCards).map(briefListItem).join("");
+    setDynamicContent(riskList, buildRiskWatchItems(riskCards, healthCards).map(briefListItem).join(""));
   }
 }
 
@@ -2845,9 +2899,16 @@ function signalItems() {
 
 function renderSignalTile(item) {
   const tone = item.tone || "stable";
+  const summary = sentenceSummary([
+    item.name,
+    item.context,
+    item.value,
+    item.trend,
+    signalFreshnessLabel(item),
+  ]);
 
   return `
-    <article class="signal-tile signal-tile-${escapeHtml(tone)}">
+    <article class="signal-tile signal-tile-${escapeHtml(tone)}" aria-label="${escapeHtml(summary)}">
       <div>
         <p class="signal-name">${escapeHtml(item.name)}</p>
         <p class="signal-context">${escapeHtml(item.context)}</p>
@@ -2862,8 +2923,15 @@ function renderSignalTile(item) {
 }
 
 function renderIndicatorRow(indicator) {
+  const summary = sentenceSummary([
+    indicator.name,
+    indicator.copy,
+    `Trend ${indicator.trend}`,
+    indicator.freshness?.label,
+  ]);
+
   return `
-    <article class="indicator-row">
+    <article class="indicator-row" aria-label="${escapeHtml(summary)}">
       <i class="fa-solid ${indicator.icon}" aria-hidden="true"></i>
       <div>
         <h3 class="row-title">${escapeHtml(indicator.name)}</h3>
@@ -2876,8 +2944,15 @@ function renderIndicatorRow(indicator) {
 }
 
 function renderRegionRow(region) {
+  const summary = sentenceSummary([
+    region.name,
+    region.copy,
+    `Trend ${region.trend}`,
+    region.freshness?.label,
+  ]);
+
   return `
-    <article class="region-row">
+    <article class="region-row" aria-label="${escapeHtml(summary)}">
       <span class="region-marker" aria-hidden="true"><i class="fa-solid fa-location-dot"></i></span>
       <div>
         <h3 class="row-title">${escapeHtml(region.name)}</h3>
@@ -3062,17 +3137,17 @@ function renderDashboard() {
   setText("#economy-title", globalView ? "Regional Markets" : `${selectedRegion} Markets`);
 
   if (economyGrid) {
-    economyGrid.innerHTML = displayedMarketCards
+    setDynamicContent(economyGrid, displayedMarketCards
       .map((item) => (isDashboardPage() ? { ...item, isOverview: true } : item))
       .map(renderMetricCard)
-      .join("");
+      .join(""));
   }
 
   if (currencyGrid) {
-    currencyGrid.innerHTML = currencyCardsForView
+    setDynamicContent(currencyGrid, currencyCardsForView
       .map((item) => (isDashboardPage() ? { ...item, hideChart: true, isOverview: true } : item))
       .map((item) => renderMetricCard(item))
-      .join("");
+      .join(""));
   }
 
   if (commodityGrid) {
@@ -3081,24 +3156,24 @@ function renderDashboard() {
         ? commodityCardsForView.filter((item) => item.id !== "bitcoin")
         : commodityCardsForView;
 
-    commodityGrid.innerHTML = commodityGridCards
+    setDynamicContent(commodityGrid, commodityGridCards
       .map((item) => (isDashboardPage() ? { ...item, hideChart: true, isOverview: true } : item))
       .map((item) => renderMetricCard(item))
-      .join("");
+      .join(""));
   }
 
   if (digitalAssetsGrid) {
-    digitalAssetsGrid.innerHTML = commodityCardsForView
+    setDynamicContent(digitalAssetsGrid, commodityCardsForView
       .filter((item) => item.id === "bitcoin")
       .map((item) => renderMetricCard(item))
-      .join("");
+      .join(""));
   }
 
   if (economicHealthGrid) {
-    economicHealthGrid.innerHTML = healthCards
+    setDynamicContent(economicHealthGrid, healthCards
       .map((item) => (isDashboardPage() ? { ...item, isOverview: true } : item))
       .map((item) => renderMetricCard(item))
-      .join("");
+      .join(""));
   }
 
   updateSectionBadge("#economy-change-badge", economyChange, { includeSentiment: true });
@@ -3114,10 +3189,10 @@ function renderDashboard() {
   renderMarketDrivers(marketHeroCards);
 
   if (riskList) {
-    riskList.innerHTML = riskCardsForView
+    setDynamicContent(riskList, riskCardsForView
       .map((item) => (isDashboardPage() ? { ...item, isOverview: true } : item))
       .map(renderMetricCard)
-      .join("");
+      .join(""));
   }
 
   renderOverviewTiles({

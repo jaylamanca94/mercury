@@ -373,6 +373,56 @@ test("dashboard summary adds key signals and briefing sections", () => {
   );
 });
 
+test("dynamic dashboard containers expose live busy regions", () => {
+  [
+    { html: indexHtml, ids: ["overview-tiles-grid", "economy-grid", "currency-grid", "commodity-grid", "risk-list", "economic-health-grid"] },
+    { html: marketsHtml, ids: ["market-drivers-grid", "economy-grid"] },
+    { html: supportsHtml, ids: ["support-signals-grid", "currency-grid", "commodity-grid", "digital-assets-grid"] },
+    { html: indicatorsHtml, ids: ["risk-list", "economic-health-grid"] },
+    { html: dataHtml, ids: ["source-health-list", "coverage-summary-list"] },
+  ].forEach(({ html, ids }) => {
+    ids.forEach((id) => {
+      assert.match(html, new RegExp(`id="${id}"[^>]+aria-live="polite"[^>]+aria-busy="true"`));
+    });
+  });
+});
+
+test("rendered metric and overview cards expose concise accessible summaries", () => {
+  const context = loadAppContext();
+  const result = vm.runInContext(
+    `
+      const metric = {
+        ...withPeriodDelta(findMetric(marketPulse, "us-equities", "S&P 500"), selectedEconomyPeriod),
+        value: "512.20",
+        periodChange: "+1.2%",
+        change: "+1.2%",
+        trend: "Rising",
+        sourceStatus: "Source-backed",
+        freshness: { status: "current", label: "Current" },
+      };
+      ({
+        metric: renderMetricCard(metric),
+        tile: renderOverviewTile({
+          label: "Global score",
+          value: "Healthy +1.2%",
+          detail: "Broad markets improving",
+          href: "markets.html",
+          icon: "fa-earth-americas",
+          tone: "up",
+        }),
+      });
+    `,
+    context,
+  );
+
+  assert.match(result.metric, /aria-label="S&amp;P 500/);
+  assert.match(result.metric, /Value 512\.20/);
+  assert.match(result.metric, /Change \+1\.2%/);
+  assert.match(result.metric, /Trend Rising/);
+  assert.match(result.metric, /Current/);
+  assert.match(result.tile, /aria-label="Global score\. Healthy \+1\.2%\. Broad markets improving"/);
+});
+
 test("static pages reference the current mobile dock assets", () => {
   const pages = [indexHtml, marketsHtml, supportsHtml, indicatorsHtml, dataHtml];
 

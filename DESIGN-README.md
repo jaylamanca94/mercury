@@ -235,6 +235,9 @@ Use `8px` or less for normal cards and repeated list items unless a larger conta
 - Support keyboard navigation for interactive controls.
 - Preserve visible focus states.
 - Use semantic HTML whenever practical.
+- Dynamic dashboard regions that rerender from live data should expose `aria-live` and `aria-busy`
+  states, and generated cards should include concise accessible summaries for name, value,
+  movement, trend, and source state.
 - Keep text readable in both light and dark mode.
 - Ensure layouts work across desktop, tablet, and mobile.
 - Avoid text overflow, cramped controls, and overlapping UI.
