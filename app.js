@@ -1398,6 +1398,12 @@ function sentenceSummary(parts) {
     .join(". ");
 }
 
+const STATUS_PILL_CLASSES = ["status-pill-live", "status-pill-caution", "status-pill-stale"];
+
+function resetStatusPillClasses(element) {
+  element?.classList.remove(...STATUS_PILL_CLASSES);
+}
+
 function metricAccessibleSummary(metric) {
   const details = [
     displayMetricName(metric),
@@ -3239,7 +3245,7 @@ function applySnapshotConnectionState(snapshot, sourcePill) {
   const isUnavailable = snapshot.status === "unavailable" || !hasLiveSources;
   const isPartial = snapshot.status === "partial";
 
-  sourcePill?.classList.remove("status-pill-live", "status-pill-caution");
+  resetStatusPillClasses(sourcePill);
 
   if (isUnavailable) {
     setText("#source-coverage-title", "Live data unavailable");
@@ -3282,7 +3288,7 @@ function applySnapshotFreshnessState(snapshot) {
   const freshnessPill = document.querySelector("#sample-set-date");
   const freshness = snapshot.freshness || {};
 
-  freshnessPill?.classList.remove("status-pill-live", "status-pill-caution", "status-pill-stale");
+  resetStatusPillClasses(freshnessPill);
   setText("#source-rail-freshness", displayFreshness(freshness));
   setText("#snapshot-freshness", displayFreshness(freshness));
 
@@ -3385,7 +3391,10 @@ function markUnavailable(items) {
 
 function applyLiveFallback() {
   const sourcePill = document.querySelector("#macro-connection-pill");
+  const freshnessPill = document.querySelector("#sample-set-date");
 
+  resetStatusPillClasses(sourcePill);
+  resetStatusPillClasses(freshnessPill);
   marketPulse = markUnavailable(marketPulse);
   economicHealth = markUnavailable(economicHealth);
   riskIndicators = markUnavailable(riskIndicators);
@@ -3450,6 +3459,7 @@ function applyLiveFallback() {
   setText("#risk-source-status", "Unavailable");
   setText("#regional-source-status", "Unavailable");
   setText("#sample-set-date", "Data status");
+  freshnessPill?.classList.add("status-pill-caution");
   setHtml(
     "#macro-connection-pill",
     '<i class="fa-solid fa-plug-circle-xmark" aria-hidden="true"></i> Live data unavailable',

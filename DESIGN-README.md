@@ -66,6 +66,16 @@ Mercury now treats `../Acadia` as the shared coded design-system baseline. Befor
 - Do not use state-colored card borders, top rails, or outlines on metric cards. Match Acadia's neutral metric surface; show movement through text labels, deltas, and sparklines instead.
 - If a Mercury pattern becomes useful for another product, graduate the neutral part into Acadia and keep Mercury's economy-specific wording and data treatment here.
 
+### Relay-Informed Mobile Standard
+
+Relay is the current Acadia reference for mobile product judgment. Mercury should adopt the neutral lessons without copying Relay's media styling:
+
+- Each phone screen should answer one economy question, such as what changed, where, and how fresh the source is.
+- Keep indicator, region/period context, freshness, interpretation, and the next action attached in each signal row or card.
+- Let focused filter, region, and indicator-detail flows use bottom-friendly controls and reduce competing chrome when it improves completion.
+- Never let sample, delayed, stale, unavailable, or fallback values look like live economic evidence.
+- Keep mobile summaries calm and decision-oriented; deeper source diagnostics and model caveats belong on detail pages.
+
 ## Color
 
 Mercury should avoid looking like a brokerage or trading app. Use measured, professional economic-dashboard color rather than aggressive default market styling.

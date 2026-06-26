@@ -22,11 +22,38 @@ function headerBrandIcon(html) {
 }
 
 function createElement() {
+  const classes = new Set();
+
   return {
     classList: {
-      add() {},
-      remove() {},
-      toggle() {},
+      add(...tokens) {
+        tokens.forEach((token) => classes.add(token));
+      },
+      contains(token) {
+        return classes.has(token);
+      },
+      remove(...tokens) {
+        tokens.forEach((token) => classes.delete(token));
+      },
+      toggle(token, force) {
+        if (force === true) {
+          classes.add(token);
+          return true;
+        }
+
+        if (force === false) {
+          classes.delete(token);
+          return false;
+        }
+
+        if (classes.has(token)) {
+          classes.delete(token);
+          return false;
+        }
+
+        classes.add(token);
+        return true;
+      },
     },
     setAttribute() {},
     addEventListener() {},
@@ -988,6 +1015,37 @@ test("data page summarizes data coverage and source freshness", () => {
   assert.match(result.list, /Economic releases current/);
   assert.match(result.list, /Risk indicators current/);
   assert.match(result.list, /Regional coverage current/);
+});
+
+test("live fallback clears stale live status pill classes", () => {
+  const context = loadAppContext();
+  const result = vm.runInContext(
+    `
+      const sourcePill = document.querySelector("#macro-connection-pill");
+      const freshnessPill = document.querySelector("#sample-set-date");
+
+      sourcePill.classList.add("status-pill-live");
+      freshnessPill.classList.add("status-pill-live");
+      applyLiveFallback();
+
+      ({
+        sourceIsLive: sourcePill.classList.contains("status-pill-live"),
+        sourceIsCaution: sourcePill.classList.contains("status-pill-caution"),
+        freshnessIsLive: freshnessPill.classList.contains("status-pill-live"),
+        freshnessIsCaution: freshnessPill.classList.contains("status-pill-caution"),
+        freshnessText: freshnessPill.textContent,
+        sourceText: sourcePill.innerHTML,
+      });
+    `,
+    context,
+  );
+
+  assert.equal(result.sourceIsLive, false);
+  assert.equal(result.sourceIsCaution, true);
+  assert.equal(result.freshnessIsLive, false);
+  assert.equal(result.freshnessIsCaution, true);
+  assert.equal(result.freshnessText, "Data status");
+  assert.match(result.sourceText, /Live data unavailable/);
 });
 
 test("World Bank regional fetch retries transient failures", async () => {
