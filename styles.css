@@ -83,6 +83,12 @@
   --acadia-motion-fast: 150ms ease;
   --mercury-positive: var(--acadia-color-action);
   --mercury-negative: #d96f66;
+  --mercury-confidence: #2563eb;
+  --mercury-caution: #b86b00;
+  --mercury-page-tint: rgba(0, 123, 120, 0.08);
+  --mercury-sky-tint: rgba(37, 99, 235, 0.055);
+  --mercury-warm-tint: rgba(184, 107, 0, 0.055);
+  --mercury-hero-glass: rgba(255, 255, 255, 0.38);
   --neutral-state: #667085;
   --muted: var(--acadia-color-text-muted);
   --muted-soft: #98a2b3;
@@ -145,6 +151,12 @@
   --acadia-mobile-nav-focus-halo: rgba(255, 255, 255, 0.22);
   --mercury-positive: var(--acadia-color-brand);
   --mercury-negative: #ff7b70;
+  --mercury-confidence: #8ab4ff;
+  --mercury-caution: #ffd166;
+  --mercury-page-tint: rgba(35, 176, 169, 0.1);
+  --mercury-sky-tint: rgba(138, 180, 255, 0.07);
+  --mercury-warm-tint: rgba(255, 209, 102, 0.06);
+  --mercury-hero-glass: rgba(255, 255, 255, 0.035);
   --neutral-state: #aeb6c2;
   --muted-soft: #8c96a3;
 }
@@ -203,6 +215,12 @@
     --acadia-mobile-nav-focus-halo: rgba(255, 255, 255, 0.22);
     --mercury-positive: var(--acadia-color-brand);
     --mercury-negative: #ff7b70;
+    --mercury-confidence: #8ab4ff;
+    --mercury-caution: #ffd166;
+    --mercury-page-tint: rgba(35, 176, 169, 0.1);
+    --mercury-sky-tint: rgba(138, 180, 255, 0.07);
+    --mercury-warm-tint: rgba(255, 209, 102, 0.06);
+    --mercury-hero-glass: rgba(255, 255, 255, 0.035);
     --neutral-state: #aeb6c2;
     --muted-soft: #8c96a3;
   }
@@ -222,7 +240,7 @@ body {
 
 .mercury-app {
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.06), transparent 24rem),
+    linear-gradient(180deg, var(--mercury-page-tint), var(--mercury-sky-tint) 18rem, var(--mercury-warm-tint) 34rem, transparent 52rem),
     var(--acadia-color-page);
   color: var(--acadia-color-text);
   font-family: var(--acadia-font-sans);
@@ -268,7 +286,7 @@ body {
 
 .acadia-chrome {
   backdrop-filter: var(--acadia-vibrancy);
-  background: var(--acadia-color-surface);
+  background: color-mix(in srgb, var(--acadia-color-surface) 92%, transparent);
   border-bottom: 1px solid var(--acadia-color-border);
   box-shadow: var(--acadia-shadow-chrome);
   position: sticky;
@@ -420,6 +438,17 @@ body {
   text-decoration: none;
 }
 
+.brand-lockup {
+  border-radius: var(--acadia-radius-md);
+  padding: 0.25rem 0.35rem 0.25rem 0.25rem;
+}
+
+.brand-lockup:hover,
+.brand-lockup:focus-visible {
+  background: var(--acadia-color-surface-muted);
+  outline: 0;
+}
+
 .brand-lockup strong {
   font-size: 1rem;
   font-weight: 800;
@@ -430,13 +459,19 @@ body {
 .acadia-mark,
 .brand-mark {
   align-items: center;
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--mercury-confidence) 18%, transparent), transparent),
+    var(--acadia-color-brand-bg);
+  border: 1px solid var(--acadia-color-brand-border);
+  border-radius: var(--acadia-radius-md);
+  box-shadow: var(--acadia-shadow-control);
   color: var(--acadia-color-brand);
   display: inline-flex;
   font-size: 1.15rem;
-  height: 1.5rem;
+  height: 2.5rem;
   justify-content: center;
   line-height: 1;
-  width: 1.5rem;
+  width: 2.5rem;
 }
 
 .acadia-icon {
@@ -465,7 +500,7 @@ body {
 
 .acadia-surface {
   backdrop-filter: var(--acadia-vibrancy);
-  background: var(--acadia-color-surface);
+  background: color-mix(in srgb, var(--acadia-color-surface) 94%, transparent);
   border: 1px solid var(--acadia-color-border);
   border-radius: var(--acadia-radius-md);
   box-shadow: var(--acadia-shadow-card);
@@ -642,9 +677,15 @@ body {
 }
 
 .page-title-row {
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--mercury-positive) 10%, transparent), transparent 42%),
+    linear-gradient(180deg, var(--mercury-hero-glass), transparent 68%),
+    var(--acadia-color-surface);
+  border-color: color-mix(in srgb, var(--mercury-positive) 14%, var(--acadia-color-border));
   display: grid;
   align-content: start;
   grid-template-columns: minmax(0, 1fr) auto;
+  position: relative;
 }
 
 .page-title-group {
@@ -778,9 +819,41 @@ body {
   max-width: 44rem;
 }
 
+.hero-trust-strip {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  max-width: 48rem;
+}
+
+.hero-trust-strip span {
+  align-items: center;
+  background: color-mix(in srgb, var(--acadia-color-surface-muted) 86%, transparent);
+  border: 1px solid var(--acadia-color-border);
+  border-radius: var(--acadia-radius-pill);
+  box-shadow: var(--acadia-shadow-control);
+  color: var(--acadia-color-text-muted);
+  display: inline-flex;
+  font-size: 0.75rem;
+  font-weight: 850;
+  gap: 0.35rem;
+  line-height: 1;
+  min-height: 1.875rem;
+  padding: 0.38rem 0.6rem;
+}
+
+.hero-trust-strip .acadia-icon {
+  color: var(--acadia-color-brand-ink);
+}
+
 .hero-chart-panel {
+  background:
+    linear-gradient(180deg, transparent, color-mix(in srgb, var(--mercury-positive) 5%, transparent));
+  border-radius: var(--acadia-radius-sm);
   height: 4.75rem;
   margin-block: 0.125rem;
+  overflow: hidden;
   width: 100%;
 }
 
@@ -1187,7 +1260,9 @@ body {
 
 .overview-tile {
   align-items: center;
-  background: var(--acadia-color-surface);
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--overview-state, var(--muted)) 7%, transparent), transparent 42%),
+    var(--acadia-color-surface);
   border: 1px solid var(--acadia-color-border);
   border-radius: var(--acadia-radius-md);
   box-shadow: var(--acadia-shadow-control);
@@ -1206,7 +1281,7 @@ body {
 
 .overview-tile:hover,
 .overview-tile:focus-visible {
-  border-color: var(--acadia-color-border-strong);
+  border-color: color-mix(in srgb, var(--overview-state, var(--muted)) 26%, var(--acadia-color-border-strong));
   box-shadow: var(--acadia-shadow-card);
   outline: 0;
   transform: translateY(-1px);
@@ -1379,7 +1454,11 @@ body {
 }
 
 .brief-card {
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--acadia-color-surface-elevated) 52%, transparent), transparent),
+    var(--acadia-color-surface);
   align-content: start;
+  border-color: color-mix(in srgb, var(--acadia-color-border-strong) 72%, var(--acadia-color-border));
   display: grid;
   gap: var(--acadia-space-1);
   min-width: 0;
@@ -1547,7 +1626,9 @@ body {
   --metric-icon-reserve: 2.25rem;
   --metric-state: var(--neutral-state);
   align-content: start;
-  background: var(--acadia-color-surface-muted);
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--metric-state) 6%, transparent), transparent 46%),
+    var(--acadia-color-surface-muted);
   border: 1px solid var(--acadia-color-border);
   border-radius: var(--acadia-radius-md);
   box-shadow: var(--acadia-shadow-control);
@@ -1645,7 +1726,10 @@ body {
 .metric-icon,
 .acadia-metric-icon {
   align-items: center;
-  color: color-mix(in srgb, var(--acadia-color-text-muted) 58%, transparent);
+  background: color-mix(in srgb, var(--metric-state) 10%, var(--acadia-color-surface));
+  border: 1px solid color-mix(in srgb, var(--metric-state) 18%, var(--acadia-color-border));
+  border-radius: var(--acadia-radius-md);
+  color: color-mix(in srgb, var(--acadia-color-text-muted) 58%, var(--metric-state));
   display: inline-flex;
   height: 2.5rem;
   justify-content: center;
@@ -1835,6 +1919,9 @@ body {
 }
 
 .freshness-band {
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--mercury-confidence) 8%, transparent), transparent 44%),
+    var(--acadia-color-surface);
   display: grid;
   gap: var(--acadia-space-3);
   grid-template-columns: minmax(0, 1fr) minmax(18rem, 0.36fr);
@@ -1996,7 +2083,7 @@ body {
 
 .snapshot-meta div,
 .freshness-list li {
-  background: var(--acadia-color-surface-muted);
+  background: color-mix(in srgb, var(--acadia-color-surface-muted) 92%, transparent);
   border: 1px solid var(--acadia-color-border);
   border-radius: var(--acadia-radius-md);
   box-shadow: var(--acadia-shadow-control);
@@ -2121,6 +2208,14 @@ body {
   .mercury-page-dashboard .page-title-row {
     min-height: 0;
     padding: var(--acadia-space-3);
+  }
+
+  .mercury-page-dashboard .page-controls-row .page-actions {
+    background: color-mix(in srgb, var(--acadia-color-surface-elevated) 78%, transparent);
+    border: 1px solid var(--acadia-color-border);
+    border-radius: var(--acadia-radius-md);
+    box-shadow: var(--acadia-shadow-control);
+    padding: 0.75rem;
   }
 
   .mercury-page-dashboard .hero-insight {
@@ -2473,19 +2568,22 @@ body {
   }
 
   .mercury-page-dashboard .hero-chart-panel,
-  .mercury-page-dashboard .hero-movers {
+  .mercury-page-dashboard .hero-movers,
+  .mercury-page-dashboard .hero-trust-strip {
     display: none;
   }
 
   .mercury-page-dashboard .mobile-dashboard-card {
     display: grid;
+    gap: 0.75rem;
     justify-self: center;
     min-height: 25.5rem;
+    padding: 0.875rem 0.875rem 0;
     width: min(100%, 26rem);
   }
 
   .mercury-page-dashboard .mobile-dashboard-chart {
-    height: clamp(7.75rem, 36vw, 10rem);
+    height: clamp(5.5rem, 26vw, 6.75rem);
   }
 
   .hero-movers {
@@ -2517,8 +2615,12 @@ body {
   }
 
   .page-controls-row {
+    background: color-mix(in srgb, var(--acadia-color-surface-muted) 78%, transparent);
+    border: 1px solid var(--acadia-color-border);
     border-top: 1px solid var(--acadia-color-border);
+    border-radius: var(--acadia-radius-md);
     padding-top: 0.75rem;
+    padding: 0.75rem;
     width: 100%;
   }
 
@@ -2656,5 +2758,26 @@ body {
 @media (max-width: 640px) {
   .app-header-inner {
     flex-direction: column;
+  }
+}
+
+@media (max-width: 640px) {
+  .app-header-inner {
+    align-items: center;
+    flex-direction: row;
+    min-height: 4.25rem;
+    padding-block: 0.75rem;
+  }
+
+  .app-header-inner .user-lockup {
+    display: none;
+  }
+
+  .app-header-inner .acadia-theme-toggle {
+    margin-left: auto;
+  }
+
+  .mobile-dashboard-band {
+    min-height: 4rem;
   }
 }
