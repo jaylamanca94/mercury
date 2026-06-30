@@ -23,6 +23,7 @@ function headerBrandIcon(html) {
 
 function createElement() {
   const classes = new Set();
+  const attributes = new Map();
 
   return {
     classList: {
@@ -55,7 +56,12 @@ function createElement() {
         return true;
       },
     },
-    setAttribute() {},
+    setAttribute(name, value) {
+      attributes.set(name, String(value));
+    },
+    getAttribute(name) {
+      return attributes.get(name) || null;
+    },
     addEventListener() {},
     style: {
       setProperty() {},
@@ -617,6 +623,7 @@ test("dashboard briefing is generated from visible economy and risk signals", ()
           periodChange: "+0.32 pts",
           periodChangeValue: 0.32,
           comparison: "point-change",
+          sourceStatus: "Source-backed",
           tone: "caution",
         },
       ];
@@ -628,6 +635,7 @@ test("dashboard briefing is generated from visible economy and risk signals", ()
           periodChange: "-16.4%",
           periodChangeValue: -16.4,
           comparison: "percent-change",
+          sourceStatus: "Source-backed",
         },
       ];
       const economyChange = sectionChange(heroCards);
@@ -1038,10 +1046,10 @@ test("data page summarizes data coverage and source freshness", () => {
   assert.equal(result.score, "4/4");
   assert.match(result.detail, /4 of 4 data groups available/);
   assert.equal(result.copy, "All connected data groups are current.");
-  assert.match(result.list, /Market data current/);
-  assert.match(result.list, /Economic releases current/);
-  assert.match(result.list, /Risk indicators current/);
-  assert.match(result.list, /Regional coverage current/);
+  assert.match(result.list, /Market data fully current/);
+  assert.match(result.list, /Economic releases fully current/);
+  assert.match(result.list, /Risk indicators fully current/);
+  assert.match(result.list, /Regional coverage fully current/);
 });
 
 test("live fallback clears stale live status pill classes", () => {
@@ -1073,6 +1081,97 @@ test("live fallback clears stale live status pill classes", () => {
   assert.equal(result.freshnessIsCaution, true);
   assert.equal(result.freshnessText, "Data status");
   assert.match(result.sourceText, /Live data unavailable/);
+});
+
+test("dashboard fallback uses one source-unavailable read and completes busy states", () => {
+  const context = loadAppContext();
+  const result = vm.runInContext(
+    `
+      applyLiveFallback();
+      ({
+        title: document.querySelector("#view-title").textContent,
+        insight: document.querySelector("#hero-insight").textContent,
+        badge: document.querySelector("#economy-change-badge").textContent,
+        overview: document.querySelector("#overview-tiles-grid").innerHTML,
+        changed: document.querySelector("#what-changed-list").innerHTML,
+        risk: document.querySelector("#risk-watch-list").innerHTML,
+        periodDisabled: document.querySelector("#economy-period-select").disabled,
+        regionDisabled: document.querySelector("#economy-region-select").disabled,
+        sortDisabled: document.querySelector("#market-sort-select").disabled,
+        controlNoteHidden: document.querySelector("#control-availability-note").hidden,
+        overviewBusy: document.querySelector("#overview-tiles-grid").getAttribute("aria-busy"),
+        economyBusy: document.querySelector("#economy-grid").getAttribute("aria-busy"),
+      });
+    `,
+    context,
+  );
+
+  assert.equal(result.title, "Live data unavailable");
+  assert.match(result.insight, /cannot produce a source-backed read right now/);
+  assert.equal(result.badge, "No live read");
+  assert.match(result.overview, /Retry refresh/);
+  assert.match(result.overview, /Data Coverage/);
+  assert.doesNotMatch(result.overview, /Oil<\/span>[\s\S]*Unavailable/);
+  assert.match(result.changed, /No source-backed change/);
+  assert.match(result.risk, /No source-backed risk read/);
+  assert.equal(result.periodDisabled, true);
+  assert.equal(result.regionDisabled, true);
+  assert.equal(result.sortDisabled, true);
+  assert.equal(result.controlNoteHidden, false);
+  assert.equal(result.overviewBusy, "false");
+  assert.equal(result.economyBusy, "false");
+});
+
+test("supports fallback avoids interpreted support and pressure language", () => {
+  const context = loadAppContext("supports");
+  const result = vm.runInContext(
+    `
+      applyLiveFallback();
+      ({
+        insight: document.querySelector("#hero-insight").textContent,
+        brief: document.querySelector("#support-brief-copy").textContent,
+        signals: document.querySelector("#support-signals-grid").innerHTML,
+        pressures: document.querySelector("#support-pressure-list").innerHTML,
+        currency: document.querySelector("#currency-grid").innerHTML,
+        signalsBusy: document.querySelector("#support-signals-grid").getAttribute("aria-busy"),
+      });
+    `,
+    context,
+  );
+
+  assert.match(result.insight, /Waiting for enough live support data/);
+  assert.match(result.brief, /cannot interpret support conditions/);
+  assert.match(result.signals, /Market supports unavailable/);
+  assert.match(result.pressures, /No source-backed pressure read/);
+  assert.match(result.currency, /Currency data unavailable/);
+  assert.doesNotMatch(result.brief, /quiet|supportive|mixed/i);
+  assert.doesNotMatch(result.pressures, /None elevated/);
+  assert.equal(result.signalsBusy, "false");
+});
+
+test("data coverage fallback explains whole-product unavailability plainly", () => {
+  const context = loadAppContext("data");
+  const result = vm.runInContext(
+    `
+      applyLiveFallback();
+      ({
+        copy: document.querySelector("#source-coverage-copy").textContent,
+        score: document.querySelector("#source-health-score").textContent,
+        detail: document.querySelector("#source-health-detail").textContent,
+        list: document.querySelector("#source-health-list").innerHTML,
+        busy: document.querySelector("#source-health-list").getAttribute("aria-busy"),
+      });
+    `,
+    context,
+  );
+
+  assert.match(result.copy, /All live data groups are unavailable/);
+  assert.equal(result.score, "0/4");
+  assert.match(result.detail, /Data groups unavailable/);
+  assert.match(result.list, /Market data is not responding/);
+  assert.match(result.list, /Regional coverage is not responding/);
+  assert.doesNotMatch(result.copy, /in this view/);
+  assert.equal(result.busy, "false");
 });
 
 test("World Bank regional fetch retries transient failures", async () => {
@@ -1623,9 +1722,11 @@ test("mobile dashboard card separates region labels from movement values", () =>
   const context = loadAppContext();
   const html = vm.runInContext("renderMobileRegionTabs()", context);
 
-  assert.match(html, /aria-label="Global economy, Loading"/);
+  assert.match(html, /aria-label="Global economy, Unavailable"/);
   assert.match(html, /class="mobile-dashboard-tab-name">Global<\/span>/);
-  assert.match(html, /<strong>Loading<\/strong>/);
+  assert.match(html, /<strong>Unavailable<\/strong>/);
+  assert.match(html, /aria-disabled="true"/);
+  assert.match(html, /disabled/);
   assert.match(styles, /\.mobile-dashboard-card\s*{[^}]*display: none;/s);
   assert.match(
     styles,

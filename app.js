@@ -319,6 +319,46 @@ function isDashboardPage() {
   return currentPage === "dashboard";
 }
 
+function hasSourceBackedValue(item) {
+  return Boolean(
+    item &&
+      item.sourceStatus === "Source-backed" &&
+      item.value &&
+      item.value !== "Loading" &&
+      item.value !== "Unavailable",
+  );
+}
+
+function hasAnySourceBackedValue(items) {
+  return items.some(hasSourceBackedValue);
+}
+
+function isUnavailableItem(item) {
+  return Boolean(item && (item.sourceStatus === "Unavailable" || item.value === "Unavailable"));
+}
+
+function isCompleteUnavailable(items) {
+  return items.length > 0 && !hasAnySourceBackedValue(items) && items.every(isUnavailableItem);
+}
+
+function currentSnapshotItems() {
+  return snapshotItems({ marketPulse, economicHealth, riskIndicators, regions });
+}
+
+function isCompleteLiveUnavailable() {
+  return isCompleteUnavailable(currentSnapshotItems());
+}
+
+function unavailableStateCopy() {
+  return {
+    title: "Live data unavailable",
+    badge: "No live read",
+    summary: "Mercury cannot produce a source-backed read right now.",
+    detail: "Public sources did not return usable values. Existing source names and coverage rules remain trustworthy; economic interpretation will return when the sources respond.",
+    actions: "Retry refresh, check Data Coverage, or wait for public sources to respond.",
+  };
+}
+
 function trendClass(tone) {
   return `trend-label trend-${tone}`;
 }
@@ -531,6 +571,18 @@ function sentenceCase(value) {
   return value ? `${value.charAt(0).toUpperCase()}${value.slice(1)}` : "";
 }
 
+function humanList(items) {
+  if (items.length <= 1) {
+    return items[0] || "";
+  }
+
+  if (items.length === 2) {
+    return `${items[0]} and ${items[1]}`;
+  }
+
+  return `${items.slice(0, -1).join(", ")}, and ${items.at(-1)}`;
+}
+
 function viewTitle(scope) {
   return scope === "Global" ? "Global Economy" : `${scope} Economy`;
 }
@@ -558,6 +610,12 @@ function heroMoverTone(card) {
 }
 
 function buildHeroInsight(change, movers, period, scope) {
+  if (isCompleteUnavailable(movers) || (isCompleteLiveUnavailable() && !change)) {
+    const copy = unavailableStateCopy();
+
+    return `${copy.summary} ${copy.actions}`;
+  }
+
   if (!change) {
     return "Waiting for enough live market data to explain the current global read.";
   }
@@ -715,7 +773,12 @@ function renderMarketDrivers(cards) {
 
   setDynamicContent(driversGrid, drivers.length
     ? drivers.map((card, index) => renderMarketDriverCard(card, index, drivers)).join("")
-    : '<article class="market-driver-card market-driver-card-unavailable acadia-surface acadia-panel-dense" aria-label="Waiting for comparable market drivers">Waiting for comparable market drivers.</article>');
+    : renderUnavailableCard(
+        "Market drivers unavailable",
+        "Comparable market drivers need live source-backed values.",
+        "Yahoo Finance market data",
+        "market-driver-card market-driver-card-unavailable acadia-surface acadia-panel-dense",
+      ));
 }
 
 function supportSignalProfile(card) {
@@ -966,6 +1029,10 @@ function renderSupportSignalCard(card) {
 }
 
 function supportBriefCopy(cards) {
+  if (!hasAnySourceBackedValue(cards)) {
+    return "Mercury cannot interpret support conditions until live currency, commodity, and digital asset values are available.";
+  }
+
   const oil = cards.find((card) => card.id === "oil");
   const dollar = cards.find((card) => card.id === "dollar-index");
   const bitcoin = cards.find((card) => card.id === "bitcoin");
@@ -997,7 +1064,7 @@ function supportBriefCopy(cards) {
     );
   }
 
-  return sentences.slice(0, 2).join(" ") || "Support conditions are quiet right now, so Mercury is treating them as context rather than a primary driver.";
+  return sentences.slice(0, 2).join(" ") || "Source-backed support values are available, but none are large enough to interpret as a primary support driver.";
 }
 
 function buildSupportPressureItems(cards) {
@@ -1032,15 +1099,21 @@ function updateSupportBadge(score) {
 function renderSupportBriefing(cards) {
   const signalsGrid = document.querySelector("#support-signals-grid");
   const pressureList = document.querySelector("#support-pressure-list");
+  const hasSupportValues = hasAnySourceBackedValue(cards);
 
   setText("#hero-insight", buildSupportHeroInsight(cards));
   setText("#support-brief-copy", supportBriefCopy(cards));
   updateSupportBadge(supportScore(cards));
 
   if (signalsGrid) {
-    setDynamicContent(signalsGrid, cards.length
+    setDynamicContent(signalsGrid, hasSupportValues && cards.length
       ? cards.map(renderSupportSignalCard).join("")
-      : '<article class="support-signal-card support-signal-card-unavailable acadia-surface acadia-panel-dense" aria-label="Waiting for support signals">Waiting for support signals.</article>');
+      : renderUnavailableCard(
+          "Market supports unavailable",
+          "Currency, commodity, and digital asset values need live source data before Mercury can interpret support conditions.",
+          "Yahoo Finance market support data",
+          "support-signal-card support-signal-card-unavailable acadia-surface acadia-panel-dense unavailable-state-card",
+        ));
   }
 
   if (pressureList) {
@@ -1048,7 +1121,7 @@ function renderSupportBriefing(cards) {
 
     setDynamicContent(pressureList, pressureItems.length
       ? pressureItems.map(briefListItem).join("")
-      : '<li class="brief-list-item brief-list-item-stable"><strong>None elevated</strong><span>No major support pressure is standing out right now.</span></li>');
+      : '<li class="brief-list-item brief-list-item-unavailable"><strong>No source-backed pressure read</strong><span>Mercury will identify support pressures when live values are available.</span></li>');
   }
 }
 
@@ -1151,6 +1224,10 @@ function economyHeroCardsForScope(region) {
 function mobileTabChangeLabel(region) {
   const change = sectionChange(economyHeroCardsForScope(region));
 
+  if (isCompleteLiveUnavailable()) {
+    return "Unavailable";
+  }
+
   if (!change) {
     return "Loading";
   }
@@ -1159,6 +1236,8 @@ function mobileTabChangeLabel(region) {
 }
 
 function renderMobileRegionTabs() {
+  const controlsUnavailable = isCompleteLiveUnavailable();
+
   return MOBILE_REGION_TABS.map((tab) => {
     const isActive = tab.value === selectedRegion;
     const changeLabel = mobileTabChangeLabel(tab.value);
@@ -1169,6 +1248,8 @@ function renderMobileRegionTabs() {
         type="button"
         data-region="${escapeHtml(tab.value)}"
         aria-pressed="${isActive ? "true" : "false"}"
+        aria-disabled="${controlsUnavailable ? "true" : "false"}"
+        ${controlsUnavailable ? "disabled" : ""}
         aria-label="${escapeHtml(`${tab.label} economy, ${changeLabel}`)}"
       >
         <span class="mobile-dashboard-tab-name">${escapeHtml(tab.label)}</span>
@@ -1252,14 +1333,19 @@ function renderMobileDashboardCard(cards, change) {
   const freshness = mobileFreshnessSummary();
   const sourceGroups = mobileSourceGroups();
   const axisLabels = mobileAxisLabels(selectedEconomyPeriod);
+  const completeUnavailable = isCompleteLiveUnavailable();
   const title =
-    change && sentiment.label !== "Unavailable"
-      ? `${sentiment.label} conditions`
-      : "Checking conditions";
+    completeUnavailable
+      ? unavailableStateCopy().title
+      : change && sentiment.label !== "Unavailable"
+        ? `${sentiment.label} conditions`
+        : "Checking conditions";
   const comparison =
-    change && sentiment.label !== "Unavailable"
-      ? `${change.label} - ${periodLabel} view`
-      : "Waiting for comparable live inputs";
+    completeUnavailable
+      ? "No source-backed read"
+      : change && sentiment.label !== "Unavailable"
+        ? `${change.label} - ${periodLabel} view`
+        : "Waiting for comparable live inputs";
   const copy = buildHeroInsight(change, movers, selectedEconomyPeriod, selectedRegion);
   const chart = renderHeroSparkline(cards, change);
 
@@ -1288,6 +1374,17 @@ function renderMobileDashboardCard(cards, change) {
 
 function updateHeroInsight(cards, change) {
   const movers = heroMoverCards(cards);
+  const completeUnavailable = isCompleteLiveUnavailable();
+
+  if (completeUnavailable) {
+    const copy = unavailableStateCopy();
+
+    setText("#view-title", copy.title);
+    setText("#hero-insight", `${copy.summary} ${copy.detail} ${copy.actions}`);
+    setHtml("#hero-sparkline", "");
+    setHtml("#hero-movers", "");
+    return;
+  }
 
   setText("#hero-insight", buildHeroInsight(change, movers, selectedEconomyPeriod, selectedRegion));
   setHtml("#hero-sparkline", renderHeroSparkline(cards, change));
@@ -1304,7 +1401,7 @@ function updateSectionBadge(selector, change, options = {}) {
   element.classList.remove("trend-up", "trend-down", "trend-stable", "trend-mixed", "trend-caution", "trend-unavailable");
 
   if (!change) {
-    element.textContent = "Unavailable";
+    element.textContent = isCompleteLiveUnavailable() ? unavailableStateCopy().badge : "Unavailable";
     element.classList.add("trend-unavailable");
     return;
   }
@@ -1343,6 +1440,38 @@ function syncControlValues() {
   }
 }
 
+function syncControlAvailability() {
+  const controlsUnavailable = isCompleteLiveUnavailable();
+  const economyPeriodSelect = document.querySelector("#economy-period-select");
+  const currencyPeriodSelect = document.querySelector("#currency-period-select");
+  const economyRegionSelect = document.querySelector("#economy-region-select");
+  const marketSortSelect = document.querySelector("#market-sort-select");
+  const controls = [economyPeriodSelect, currencyPeriodSelect, economyRegionSelect, marketSortSelect].filter(Boolean);
+
+  controls.forEach((control) => {
+    control.disabled = controlsUnavailable;
+    control.setAttribute("aria-disabled", controlsUnavailable ? "true" : "false");
+  });
+
+  document.querySelectorAll?.(".mobile-dashboard-tab").forEach((tab) => {
+    tab.disabled = controlsUnavailable;
+    tab.setAttribute("aria-disabled", controlsUnavailable ? "true" : "false");
+  });
+
+  const note = document.querySelector("#control-availability-note");
+
+  if (note) {
+    const affectedControls = [
+      economyPeriodSelect || currencyPeriodSelect ? "period" : "",
+      economyRegionSelect ? "region" : "",
+      marketSortSelect ? "sort" : "",
+    ].filter(Boolean);
+
+    note.hidden = !controlsUnavailable;
+    note.textContent = `${sentenceCase(humanList(affectedControls))} controls apply when live data is available.`;
+  }
+}
+
 function bindDashboardControls() {
   document.querySelector("#economy-period-select")?.addEventListener("change", (event) => {
     selectedEconomyPeriod = event.target.value;
@@ -1365,7 +1494,7 @@ function bindDashboardControls() {
   document.querySelector("#mobile-dashboard-tabs")?.addEventListener("click", (event) => {
     const tab = event.target.closest("[data-region]");
 
-    if (!tab) {
+    if (!tab || tab.disabled || tab.getAttribute("aria-disabled") === "true") {
       return;
     }
 
@@ -1379,6 +1508,14 @@ function bindDashboardControls() {
     selectedMarketSort = event.target.value;
     renderDashboard();
     announceDashboardStatus(`Market sort changed to ${event.target.selectedOptions[0]?.textContent || event.target.value}.`);
+  });
+
+  document.addEventListener?.("click", (event) => {
+    const retry = event.target.closest?.("[data-refresh-retry]");
+
+    if (retry) {
+      loadLiveSnapshot();
+    }
   });
 }
 
@@ -1524,6 +1661,19 @@ function setHtml(selector, html) {
   setDynamicContent(element, html);
 }
 
+function renderUnavailableCard(title, copy, source, className = "metric-card metric-card-unavailable acadia-metric unavailable-state-card") {
+  return `
+    <article class="${escapeHtml(className)}" aria-label="${escapeHtml(sentenceSummary([title, copy, source]))}">
+      <div class="unavailable-state-icon" aria-hidden="true"><i class="fa-solid fa-circle-exclamation acadia-icon"></i></div>
+      <div class="unavailable-state-copy">
+        <h3>${escapeHtml(title)}</h3>
+        <p>${escapeHtml(copy)}</p>
+        <small>${escapeHtml(source)}</small>
+      </div>
+    </article>
+  `;
+}
+
 function announceDashboardStatus(message) {
   setText("#dashboard-status", message);
 }
@@ -1592,33 +1742,33 @@ function sourceHealthGroups(snapshot) {
     {
       id: "markets",
       label: "Market data",
-      current: "Market data current",
-      caution: "Some market data delayed or missing",
-      unavailable: "Market data unavailable",
+      current: "Market data fully current",
+      caution: "Market data partially available or delayed",
+      unavailable: "Market data is not responding",
       items: snapshot.marketPulse || [],
     },
     {
       id: "economic-releases",
       label: "Economic releases",
-      current: "Economic releases current",
-      caution: "Some economic releases delayed or missing",
-      unavailable: "Economic releases unavailable",
+      current: "Economic releases fully current",
+      caution: "Economic releases partially available, delayed, or stale",
+      unavailable: "Economic releases are not responding",
       items: snapshot.economicHealth || [],
     },
     {
       id: "risk-indicators",
       label: "Risk indicators",
-      current: "Risk indicators current",
-      caution: "Some risk indicators delayed or missing",
-      unavailable: "Risk indicators unavailable",
+      current: "Risk indicators fully current",
+      caution: "Risk indicators partially available, delayed, or stale",
+      unavailable: "Risk indicators are not responding",
       items: snapshot.riskIndicators || [],
     },
     {
       id: "regional-coverage",
       label: "Regional coverage",
-      current: "Regional coverage current",
-      caution: "Some regional growth data delayed or missing",
-      unavailable: "Regional coverage unavailable",
+      current: "Regional coverage fully current",
+      caution: "Regional coverage partially available, delayed, or stale",
+      unavailable: "Regional coverage is not responding",
       items: snapshot.regions || [],
     },
   ].map((group) => ({
@@ -1632,11 +1782,11 @@ function sourceHealthCopy(groups, snapshot) {
   const cautionCount = groups.filter((group) => group.health === "caution").length;
 
   if (unavailableCount === groups.length) {
-    return "Public data is unavailable right now.";
+    return "All live data groups are unavailable, so Mercury cannot produce a source-backed read right now.";
   }
 
   if (snapshot?.status === "partial" || unavailableCount > 0 || cautionCount > 0) {
-    return "Some data groups are delayed, stale, or unavailable.";
+    return "Some data groups are available while others are delayed, stale, or unavailable.";
   }
 
   return "All connected data groups are current.";
@@ -2253,6 +2403,34 @@ function renderOverviewTiles({ economyChange, regionalCards, currencyCardsForVie
     return;
   }
 
+  if (isCompleteLiveUnavailable()) {
+    const copy = unavailableStateCopy();
+
+    setDynamicContent(
+      overviewGrid,
+      `
+        <article class="overview-unavailable-card unavailable-state-card acadia-surface acadia-panel-dense" aria-label="${escapeHtml(sentenceSummary([copy.title, copy.summary, copy.actions]))}">
+          <div class="unavailable-state-icon" aria-hidden="true"><i class="fa-solid fa-plug-circle-xmark acadia-icon"></i></div>
+          <div class="unavailable-state-copy">
+            <h3>${escapeHtml(copy.title)}</h3>
+            <p>${escapeHtml(copy.detail)}</p>
+            <div class="unavailable-state-actions">
+              <button type="button" class="unavailable-state-action" data-refresh-retry>
+                <i class="fa-solid fa-rotate acadia-icon" aria-hidden="true"></i>
+                <span>Retry refresh</span>
+              </button>
+              <a class="unavailable-state-action" href="data.html">
+                <i class="fa-solid fa-table acadia-icon" aria-hidden="true"></i>
+                <span>Data Coverage</span>
+              </a>
+            </div>
+          </div>
+        </article>
+      `,
+    );
+    return;
+  }
+
   const sentiment = sentimentForChange(economyChange);
   const inflation = findMetric(healthCards, "inflation", "Inflation");
   const unemployment = findMetric(healthCards, "unemployment", "Unemployment");
@@ -2332,7 +2510,7 @@ function buildWhatChangedItems(movers, healthCards, commodityCardsForView) {
   const inflation = findMetric(healthCards, "inflation", "Inflation");
   const oil = commodityCardsForView.find((item) => item.id === "oil");
 
-  if (inflation) {
+  if (isInterpretableIndicatorCard(inflation)) {
     items.push({
       label: "Inflation",
       copy: `${inflation.value || "Loading"} with ${inflation.periodChange || metricDeltaLabel(inflation)} change.`,
@@ -2340,7 +2518,7 @@ function buildWhatChangedItems(movers, healthCards, commodityCardsForView) {
     });
   }
 
-  if (oil && !items.some((item) => item.label === "Oil")) {
+  if (hasSourceBackedValue(oil) && Number.isFinite(oil.periodChangeValue) && !items.some((item) => item.label === "Oil")) {
     items.push({
       label: "Oil",
       copy: `${oil.periodChange || metricDeltaLabel(oil)} ${periodPhrase(selectedEconomyPeriod)}, a mixed signal for input costs.`,
@@ -2348,10 +2526,28 @@ function buildWhatChangedItems(movers, healthCards, commodityCardsForView) {
     });
   }
 
-  return items.slice(0, 5);
+  return items.length
+    ? items.slice(0, 5)
+    : [
+        {
+          label: "No source-backed change",
+          copy: "Mercury will summarize changes when live values are available.",
+          tone: "unavailable",
+        },
+      ];
 }
 
 function buildRiskWatchItems(riskCards, healthCards) {
+  if (!hasAnySourceBackedValue([...riskCards, ...healthCards])) {
+    return [
+      {
+        label: "No source-backed risk read",
+        copy: "Risk and rates need live values before Mercury can identify current pressures.",
+        tone: "unavailable",
+      },
+    ];
+  }
+
   const volatility = riskCards.find((item) => item.name === "Volatility") || riskCards[0];
   const credit = riskCards.find((item) => item.name === "Credit");
   const stress = riskCards.find((item) => item.name === "Stress");
@@ -2733,6 +2929,10 @@ function buildOilContextSentence(commodityCardsForView) {
 }
 
 function buildEconomicBrief(change, movers, riskCards, heroCards = [], commodityCardsForView = []) {
+  if (isCompleteLiveUnavailable()) {
+    return "Mercury cannot produce a source-backed economic read right now. Public sources did not return usable values.";
+  }
+
   if (!change) {
     return "Mercury is waiting for enough live data to explain the current economic read.";
   }
@@ -3134,6 +3334,7 @@ function renderDashboard() {
           ? [...regionalCards, ...currencyCardsForView, ...commodityCardsForView]
           : [...regionalCards, ...healthCards].filter(Boolean);
   const economyChange = sectionChange(heroCards);
+  const completeUnavailable = isCompleteLiveUnavailable();
 
   document.body.classList.toggle("dashboard-global", globalView);
   document.body.classList.toggle("dashboard-focused", !globalView);
@@ -3143,17 +3344,29 @@ function renderDashboard() {
   setText("#economy-title", globalView ? "Regional Markets" : `${selectedRegion} Markets`);
 
   if (economyGrid) {
-    setDynamicContent(economyGrid, displayedMarketCards
-      .map((item) => (isDashboardPage() ? { ...item, isOverview: true } : item))
-      .map(renderMetricCard)
-      .join(""));
+    setDynamicContent(economyGrid, completeUnavailable
+      ? renderUnavailableCard(
+          "Regional markets unavailable",
+          "Market cards need live public market values before Mercury can compare regions.",
+          "Yahoo Finance market data",
+        )
+      : displayedMarketCards
+        .map((item) => (isDashboardPage() ? { ...item, isOverview: true } : item))
+        .map(renderMetricCard)
+        .join(""));
   }
 
   if (currencyGrid) {
-    setDynamicContent(currencyGrid, currencyCardsForView
-      .map((item) => (isDashboardPage() ? { ...item, hideChart: true, isOverview: true } : item))
-      .map((item) => renderMetricCard(item))
-      .join(""));
+    setDynamicContent(currencyGrid, completeUnavailable
+      ? renderUnavailableCard(
+          "Currency data unavailable",
+          "Currency support cards need live source-backed values before Mercury can interpret them.",
+          "Yahoo Finance currency data",
+        )
+      : currencyCardsForView
+        .map((item) => (isDashboardPage() ? { ...item, hideChart: true, isOverview: true } : item))
+        .map((item) => renderMetricCard(item))
+        .join(""));
   }
 
   if (commodityGrid) {
@@ -3162,24 +3375,42 @@ function renderDashboard() {
         ? commodityCardsForView.filter((item) => item.id !== "bitcoin")
         : commodityCardsForView;
 
-    setDynamicContent(commodityGrid, commodityGridCards
-      .map((item) => (isDashboardPage() ? { ...item, hideChart: true, isOverview: true } : item))
-      .map((item) => renderMetricCard(item))
-      .join(""));
+    setDynamicContent(commodityGrid, completeUnavailable
+      ? renderUnavailableCard(
+          "Commodity data unavailable",
+          "Commodity support cards need live source-backed values before Mercury can interpret them.",
+          "Yahoo Finance commodity data",
+        )
+      : commodityGridCards
+        .map((item) => (isDashboardPage() ? { ...item, hideChart: true, isOverview: true } : item))
+        .map((item) => renderMetricCard(item))
+        .join(""));
   }
 
   if (digitalAssetsGrid) {
-    setDynamicContent(digitalAssetsGrid, commodityCardsForView
-      .filter((item) => item.id === "bitcoin")
-      .map((item) => renderMetricCard(item))
-      .join(""));
+    setDynamicContent(digitalAssetsGrid, completeUnavailable
+      ? renderUnavailableCard(
+          "Digital asset data unavailable",
+          "Bitcoin support context needs live source-backed values before Mercury can interpret it.",
+          "Yahoo Finance digital asset data",
+        )
+      : commodityCardsForView
+        .filter((item) => item.id === "bitcoin")
+        .map((item) => renderMetricCard(item))
+        .join(""));
   }
 
   if (economicHealthGrid) {
-    setDynamicContent(economicHealthGrid, healthCards
-      .map((item) => (isDashboardPage() ? { ...item, isOverview: true } : item))
-      .map((item) => renderMetricCard(item))
-      .join(""));
+    setDynamicContent(economicHealthGrid, completeUnavailable
+      ? renderUnavailableCard(
+          "Economic releases unavailable",
+          "Economic indicator cards need live official releases before Mercury can interpret them.",
+          "FRED economic releases",
+        )
+      : healthCards
+        .map((item) => (isDashboardPage() ? { ...item, isOverview: true } : item))
+        .map((item) => renderMetricCard(item))
+        .join(""));
   }
 
   updateSectionBadge("#economy-change-badge", economyChange, { includeSentiment: true });
@@ -3195,10 +3426,16 @@ function renderDashboard() {
   renderMarketDrivers(marketHeroCards);
 
   if (riskList) {
-    setDynamicContent(riskList, riskCardsForView
-      .map((item) => (isDashboardPage() ? { ...item, isOverview: true } : item))
-      .map(renderMetricCard)
-      .join(""));
+    setDynamicContent(riskList, completeUnavailable
+      ? renderUnavailableCard(
+          "Risk indicators unavailable",
+          "Risk cards need live public values before Mercury can identify current pressures.",
+          "Yahoo Finance and FRED risk data",
+        )
+      : riskCardsForView
+        .map((item) => (isDashboardPage() ? { ...item, isOverview: true } : item))
+        .map(renderMetricCard)
+        .join(""));
   }
 
   renderOverviewTiles({
@@ -3214,6 +3451,7 @@ function renderDashboard() {
     healthCards,
     commodityCardsForView,
   });
+  syncControlAvailability();
 }
 
 function renderSummaryDrivers(drivers) {
@@ -3404,7 +3642,7 @@ function applyLiveFallback() {
   setText("#global-status-title", "Live data unavailable");
   setText(
     "#summary-copy",
-    "Mercury cannot reach live data in this view. Values stay unavailable instead of using sample figures.",
+    "Mercury cannot reach live data right now. Values stay unavailable instead of using sample figures.",
   );
   setText(".score-value", "0");
   setText(".score-label", "Conditions score");
@@ -3425,17 +3663,17 @@ function applyLiveFallback() {
   setText("#source-coverage-title", "Live data unavailable");
   setText(
     "#source-coverage-copy",
-    "Live data is unavailable in this view. Current values will appear when public sources respond.",
+    "All live data groups are unavailable. Current values will appear when public sources respond.",
   );
   setText("#source-health-score", "0/4");
   setText("#source-health-detail", "Data groups unavailable");
   setHtml(
     "#source-health-list",
     [
-      "Market data unavailable",
-      "Economic releases unavailable",
-      "Risk indicators unavailable",
-      "Regional coverage unavailable",
+      "Market data is not responding",
+      "Economic releases are not responding",
+      "Risk indicators are not responding",
+      "Regional coverage is not responding",
     ]
       .map(
         (label) => `
@@ -3469,7 +3707,7 @@ function applyLiveFallback() {
     sourcePill.classList.add("status-pill-caution");
   }
 
-  announceDashboardStatus("Live dashboard data is unavailable in this view.");
+  announceDashboardStatus("Live dashboard data is unavailable. Mercury cannot produce a source-backed read right now.");
 }
 
 async function loadLiveSnapshot() {
