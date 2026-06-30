@@ -15,7 +15,8 @@
       const storedTheme = window.localStorage.getItem(storageKey);
       return isThemeMode(storedTheme) ? storedTheme : "system";
     } catch (_) {
-      return "system";
+      const currentTheme = root.getAttribute("data-acadia-theme");
+      return isThemeMode(currentTheme) ? currentTheme : "system";
     }
   }
 
