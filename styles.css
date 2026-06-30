@@ -356,6 +356,7 @@ body {
     box-shadow var(--acadia-motion-fast),
     color var(--acadia-motion-fast),
     transform var(--acadia-motion-fast);
+  -webkit-tap-highlight-color: transparent;
 }
 
 .primary-nav-link:hover,
@@ -368,6 +369,19 @@ body {
   color: var(--acadia-color-text);
   outline: 0;
   transform: translateY(-1px);
+}
+
+.primary-nav-link:focus-visible,
+.acadia-nav-item:focus-visible {
+  box-shadow:
+    var(--acadia-shadow-control),
+    var(--acadia-focus-ring);
+}
+
+.primary-nav-link:active,
+.acadia-nav-item:active {
+  background: var(--acadia-color-control);
+  transform: translateY(0);
 }
 
 .primary-nav-link.is-active,
@@ -441,12 +455,25 @@ body {
 .brand-lockup {
   border-radius: var(--acadia-radius-md);
   padding: 0.25rem 0.35rem 0.25rem 0.25rem;
+  transition:
+    background-color var(--acadia-motion-fast),
+    box-shadow var(--acadia-motion-fast),
+    color var(--acadia-motion-fast);
+  -webkit-tap-highlight-color: transparent;
 }
 
 .brand-lockup:hover,
 .brand-lockup:focus-visible {
   background: var(--acadia-color-surface-muted);
   outline: 0;
+}
+
+.brand-lockup:focus-visible {
+  box-shadow: var(--acadia-focus-ring);
+}
+
+.brand-lockup:active {
+  background: var(--acadia-color-control);
 }
 
 .brand-lockup strong {
@@ -646,7 +673,9 @@ body {
   transition:
     background-color var(--acadia-motion-fast),
     box-shadow var(--acadia-motion-fast),
-    color var(--acadia-motion-fast);
+    color var(--acadia-motion-fast),
+    transform var(--acadia-motion-fast);
+  -webkit-tap-highlight-color: transparent;
   width: 2.5rem;
 }
 
@@ -656,9 +685,16 @@ body {
   color: var(--acadia-color-text);
 }
 
+.acadia-icon-action:not(.acadia-theme-toggle):active,
+.refresh-button:active {
+  background: var(--acadia-color-control);
+  transform: translateY(0);
+}
+
 .refresh-button:disabled {
   cursor: progress;
   opacity: 0.56;
+  transform: none;
 }
 
 .page-controls-row {
@@ -969,6 +1005,7 @@ body {
   background: var(--acadia-color-control);
   border: 1px solid var(--acadia-color-control-border);
   border-radius: var(--acadia-radius-md);
+  box-shadow: var(--acadia-shadow-control);
   color: var(--acadia-color-text-muted);
   cursor: pointer;
   display: grid;
@@ -980,9 +1017,12 @@ body {
   padding: 0.42rem 0.62rem;
   text-align: left;
   transition:
-    background var(--acadia-motion-fast),
+    background-color var(--acadia-motion-fast),
     border-color var(--acadia-motion-fast),
-    color var(--acadia-motion-fast);
+    box-shadow var(--acadia-motion-fast),
+    color var(--acadia-motion-fast),
+    transform var(--acadia-motion-fast);
+  -webkit-tap-highlight-color: transparent;
 }
 
 .mobile-dashboard-tab-name,
@@ -1011,12 +1051,20 @@ body {
 .mobile-dashboard-tab:focus-visible {
   background: var(--acadia-color-control-hover);
   border-color: var(--acadia-color-border-strong);
+  box-shadow: var(--acadia-shadow-control);
   color: var(--acadia-color-text);
   outline: 0;
+  transform: translateY(-1px);
 }
 
 .mobile-dashboard-tab:focus-visible {
-  box-shadow: var(--acadia-focus-ring);
+  box-shadow:
+    var(--acadia-shadow-control),
+    var(--acadia-focus-ring);
+}
+
+.mobile-dashboard-tab:active {
+  transform: translateY(0);
 }
 
 .mobile-dashboard-tab.is-active {
@@ -1276,7 +1324,9 @@ body {
   transition:
     border-color var(--acadia-motion-fast),
     box-shadow var(--acadia-motion-fast),
+    color var(--acadia-motion-fast),
     transform var(--acadia-motion-fast);
+  -webkit-tap-highlight-color: transparent;
 }
 
 .overview-tile:hover,
@@ -1285,6 +1335,17 @@ body {
   box-shadow: var(--acadia-shadow-card);
   outline: 0;
   transform: translateY(-1px);
+}
+
+.overview-tile:focus-visible {
+  box-shadow:
+    var(--acadia-shadow-card),
+    var(--acadia-focus-ring);
+}
+
+.overview-tile:active {
+  box-shadow: var(--acadia-shadow-control);
+  transform: translateY(0);
 }
 
 .overview-tile-icon {
@@ -1297,7 +1358,17 @@ body {
   flex: 0 0 auto;
   height: 2.25rem;
   justify-content: center;
+  transition:
+    background-color var(--acadia-motion-fast),
+    border-color var(--acadia-motion-fast),
+    color var(--acadia-motion-fast);
   width: 2.25rem;
+}
+
+.overview-tile:hover .overview-tile-icon,
+.overview-tile:focus-visible .overview-tile-icon {
+  background: color-mix(in srgb, var(--overview-state, var(--muted)) 16%, transparent);
+  border-color: color-mix(in srgb, var(--overview-state, var(--muted)) 30%, transparent);
 }
 
 .overview-tile-copy {

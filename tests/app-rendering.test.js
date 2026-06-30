@@ -458,7 +458,7 @@ test("static pages reference the current mobile dock assets", () => {
     assert.match(html, /<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">/);
     assert.match(html, /<meta name="theme-color" content="#e8eaed" data-acadia-theme-color>/);
     assert.match(html, /theme\.js\?v=20260623-safe-theme/);
-    assert.match(html, /styles\.css\?v=20260621-theme-dock/);
+    assert.match(html, /styles\.css\?v=20260629-interaction-polish/);
     assert.match(html, /app\.js\?v=20260624-coverage-copy/);
     assert.match(html, /class="primary-nav acadia-nav"/);
     assert.match(html, /class="primary-nav acadia-nav acadia-mobile-dock"/);
@@ -475,6 +475,33 @@ test("theme toggle uses a visible Acadia control surface", () => {
   assert.match(
     styles,
     /\.acadia-theme-toggle:focus-visible\s*{[^}]*border-color: var\(--acadia-color-action\);[^}]*var\(--acadia-focus-ring\);/s,
+  );
+});
+
+test("interactive dashboard surfaces keep Acadia focus and pressed states", () => {
+  assert.match(
+    styles,
+    /\.primary-nav-link:focus-visible,\s*\.acadia-nav-item:focus-visible\s*{[^}]*var\(--acadia-focus-ring\);/s,
+  );
+  assert.match(
+    styles,
+    /\.brand-lockup:focus-visible\s*{[^}]*box-shadow: var\(--acadia-focus-ring\);/s,
+  );
+  assert.match(
+    styles,
+    /\.overview-tile:focus-visible\s*{[^}]*var\(--acadia-focus-ring\);/s,
+  );
+  assert.match(
+    styles,
+    /\.overview-tile:active\s*{[^}]*transform: translateY\(0\);/s,
+  );
+  assert.match(
+    styles,
+    /\.mobile-dashboard-tab:focus-visible\s*{[^}]*var\(--acadia-focus-ring\);/s,
+  );
+  assert.match(
+    styles,
+    /\.mobile-dashboard-tab:active\s*{[^}]*transform: translateY\(0\);/s,
   );
 });
 

@@ -241,6 +241,9 @@ Use `8px` or less for normal cards and repeated list items unless a larger conta
 - Period dropdowns use `Today`, `Week`, `Month`, `Year`, and `5 years` labels and should update card deltas,
   sparklines, and section rollups together.
 - Clickable rows and cards should have clear pointer, hover, and keyboard focus states.
+- Repeated dashboard links, header navigation, icon actions, and mobile region tabs should keep the
+  Acadia focus halo and a restrained pressed state; focus should read stronger than hover without
+  changing layout.
 - Loading, no-data, stale-data, and error states should be plain, calm, and useful.
 
 ## Accessibility And Responsiveness
