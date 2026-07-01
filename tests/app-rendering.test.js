@@ -464,7 +464,7 @@ test("static pages reference the current mobile dock assets", () => {
     assert.match(html, /<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">/);
     assert.match(html, /<meta name="theme-color" content="#e8eaed" data-acadia-theme-color>/);
     assert.match(html, /theme\.js\?v=20260623-safe-theme/);
-    assert.match(html, /styles\.css\?v=20260629-interaction-polish/);
+    assert.match(html, /styles\.css\?v=20260701-visual-craft/);
     assert.match(html, /app\.js\?v=20260624-coverage-copy/);
     assert.match(html, /class="primary-nav acadia-nav"/);
     assert.match(html, /class="primary-nav acadia-nav acadia-mobile-dock"/);
