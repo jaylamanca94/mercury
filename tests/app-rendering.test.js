@@ -464,8 +464,8 @@ test("static pages reference the current mobile dock assets", () => {
     assert.match(html, /<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">/);
     assert.match(html, /<meta name="theme-color" content="#e8eaed" data-acadia-theme-color>/);
     assert.match(html, /theme\.js\?v=20260623-safe-theme/);
-    assert.match(html, /styles\.css\?v=20260701-visual-craft/);
-    assert.match(html, /app\.js\?v=20260624-coverage-copy/);
+    assert.match(html, /styles\.css\?v=20260701-source-health/);
+    assert.match(html, /app\.js\?v=20260701-source-health/);
     assert.match(html, /class="primary-nav acadia-nav"/);
     assert.match(html, /class="primary-nav acadia-nav acadia-mobile-dock"/);
     assert.match(html, /<\/header>\s*<nav class="primary-nav acadia-nav acadia-mobile-dock" aria-label="Mercury pages">/);
@@ -1006,6 +1006,9 @@ test("indicators briefing does not interpret loading or unavailable data", () =>
 test("data page summarizes data coverage and source freshness", () => {
   assert.match(dataHtml, /<title>Data Coverage \| Mercury<\/title>/);
   assert.match(dataHtml, /id="view-title" class="acadia-title">Data Coverage<\/h1>/);
+  assert.match(dataHtml, /Current source health/);
+  assert.match(dataHtml, /Configured provider inventory/);
+  assert.match(dataHtml, /Configured sources by signal/);
   assert.match(dataHtml, /id="source-health-score"/);
   assert.match(dataHtml, /id="source-health-list"/);
   assert.match(dataHtml, /id="coverage-summary-list"/);
@@ -1014,6 +1017,7 @@ test("data page summarizes data coverage and source freshness", () => {
   assert.match(dataHtml, /<dt>Regional Growth<\/dt>\s*<dd>World Bank<\/dd>/);
   assert.match(styles, /\.source-health-summary\s*{[^}]*grid-template-columns: minmax\(10rem, 0\.32fr\) minmax\(0, 1fr\);/s);
   assert.match(styles, /\.coverage-summary-list\s*{[^}]*grid-template-columns: repeat\(2, minmax\(0, 1fr\)\);/s);
+  assert.match(styles, /\.economic-health-grid\s*{[^}]*grid-template-columns: repeat\(auto-fit, minmax\(15\.5rem, 1fr\)\);/s);
 
   const context = loadAppContext("data");
   const result = vm.runInContext(
@@ -1038,6 +1042,9 @@ test("data page summarizes data coverage and source freshness", () => {
         detail: document.querySelector("#source-health-detail").textContent,
         copy: document.querySelector("#source-coverage-copy").textContent,
         list: document.querySelector("#source-health-list").innerHTML,
+        healthBusy: document.querySelector("#source-health-list").getAttribute("aria-busy"),
+        coverage: document.querySelector("#coverage-summary-list").innerHTML,
+        coverageBusy: document.querySelector("#coverage-summary-list").getAttribute("aria-busy"),
       });
     `,
     context,
@@ -1045,11 +1052,15 @@ test("data page summarizes data coverage and source freshness", () => {
 
   assert.equal(result.score, "4/4");
   assert.match(result.detail, /4 of 4 data groups available/);
-  assert.equal(result.copy, "All connected data groups are current.");
+  assert.equal(result.copy, "Current source health: all connected data groups are current.");
   assert.match(result.list, /Market data fully current/);
   assert.match(result.list, /Economic releases fully current/);
   assert.match(result.list, /Risk indicators fully current/);
   assert.match(result.list, /Regional coverage fully current/);
+  assert.equal(result.healthBusy, "false");
+  assert.match(result.coverage, /<dt>Markets<\/dt>\s*<dd>Yahoo Finance<\/dd>/);
+  assert.match(result.coverage, /<dt>Regional Growth<\/dt>\s*<dd>World Bank<\/dd>/);
+  assert.equal(result.coverageBusy, "false");
 });
 
 test("live fallback clears stale live status pill classes", () => {
@@ -1093,8 +1104,10 @@ test("dashboard fallback uses one source-unavailable read and completes busy sta
         insight: document.querySelector("#hero-insight").textContent,
         badge: document.querySelector("#economy-change-badge").textContent,
         overview: document.querySelector("#overview-tiles-grid").innerHTML,
+        economy: document.querySelector("#economy-grid").innerHTML,
         changed: document.querySelector("#what-changed-list").innerHTML,
         risk: document.querySelector("#risk-watch-list").innerHTML,
+        checked: document.querySelector("#last-updated-pill").textContent,
         periodDisabled: document.querySelector("#economy-period-select").disabled,
         periodAriaDisabled: document.querySelector("#economy-period-select").getAttribute("aria-disabled"),
         regionDisabled: document.querySelector("#economy-region-select").disabled,
@@ -1115,6 +1128,8 @@ test("dashboard fallback uses one source-unavailable read and completes busy sta
   assert.match(result.overview, /Retry refresh/);
   assert.match(result.overview, /Data Coverage/);
   assert.doesNotMatch(result.overview, /Oil<\/span>[\s\S]*Unavailable/);
+  assert.equal(result.economy, "");
+  assert.match(result.checked, /^Checked .* unavailable$/);
   assert.match(result.changed, /No source-backed change/);
   assert.match(result.risk, /No source-backed risk read/);
   assert.equal(result.periodDisabled, true);
@@ -1197,18 +1212,25 @@ test("data coverage fallback explains whole-product unavailability plainly", () 
         detail: document.querySelector("#source-health-detail").textContent,
         list: document.querySelector("#source-health-list").innerHTML,
         busy: document.querySelector("#source-health-list").getAttribute("aria-busy"),
+        providerCopy: document.querySelector("#source-provider-copy").textContent,
+        coverage: document.querySelector("#coverage-summary-list").innerHTML,
+        coverageBusy: document.querySelector("#coverage-summary-list").getAttribute("aria-busy"),
       });
     `,
     context,
   );
 
-  assert.match(result.copy, /All live data groups are unavailable/);
+  assert.match(result.copy, /Current source health: all live data groups are unavailable/);
   assert.equal(result.score, "0/4");
   assert.match(result.detail, /Data groups unavailable/);
   assert.match(result.list, /Market data is not responding/);
   assert.match(result.list, /Regional coverage is not responding/);
   assert.doesNotMatch(result.copy, /in this view/);
   assert.equal(result.busy, "false");
+  assert.match(result.providerCopy, /not currently healthy live feeds/);
+  assert.match(result.coverage, /<dt>Markets<\/dt>\s*<dd>Yahoo Finance<\/dd>/);
+  assert.match(result.coverage, /<dt>Regional Growth<\/dt>\s*<dd>World Bank<\/dd>/);
+  assert.equal(result.coverageBusy, "false");
 });
 
 test("World Bank regional fetch retries transient failures", async () => {
@@ -1332,6 +1354,18 @@ test("hero mover pills sit between the insight and chart", () => {
       /id="hero-sparkline"[\s\S]*id="hero-movers"/,
     );
   }
+});
+
+test("mobile dashboard read comes before region shortcuts", () => {
+  assert.match(
+    indexHtml,
+    /id="mobile-dashboard-title"[\s\S]*id="mobile-dashboard-copy"[\s\S]*id="mobile-dashboard-tabs"/,
+  );
+  assert.doesNotMatch(
+    indexHtml,
+    /id="mobile-dashboard-tabs"[\s\S]*id="mobile-dashboard-title"/,
+  );
+  assert.match(styles, /\.mobile-dashboard-tabs\s*{[^}]*overflow-x: auto;/s);
 });
 
 test("hero trend chart uses period-filtered visible cards", () => {

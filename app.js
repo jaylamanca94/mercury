@@ -359,6 +359,31 @@ function unavailableStateCopy() {
   };
 }
 
+const PROVIDER_INVENTORY = [
+  ["Markets", "Yahoo Finance"],
+  ["Commodities", "Yahoo Finance"],
+  ["Currencies", "Yahoo Finance"],
+  ["Inflation", "FRED"],
+  ["GDP", "FRED"],
+  ["Unemployment", "FRED"],
+  ["Regional Growth", "World Bank"],
+];
+
+function renderProviderInventory() {
+  return PROVIDER_INVENTORY.map(
+    ([signal, provider]) => `
+      <div>
+        <dt>${escapeHtml(signal)}</dt>
+        <dd>${escapeHtml(provider)}</dd>
+      </div>
+    `,
+  ).join("");
+}
+
+function renderProviderInventorySummary() {
+  setHtml("#coverage-summary-list", renderProviderInventory());
+}
+
 function trendClass(tone) {
   return `trend-label trend-${tone}`;
 }
@@ -1521,7 +1546,7 @@ function bindDashboardControls() {
     const retry = event.target.closest?.("[data-refresh-retry]");
 
     if (retry) {
-      loadLiveSnapshot();
+      loadLiveSnapshot({ isRetry: true });
     }
   });
 }
@@ -1787,16 +1812,20 @@ function sourceHealthGroups(snapshot) {
 function sourceHealthCopy(groups, snapshot) {
   const unavailableCount = groups.filter((group) => group.health === "unavailable").length;
   const cautionCount = groups.filter((group) => group.health === "caution").length;
+  const unavailableLabels = groups
+    .filter((group) => group.health === "unavailable")
+    .map((group) => group.label.toLowerCase());
 
   if (unavailableCount === groups.length) {
-    return "All live data groups are unavailable, so Mercury cannot produce a source-backed read right now.";
+    return "Current source health: all live data groups are unavailable, so Mercury cannot produce a source-backed read right now.";
   }
 
   if (snapshot?.status === "partial" || unavailableCount > 0 || cautionCount > 0) {
-    return "Some data groups are available while others are delayed, stale, or unavailable.";
+    const unavailableDetail = unavailableLabels.length ? ` Unavailable groups: ${humanList(unavailableLabels)}.` : "";
+    return `Current source health: some data groups are available while others are delayed, stale, or unavailable.${unavailableDetail}`;
   }
 
-  return "All connected data groups are current.";
+  return "Current source health: all connected data groups are current.";
 }
 
 function renderSourceHealth(snapshot) {
@@ -1826,6 +1855,7 @@ function renderSourceHealth(snapshot) {
       .join(""),
   );
   setText("#source-coverage-copy", sourceHealthCopy(groups, snapshot));
+  renderProviderInventorySummary();
 }
 
 function formatReleaseWindow(releaseRange) {
@@ -3345,6 +3375,7 @@ function renderDashboard() {
 
   document.body.classList.toggle("dashboard-global", globalView);
   document.body.classList.toggle("dashboard-focused", !globalView);
+  document.body.classList.toggle("dashboard-unavailable", completeUnavailable);
   if (currentPage === "markets" || currentPage === "dashboard") {
     setText("#view-title", currentPage === "markets" ? `${viewTitle(selectedRegion)} Markets` : viewTitle(selectedRegion));
   }
@@ -3352,7 +3383,9 @@ function renderDashboard() {
 
   if (economyGrid) {
     setDynamicContent(economyGrid, completeUnavailable
-      ? renderUnavailableCard(
+      ? isDashboardPage()
+        ? ""
+        : renderUnavailableCard(
           "Regional markets unavailable",
           "Market cards need live public market values before Mercury can compare regions.",
           "Yahoo Finance market data",
@@ -3365,7 +3398,9 @@ function renderDashboard() {
 
   if (currencyGrid) {
     setDynamicContent(currencyGrid, completeUnavailable
-      ? renderUnavailableCard(
+      ? isDashboardPage()
+        ? ""
+        : renderUnavailableCard(
           "Currency data unavailable",
           "Currency support cards need live source-backed values before Mercury can interpret them.",
           "Yahoo Finance currency data",
@@ -3383,7 +3418,9 @@ function renderDashboard() {
         : commodityCardsForView;
 
     setDynamicContent(commodityGrid, completeUnavailable
-      ? renderUnavailableCard(
+      ? isDashboardPage()
+        ? ""
+        : renderUnavailableCard(
           "Commodity data unavailable",
           "Commodity support cards need live source-backed values before Mercury can interpret them.",
           "Yahoo Finance commodity data",
@@ -3409,7 +3446,9 @@ function renderDashboard() {
 
   if (economicHealthGrid) {
     setDynamicContent(economicHealthGrid, completeUnavailable
-      ? renderUnavailableCard(
+      ? isDashboardPage()
+        ? ""
+        : renderUnavailableCard(
           "Economic releases unavailable",
           "Economic indicator cards need live official releases before Mercury can interpret them.",
           "FRED economic releases",
@@ -3434,7 +3473,9 @@ function renderDashboard() {
 
   if (riskList) {
     setDynamicContent(riskList, completeUnavailable
-      ? renderUnavailableCard(
+      ? isDashboardPage()
+        ? ""
+        : renderUnavailableCard(
           "Risk indicators unavailable",
           "Risk cards need live public values before Mercury can identify current pressures.",
           "Yahoo Finance and FRED risk data",
@@ -3588,7 +3629,7 @@ function applyLiveSnapshot(snapshot) {
   renderSourceHealth(snapshot);
   setText(
     "#source-provider-copy",
-    "Financial data provided by Yahoo Finance. Economic releases provided by FRED. Regional growth provided by World Bank.",
+    "Configured provider inventory: financial data references Yahoo Finance, economic releases reference FRED, and regional growth references World Bank.",
   );
   setText("#latest-release-window", formatReleaseWindow(snapshot.releaseRange));
   setText("#live-last-checked", formatCheckedAt(snapshot.checkedAt));
@@ -3634,9 +3675,12 @@ function markUnavailable(items) {
   }));
 }
 
-function applyLiveFallback() {
+function applyLiveFallback(options = {}) {
   const sourcePill = document.querySelector("#macro-connection-pill");
   const freshnessPill = document.querySelector("#sample-set-date");
+  const checkedAt = options.checkedAt || new Date().toISOString();
+  const checkedTime = formatCheckedTime(checkedAt);
+  const checkedLabel = options.isRetry ? `Checked again ${checkedTime}: unavailable` : `Checked ${checkedTime}: unavailable`;
 
   resetStatusPillClasses(sourcePill);
   resetStatusPillClasses(freshnessPill);
@@ -3665,12 +3709,12 @@ function applyLiveFallback() {
   );
   setText(".score-drivers p", "What shapes this score");
   setText(".score-drivers small", "Current values need live data.");
-  setText("#last-updated-pill", "Live data unavailable");
+  setText("#last-updated-pill", checkedLabel);
   setText("#economy-title", "Economy");
   setText("#source-coverage-title", "Live data unavailable");
   setText(
     "#source-coverage-copy",
-    "All live data groups are unavailable. Current values will appear when public sources respond.",
+    "Current source health: all live data groups are unavailable. Current values will appear when public sources respond.",
   );
   setText("#source-health-score", "0/4");
   setText("#source-health-detail", "Data groups unavailable");
@@ -3696,13 +3740,22 @@ function applyLiveFallback() {
   setText("#live-last-checked", "Unavailable");
   setText("#source-rail-freshness", "Unavailable");
   setText("#snapshot-freshness", "Unavailable");
-  setText("#source-rail-checked", "Unavailable");
+  setText("#source-rail-checked", formatCheckedAt(checkedAt));
   setText("#refresh-schedule", "Unavailable");
   setText("#source-rail-refresh", "Unavailable");
   setText("#market-source-status", "Unavailable");
+  setText("#market-source-detail", "Configured provider: Yahoo Finance market, commodity, currency, and crypto data");
   setText("#macro-source-status", "Unavailable");
+  setText("#macro-source-detail", "Configured provider: FRED official economic releases");
   setText("#risk-source-status", "Unavailable");
+  setText("#risk-source-detail", "Configured providers: Yahoo Finance market risk and FRED stress index");
   setText("#regional-source-status", "Unavailable");
+  setText("#regional-source-detail", "Configured provider: World Bank annual GDP growth");
+  setText(
+    "#source-provider-copy",
+    "Configured provider inventory: Yahoo Finance, FRED, and World Bank remain the source references, not currently healthy live feeds.",
+  );
+  renderProviderInventorySummary();
   setText("#sample-set-date", "Data status");
   freshnessPill?.classList.add("status-pill-caution");
   setHtml(
@@ -3714,15 +3767,18 @@ function applyLiveFallback() {
     sourcePill.classList.add("status-pill-caution");
   }
 
-  announceDashboardStatus("Live dashboard data is unavailable. Mercury cannot produce a source-backed read right now.");
+  setText("#live-last-checked", formatCheckedAt(checkedAt));
+  announceDashboardStatus(`${checkedLabel}. Mercury cannot produce a source-backed read right now.`);
 }
 
-async function loadLiveSnapshot() {
+async function loadLiveSnapshot(options = {}) {
   const refreshButton = document.querySelector("#refresh-data-button");
   const dashboardShell = document.querySelector("#main-content");
+  const checkedAt = new Date().toISOString();
+  const isRetry = Boolean(options.isRetry);
 
   dashboardShell?.setAttribute("aria-busy", "true");
-  announceDashboardStatus("Checking latest dashboard data.");
+  announceDashboardStatus(isRetry ? "Checking latest dashboard data again." : "Checking latest dashboard data.");
 
   if (refreshButton) {
     refreshButton.disabled = true;
@@ -3730,7 +3786,7 @@ async function loadLiveSnapshot() {
   }
 
   if (window.location.protocol === "file:") {
-    applyLiveFallback();
+    applyLiveFallback({ checkedAt, isRetry });
     if (refreshButton) {
       refreshButton.disabled = false;
       refreshButton.innerHTML = '<i class="fa-solid fa-rotate" aria-hidden="true"></i><span class="visually-hidden">Refresh data</span>';
@@ -3753,7 +3809,7 @@ async function loadLiveSnapshot() {
     const snapshot = await response.json();
     applyLiveSnapshot(snapshot);
   } catch (error) {
-    applyLiveFallback();
+    applyLiveFallback({ checkedAt, isRetry });
   } finally {
     if (refreshButton) {
       refreshButton.disabled = false;
@@ -3767,4 +3823,4 @@ syncControlValues();
 bindDashboardControls();
 renderDashboard();
 loadLiveSnapshot();
-document.querySelector("#refresh-data-button")?.addEventListener("click", loadLiveSnapshot);
+document.querySelector("#refresh-data-button")?.addEventListener("click", () => loadLiveSnapshot({ isRetry: true }));

@@ -1035,11 +1035,12 @@ body {
 
 .mobile-dashboard-tabs {
   border-bottom: 1px solid var(--acadia-color-border);
+  border-top: 1px solid var(--acadia-color-border);
   display: flex;
   gap: 0.45rem;
   margin-inline: -0.25rem;
   overflow-x: auto;
-  padding: 0 0.25rem 0.8rem;
+  padding: 0.8rem 0.25rem;
   scrollbar-width: none;
 }
 
@@ -1836,6 +1837,10 @@ body {
   display: none;
 }
 
+.mercury-page-dashboard.dashboard-unavailable .economy-section {
+  display: none;
+}
+
 .metric-grid,
 .indicator-list {
   display: grid;
@@ -1865,7 +1870,7 @@ body {
 }
 
 .economic-health-grid {
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(15.5rem, 1fr));
 }
 
 .metric-card,

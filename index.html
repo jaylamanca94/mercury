@@ -17,7 +17,7 @@
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
       referrerpolicy="no-referrer"
     >
-    <link rel="stylesheet" href="styles.css?v=20260701-visual-craft">
+    <link rel="stylesheet" href="styles.css?v=20260701-source-health">
   </head>
   <body class="mercury-app mercury-page-dashboard" data-mercury-page="dashboard">
     <a class="skip-link" href="#main-content">Skip to dashboard</a>
@@ -72,7 +72,6 @@
           <div id="hero-sparkline" class="hero-chart-panel" aria-label="Global economy trend"></div>
         </div>
         <article id="mobile-dashboard-card" class="mobile-dashboard-card" aria-labelledby="mobile-dashboard-title">
-          <div id="mobile-dashboard-tabs" class="mobile-dashboard-tabs" aria-label="Economy region shortcuts"></div>
           <div class="mobile-dashboard-heading">
             <div>
               <h2 id="mobile-dashboard-title">Checking conditions</h2>
@@ -83,6 +82,7 @@
           <p id="mobile-dashboard-copy" class="mobile-dashboard-copy">
             Mercury is checking source-backed market, support, and economic indicators.
           </p>
+          <div id="mobile-dashboard-tabs" class="mobile-dashboard-tabs" aria-label="Economy region shortcuts"></div>
           <div id="mobile-dashboard-chart" class="mobile-dashboard-chart" aria-label="Mobile economy trend"></div>
           <div class="mobile-dashboard-axis" aria-hidden="true">
             <span id="mobile-axis-start">Start</span>
@@ -291,17 +291,17 @@
         <div class="freshness-copy">
           <div class="section-heading compact-section-heading">
             <div>
-              <span class="acadia-kicker">Live data</span>
+              <span class="acadia-kicker">Current source health</span>
               <h2 id="source-coverage-title" class="acadia-title">Data coverage</h2>
             </div>
           </div>
           <p id="source-coverage-copy" class="acadia-text-muted">
-            Mercury is checking public data releases and will show the latest available dates when
-            the snapshot loads.
+            Mercury is checking current source health and will show freshness and last checked state
+            when the snapshot loads.
           </p>
           <p id="source-provider-copy" class="source-provider-copy acadia-text-muted">
-            Financial data provided by Yahoo Finance. Economic releases provided by FRED. Regional
-            growth provided by World Bank.
+            Configured provider inventory: Yahoo Finance, FRED, and World Bank remain source
+            references separate from current live availability.
           </p>
           <dl class="snapshot-meta" aria-label="Live snapshot status">
             <div>
@@ -367,6 +367,6 @@
       </section>
     </main>
 
-    <script src="app.js?v=20260624-coverage-copy"></script>
+    <script src="app.js?v=20260701-source-health"></script>
   </body>
 </html>

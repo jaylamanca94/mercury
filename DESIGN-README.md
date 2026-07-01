@@ -75,6 +75,9 @@ Relay is the current Acadia reference for mobile product judgment. Mercury shoul
 - Each phone screen should answer one economy question, such as what changed, where, and how fresh the source is.
 - Keep indicator, region/period context, freshness, interpretation, and the next action attached in each signal row or card.
 - Let focused filter, region, and indicator-detail flows use bottom-friendly controls and reduce competing chrome when it improves completion.
+- On the mobile dashboard, the current read or unavailable-state explanation should appear before
+  disabled region shortcuts; shortcuts can remain available in live and partial states when they
+  change source-backed content.
 - Never let sample, delayed, stale, unavailable, or fallback values look like live economic evidence.
 - Keep mobile summaries calm and decision-oriented; deeper source diagnostics and model caveats belong on detail pages.
 
@@ -198,6 +201,11 @@ Use `8px` or less for normal cards and repeated list items unless a larger conta
   economic scores.
 - Make stale, delayed, sample, fallback, no-data, and unavailable data visually distinct.
 - Source-backed sections must update their own freshness labels from the current source response, including source observation time and dashboard fetch timing when those are different.
+- Data Coverage must keep current source health separate from configured provider inventory. Provider
+  names such as Yahoo Finance, FRED, and World Bank describe source references unless the current
+  source-health list says those groups returned usable values.
+- Dynamic source-health and provider-inventory regions must clear `aria-busy` after fallback, partial,
+  and live renders so assistive technology receives the settled state.
 - Show exact daily release dates for daily market/risk data, month-level labels for monthly economic releases, and year-level labels for annual regional releases.
 - In compact metric cards, omit routine dates for current daily market data. Show daily dates when
   freshness is delayed or stale, and keep month/year labels for slower official releases.
@@ -210,6 +218,9 @@ Use `8px` or less for normal cards and repeated list items unless a larger conta
 - Static sample sections must show both the sample-set date and the live refresh state so users do not confuse prototype values with current data.
 - Live-source sections must update their own freshness labels without implying that unrelated sample sections are live.
 - If `/api/live-snapshot` is unavailable, the dashboard should show unavailable source states instead of sample economic values.
+- In a complete live-data outage, the dashboard should lead with one page-level unavailable
+  explanation, keep retry and Data Coverage available, and avoid repeating low-value unavailable
+  metric grids after that explanation.
 
 ## Icons
 

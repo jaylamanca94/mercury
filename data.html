@@ -10,7 +10,7 @@
     <link rel="manifest" href="site.webmanifest">
     <script src="theme.js?v=20260623-safe-theme"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" referrerpolicy="no-referrer">
-    <link rel="stylesheet" href="styles.css?v=20260701-visual-craft">
+    <link rel="stylesheet" href="styles.css?v=20260701-source-health">
   </head>
   <body class="mercury-app mercury-page-detail mercury-page-data" data-mercury-page="data">
     <a class="skip-link" href="#main-content">Skip to data coverage</a>
@@ -53,7 +53,7 @@
             <h1 id="view-title" class="acadia-title">Data Coverage</h1>
           </div>
           <p class="hero-insight acadia-text-muted">
-            See which public sources are available, how fresh they are, and what each signal uses.
+            See current source health, configured provider coverage, freshness, and last checked state.
           </p>
         </div>
         <div class="page-controls-row" aria-label="Data coverage controls">
@@ -74,7 +74,7 @@
         <div class="freshness-copy">
           <div class="section-heading compact-section-heading">
             <div>
-              <span class="acadia-kicker">Live data</span>
+              <span class="acadia-kicker">Current source health</span>
               <h2 id="source-coverage-title" class="acadia-title">Data Coverage</h2>
             </div>
           </div>
@@ -96,13 +96,13 @@
             </ul>
           </div>
           <p id="source-provider-copy" class="source-provider-copy acadia-text-muted">
-            Financial data provided by Yahoo Finance. Economic releases provided by FRED. Regional
-            growth provided by World Bank.
+            Configured provider inventory: financial data references Yahoo Finance, economic
+            releases reference FRED, and regional growth references World Bank.
           </p>
           <div class="coverage-summary" aria-labelledby="coverage-summary-title">
             <div class="coverage-summary-heading">
-              <span class="acadia-kicker">Coverage summary</span>
-              <h3 id="coverage-summary-title">Sources by signal</h3>
+              <span class="acadia-kicker">Provider inventory</span>
+              <h3 id="coverage-summary-title">Configured sources by signal</h3>
             </div>
             <dl id="coverage-summary-list" class="coverage-summary-list" aria-live="polite" aria-busy="true">
               <div>
@@ -199,6 +199,6 @@
       </section>
     </main>
 
-    <script src="app.js?v=20260624-coverage-copy"></script>
+    <script src="app.js?v=20260701-source-health"></script>
   </body>
 </html>
