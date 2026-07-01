@@ -1417,54 +1417,61 @@ function updateSectionBadge(selector, change, options = {}) {
   element.classList.add(`trend-${change.tone}`);
 }
 
+function dashboardControls() {
+  return {
+    economyPeriod: document.querySelector("#economy-period-select"),
+    currencyPeriod: document.querySelector("#currency-period-select"),
+    economyRegion: document.querySelector("#economy-region-select"),
+    marketSort: document.querySelector("#market-sort-select"),
+  };
+}
+
+function presentControls(controls) {
+  return Object.values(controls).filter(Boolean);
+}
+
+function setControlUnavailableState(control, unavailable) {
+  control.disabled = unavailable;
+  control.setAttribute("aria-disabled", unavailable ? "true" : "false");
+}
+
 function syncControlValues() {
-  const economyPeriodSelect = document.querySelector("#economy-period-select");
-  const currencyPeriodSelect = document.querySelector("#currency-period-select");
-  const economyRegionSelect = document.querySelector("#economy-region-select");
-  const marketSortSelect = document.querySelector("#market-sort-select");
+  const controls = dashboardControls();
 
-  if (economyPeriodSelect) {
-    economyPeriodSelect.value = selectedEconomyPeriod;
+  if (controls.economyPeriod) {
+    controls.economyPeriod.value = selectedEconomyPeriod;
   }
 
-  if (currencyPeriodSelect) {
-    currencyPeriodSelect.value = selectedCurrencyPeriod;
+  if (controls.currencyPeriod) {
+    controls.currencyPeriod.value = selectedCurrencyPeriod;
   }
 
-  if (economyRegionSelect) {
-    economyRegionSelect.value = selectedRegion;
+  if (controls.economyRegion) {
+    controls.economyRegion.value = selectedRegion;
   }
 
-  if (marketSortSelect) {
-    marketSortSelect.value = selectedMarketSort;
+  if (controls.marketSort) {
+    controls.marketSort.value = selectedMarketSort;
   }
 }
 
 function syncControlAvailability() {
   const controlsUnavailable = isCompleteLiveUnavailable();
-  const economyPeriodSelect = document.querySelector("#economy-period-select");
-  const currencyPeriodSelect = document.querySelector("#currency-period-select");
-  const economyRegionSelect = document.querySelector("#economy-region-select");
-  const marketSortSelect = document.querySelector("#market-sort-select");
-  const controls = [economyPeriodSelect, currencyPeriodSelect, economyRegionSelect, marketSortSelect].filter(Boolean);
+  const controls = dashboardControls();
 
-  controls.forEach((control) => {
-    control.disabled = controlsUnavailable;
-    control.setAttribute("aria-disabled", controlsUnavailable ? "true" : "false");
-  });
+  presentControls(controls).forEach((control) => setControlUnavailableState(control, controlsUnavailable));
 
   document.querySelectorAll?.(".mobile-dashboard-tab").forEach((tab) => {
-    tab.disabled = controlsUnavailable;
-    tab.setAttribute("aria-disabled", controlsUnavailable ? "true" : "false");
+    setControlUnavailableState(tab, controlsUnavailable);
   });
 
   const note = document.querySelector("#control-availability-note");
 
   if (note) {
     const affectedControls = [
-      economyPeriodSelect || currencyPeriodSelect ? "period" : "",
-      economyRegionSelect ? "region" : "",
-      marketSortSelect ? "sort" : "",
+      controls.economyPeriod || controls.currencyPeriod ? "period" : "",
+      controls.economyRegion ? "region" : "",
+      controls.marketSort ? "sort" : "",
     ].filter(Boolean);
 
     note.hidden = !controlsUnavailable;

@@ -1096,8 +1096,11 @@ test("dashboard fallback uses one source-unavailable read and completes busy sta
         changed: document.querySelector("#what-changed-list").innerHTML,
         risk: document.querySelector("#risk-watch-list").innerHTML,
         periodDisabled: document.querySelector("#economy-period-select").disabled,
+        periodAriaDisabled: document.querySelector("#economy-period-select").getAttribute("aria-disabled"),
         regionDisabled: document.querySelector("#economy-region-select").disabled,
+        regionAriaDisabled: document.querySelector("#economy-region-select").getAttribute("aria-disabled"),
         sortDisabled: document.querySelector("#market-sort-select").disabled,
+        sortAriaDisabled: document.querySelector("#market-sort-select").getAttribute("aria-disabled"),
         controlNoteHidden: document.querySelector("#control-availability-note").hidden,
         overviewBusy: document.querySelector("#overview-tiles-grid").getAttribute("aria-busy"),
         economyBusy: document.querySelector("#economy-grid").getAttribute("aria-busy"),
@@ -1115,11 +1118,45 @@ test("dashboard fallback uses one source-unavailable read and completes busy sta
   assert.match(result.changed, /No source-backed change/);
   assert.match(result.risk, /No source-backed risk read/);
   assert.equal(result.periodDisabled, true);
+  assert.equal(result.periodAriaDisabled, "true");
   assert.equal(result.regionDisabled, true);
+  assert.equal(result.regionAriaDisabled, "true");
   assert.equal(result.sortDisabled, true);
+  assert.equal(result.sortAriaDisabled, "true");
   assert.equal(result.controlNoteHidden, false);
   assert.equal(result.overviewBusy, "false");
   assert.equal(result.economyBusy, "false");
+});
+
+test("dashboard controls re-enable when live data returns after fallback", () => {
+  const context = loadAppContext();
+  const result = vm.runInContext(
+    `
+      applyLiveFallback();
+      marketPulse = [
+        { name: "U.S. Total", value: "$100.00", change: "+1.0%", sourceStatus: "Source-backed", viewGroup: "economy", region: "Global", marketRole: "global-allocation", freshness: { status: "current" } },
+      ];
+      syncControlAvailability();
+      ({
+        periodDisabled: document.querySelector("#economy-period-select").disabled,
+        periodAriaDisabled: document.querySelector("#economy-period-select").getAttribute("aria-disabled"),
+        regionDisabled: document.querySelector("#economy-region-select").disabled,
+        regionAriaDisabled: document.querySelector("#economy-region-select").getAttribute("aria-disabled"),
+        sortDisabled: document.querySelector("#market-sort-select").disabled,
+        sortAriaDisabled: document.querySelector("#market-sort-select").getAttribute("aria-disabled"),
+        controlNoteHidden: document.querySelector("#control-availability-note").hidden,
+      });
+    `,
+    context,
+  );
+
+  assert.equal(result.periodDisabled, false);
+  assert.equal(result.periodAriaDisabled, "false");
+  assert.equal(result.regionDisabled, false);
+  assert.equal(result.regionAriaDisabled, "false");
+  assert.equal(result.sortDisabled, false);
+  assert.equal(result.sortAriaDisabled, "false");
+  assert.equal(result.controlNoteHidden, true);
 });
 
 test("supports fallback avoids interpreted support and pressure language", () => {
