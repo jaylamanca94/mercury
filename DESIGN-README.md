@@ -66,6 +66,9 @@ Mercury now treats `../Acadia` as the shared coded design-system baseline. Befor
 - Keep local exceptions narrow: source freshness semantics, market/economic movement colors, sparklines, score calculations, and dashboard content order may remain Mercury-specific.
 - Do not use state-colored card borders, top rails, or outlines on metric cards. Match Acadia's neutral metric surface; show movement through text labels, deltas, and sparklines instead.
 - Metric cards can use quiet state-tinted icon wells and chart backgrounds, but card borders should stay neutral until hover/focus so the dashboard does not read like a trading terminal.
+- Ticker metric cards follow the Figma `Property 1=Default` component: white card, 4px radius,
+  1px `#e2e3e5` border, 8px padding, subtle 2px/4px shadow, two compact 12px text rows, and a
+  52px `#f8f9fa` graph well. Do not add an icon well to ticker cards.
 - If a Mercury pattern becomes useful for another product, graduate the neutral part into Acadia and keep Mercury's economy-specific wording and data treatment here.
 
 ### Relay-Informed Mobile Standard

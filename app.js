@@ -2302,7 +2302,7 @@ function smoothSparklinePath(points) {
 function renderMetricCard(metric) {
   const cardTone = metricCardTone(metric);
   const sparklinePoints = metric.periodPoints || metric.points;
-  const hasChart = !metric.hideChart;
+  const hasChart = true;
   const metricCaption = metricCaptionLabel(metric);
   const metricContext = displayMetricContext(metric);
   const accessibleSummary = metricAccessibleSummary(metric);
@@ -2325,19 +2325,15 @@ function renderMetricCard(metric) {
 
   return `
     <article class="metric-card acadia-metric metric-card-${cardTone}${hasChart ? " metric-card-has-chart" : ""}${metric.isWide ? " metric-card-wide" : ""}" title="${escapeHtml(metricTooltip(metric))}" aria-label="${escapeHtml(accessibleSummary)}">
-      <div class="metric-top">
-        <div>
-          <div class="metric-title-line">
-            <h3 class="metric-name">${escapeHtml(displayMetricName(metric))}</h3>
-            ${metricCaption ? `<span class="metric-caption">${escapeHtml(metricCaption)}</span>` : ""}
-          </div>
-          ${metricContext ? `<p class="metric-context">${escapeHtml(metricContext)}</p>` : ""}
+      <div class="metric-content">
+        <div class="metric-row metric-title-line">
+          <h3 class="metric-name">${escapeHtml(displayMetricName(metric))}</h3>
+          ${metricCaption ? `<span class="metric-caption">${escapeHtml(metricCaption)}</span>` : ""}
         </div>
-        <span class="metric-icon acadia-metric-icon" aria-hidden="true"><i class="${escapeHtml(metricIconClasses(metric))} acadia-icon"></i></span>
-      </div>
-      <div class="metric-value-row">
-        <p class="${metricValueClass(metric.value)} acadia-metric-value">${escapeHtml(metric.value)}</p>
-        <span class="metric-delta acadia-metric-delta${deltaState} trend-text-${escapeHtml(cardTone)}">${escapeHtml(metricDeltaLabel(metric))}</span>
+        <div class="metric-row metric-detail-line">
+          <span class="metric-delta acadia-metric-delta${deltaState} trend-text-${escapeHtml(cardTone)}">${escapeHtml(metricDeltaLabel(metric))}</span>
+          <p class="${metricValueClass(metric.value)} acadia-metric-value">${escapeHtml(metric.value)}</p>
+        </div>
       </div>
       ${
         hasChart

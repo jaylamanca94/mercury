@@ -1875,20 +1875,18 @@ body {
 
 .metric-card,
 .acadia-metric {
-  --metric-icon-reserve: 2.25rem;
   --metric-state: var(--neutral-state);
-  align-content: start;
-  background:
-    linear-gradient(135deg, color-mix(in srgb, var(--metric-state) 6%, transparent), transparent 46%),
-    var(--acadia-color-surface-muted);
-  border: 1px solid var(--acadia-color-border);
-  border-radius: var(--acadia-radius-md);
-  box-shadow: var(--acadia-shadow-control);
+  align-content: stretch;
+  background: #ffffff;
+  border: 1px solid #e2e3e5;
+  border-radius: var(--acadia-radius-sm);
+  box-shadow: 2px 4px 4px rgba(0, 0, 0, 0.08);
   display: grid;
-  gap: var(--acadia-space-1);
+  gap: 0;
+  grid-template-rows: minmax(3.25rem, auto) 3.25rem auto;
   min-height: 7.5rem;
   overflow: hidden;
-  padding: var(--acadia-section-padding-dense);
+  padding: 0.5rem;
   position: relative;
   transition:
     border-color var(--acadia-motion-fast),
@@ -1897,10 +1895,8 @@ body {
 }
 
 .metric-card:hover {
-  border-color: var(--acadia-color-border-strong);
-  box-shadow:
-    var(--acadia-shadow-control),
-    var(--acadia-shadow-surface-highlight);
+  border-color: #d5d8dc;
+  box-shadow: 2px 5px 7px rgba(0, 0, 0, 0.1);
   transform: translateY(-1px);
 }
 
@@ -1926,43 +1922,51 @@ body {
   --metric-state: var(--muted-soft);
 }
 
-.metric-top {
-  align-items: start;
-  display: flex;
-  gap: 0.75rem;
-  justify-content: space-between;
+.metric-content {
+  align-content: start;
+  display: grid;
+  gap: 0.25rem;
   min-width: 0;
-  padding-right: var(--metric-icon-reserve);
+  padding: 0.5rem;
 }
 
-.metric-top > div {
-  min-width: 0;
-}
-
-.metric-title-line {
-  align-items: baseline;
-  display: flex;
-  flex-wrap: wrap;
+.metric-row {
+  align-items: center;
+  display: grid;
   gap: 0.5rem;
+  grid-template-columns: minmax(0, max-content) minmax(0, 1fr);
+  min-height: 1rem;
   min-width: 0;
+}
+
+.metric-title-line,
+.metric-detail-line {
+  min-width: 0;
+}
+
+.metric-name,
+.metric-caption,
+.metric-delta,
+.acadia-metric-delta,
+.metric-value,
+.acadia-metric-value {
+  font-size: 0.75rem;
+  line-height: 1rem;
 }
 
 .metric-name {
-  font-size: 0.875rem;
-  line-height: 1rem;
+  color: #2b2f32;
+  font-weight: 700;
   margin: 0;
 }
 
-.metric-name {
-  color: var(--acadia-color-text);
-  font-weight: 800;
-}
-
 .metric-caption {
-  color: var(--acadia-color-text-muted);
-  font-size: 0.875rem;
-  font-weight: 800;
-  line-height: 1rem;
+  color: #2b2f32;
+  font-weight: 700;
+  justify-self: end;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  text-align: right;
 }
 
 .metric-context {
@@ -1977,95 +1981,50 @@ body {
   overflow-wrap: anywhere;
 }
 
-.metric-icon,
-.acadia-metric-icon {
-  align-items: center;
-  background: color-mix(in srgb, var(--metric-state) 10%, var(--acadia-color-surface));
-  border: 1px solid color-mix(in srgb, var(--metric-state) 18%, var(--acadia-color-border));
-  border-radius: var(--acadia-radius-md);
-  color: color-mix(in srgb, var(--acadia-color-text-muted) 58%, var(--metric-state));
-  display: inline-flex;
-  height: 2.5rem;
-  justify-content: center;
-  pointer-events: none;
-  position: absolute;
-  right: 0.75rem;
-  top: 0.75rem;
-  transition:
-    background-color var(--acadia-motion-fast),
-    border-color var(--acadia-motion-fast),
-    color var(--acadia-motion-fast);
-  width: 2.5rem;
-}
-
-.metric-card:hover .metric-icon,
-.metric-card:hover .acadia-metric-icon {
-  background: color-mix(in srgb, var(--metric-state) 14%, var(--acadia-color-surface));
-  border: 1px solid color-mix(in srgb, var(--metric-state) 26%, var(--acadia-color-border));
-  color: var(--metric-state);
-}
-
-.metric-icon .acadia-icon {
-  font-size: 1rem;
-  height: 1rem;
-  width: 1rem;
-}
-
-.metric-value-row {
-  align-items: center;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  min-width: 0;
-}
-
 .metric-value,
 .acadia-metric-value {
-  color: var(--acadia-color-text);
-  font-size: clamp(1.35rem, 2vw, 1.65rem);
-  font-weight: 800;
-  line-height: 1.2;
+  color: #2b2f32;
+  font-weight: 400;
+  justify-self: end;
   margin: 0;
   overflow-wrap: anywhere;
+  text-align: right;
 }
 
 .metric-value-long {
-  font-size: clamp(1.2rem, 1.8vw, 1.45rem);
+  font-size: 0.75rem;
 }
 
 .metric-delta,
 .acadia-metric-delta {
-  align-items: center;
-  color: var(--mercury-positive);
-  display: inline-flex;
-  font-size: 0.875rem;
-  font-weight: 800;
-  gap: 0.35rem;
-  line-height: 1.2;
-  white-space: nowrap;
+  color: #6c757d;
+  font-weight: 400;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  white-space: normal;
 }
 
 .acadia-metric-delta.is-danger {
-  color: var(--mercury-negative);
+  color: #6c757d;
 }
 
 .acadia-metric-delta.is-warning {
-  color: var(--acadia-color-warning);
+  color: #6c757d;
 }
 
 .metric-chart-panel {
   align-items: stretch;
-  background: transparent;
+  background: #f8f9fa;
   border: 0;
-  border-radius: 0;
+  border-radius: var(--acadia-radius-sm);
   box-shadow: none;
-  color: var(--muted);
+  color: #c4c8cb;
   display: flex;
-  height: 4.25rem;
+  height: 3.25rem;
   justify-content: center;
-  margin: 0.125rem 0 0;
+  margin: 0;
   overflow: hidden;
-  padding: 0.125rem 0 0;
+  padding: 0;
   width: 100%;
 }
 
@@ -2080,15 +2039,15 @@ body {
   stroke: currentColor;
   stroke-linecap: round;
   stroke-linejoin: round;
-  stroke-width: 2.25;
+  stroke-width: 1.5;
   vector-effect: non-scaling-stroke;
 }
 
 .sparkline-baseline {
   fill: none;
-  opacity: 0.62;
-  stroke: color-mix(in srgb, var(--acadia-color-text-muted) 54%, transparent);
-  stroke-dasharray: 1 5;
+  opacity: 0.55;
+  stroke: #c4c8cb;
+  stroke-dasharray: 1 4;
   stroke-linecap: round;
   stroke-width: 1.4;
   vector-effect: non-scaling-stroke;
@@ -2096,7 +2055,7 @@ body {
 
 .sparkline-area {
   fill: currentColor;
-  opacity: 0.16;
+  opacity: 0.1;
   stroke: none;
 }
 
@@ -2106,12 +2065,13 @@ body {
 
 .sparkline-empty {
   align-items: center;
-  color: var(--muted);
+  color: #c4c8cb;
   display: flex;
-  font-size: 0.75rem;
-  font-weight: 700;
+  font-size: 0.875rem;
+  font-weight: 400;
   justify-content: center;
   line-height: 1rem;
+  text-transform: uppercase;
 }
 
 .metric-footer {
@@ -2531,22 +2491,16 @@ body {
   }
 
   .mercury-page-dashboard .metric-card {
-    gap: 0.45rem;
-    min-height: 5.75rem;
-    padding: 0.875rem;
+    min-height: 7.5rem;
+    padding: 0.5rem;
   }
 
   .mercury-page-dashboard .metric-chart-panel {
-    height: 2.375rem;
+    height: 3.25rem;
   }
 
   .mercury-page-dashboard .metric-footer {
     display: none;
-  }
-
-  .mercury-page-dashboard .metric-value,
-  .mercury-page-dashboard .acadia-metric-value {
-    font-size: 1.2rem;
   }
 
   .mercury-page-dashboard .freshness-band {

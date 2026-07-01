@@ -694,7 +694,7 @@ test("global regional cards show proxy tickers as inline captions", () => {
   assert.doesNotMatch(html, /Vanguard S&amp;P 500 ETF<\/p>/);
 });
 
-test("global region cards use specific earth icons", () => {
+test("global region cards use ticker captions without icon wells", () => {
   const context = loadAppContext();
   const html = vm.runInContext(
     `
@@ -747,12 +747,13 @@ test("global region cards use specific earth icons", () => {
     context,
   );
 
-  assert.match(html, /fa-solid fa-earth-americas acadia-icon/);
-  assert.match(html, /fa-solid fa-earth-europe acadia-icon/);
-  assert.match(html, /fa-solid fa-earth-asia acadia-icon/);
+  assert.match(html, /<span class="metric-caption">VOO<\/span>/);
+  assert.match(html, /<span class="metric-caption">VGK<\/span>/);
+  assert.match(html, /<span class="metric-caption">VPL<\/span>/);
+  assert.doesNotMatch(html, /metric-icon/);
 });
 
-test("core market cards use category icons and hide proxy subtitles", () => {
+test("core market cards use Figma ticker rows and hide proxy subtitles", () => {
   const context = loadAppContext();
   const html = vm.runInContext(
     `
@@ -794,12 +795,13 @@ test("core market cards use category icons and hide proxy subtitles", () => {
     context,
   );
 
-  assert.match(html, /fa-building/);
-  assert.match(html, /fa-shop/);
   assert.match(html, /title="S&amp;P 500 - VOO - Vanguard S&amp;P 500 ETF"/);
   assert.match(html, /title="Small Cap - VSMAX - Vanguard Small-Cap Index Fund"/);
+  assert.match(html, /class="metric-row metric-title-line"/);
+  assert.match(html, /class="metric-row metric-detail-line"/);
   assert.match(html, /<span class="metric-caption">VOO<\/span>/);
   assert.match(html, /<span class="metric-caption">VSMAX<\/span>/);
+  assert.doesNotMatch(html, /metric-icon/);
   assert.doesNotMatch(html, /class="metric-context">Vanguard S&amp;P 500 ETF/);
   assert.doesNotMatch(html, /class="metric-context">Vanguard Small-Cap Index Fund/);
 });
@@ -1279,7 +1281,7 @@ test("World Bank regional fetch retries transient failures", async () => {
   }
 });
 
-test("bitcoin card uses the bitcoin brand icon", () => {
+test("bitcoin card uses ticker caption without an icon well", () => {
   const context = loadAppContext();
   const html = vm.runInContext(
     `
@@ -1302,9 +1304,9 @@ test("bitcoin card uses the bitcoin brand icon", () => {
     context,
   );
 
-  assert.match(html, /class="fa-brands fa-bitcoin acadia-icon"/);
-  assert.doesNotMatch(html, /fa-solid fa-brands/);
-  assert.doesNotMatch(html, /fa-coins/);
+  assert.match(html, /<span class="metric-caption">BTC<\/span>/);
+  assert.doesNotMatch(html, /metric-icon/);
+  assert.doesNotMatch(html, /fa-brands fa-bitcoin/);
 });
 
 test("hero insight explains sentiment and top movers", () => {
@@ -1684,18 +1686,25 @@ test("sparklines render as smooth full-width card charts", () => {
     vm.runInContext("smoothSparklinePath([{ x: 0, y: 38 }, { x: 180, y: 4 }])", context),
     /^M 0\.0 38\.0 C 60\.0 38\.0 120\.0 4\.0 180\.0 4\.0$/,
   );
-  assert.match(styles, /\.metric-chart-panel\s*{[^}]*background: transparent;/s);
+  assert.match(styles, /\.metric-card,\s*\.acadia-metric\s*{[^}]*background: #ffffff;/s);
+  assert.match(styles, /\.metric-card,\s*\.acadia-metric\s*{[^}]*border: 1px solid #e2e3e5;/s);
+  assert.match(styles, /\.metric-card,\s*\.acadia-metric\s*{[^}]*border-radius: var\(--acadia-radius-sm\);/s);
+  assert.match(styles, /\.metric-card,\s*\.acadia-metric\s*{[^}]*box-shadow: 2px 4px 4px rgba\(0, 0, 0, 0\.08\);/s);
+  assert.match(styles, /\.metric-card,\s*\.acadia-metric\s*{[^}]*padding: 0\.5rem;/s);
+  assert.match(styles, /\.metric-chart-panel\s*{[^}]*background: #f8f9fa;/s);
   assert.match(styles, /\.metric-chart-panel\s*{[^}]*border: 0;/s);
-  assert.match(styles, /\.metric-chart-panel\s*{[^}]*height: 4\.25rem;/s);
-  assert.match(styles, /\.metric-chart-panel\s*{[^}]*margin: 0\.125rem 0 0;/s);
+  assert.match(styles, /\.metric-chart-panel\s*{[^}]*height: 3\.25rem;/s);
+  assert.match(styles, /\.metric-chart-panel\s*{[^}]*margin: 0;/s);
   assert.match(styles, /\.metric-chart-panel\s*{[^}]*width: 100%;/s);
-  assert.doesNotMatch(styles, /padding-right: calc\(var\(--acadia-section-padding-dense\) \+ var\(--metric-icon-reserve\)\);/);
-  assert.match(styles, /\.metric-top\s*{[^}]*padding-right: var\(--metric-icon-reserve\);/s);
+  assert.doesNotMatch(styles, /metric-icon/);
+  assert.doesNotMatch(styles, /metric-top/);
+  assert.match(styles, /\.metric-content\s*{[^}]*padding: 0\.5rem;/s);
+  assert.match(styles, /\.metric-row\s*{[^}]*grid-template-columns: minmax\(0, max-content\) minmax\(0, 1fr\);/s);
   assert.match(styles, /\.metric-card-has-chart \.metric-footer\s*{[^}]*border-top: 0;/s);
   assert.match(styles, /\.sparkline\s*{[^}]*height: 100%;/s);
-  assert.match(styles, /\.sparkline-line\s*{[^}]*stroke-width: 2\.25;/s);
-  assert.match(styles, /\.sparkline-baseline\s*{[^}]*stroke-dasharray: 1 5;/s);
-  assert.match(styles, /\.sparkline-area\s*{[^}]*opacity: 0\.16;/s);
+  assert.match(styles, /\.sparkline-line\s*{[^}]*stroke-width: 1\.5;/s);
+  assert.match(styles, /\.sparkline-baseline\s*{[^}]*stroke-dasharray: 1 4;/s);
+  assert.match(styles, /\.sparkline-area\s*{[^}]*opacity: 0\.1;/s);
 });
 
 test("metric cards do not expose unavailable previous values", () => {
@@ -1733,15 +1742,16 @@ test("stable and mixed visual states stay neutral", () => {
   assert.match(styles, /\.metric-card-up\s*{\s*--metric-state: var\(--mercury-positive\);/);
   assert.match(styles, /\.metric-card-stable,\s*\.metric-card-mixed\s*{\s*--metric-state: var\(--neutral-state\);/);
   assert.match(styles, /\.trend-stable,\s*\.trend-mixed\s*{\s*color: var\(--muted\);/);
-  assert.match(styles, /\.acadia-metric-delta\.is-danger\s*{\s*color: var\(--mercury-negative\);/);
+  assert.match(styles, /\.acadia-metric-delta\.is-danger\s*{\s*color: #6c757d;/);
   assert.match(styles, /\.view-change\.trend-up\s*{[^}]*background: color-mix\(in srgb, var\(--mercury-positive\) 14%, transparent\);/s);
   assert.match(styles, /\.view-change\.trend-down,\s*\.view-change\.trend-caution\s*{[^}]*background: color-mix\(in srgb, var\(--mercury-negative\) 14%, transparent\);/s);
 });
 
-test("metric cards use Acadia surfaces instead of state-colored borders", () => {
+test("metric cards use the Figma ticker surface instead of state-colored borders", () => {
   assert.doesNotMatch(styles, /\.metric-card::before/);
   assert.doesNotMatch(styles, /border-color: color-mix\(in srgb, var\(--metric-state\)/);
-  assert.match(styles, /\.metric-icon,\s*\.acadia-metric-icon\s*{[^}]*var\(--acadia-color-text-muted\)/s);
+  assert.doesNotMatch(styles, /metric-icon/);
+  assert.match(styles, /\.metric-card,\s*\.acadia-metric\s*{[^}]*border: 1px solid #e2e3e5;/s);
 });
 
 test("Acadia header wrapper preserves balanced desktop layout", () => {
