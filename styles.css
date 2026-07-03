@@ -1616,6 +1616,11 @@ body {
   --support-state: var(--muted-soft);
 }
 
+.support-signal-card-combined {
+  grid-column: 1 / -1;
+  min-height: 0;
+}
+
 .support-signal-heading {
   align-items: center;
   display: flex;
@@ -1838,6 +1843,12 @@ body {
 }
 
 .mercury-page-dashboard.dashboard-unavailable .economy-section {
+  display: none;
+}
+
+.mercury-page-supports.dashboard-unavailable .currency-section,
+.mercury-page-supports.dashboard-unavailable .commodity-section,
+.mercury-page-supports.dashboard-unavailable .digital-assets-section {
   display: none;
 }
 
@@ -2480,6 +2491,20 @@ body {
     grid-column: 9 / 13;
   }
 
+  .mercury-page-dashboard.dashboard-unavailable .overview-tiles,
+  .mercury-page-dashboard.dashboard-unavailable .briefing-grid,
+  .mercury-page-dashboard.dashboard-unavailable .data-section {
+    grid-column: 1 / -1;
+  }
+
+  .mercury-page-dashboard.dashboard-unavailable .freshness-band {
+    grid-template-columns: minmax(0, 0.95fr) minmax(18rem, 0.55fr);
+  }
+
+  .mercury-page-dashboard.dashboard-unavailable .source-health-summary {
+    grid-template-columns: minmax(9rem, 0.26fr) minmax(0, 1fr);
+  }
+
   .mercury-page-dashboard .metric-grid,
   .mercury-page-dashboard .indicator-list,
   .mercury-page-dashboard.dashboard-global .economy-grid,
@@ -2697,6 +2722,7 @@ body {
   .dashboard-shell {
     gap: 1rem;
     padding-bottom: calc(6.5rem + env(safe-area-inset-bottom));
+    scroll-padding-block: 5.75rem calc(7.75rem + env(safe-area-inset-bottom));
   }
 
   .mercury-page-dashboard .dashboard-shell {
@@ -2999,6 +3025,33 @@ body {
 
   .overview-tiles-grid > .overview-unavailable-card {
     flex-basis: min(92vw, 25rem);
+  }
+
+  .mercury-page-dashboard.dashboard-unavailable .overview-tiles-grid {
+    display: grid;
+    margin-inline: 0;
+    overflow: visible;
+    padding-inline: 0;
+  }
+
+  .mercury-page-dashboard.dashboard-unavailable .overview-tiles-grid > .overview-unavailable-card {
+    flex-basis: auto;
+    width: 100%;
+  }
+
+  .mercury-page-data .source-health-score {
+    gap: 0.35rem;
+    padding: 0.8rem;
+  }
+
+  .mercury-page-data .source-health-list li,
+  .mercury-page-data .coverage-summary-list div,
+  .mercury-page-data .snapshot-meta div {
+    padding: 0.7rem;
+  }
+
+  .mercury-page-data .source-provider-copy {
+    margin-top: 0.1rem;
   }
 
   .mercury-page-markets .market-drivers-grid > * {

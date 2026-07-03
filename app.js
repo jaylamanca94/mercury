@@ -384,6 +384,14 @@ function renderProviderInventorySummary() {
   setHtml("#coverage-summary-list", renderProviderInventory());
 }
 
+function primaryViewTitle() {
+  if (currentPage === "markets") return "Markets";
+  if (currentPage === "supports") return "Market Supports";
+  if (currentPage === "indicators") return "Indicators";
+  if (currentPage === "data") return "Data Coverage";
+  return "Global Economy";
+}
+
 function trendClass(tone) {
   return `trend-label trend-${tone}`;
 }
@@ -1135,9 +1143,9 @@ function renderSupportBriefing(cards) {
       ? cards.map(renderSupportSignalCard).join("")
       : renderUnavailableCard(
           "Market supports unavailable",
-          "Currency, commodity, and digital asset values need live source data before Mercury can interpret support conditions.",
-          "Yahoo Finance market support data",
-          "support-signal-card support-signal-card-unavailable acadia-surface acadia-panel-dense unavailable-state-card",
+          "Currencies, commodities, and digital assets need source-backed values before Mercury can interpret support conditions.",
+          "Configured source group: Yahoo Finance market support data",
+          "support-signal-card support-signal-card-unavailable support-signal-card-combined acadia-surface acadia-panel-dense unavailable-state-card",
         ));
   }
 
@@ -1384,7 +1392,7 @@ function renderMobileDashboardCard(cards, change) {
   );
   card.classList.add(`mobile-dashboard-card-${change?.tone || "unavailable"}`);
   card.setAttribute("data-freshness", freshness.tone);
-  setHtml("#mobile-dashboard-tabs", renderMobileRegionTabs());
+  setHtml("#mobile-dashboard-tabs", completeUnavailable ? "" : renderMobileRegionTabs());
   setText("#mobile-dashboard-title", title);
   setText("#mobile-dashboard-comparison", comparison);
   setText("#mobile-dashboard-copy", copy);
@@ -1404,7 +1412,6 @@ function updateHeroInsight(cards, change) {
   if (completeUnavailable) {
     const copy = unavailableStateCopy();
 
-    setText("#view-title", copy.title);
     setText("#hero-insight", `${copy.summary} ${copy.detail} ${copy.actions}`);
     setHtml("#hero-sparkline", "");
     setHtml("#hero-movers", "");
@@ -2897,7 +2904,7 @@ function renderIndicatorBriefing(healthCards, riskCards) {
   const driversList = document.querySelector("#indicator-drivers-list");
   const drivers = buildIndicatorDriverItems(healthCards, riskCards);
 
-  setText("#view-title", "Economic Indicators");
+  setText("#view-title", primaryViewTitle());
   setText("#hero-insight", buildIndicatorRead(healthCards));
   setHtml("#hero-movers", renderHeroMovers(drivers.map((item) => item.card).filter(Boolean)));
   setHtml("#hero-sparkline", "");
@@ -3372,9 +3379,7 @@ function renderDashboard() {
   document.body.classList.toggle("dashboard-global", globalView);
   document.body.classList.toggle("dashboard-focused", !globalView);
   document.body.classList.toggle("dashboard-unavailable", completeUnavailable);
-  if (currentPage === "markets" || currentPage === "dashboard") {
-    setText("#view-title", currentPage === "markets" ? `${viewTitle(selectedRegion)} Markets` : viewTitle(selectedRegion));
-  }
+  setText("#view-title", primaryViewTitle());
   setText("#economy-title", globalView ? "Regional Markets" : `${selectedRegion} Markets`);
 
   if (economyGrid) {
@@ -3394,7 +3399,7 @@ function renderDashboard() {
 
   if (currencyGrid) {
     setDynamicContent(currencyGrid, completeUnavailable
-      ? isDashboardPage()
+      ? isDashboardPage() || currentPage === "supports"
         ? ""
         : renderUnavailableCard(
           "Currency data unavailable",
@@ -3414,7 +3419,7 @@ function renderDashboard() {
         : commodityCardsForView;
 
     setDynamicContent(commodityGrid, completeUnavailable
-      ? isDashboardPage()
+      ? isDashboardPage() || currentPage === "supports"
         ? ""
         : renderUnavailableCard(
           "Commodity data unavailable",
@@ -3429,7 +3434,9 @@ function renderDashboard() {
 
   if (digitalAssetsGrid) {
     setDynamicContent(digitalAssetsGrid, completeUnavailable
-      ? renderUnavailableCard(
+      ? currentPage === "supports"
+        ? ""
+        : renderUnavailableCard(
           "Digital asset data unavailable",
           "Bitcoin support context needs live source-backed values before Mercury can interpret it.",
           "Yahoo Finance digital asset data",
@@ -3621,7 +3628,7 @@ function applyLiveSnapshot(snapshot) {
   setText("#economy-title", "Economy");
   setText("#risk-title", "Risk and confidence");
   setText("#global-title", "Regional growth");
-  setText("#source-coverage-title", "Data Coverage");
+  setText("#source-coverage-title", "Current Source Health");
   renderSourceHealth(snapshot);
   setText(
     "#source-provider-copy",
@@ -3707,7 +3714,7 @@ function applyLiveFallback(options = {}) {
   setText(".score-drivers small", "Current values need live data.");
   setText("#last-updated-pill", checkedLabel);
   setText("#economy-title", "Economy");
-  setText("#source-coverage-title", "Live data unavailable");
+  setText("#source-coverage-title", "Current Source Health");
   setText(
     "#source-coverage-copy",
     "Current source health: all live data groups are unavailable. Current values will appear when public sources respond.",
@@ -3733,7 +3740,7 @@ function applyLiveFallback(options = {}) {
       .join(""),
   );
   setText("#latest-release-window", "Unavailable");
-  setText("#live-last-checked", "Unavailable");
+  setText("#live-last-checked", options.isRetry ? `Checked again ${formatCheckedAt(checkedAt)}` : formatCheckedAt(checkedAt));
   setText("#source-rail-freshness", "Unavailable");
   setText("#snapshot-freshness", "Unavailable");
   setText("#source-rail-checked", formatCheckedAt(checkedAt));
@@ -3763,7 +3770,6 @@ function applyLiveFallback(options = {}) {
     sourcePill.classList.add("status-pill-caution");
   }
 
-  setText("#live-last-checked", formatCheckedAt(checkedAt));
   announceDashboardStatus(`${checkedLabel}. Mercury cannot produce a source-backed read right now.`);
 }
 

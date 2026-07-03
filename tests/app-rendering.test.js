@@ -568,7 +568,7 @@ test("markets page adds contextual key drivers for global and focused regions", 
     context,
   );
 
-  assert.equal(result.global.title, "Global Economy Markets");
+  assert.equal(result.global.title, "Markets");
   assert.equal(result.global.driversTitle, "Key Drivers This Week");
   assert.equal(result.global.kicker, "Regions");
   assert.match(result.global.drivers, /1st Region/);
@@ -581,7 +581,7 @@ test("markets page adds contextual key drivers for global and focused regions", 
   assert.match(result.global.drivers, /United States is positive \(\+2\.3%\), but trailing Asia momentum/);
   assert.doesNotMatch(result.global.drivers, /Technology/);
   assert.match(result.global.insight, /led by Asia/);
-  assert.equal(result.focused.title, "United States Economy Markets");
+  assert.equal(result.focused.title, "Markets");
   assert.equal(result.focused.driversTitle, "Key Drivers This Week");
   assert.equal(result.focused.kicker, "Drivers");
   assert.equal(result.focused.economyTitle, "United States Markets");
@@ -964,7 +964,7 @@ test("indicators page adds economic read, drivers, and interpretation", () => {
     context,
   );
 
-  assert.equal(result.title, "Economic Indicators");
+  assert.equal(result.title, "Indicators");
   assert.match(result.hero, /Economic releases are mixed\./);
   assert.match(result.read, /GDP growth improved to 1\.6%\./);
   assert.match(result.read, /Unemployment is unchanged at 4\.3%\./);
@@ -1109,6 +1109,7 @@ test("dashboard fallback uses one source-unavailable read and completes busy sta
         economy: document.querySelector("#economy-grid").innerHTML,
         changed: document.querySelector("#what-changed-list").innerHTML,
         risk: document.querySelector("#risk-watch-list").innerHTML,
+        mobileTabs: document.querySelector("#mobile-dashboard-tabs").innerHTML,
         checked: document.querySelector("#last-updated-pill").textContent,
         periodDisabled: document.querySelector("#economy-period-select").disabled,
         periodAriaDisabled: document.querySelector("#economy-period-select").getAttribute("aria-disabled"),
@@ -1124,7 +1125,7 @@ test("dashboard fallback uses one source-unavailable read and completes busy sta
     context,
   );
 
-  assert.equal(result.title, "Live data unavailable");
+  assert.equal(result.title, "Global Economy");
   assert.match(result.insight, /cannot produce a source-backed read right now/);
   assert.equal(result.badge, "No live read");
   assert.match(result.overview, /Retry refresh/);
@@ -1134,6 +1135,7 @@ test("dashboard fallback uses one source-unavailable read and completes busy sta
   assert.match(result.checked, /^Checked .* unavailable$/);
   assert.match(result.changed, /No source-backed change/);
   assert.match(result.risk, /No source-backed risk read/);
+  assert.equal(result.mobileTabs, "");
   assert.equal(result.periodDisabled, true);
   assert.equal(result.periodAriaDisabled, "true");
   assert.equal(result.regionDisabled, true);
@@ -1143,6 +1145,25 @@ test("dashboard fallback uses one source-unavailable read and completes busy sta
   assert.equal(result.controlNoteHidden, false);
   assert.equal(result.overviewBusy, "false");
   assert.equal(result.economyBusy, "false");
+});
+
+test("retry fallback confirms a fresh unavailable check in existing status surfaces", () => {
+  const context = loadAppContext("data");
+  const result = vm.runInContext(
+    `
+      applyLiveFallback({ checkedAt: "2026-07-03T15:45:00.000Z", isRetry: true });
+      ({
+        checked: document.querySelector("#last-updated-pill").textContent,
+        lastChecked: document.querySelector("#live-last-checked").textContent,
+        sourceCopy: document.querySelector("#source-coverage-copy").textContent,
+      });
+    `,
+    context,
+  );
+
+  assert.match(result.checked, /^Checked again .* unavailable$/);
+  assert.match(result.lastChecked, /^Checked again /);
+  assert.match(result.sourceCopy, /all live data groups are unavailable/);
 });
 
 test("dashboard controls re-enable when live data returns after fallback", () => {
@@ -1187,6 +1208,8 @@ test("supports fallback avoids interpreted support and pressure language", () =>
         signals: document.querySelector("#support-signals-grid").innerHTML,
         pressures: document.querySelector("#support-pressure-list").innerHTML,
         currency: document.querySelector("#currency-grid").innerHTML,
+        commodity: document.querySelector("#commodity-grid").innerHTML,
+        digital: document.querySelector("#digital-assets-grid").innerHTML,
         signalsBusy: document.querySelector("#support-signals-grid").getAttribute("aria-busy"),
       });
     `,
@@ -1196,8 +1219,11 @@ test("supports fallback avoids interpreted support and pressure language", () =>
   assert.match(result.insight, /Waiting for enough live support data/);
   assert.match(result.brief, /cannot interpret support conditions/);
   assert.match(result.signals, /Market supports unavailable/);
+  assert.match(result.signals, /Currencies, commodities, and digital assets/);
   assert.match(result.pressures, /No source-backed pressure read/);
-  assert.match(result.currency, /Currency data unavailable/);
+  assert.equal(result.currency, "");
+  assert.equal(result.commodity, "");
+  assert.equal(result.digital, "");
   assert.doesNotMatch(result.brief, /quiet|supportive|mixed/i);
   assert.doesNotMatch(result.pressures, /None elevated/);
   assert.equal(result.signalsBusy, "false");
@@ -1885,5 +1911,9 @@ test("mobile dock clears the device safe area", () => {
   assert.match(
     styles,
     /@media \(max-width: 767\.98px\)[\s\S]*\.dashboard-shell\s*{[^}]*padding-bottom: calc\(6\.5rem \+ env\(safe-area-inset-bottom\)\);/s,
+  );
+  assert.match(
+    styles,
+    /@media \(max-width: 767\.98px\)[\s\S]*\.dashboard-shell\s*{[^}]*scroll-padding-block: 5\.75rem calc\(7\.75rem \+ env\(safe-area-inset-bottom\)\);/s,
   );
 });

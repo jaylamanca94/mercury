@@ -224,6 +224,15 @@ Use `8px` or less for normal cards and repeated list items unless a larger conta
 - In a complete live-data outage, the dashboard should lead with one page-level unavailable
   explanation, keep retry and Data Coverage available, and avoid repeating low-value unavailable
   metric grids after that explanation.
+- Page `h1` labels remain destination identities in live, partial, and unavailable states:
+  `Global Economy`, `Markets`, `Market Supports`, `Indicators`, and `Data Coverage`. Source-state
+  copy belongs in badges, status cards, source-health rows, or explanatory copy, not as a page title.
+- Data Coverage should distinguish the destination title from the current health section. The
+  current health section may explain that live data is unavailable, but its heading should stay
+  source-health oriented and the configured provider inventory should remain separate.
+- Market Supports should use one combined unavailable-state pass for currencies, commodities, and
+  digital assets during a complete outage; lower support grids return only when source-backed values
+  are available.
 
 ## Icons
 
@@ -271,6 +280,9 @@ Use `8px` or less for normal cards and repeated list items unless a larger conta
 - Keep text readable in both light and dark mode.
 - Ensure layouts work across desktop, tablet, and mobile.
 - Avoid text overflow, cramped controls, and overlapping UI.
+- Mobile persistent chrome must not cover recovery actions, Data Coverage links, source-health
+  status, provider inventory, or final cards; keep bottom padding and scroll padding aligned with
+  the floating dock and safe-area inset.
 - Do not rely on color alone for positive/negative/risk/confidence states.
 
 ## Utility Guidance

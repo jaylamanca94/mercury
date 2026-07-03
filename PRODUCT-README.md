@@ -269,6 +269,10 @@ Future opportunities:
   do not imply live availability during an outage.
 - During a complete live-data outage, Mercury keeps refresh available and confirms each retry through
   the visible checked/unavailable status instead of adding a separate recovery flow.
+- Complete live-data outages preserve page identity across Dashboard, Markets, Market Supports,
+  Indicators, and Data Coverage; `Live data unavailable` is a source state, not the destination.
+- Market Supports consolidates complete-outage copy into one combined currencies, commodities, and
+  digital-assets status pass instead of repeating near-identical unavailable support sections.
 - Freshness labels are rule-based guardrails by cadence, not official release calendars. They should
   be refined when Mercury adopts provider-specific release schedules.
 - The current breadth score is a simple visible-indicator aggregation and should be refined before
