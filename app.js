@@ -352,7 +352,7 @@ function isCompleteLiveUnavailable() {
 function unavailableStateCopy() {
   return {
     title: "Live data unavailable",
-    badge: "No live read",
+    badge: "Unavailable",
     summary: "Mercury cannot produce a source-backed read right now.",
     detail: "Public sources did not return usable values. Existing source names and coverage rules remain trustworthy; economic interpretation will return when the sources respond.",
     actions: "Retry refresh, check Data Coverage, or wait for public sources to respond.",
@@ -804,6 +804,20 @@ function renderMarketDrivers(cards) {
     driversTitle.textContent = marketDriverTitle();
   }
 
+  if (isCompleteLiveUnavailable() && currentPage === "markets") {
+    setDynamicContent(
+      driversGrid,
+      renderUnavailableActionCard(
+        "The market read needs live source-backed values before Mercury can compare drivers, regions, or returns.",
+        {
+          source: "Configured source group: Yahoo Finance market data",
+          className: "market-driver-card market-driver-card-unavailable market-driver-card-combined acadia-surface acadia-panel-dense unavailable-state-card",
+        },
+      ),
+    );
+    return;
+  }
+
   setDynamicContent(driversGrid, drivers.length
     ? drivers.map((card, index) => renderMarketDriverCard(card, index, drivers)).join("")
     : renderUnavailableCard(
@@ -1141,11 +1155,12 @@ function renderSupportBriefing(cards) {
   if (signalsGrid) {
     setDynamicContent(signalsGrid, hasSupportValues && cards.length
       ? cards.map(renderSupportSignalCard).join("")
-      : renderUnavailableCard(
-          "Market supports unavailable",
+      : renderUnavailableActionCard(
           "Currencies, commodities, and digital assets need source-backed values before Mercury can interpret support conditions.",
-          "Configured source group: Yahoo Finance market support data",
-          "support-signal-card support-signal-card-unavailable support-signal-card-combined acadia-surface acadia-panel-dense unavailable-state-card",
+          {
+            source: "Configured source group: Yahoo Finance market support data",
+            className: "support-signal-card support-signal-card-unavailable support-signal-card-combined acadia-surface acadia-panel-dense unavailable-state-card",
+          },
         ));
   }
 
@@ -1381,6 +1396,7 @@ function renderMobileDashboardCard(cards, change) {
         : "Waiting for comparable live inputs";
   const copy = buildHeroInsight(change, movers, selectedEconomyPeriod, selectedRegion);
   const chart = renderHeroSparkline(cards, change);
+  const actions = document.querySelector("#mobile-dashboard-actions");
 
   card.classList.remove(
     "mobile-dashboard-card-up",
@@ -1393,6 +1409,24 @@ function renderMobileDashboardCard(cards, change) {
   card.classList.add(`mobile-dashboard-card-${change?.tone || "unavailable"}`);
   card.setAttribute("data-freshness", freshness.tone);
   setHtml("#mobile-dashboard-tabs", completeUnavailable ? "" : renderMobileRegionTabs());
+  if (actions) {
+    actions.hidden = !completeUnavailable;
+    setDynamicContent(
+      actions,
+      completeUnavailable
+        ? `
+          <button type="button" class="unavailable-state-action" data-refresh-retry>
+            <i class="fa-solid fa-rotate acadia-icon" aria-hidden="true"></i>
+            <span>Retry refresh</span>
+          </button>
+          <a class="unavailable-state-action" href="data.html">
+            <i class="fa-solid fa-table acadia-icon" aria-hidden="true"></i>
+            <span>Data Coverage</span>
+          </a>
+        `
+        : "",
+    );
+  }
   setText("#mobile-dashboard-title", title);
   setText("#mobile-dashboard-comparison", comparison);
   setText("#mobile-dashboard-copy", copy);
@@ -1748,6 +1782,34 @@ function renderUnavailableCard(title, copy, source, className = "metric-card met
         <h3>${escapeHtml(title)}</h3>
         <p>${escapeHtml(copy)}</p>
         <small>${escapeHtml(source)}</small>
+      </div>
+    </article>
+  `;
+}
+
+function renderUnavailableActionCard(copy, options = {}) {
+  const state = unavailableStateCopy();
+  const title = options.title || state.title;
+  const source = options.source || "Configured public source groups";
+  const className = options.className || "overview-unavailable-card unavailable-state-card acadia-surface acadia-panel-dense";
+
+  return `
+    <article class="${escapeHtml(className)}" aria-label="${escapeHtml(sentenceSummary([title, copy, source, state.actions]))}">
+      <div class="unavailable-state-icon" aria-hidden="true"><i class="fa-solid fa-plug-circle-xmark acadia-icon"></i></div>
+      <div class="unavailable-state-copy">
+        <h3>${escapeHtml(title)}</h3>
+        <p>${escapeHtml(copy)}</p>
+        <small>${escapeHtml(source)}</small>
+        <div class="unavailable-state-actions">
+          <button type="button" class="unavailable-state-action" data-refresh-retry>
+            <i class="fa-solid fa-rotate acadia-icon" aria-hidden="true"></i>
+            <span>Retry refresh</span>
+          </button>
+          <a class="unavailable-state-action" href="data.html">
+            <i class="fa-solid fa-table acadia-icon" aria-hidden="true"></i>
+            <span>Data Coverage</span>
+          </a>
+        </div>
       </div>
     </article>
   `;
@@ -3424,7 +3486,7 @@ function renderDashboard() {
 
   if (economyGrid) {
     setDynamicContent(economyGrid, completeUnavailable
-      ? isDashboardPage()
+      ? isDashboardPage() || currentPage === "markets"
         ? ""
         : renderUnavailableCard(
           "Regional markets unavailable",

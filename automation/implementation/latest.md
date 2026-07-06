@@ -1,36 +1,30 @@
-# Implementation Report: July 3 Outage-State Design Pass
+# Implementation Report: July 6 Unavailable-State Design Pass
 
-Run date: 2026-07-03
+Run date: 2026-07-06
 Automation: 03 Design
 Input: `automation/review/latest.md`
 Branch: `main`
 
 ## Completed Implementation
 
-- Implemented the approved July 3 Work Packages A-H without adding rejected scope.
-- Preserved page identity in live, partial, and unavailable states:
-  - Dashboard: `Global Economy`
-  - Markets: `Markets`
-  - Market Supports: `Market Supports`
-  - Indicators: `Indicators`
-  - Data Coverage: `Data Coverage`
-- Kept `Live data unavailable` as source-state/status copy instead of a page title.
-- Made the dashboard complete-outage first pass action-oriented:
-  - The outage explanation, checked state, retry action, and Data Coverage route stay ahead of disabled controls.
-  - Unavailable mobile region shortcuts are suppressed so disabled Global/U.S./Europe/Asia tabs do not dominate or clip the first viewport.
-- Consolidated repeated complete-outage fallback copy:
-  - Dashboard skips duplicate metric grids after the main unavailable card.
-  - Market Supports uses one combined currencies, commodities, and digital-assets unavailable card and suppresses the lower duplicate support grids until source-backed values return.
-- Rebalanced desktop dashboard outage layout so source-health/freshness content spans the available grid instead of sitting in a narrow side column.
-- Tightened Data Coverage hierarchy:
-  - The `h1` remains `Data Coverage`.
-  - The current health section is titled `Current Source Health`.
-  - Provider inventory remains visually and semantically separate from current source health.
-- Added same-minute retry confirmation inside existing status surfaces:
-  - Dashboard checked pill shows `Checked again ... unavailable`.
-  - Data Coverage last-checked metadata shows the retry attempt without implying a source responded.
-- Improved mobile dock/header clearance with scroll padding and Data Coverage compact spacing.
-- Updated `DESIGN-README.md`, `PRODUCT-README.md`, and regression tests for the approved behaviors.
+- Implemented the approved July 6 Work Packages A, B, D, E, F, G, H, I, and J without adding rejected product scope.
+- Treated Work Packages C and K as validation gates only.
+- Made the mobile Dashboard complete-outage first pass action-first:
+  - The mobile source-backed-read explanation now includes retry and Data Coverage actions before disabled Period or Region controls.
+  - Complete-outage mobile controls reorder checked state and refresh before disabled selects, with stronger disabled styling and nearby explanatory copy.
+- Consolidated complete-outage copy and vocabulary:
+  - `Live data unavailable` is the primary complete-outage state.
+  - `Unavailable` is the compact badge label.
+  - `not responding` remains limited to provider/source-health rows that describe source-attempt context.
+- Reduced repeated unavailable cards:
+  - Dashboard keeps one recovery-oriented unavailable card and suppresses low-value duplicate metric grids in complete outages.
+  - Markets now uses one recovery card for the unavailable market read and suppresses lower regional market cards while sorting cannot affect unavailable content.
+  - Market Supports uses the same recovery card pattern for currencies, commodities, and digital assets.
+- Fixed responsive layout issues:
+  - Mobile Dashboard, Data Coverage, Markets, and Market Supports now have stronger header/dock scroll clearance.
+  - Complete-outage Markets and Market Supports recovery cards use the available mobile content width instead of narrow carousel tile widths.
+  - Desktop Dashboard complete-outage source/freshness rows use the available grid instead of compressing provider statuses into a narrow column.
+- Updated `DESIGN-README.md`, `PRODUCT-README.md`, `tests/app-rendering.test.js`, `index.html`, `app.js`, and `styles.css`.
 
 ## Validation Results
 
@@ -39,14 +33,15 @@ Branch: `main`
   - `node --check theme.js`
   - `node --check api/live-snapshot.js`
   - `node --test`
-  - 65 tests passed.
-- Browser validation passed against local static server `http://127.0.0.1:4184` using bundled Chromium:
-  - Complete unavailable mobile Dashboard at 375px: page identity preserved, retry/Data Coverage first pass visible, disabled region shortcuts suppressed, controls disabled with native semantics.
-  - Same-minute retry: visible `Checked again ... unavailable` confirmation appeared in existing status surfaces.
-  - Complete unavailable Data Coverage at 375px: page identity visible, `Current Source Health` section preserved, bottom dock/header did not cover last-checked/source-health content.
-  - Recorded source-backed Dashboard: first scan surfaced up/down movement, rising risk, improving confidence, freshness, and settled dynamic regions.
-  - Dynamic fallback/live regions cleared `aria-busy` after render.
+  - 68 tests passed.
+- Browser validation passed against local static server `http://127.0.0.1:8780` using bundled Chromium:
+  - Complete unavailable mobile Dashboard at 375px: retry/Data Coverage actions appeared before disabled controls, controls retained native disabled and `aria-disabled` state, and `aria-busy` settled.
+  - Complete unavailable Data Coverage at 375px: source-health, provider inventory, and snapshot metadata cleared the floating dock.
+  - Complete unavailable Market Supports and Markets at 375px: recovery cards were full-width and used `Live data unavailable`.
+  - Recorded-live Dashboard at 1440px: first scan included score, movement, risk signal, freshness, enabled controls, and settled dynamic regions.
+  - Recorded-partial Dashboard at 1024px: partial source status kept controls enabled and all dynamic regions settled.
+  - Keyboard validation at 390px: Tab and Shift+Tab advanced focus through skip link, header controls, mobile dock, retry, and Data Coverage; non-dock focus targets were not covered by the sticky header or floating dock.
 
 ## Follow-Up Items
 
-- No implementation follow-up items are required for the approved July 3 design scope.
+- No implementation follow-up items are required for the approved July 6 design scope.

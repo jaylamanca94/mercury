@@ -244,6 +244,7 @@
 
 html {
   background: var(--acadia-color-page);
+  scroll-padding-top: 5.5rem;
 }
 
 body {
@@ -662,11 +663,12 @@ body {
 
 .acadia-control:disabled,
 .section-select:disabled {
-  background-color: color-mix(in srgb, var(--acadia-color-control) 70%, var(--acadia-color-surface-muted));
+  background-color: color-mix(in srgb, var(--acadia-color-control) 52%, var(--acadia-color-surface-muted));
+  border-color: color-mix(in srgb, var(--acadia-color-control-border) 72%, transparent);
   box-shadow: none;
   color: var(--acadia-color-text-muted);
   cursor: not-allowed;
-  opacity: 0.68;
+  opacity: 0.56;
 }
 
 .acadia-control:focus,
@@ -751,6 +753,14 @@ body {
   margin: 0;
   max-width: 22rem;
   text-align: right;
+}
+
+.dashboard-unavailable .section-select-label:has(.section-select:disabled) {
+  opacity: 0.72;
+}
+
+.dashboard-unavailable .section-select-label:has(.section-select:disabled) .acadia-label {
+  color: color-mix(in srgb, var(--acadia-color-text-muted) 80%, transparent);
 }
 
 .page-title-row {
@@ -1581,6 +1591,13 @@ body {
   padding-top: 0.25rem;
 }
 
+.mobile-dashboard-actions {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
 .unavailable-state-action {
   align-items: center;
   appearance: none;
@@ -1879,6 +1896,10 @@ body {
 }
 
 .mercury-page-dashboard.dashboard-unavailable .economy-section {
+  display: none;
+}
+
+.mercury-page-markets.dashboard-unavailable .economy-section {
   display: none;
 }
 
@@ -2534,11 +2555,20 @@ body {
   }
 
   .mercury-page-dashboard.dashboard-unavailable .freshness-band {
-    grid-template-columns: minmax(0, 0.95fr) minmax(18rem, 0.55fr);
+    grid-template-columns: minmax(0, 1fr);
   }
 
-  .mercury-page-dashboard.dashboard-unavailable .source-health-summary {
-    grid-template-columns: minmax(9rem, 0.26fr) minmax(0, 1fr);
+  .mercury-page-dashboard.dashboard-unavailable .freshness-list {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .mercury-page-dashboard.dashboard-unavailable .freshness-list li {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .mercury-page-dashboard.dashboard-unavailable .snapshot-meta {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .mercury-page-dashboard .metric-grid,
@@ -2712,6 +2742,10 @@ body {
     --acadia-section-padding-dense: var(--acadia-section-padding-mobile);
   }
 
+  html {
+    scroll-padding-block: 5.75rem calc(8.75rem + env(safe-area-inset-bottom));
+  }
+
   .acadia-chrome {
     -webkit-backdrop-filter: none;
     backdrop-filter: none;
@@ -2757,8 +2791,15 @@ body {
 
   .dashboard-shell {
     gap: 1rem;
-    padding-bottom: calc(6.5rem + env(safe-area-inset-bottom));
-    scroll-padding-block: 5.75rem calc(7.75rem + env(safe-area-inset-bottom));
+    padding-bottom: calc(8.5rem + env(safe-area-inset-bottom));
+    scroll-padding-block: 5.75rem calc(8.75rem + env(safe-area-inset-bottom));
+  }
+
+  .dashboard-shell > section,
+  .dashboard-shell > p,
+  .dashboard-section,
+  .detail-panel {
+    scroll-margin-block: 5.75rem calc(8.75rem + env(safe-area-inset-bottom));
   }
 
   .mercury-page-dashboard .dashboard-shell {
@@ -2952,6 +2993,18 @@ body {
     width: 100%;
   }
 
+  .dashboard-unavailable .page-actions .timestamp-pill {
+    order: 1;
+  }
+
+  .dashboard-unavailable .page-actions .refresh-button {
+    order: 2;
+  }
+
+  .dashboard-unavailable .page-actions .section-select-label {
+    order: 3;
+  }
+
   .page-actions .acadia-label {
     font-size: 0.75rem;
     line-height: 1rem;
@@ -3071,6 +3124,20 @@ body {
   }
 
   .mercury-page-dashboard.dashboard-unavailable .overview-tiles-grid > .overview-unavailable-card {
+    flex-basis: auto;
+    width: 100%;
+  }
+
+  .mercury-page-supports.dashboard-unavailable .support-signals-grid,
+  .mercury-page-markets.dashboard-unavailable .market-drivers-grid {
+    display: grid;
+    margin-inline: 0;
+    overflow: visible;
+    padding-inline: 0;
+  }
+
+  .mercury-page-supports.dashboard-unavailable .support-signals-grid > *,
+  .mercury-page-markets.dashboard-unavailable .market-drivers-grid > * {
     flex-basis: auto;
     width: 100%;
   }

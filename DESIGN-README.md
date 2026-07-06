@@ -224,15 +224,23 @@ Use `8px` or less for normal cards and repeated list items unless a larger conta
 - In a complete live-data outage, the dashboard should lead with one page-level unavailable
   explanation, keep retry and Data Coverage available, and avoid repeating low-value unavailable
   metric grids after that explanation.
+- The mobile dashboard complete-outage card must include the source-backed-read explanation, retry
+  action, and Data Coverage route before disabled Period or Region controls. If disabled controls
+  remain visible, order and style them as secondary controls with nearby explanatory copy.
 - Page `h1` labels remain destination identities in live, partial, and unavailable states:
   `Global Economy`, `Markets`, `Market Supports`, `Indicators`, and `Data Coverage`. Source-state
   copy belongs in badges, status cards, source-health rows, or explanatory copy, not as a page title.
+- Use `Live data unavailable` for the page-level complete-outage state and `Unavailable` for compact
+  badges. Reserve `not responding` wording for provider/source-health rows that describe a concrete
+  source-attempt result.
 - Data Coverage should distinguish the destination title from the current health section. The
   current health section may explain that live data is unavailable, but its heading should stay
   source-health oriented and the configured provider inventory should remain separate.
 - Market Supports should use one combined unavailable-state pass for currencies, commodities, and
   digital assets during a complete outage; lower support grids return only when source-backed values
   are available.
+- Markets should use one coherent complete-outage recovery card before disabled sorting controls;
+  lower market grids return only when source-backed values can be sorted or compared.
 
 ## Icons
 
@@ -283,6 +291,8 @@ Use `8px` or less for normal cards and repeated list items unless a larger conta
 - Mobile persistent chrome must not cover recovery actions, Data Coverage links, source-health
   status, provider inventory, or final cards; keep bottom padding and scroll padding aligned with
   the floating dock and safe-area inset.
+- In complete outages, mobile Markets and Market Supports recovery cards should use the full content
+  width rather than carousel tile widths when they are the only meaningful content in the section.
 - Do not rely on color alone for positive/negative/risk/confidence states.
 
 ## Utility Guidance

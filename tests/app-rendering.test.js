@@ -404,6 +404,14 @@ test("dashboard summary adds key signals and briefing sections", () => {
     styles,
     /\.mercury-page-dashboard \.currency-section,\s*\.mercury-page-dashboard \.commodity-section,\s*\.mercury-page-dashboard \.lower-grid\s*{[^}]*display: none;/s,
   );
+  assert.match(
+    styles,
+    /@media \(min-width: 1180px\)[\s\S]*\.mercury-page-dashboard\.dashboard-unavailable \.freshness-band\s*{[^}]*grid-template-columns: minmax\(0, 1fr\);/s,
+  );
+  assert.match(
+    styles,
+    /@media \(min-width: 1180px\)[\s\S]*\.mercury-page-dashboard\.dashboard-unavailable \.freshness-list\s*{[^}]*grid-template-columns: repeat\(4, minmax\(0, 1fr\)\);/s,
+  );
 });
 
 test("dynamic dashboard containers expose live busy regions", () => {
@@ -508,6 +516,14 @@ test("interactive dashboard surfaces keep Acadia focus and pressed states", () =
   assert.match(
     styles,
     /\.mobile-dashboard-tab:active\s*{[^}]*transform: translateY\(0\);/s,
+  );
+  assert.match(
+    styles,
+    /\.acadia-control:disabled,\s*\.section-select:disabled\s*{[^}]*cursor: not-allowed;[^}]*opacity: 0\.56;/s,
+  );
+  assert.match(
+    styles,
+    /\.dashboard-unavailable \.section-select-label:has\(\.section-select:disabled\)\s*{[^}]*opacity: 0\.72;/s,
   );
 });
 
@@ -1110,6 +1126,8 @@ test("dashboard fallback uses one source-unavailable read and completes busy sta
         changed: document.querySelector("#what-changed-list").innerHTML,
         risk: document.querySelector("#risk-watch-list").innerHTML,
         mobileTabs: document.querySelector("#mobile-dashboard-tabs").innerHTML,
+        mobileActionsHidden: document.querySelector("#mobile-dashboard-actions").hidden,
+        mobileActions: document.querySelector("#mobile-dashboard-actions").innerHTML,
         checked: document.querySelector("#last-updated-pill").textContent,
         checkedCaution: document.querySelector("#last-updated-pill").classList.contains("status-pill-caution"),
         periodDisabled: document.querySelector("#economy-period-select").disabled,
@@ -1128,7 +1146,7 @@ test("dashboard fallback uses one source-unavailable read and completes busy sta
 
   assert.equal(result.title, "Global Economy");
   assert.match(result.insight, /cannot produce a source-backed read right now/);
-  assert.equal(result.badge, "No live read");
+  assert.equal(result.badge, "Unavailable");
   assert.match(result.overview, /Retry refresh/);
   assert.match(result.overview, /Data Coverage/);
   assert.doesNotMatch(result.overview, /Oil<\/span>[\s\S]*Unavailable/);
@@ -1137,6 +1155,9 @@ test("dashboard fallback uses one source-unavailable read and completes busy sta
   assert.match(result.changed, /No source-backed change/);
   assert.match(result.risk, /No source-backed risk read/);
   assert.equal(result.mobileTabs, "");
+  assert.equal(result.mobileActionsHidden, false);
+  assert.match(result.mobileActions, /Retry refresh/);
+  assert.match(result.mobileActions, /Data Coverage/);
   assert.equal(result.checkedCaution, true);
   assert.equal(result.periodDisabled, true);
   assert.equal(result.periodAriaDisabled, "true");
@@ -1168,6 +1189,79 @@ test("retry fallback confirms a fresh unavailable check in existing status surfa
   assert.match(result.lastChecked, /^Checked again /);
   assert.match(result.sourceCopy, /all live data groups are unavailable/);
   assert.equal(result.checkedCaution, true);
+});
+
+test("recorded live dashboard state keeps first scan and controls source-backed", () => {
+  const context = loadAppContext();
+  const result = vm.runInContext(
+    `
+      applyLiveSnapshot({
+        status: "live",
+        checkedAt: "2026-07-06T14:30:00.000Z",
+        freshness: { status: "current", label: "Loaded 2:30 PM", detail: "Current public-source snapshot" },
+        releaseRange: { latest: "2026-07-06", latestCadence: "Daily market close", earliest: "2026", earliestCadence: "Annual release" },
+        summary: {
+          title: "Global economy mixed",
+          copy: "Equities improved while risk indicators stayed elevated.",
+          score: 58,
+          drivers: [
+            { label: "Market pulse", value: "Firm" },
+            { label: "Economic health", value: "Mixed" },
+            { label: "Risk tone", value: "Under pressure" },
+            { label: "Regional growth", value: "Firm" },
+          ],
+        },
+        marketPulse: [
+          { id: "global-us-total", name: "U.S. Total", value: "$250.00", ticker: "VTI", viewGroup: "economy", region: "Global", marketRole: "global-allocation", sourceStatus: "Source-backed", freshness: { status: "current", label: "Current" }, history: [{ value: 240 }, { value: 250 }], comparison: "percent-change", weight: 1 },
+          { id: "global-international", name: "International", value: "$72.00", ticker: "VXUS", viewGroup: "economy", region: "Global", marketRole: "global-allocation", sourceStatus: "Source-backed", freshness: { status: "current", label: "Current" }, history: [{ value: 74 }, { value: 72 }], comparison: "percent-change", weight: 1 },
+          { id: "oil", name: "Oil", value: "$84.00", ticker: "WTI", viewGroup: "commodity", sourceStatus: "Source-backed", freshness: { status: "current", label: "Current" }, history: [{ value: 80 }, { value: 84 }], comparison: "percent-change", weight: 0.5 },
+          { id: "dollar-index", name: "U.S. dollar", value: "104.20", ticker: "DXY", viewGroup: "currency", sourceStatus: "Source-backed", freshness: { status: "current", label: "Current" }, history: [{ value: 103.7 }, { value: 104.2 }], comparison: "percent-change", weight: 0.5 },
+          { id: "bitcoin", name: "Bitcoin", value: "$62,000", ticker: "BTC", viewGroup: "commodity", sourceStatus: "Source-backed", freshness: { status: "current", label: "Current" }, history: [{ value: 60000 }, { value: 62000 }], comparison: "percent-change", weight: 0.5 },
+        ],
+        economicHealth: [
+          { id: "inflation", name: "Inflation", value: "3.1%", sourceStatus: "Source-backed", freshness: { status: "current", label: "Current" }, history: [{ value: 3.2 }, { value: 3.1 }], comparison: "point-change", weight: 1 },
+          { id: "unemployment", name: "Unemployment", value: "4.0%", sourceStatus: "Source-backed", freshness: { status: "current", label: "Current" }, history: [{ value: 4.1 }, { value: 4.0 }], comparison: "point-change", weight: 1 },
+          { id: "gdp-growth", name: "GDP growth", value: "2.4%", sourceStatus: "Source-backed", freshness: { status: "current", label: "Current" }, history: [{ value: 2.1 }, { value: 2.4 }], comparison: "point-change", weight: 1 },
+        ],
+        riskIndicators: [
+          { id: "volatility", name: "Volatility", value: "19.4", sourceStatus: "Source-backed", freshness: { status: "current", label: "Current" }, history: [{ value: 17.2 }, { value: 19.4 }], comparison: "point-change", weight: 1 },
+          { id: "stress", name: "Stress", value: "0.1", sourceStatus: "Source-backed", freshness: { status: "current", label: "Current" }, history: [{ value: 0.4 }, { value: 0.1 }], comparison: "point-change", weight: 1 },
+        ],
+        regions: [
+          { id: "world", name: "World", value: "2.7%", sourceStatus: "Source-backed", freshness: { status: "current", label: "Current" }, history: [{ value: 2.5 }, { value: 2.7 }], comparison: "point-change", weight: 1 },
+        ],
+      });
+      ({
+        title: document.querySelector("#view-title").textContent,
+        insight: document.querySelector("#hero-insight").textContent,
+        overview: document.querySelector("#overview-tiles-grid").innerHTML,
+        changed: document.querySelector("#what-changed-list").innerHTML,
+        risk: document.querySelector("#risk-watch-list").innerHTML,
+        checked: document.querySelector("#last-updated-pill").textContent,
+        source: document.querySelector("#macro-connection-pill").innerHTML,
+        freshness: document.querySelector("#snapshot-freshness").textContent,
+        periodDisabled: document.querySelector("#economy-period-select").disabled,
+        regionDisabled: document.querySelector("#economy-region-select").disabled,
+        overviewBusy: document.querySelector("#overview-tiles-grid").getAttribute("aria-busy"),
+        riskBusy: document.querySelector("#risk-list").getAttribute("aria-busy"),
+      });
+    `,
+    context,
+  );
+
+  assert.equal(result.title, "Global Economy");
+  assert.match(result.insight, /positive|mixed|pressure|drag/i);
+  assert.match(result.overview, /Global score/);
+  assert.match(result.overview, /Inflation/);
+  assert.match(result.changed, /U\.S\. Total|International|Oil/);
+  assert.match(result.risk, /Volatility|Stress|Rates/);
+  assert.match(result.checked, /^Checked /);
+  assert.match(result.source, /Data sources connected/);
+  assert.match(result.freshness, /Loaded 2:30 PM/);
+  assert.equal(result.periodDisabled, false);
+  assert.equal(result.regionDisabled, false);
+  assert.equal(result.overviewBusy, "false");
+  assert.equal(result.riskBusy, "false");
 });
 
 test("dashboard controls re-enable when live data returns after fallback", () => {
@@ -1222,8 +1316,10 @@ test("supports fallback avoids interpreted support and pressure language", () =>
 
   assert.match(result.insight, /Waiting for enough live support data/);
   assert.match(result.brief, /cannot interpret support conditions/);
-  assert.match(result.signals, /Market supports unavailable/);
+  assert.match(result.signals, /Live data unavailable/);
   assert.match(result.signals, /Currencies, commodities, and digital assets/);
+  assert.match(result.signals, /Retry refresh/);
+  assert.match(result.signals, /Data Coverage/);
   assert.match(result.pressures, /No source-backed pressure read/);
   assert.equal(result.currency, "");
   assert.equal(result.commodity, "");
@@ -1231,6 +1327,36 @@ test("supports fallback avoids interpreted support and pressure language", () =>
   assert.doesNotMatch(result.brief, /quiet|supportive|mixed/i);
   assert.doesNotMatch(result.pressures, /None elevated/);
   assert.equal(result.signalsBusy, "false");
+});
+
+test("markets fallback uses one recovery card before disabled market sorting", () => {
+  const context = loadAppContext("markets");
+  const result = vm.runInContext(
+    `
+      applyLiveFallback();
+      ({
+        title: document.querySelector("#view-title").textContent,
+        drivers: document.querySelector("#market-drivers-grid").innerHTML,
+        economy: document.querySelector("#economy-grid").innerHTML,
+        sortDisabled: document.querySelector("#market-sort-select").disabled,
+        sortAriaDisabled: document.querySelector("#market-sort-select").getAttribute("aria-disabled"),
+        noteHidden: document.querySelector("#control-availability-note").hidden,
+        driversBusy: document.querySelector("#market-drivers-grid").getAttribute("aria-busy"),
+      });
+    `,
+    context,
+  );
+
+  assert.equal(result.title, "Markets");
+  assert.match(result.drivers, /Live data unavailable/);
+  assert.match(result.drivers, /market read needs live source-backed values/);
+  assert.match(result.drivers, /Retry refresh/);
+  assert.match(result.drivers, /Data Coverage/);
+  assert.equal(result.economy, "");
+  assert.equal(result.sortDisabled, true);
+  assert.equal(result.sortAriaDisabled, "true");
+  assert.equal(result.noteHidden, false);
+  assert.equal(result.driversBusy, "false");
 });
 
 test("data coverage fallback explains whole-product unavailability plainly", () => {
@@ -1831,6 +1957,14 @@ test("mobile page controls keep period and region in two columns", () => {
     /@media \(max-width: 767\.98px\)[\s\S]*\.page-actions \.section-select\s*{[^}]*font-size: 0\.9rem;[^}]*min-height: 2\.35rem;/s,
   );
   assert.match(styles, /@media \(max-width: 767\.98px\)[\s\S]*\.refresh-button\s*{[^}]*width: 2\.35rem;/s);
+  assert.match(
+    styles,
+    /@media \(max-width: 767\.98px\)[\s\S]*\.dashboard-unavailable \.page-actions \.timestamp-pill\s*{[^}]*order: 1;/s,
+  );
+  assert.match(
+    styles,
+    /@media \(max-width: 767\.98px\)[\s\S]*\.dashboard-unavailable \.page-actions \.section-select-label\s*{[^}]*order: 3;/s,
+  );
 });
 
 test("mobile dashboard card separates region labels from movement values", () => {
@@ -1918,10 +2052,26 @@ test("mobile dock clears the device safe area", () => {
   assert.doesNotMatch(styles, /bottom: max\(0\.75rem, env\(safe-area-inset-bottom\)\);/);
   assert.match(
     styles,
-    /@media \(max-width: 767\.98px\)[\s\S]*\.dashboard-shell\s*{[^}]*padding-bottom: calc\(6\.5rem \+ env\(safe-area-inset-bottom\)\);/s,
+    /@media \(max-width: 767\.98px\)[\s\S]*\.dashboard-shell\s*{[^}]*padding-bottom: calc\(8\.5rem \+ env\(safe-area-inset-bottom\)\);/s,
   );
   assert.match(
     styles,
-    /@media \(max-width: 767\.98px\)[\s\S]*\.dashboard-shell\s*{[^}]*scroll-padding-block: 5\.75rem calc\(7\.75rem \+ env\(safe-area-inset-bottom\)\);/s,
+    /@media \(max-width: 767\.98px\)[\s\S]*\.dashboard-shell\s*{[^}]*scroll-padding-block: 5\.75rem calc\(8\.75rem \+ env\(safe-area-inset-bottom\)\);/s,
+  );
+  assert.match(
+    styles,
+    /@media \(max-width: 767\.98px\)[\s\S]*\.dashboard-shell > section,[\s\S]*\.detail-panel\s*{[^}]*scroll-margin-block: 5\.75rem calc\(8\.75rem \+ env\(safe-area-inset-bottom\)\);/s,
+  );
+});
+
+test("complete outage detail pages use full-width mobile recovery cards", () => {
+  assert.match(styles, /\.mercury-page-markets\.dashboard-unavailable \.economy-section\s*{[^}]*display: none;/s);
+  assert.match(
+    styles,
+    /@media \(max-width: 767\.98px\)[\s\S]*\.mercury-page-supports\.dashboard-unavailable \.support-signals-grid,\s*\.mercury-page-markets\.dashboard-unavailable \.market-drivers-grid\s*{[^}]*display: grid;[^}]*overflow: visible;/s,
+  );
+  assert.match(
+    styles,
+    /@media \(max-width: 767\.98px\)[\s\S]*\.mercury-page-supports\.dashboard-unavailable \.support-signals-grid > \*,\s*\.mercury-page-markets\.dashboard-unavailable \.market-drivers-grid > \*\s*{[^}]*width: 100%;/s,
   );
 });

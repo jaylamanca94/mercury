@@ -271,8 +271,16 @@ Future opportunities:
   the visible checked/unavailable status instead of adding a separate recovery flow.
 - Complete live-data outages preserve page identity across Dashboard, Markets, Market Supports,
   Indicators, and Data Coverage; `Live data unavailable` is a source state, not the destination.
+- Complete outage states use `Live data unavailable` as the primary state label and `Unavailable`
+  as the compact badge label. Provider rows may say a source group is not responding only when
+  describing the attempted public-source connection.
+- Dashboard, Markets, and Market Supports prioritize recovery actions before disabled controls when
+  no source-backed read is possible; controls remain enabled in live and partial states when they
+  change source-backed content.
 - Market Supports consolidates complete-outage copy into one combined currencies, commodities, and
   digital-assets status pass instead of repeating near-identical unavailable support sections.
+- Markets consolidates complete-outage copy into one recovery-oriented market-read card instead of
+  showing lower unavailable cards that cannot be sorted or compared.
 - Freshness labels are rule-based guardrails by cadence, not official release calendars. They should
   be refined when Mercury adopts provider-specific release schedules.
 - The current breadth score is a simple visible-indicator aggregation and should be refined before
