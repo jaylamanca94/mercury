@@ -1343,7 +1343,43 @@ body {
 
 .timestamp-pill {
   align-self: end;
+  background: color-mix(in srgb, var(--acadia-color-surface-muted) 88%, transparent);
+  border-color: var(--acadia-color-border);
+  color: var(--acadia-color-text-muted);
   min-height: 2.5rem;
+}
+
+.acadia-badge.status-pill-loading,
+.acadia-badge.source-status-loading {
+  background: color-mix(in srgb, var(--muted) 8%, transparent);
+  border-color: color-mix(in srgb, var(--muted) 18%, transparent);
+  color: var(--acadia-color-text-muted);
+}
+
+.acadia-badge.status-pill-live,
+.acadia-badge.source-status-live {
+  background: color-mix(in srgb, var(--mercury-positive) 12%, transparent);
+  border-color: color-mix(in srgb, var(--mercury-positive) 24%, transparent);
+  color: var(--acadia-color-primary-ink);
+}
+
+.acadia-badge.status-pill-caution,
+.acadia-badge.source-status-caution,
+.acadia-badge.status-pill-stale {
+  background: color-mix(in srgb, var(--acadia-color-warning) 13%, transparent);
+  border-color: color-mix(in srgb, var(--acadia-color-warning) 28%, transparent);
+  color: color-mix(in srgb, var(--acadia-color-warning) 82%, var(--acadia-color-text));
+}
+
+.acadia-badge.source-status-unavailable {
+  background: color-mix(in srgb, var(--mercury-negative) 10%, transparent);
+  border-color: color-mix(in srgb, var(--mercury-negative) 24%, transparent);
+  color: color-mix(in srgb, var(--mercury-negative) 78%, var(--acadia-color-text));
+}
+
+.source-status-badge {
+  justify-content: center;
+  min-width: 5.75rem;
 }
 
 .summary-band {

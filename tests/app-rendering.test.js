@@ -464,8 +464,8 @@ test("static pages reference the current mobile dock assets", () => {
     assert.match(html, /<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">/);
     assert.match(html, /<meta name="theme-color" content="#e8eaed" data-acadia-theme-color>/);
     assert.match(html, /theme\.js\?v=20260623-safe-theme/);
-    assert.match(html, /styles\.css\?v=20260701-source-health/);
-    assert.match(html, /app\.js\?v=20260701-source-health/);
+    assert.match(html, /styles\.css\?v=20260706-status-badges/);
+    assert.match(html, /app\.js\?v=20260706-status-badges/);
     assert.match(html, /class="primary-nav acadia-nav"/);
     assert.match(html, /class="primary-nav acadia-nav acadia-mobile-dock"/);
     assert.match(html, /<\/header>\s*<nav class="primary-nav acadia-nav acadia-mobile-dock" aria-label="Mercury pages">/);
@@ -1111,6 +1111,7 @@ test("dashboard fallback uses one source-unavailable read and completes busy sta
         risk: document.querySelector("#risk-watch-list").innerHTML,
         mobileTabs: document.querySelector("#mobile-dashboard-tabs").innerHTML,
         checked: document.querySelector("#last-updated-pill").textContent,
+        checkedCaution: document.querySelector("#last-updated-pill").classList.contains("status-pill-caution"),
         periodDisabled: document.querySelector("#economy-period-select").disabled,
         periodAriaDisabled: document.querySelector("#economy-period-select").getAttribute("aria-disabled"),
         regionDisabled: document.querySelector("#economy-region-select").disabled,
@@ -1136,6 +1137,7 @@ test("dashboard fallback uses one source-unavailable read and completes busy sta
   assert.match(result.changed, /No source-backed change/);
   assert.match(result.risk, /No source-backed risk read/);
   assert.equal(result.mobileTabs, "");
+  assert.equal(result.checkedCaution, true);
   assert.equal(result.periodDisabled, true);
   assert.equal(result.periodAriaDisabled, "true");
   assert.equal(result.regionDisabled, true);
@@ -1156,6 +1158,7 @@ test("retry fallback confirms a fresh unavailable check in existing status surfa
         checked: document.querySelector("#last-updated-pill").textContent,
         lastChecked: document.querySelector("#live-last-checked").textContent,
         sourceCopy: document.querySelector("#source-coverage-copy").textContent,
+        checkedCaution: document.querySelector("#last-updated-pill").classList.contains("status-pill-caution"),
       });
     `,
     context,
@@ -1164,6 +1167,7 @@ test("retry fallback confirms a fresh unavailable check in existing status surfa
   assert.match(result.checked, /^Checked again .* unavailable$/);
   assert.match(result.lastChecked, /^Checked again /);
   assert.match(result.sourceCopy, /all live data groups are unavailable/);
+  assert.equal(result.checkedCaution, true);
 });
 
 test("dashboard controls re-enable when live data returns after fallback", () => {
@@ -1243,6 +1247,8 @@ test("data coverage fallback explains whole-product unavailability plainly", () 
         providerCopy: document.querySelector("#source-provider-copy").textContent,
         coverage: document.querySelector("#coverage-summary-list").innerHTML,
         coverageBusy: document.querySelector("#coverage-summary-list").getAttribute("aria-busy"),
+        marketUnavailable: document.querySelector("#market-source-status").classList.contains("source-status-unavailable"),
+        regionalUnavailable: document.querySelector("#regional-source-status").classList.contains("source-status-unavailable"),
       });
     `,
     context,
@@ -1259,6 +1265,8 @@ test("data coverage fallback explains whole-product unavailability plainly", () 
   assert.match(result.coverage, /<dt>Markets<\/dt>\s*<dd>Yahoo Finance<\/dd>/);
   assert.match(result.coverage, /<dt>Regional Growth<\/dt>\s*<dd>World Bank<\/dd>/);
   assert.equal(result.coverageBusy, "false");
+  assert.equal(result.marketUnavailable, true);
+  assert.equal(result.regionalUnavailable, true);
 });
 
 test("World Bank regional fetch retries transient failures", async () => {

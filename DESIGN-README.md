@@ -370,6 +370,9 @@ Current source-backed utilities:
 - Sample data must be visibly labeled in the header and source/freshness areas until live integrations exist.
 - Mixed source states should use explicit labels such as `Live`, `Live source`, `Delayed`, `Stale`, `No data`, `Unavailable`, `Fallback`, `Sample`, and `Sample fallback` at the section or indicator level.
 - Partial live source groups should show the count of live indicators, such as `3 of 4 live`, rather than a generic `Partial` label.
+- Source, freshness, and last-checked badges should use neutral loading, live/current, caution, and
+  unavailable treatments intentionally. Unavailable source labels must not reuse the primary/live
+  teal treatment.
 - Summary scores must include concise visible drivers and stay explicitly model-limited and illustrative until Mercury has a formal economic scoring framework.
 
 Avoid utilities for:

@@ -17,7 +17,7 @@
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
       referrerpolicy="no-referrer"
     >
-    <link rel="stylesheet" href="styles.css?v=20260701-source-health">
+    <link rel="stylesheet" href="styles.css?v=20260706-status-badges">
   </head>
   <body class="mercury-app mercury-page-dashboard" data-mercury-page="dashboard">
     <a class="skip-link" href="#main-content">Skip to dashboard</a>
@@ -121,7 +121,7 @@
                 <option value="Asia">Asia</option>
               </select>
             </label>
-            <span id="last-updated-pill" class="timestamp-pill acadia-badge" aria-live="polite" aria-atomic="true">
+            <span id="last-updated-pill" class="timestamp-pill acadia-badge status-pill-loading" aria-live="polite" aria-atomic="true">
               Checking latest data
             </span>
             <button
@@ -331,7 +331,7 @@
                 <small id="market-source-detail">Checking public market data</small>
               </span>
             </span>
-            <strong id="market-source-status" class="acadia-badge">Loading</strong>
+            <strong id="market-source-status" class="acadia-badge source-status-badge source-status-loading">Loading</strong>
           </li>
           <li>
             <span class="freshness-source">
@@ -341,7 +341,7 @@
                 <small id="macro-source-detail">Checking official economic releases</small>
               </span>
             </span>
-            <strong id="macro-source-status" class="acadia-badge">Loading</strong>
+            <strong id="macro-source-status" class="acadia-badge source-status-badge source-status-loading">Loading</strong>
           </li>
           <li>
             <span class="freshness-source">
@@ -351,7 +351,7 @@
                 <small id="risk-source-detail">Checking risk indicators</small>
               </span>
             </span>
-            <strong id="risk-source-status" class="acadia-badge">Loading</strong>
+            <strong id="risk-source-status" class="acadia-badge source-status-badge source-status-loading">Loading</strong>
           </li>
           <li>
             <span class="freshness-source">
@@ -361,12 +361,12 @@
                 <small id="regional-source-detail">Checking World Bank growth data</small>
               </span>
             </span>
-            <strong id="regional-source-status" class="acadia-badge">Loading</strong>
+            <strong id="regional-source-status" class="acadia-badge source-status-badge source-status-loading">Loading</strong>
           </li>
         </ul>
       </section>
     </main>
 
-    <script src="app.js?v=20260701-source-health"></script>
+    <script src="app.js?v=20260706-status-badges"></script>
   </body>
 </html>

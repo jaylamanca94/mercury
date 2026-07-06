@@ -1574,10 +1574,50 @@ function sentenceSummary(parts) {
     .join(". ");
 }
 
-const STATUS_PILL_CLASSES = ["status-pill-live", "status-pill-caution", "status-pill-stale"];
+const STATUS_PILL_CLASSES = ["status-pill-live", "status-pill-caution", "status-pill-stale", "status-pill-loading"];
+const SOURCE_STATUS_CLASSES = [
+  "source-status-live",
+  "source-status-caution",
+  "source-status-unavailable",
+  "source-status-loading",
+];
 
 function resetStatusPillClasses(element) {
   element?.classList.remove(...STATUS_PILL_CLASSES);
+}
+
+function statusPillClass(state) {
+  if (state === "live" || state === "current") return "status-pill-live";
+  if (state === "stale") return "status-pill-stale";
+  if (state === "loading") return "status-pill-loading";
+  return "status-pill-caution";
+}
+
+function setStatusPillState(selector, state) {
+  const element = typeof selector === "string" ? document.querySelector(selector) : selector;
+
+  resetStatusPillClasses(element);
+  element?.classList.add(statusPillClass(state));
+}
+
+function sourceStatusTone(items) {
+  const health = sourceGroupHealth(items);
+
+  if (health === "current") return "live";
+  if (health === "caution") return "caution";
+  return "unavailable";
+}
+
+function setSourceStatusBadge(selector, label, tone) {
+  const element = document.querySelector(selector);
+
+  if (!element) {
+    return;
+  }
+
+  element.textContent = label;
+  element.classList.remove(...SOURCE_STATUS_CLASSES);
+  element.classList.add("source-status-badge", `source-status-${tone || "loading"}`);
 }
 
 function metricAccessibleSummary(metric) {
@@ -3625,6 +3665,7 @@ function applyLiveSnapshot(snapshot) {
   setText(".score-drivers p", "What shapes this score");
   setText(".score-drivers small", "Uses live indicators currently available.");
   setText("#last-updated-pill", `Checked ${formatCheckedTime(snapshot.checkedAt)}`);
+  setStatusPillState("#last-updated-pill", snapshot.status === "partial" ? "caution" : "live");
   setText("#economy-title", "Economy");
   setText("#risk-title", "Risk and confidence");
   setText("#global-title", "Regional growth");
@@ -3639,13 +3680,29 @@ function applyLiveSnapshot(snapshot) {
   setText("#source-rail-checked", formatCheckedAt(snapshot.checkedAt));
   setText("#refresh-schedule", "On page load");
   setText("#source-rail-refresh", "On page load");
-  setText("#market-source-status", sourceStatusLabel(snapshot.marketPulse, "Yahoo Finance"));
+  setSourceStatusBadge(
+    "#market-source-status",
+    sourceStatusLabel(snapshot.marketPulse, "Yahoo Finance"),
+    sourceStatusTone(snapshot.marketPulse),
+  );
   setText("#market-source-detail", "Daily market, commodity, currency, and crypto data from Yahoo Finance");
-  setText("#macro-source-status", sourceStatusLabel(snapshot.economicHealth, "FRED"));
+  setSourceStatusBadge(
+    "#macro-source-status",
+    sourceStatusLabel(snapshot.economicHealth, "FRED"),
+    sourceStatusTone(snapshot.economicHealth),
+  );
   setText("#macro-source-detail", "Official economic releases from FRED");
-  setText("#risk-source-status", sourceStatusLabel(snapshot.riskIndicators, "Yahoo Finance/FRED"));
+  setSourceStatusBadge(
+    "#risk-source-status",
+    sourceStatusLabel(snapshot.riskIndicators, "Yahoo Finance/FRED"),
+    sourceStatusTone(snapshot.riskIndicators),
+  );
   setText("#risk-source-detail", "Market risk from Yahoo Finance; stress index from FRED");
-  setText("#regional-source-status", sourceStatusLabel(snapshot.regions, "World Bank"));
+  setSourceStatusBadge(
+    "#regional-source-status",
+    sourceStatusLabel(snapshot.regions, "World Bank"),
+    sourceStatusTone(snapshot.regions),
+  );
   setText("#regional-source-detail", "Annual GDP growth from World Bank");
   setHtml(
     "#macro-source-note",
@@ -3713,6 +3770,7 @@ function applyLiveFallback(options = {}) {
   setText(".score-drivers p", "What shapes this score");
   setText(".score-drivers small", "Current values need live data.");
   setText("#last-updated-pill", checkedLabel);
+  setStatusPillState("#last-updated-pill", "caution");
   setText("#economy-title", "Economy");
   setText("#source-coverage-title", "Current Source Health");
   setText(
@@ -3746,13 +3804,13 @@ function applyLiveFallback(options = {}) {
   setText("#source-rail-checked", formatCheckedAt(checkedAt));
   setText("#refresh-schedule", "Unavailable");
   setText("#source-rail-refresh", "Unavailable");
-  setText("#market-source-status", "Unavailable");
+  setSourceStatusBadge("#market-source-status", "Unavailable", "unavailable");
   setText("#market-source-detail", "Configured provider: Yahoo Finance market, commodity, currency, and crypto data");
-  setText("#macro-source-status", "Unavailable");
+  setSourceStatusBadge("#macro-source-status", "Unavailable", "unavailable");
   setText("#macro-source-detail", "Configured provider: FRED official economic releases");
-  setText("#risk-source-status", "Unavailable");
+  setSourceStatusBadge("#risk-source-status", "Unavailable", "unavailable");
   setText("#risk-source-detail", "Configured providers: Yahoo Finance market risk and FRED stress index");
-  setText("#regional-source-status", "Unavailable");
+  setSourceStatusBadge("#regional-source-status", "Unavailable", "unavailable");
   setText("#regional-source-detail", "Configured provider: World Bank annual GDP growth");
   setText(
     "#source-provider-copy",
