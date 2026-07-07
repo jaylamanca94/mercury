@@ -179,7 +179,7 @@ test("focused regional markets expose region-specific economy lenses", () => {
   );
   assert.deepEqual(
     normalizedCards.europe.map((card) => card.ticker),
-    ["VGK", "EXV1.DE", "EXH4.DE", "EXV4.DE", "SXQP", "EXH1.DE"],
+    ["VGK", "EXV1.DE", "EXH4.DE", "EXV4.DE", "EXH8.DE", "EXH1.DE"],
   );
   assert.deepEqual(
     normalizedCards.asia.map((card) => card.name),
@@ -1401,7 +1401,7 @@ test("World Bank regional fetch retries transient failures", async () => {
 
   global.fetch = async (url, options) => {
     calls += 1;
-    assert.match(url, /country\/EUU\/indicator\/NY\.GDP\.MKTP\.KD\.ZG/);
+    assert.match(url, /country\/USA\/indicator\/NY\.GDP\.MKTP\.KD\.ZG/);
     assert.equal(options.headers.accept, "application/json");
     assert.ok(options.signal);
 
@@ -1425,17 +1425,72 @@ test("World Bank regional fetch retries transient failures", async () => {
 
   try {
     const result = await liveSnapshotInternals.fetchWorldBankRegion({
-      id: "european-union",
-      name: "European Union",
-      countryCode: "EUU",
+      id: "united-states",
+      name: "United States",
+      countryCode: "USA",
       source: "World Bank: GDP growth (annual %)",
     });
 
     assert.equal(calls, 2);
     assert.equal(result.sourceStatus, "Source-backed");
-    assert.equal(result.name, "European Union");
+    assert.equal(result.name, "United States");
     assert.equal(result.releaseDate, "2024");
     assert.equal(result.previousReleaseDate, "2023");
+  } finally {
+    global.fetch = originalFetch;
+  }
+});
+
+test("World Bank aggregate regions use the all-countries endpoint when direct aggregates fail", async () => {
+  const originalFetch = global.fetch;
+  const urls = [];
+
+  global.fetch = async (url, options) => {
+    urls.push(url);
+    assert.match(url, /country\/all\/indicator\/NY\.GDP\.MKTP\.KD\.ZG/);
+    assert.equal(options.headers.accept, "application/json");
+    assert.ok(options.signal);
+
+    return {
+      ok: true,
+      json: async () => [
+        { page: 1, pages: 1, per_page: 5, total: 5 },
+        [
+          { countryiso3code: "USA", date: "2025", value: 2.8 },
+          { countryiso3code: "EUU", date: "2024", value: 1.08657885620458 },
+          { countryiso3code: "EUU", date: "2025", value: 1.53795434836212 },
+          { countryiso3code: "LMY", date: "2024", value: 4.42439890311286 },
+          { countryiso3code: "LMY", date: "2025", value: 4.53280075988324 },
+        ],
+      ],
+    };
+  };
+
+  try {
+    const europeanUnion = await liveSnapshotInternals.fetchWorldBankRegion({
+      id: "european-union",
+      name: "European Union",
+      countryCode: "EUU",
+      useAllCountriesEndpoint: true,
+      source: "World Bank: GDP growth (annual %)",
+    });
+    const lowMiddleIncome = await liveSnapshotInternals.fetchWorldBankRegion({
+      id: "low-middle-income",
+      name: "Low and middle income",
+      countryCode: "LMY",
+      useAllCountriesEndpoint: true,
+      source: "World Bank: GDP growth (annual %)",
+    });
+
+    assert.equal(urls.length, 2);
+    assert.equal(europeanUnion.sourceStatus, "Source-backed");
+    assert.equal(europeanUnion.releaseDate, "2025");
+    assert.equal(europeanUnion.previousReleaseDate, "2024");
+    assert.match(europeanUnion.copy, /1\.5%/);
+    assert.equal(lowMiddleIncome.sourceStatus, "Source-backed");
+    assert.equal(lowMiddleIncome.releaseDate, "2025");
+    assert.equal(lowMiddleIncome.previousReleaseDate, "2024");
+    assert.match(lowMiddleIncome.copy, /4\.5%/);
   } finally {
     global.fetch = originalFetch;
   }

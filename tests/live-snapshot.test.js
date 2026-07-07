@@ -80,7 +80,7 @@ test("Yahoo market pulse uses economic-segment proxies for focused market views"
     { id: "europe-financials", marketRole: "financials", symbol: "EXV1.DE" },
     { id: "europe-industrials", marketRole: "industrials", symbol: "EXH4.DE" },
     { id: "europe-healthcare", marketRole: "healthcare", symbol: "EXV4.DE" },
-    { id: "europe-consumer", marketRole: "consumer", symbol: "^SXQP" },
+    { id: "europe-consumer", marketRole: "consumer", symbol: "EXH8.DE" },
     { id: "europe-energy", marketRole: "energy", symbol: "EXH1.DE" },
   ]);
 
@@ -95,7 +95,7 @@ test("Yahoo market pulse uses economic-segment proxies for focused market views"
 });
 
 test("Europe sector proxies avoid Yahoo index symbols with empty chart histories", () => {
-  const failingIndexSymbols = new Set(["^SX7P", "^SXNP", "^SXDP", "^SXEP"]);
+  const failingIndexSymbols = new Set(["^SX7P", "^SXNP", "^SXDP", "^SXEP", "^SXQP"]);
   const europeSectorSeries = YAHOO_SERIES.filter(
     (series) =>
       series.section === "marketPulse" &&

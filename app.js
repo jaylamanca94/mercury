@@ -173,7 +173,7 @@ let marketPulse = [
     region: "Europe",
     viewGroup: "economy",
   }),
-  pendingMetric("Consumer", "STOXX Europe consumer index", "fa-bag-shopping", "europe-consumer", "SXQP", {
+  pendingMetric("Consumer", "iShares STOXX Europe 600 Retail UCITS ETF", "fa-bag-shopping", "europe-consumer", "EXH8.DE", {
     marketOrder: 50,
     marketRole: "consumer",
     region: "Europe",

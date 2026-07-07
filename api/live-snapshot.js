@@ -1,6 +1,7 @@
 const FRED_GRAPH_BASE_URL = "https://fred.stlouisfed.org/graph/fredgraph.csv";
 const YAHOO_CHART_BASE_URL = "https://query1.finance.yahoo.com/v8/finance/chart";
 const WORLD_BANK_BASE_URL = "https://api.worldbank.org/v2";
+const WORLD_BANK_GDP_GROWTH_INDICATOR = "NY.GDP.MKTP.KD.ZG";
 const UPSTREAM_TIMEOUT_MS = 8000;
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
 const YAHOO_HISTORY_RANGE = "5y";
@@ -438,11 +439,11 @@ const YAHOO_SERIES = [
     id: "europe-consumer",
     section: "marketPulse",
     name: "Consumer",
-    context: "STOXX Europe consumer index",
+    context: "iShares STOXX Europe 600 Retail UCITS ETF",
     icon: "fa-bag-shopping",
-    symbol: "^SXQP",
-    ticker: "SXQP",
-    source: "Yahoo Finance: STOXX Europe 600 Personal & Household Goods index chart",
+    symbol: "EXH8.DE",
+    ticker: "EXH8.DE",
+    source: "Yahoo Finance: iShares STOXX Europe 600 Retail UCITS ETF chart",
     cadence: "Daily market close",
     viewGroup: "economy",
     region: "Europe",
@@ -815,6 +816,7 @@ const WORLD_BANK_REGIONS = [
     id: "european-union",
     name: "European Union",
     countryCode: "EUU",
+    useAllCountriesEndpoint: true,
     source: "World Bank: GDP growth (annual %)",
   },
   {
@@ -827,6 +829,7 @@ const WORLD_BANK_REGIONS = [
     id: "low-middle-income",
     name: "Low and middle income",
     countryCode: "LMY",
+    useAllCountriesEndpoint: true,
     source: "World Bank: GDP growth (annual %)",
   },
 ];
@@ -1389,7 +1392,8 @@ function classifyRegionalGrowth(latest, previous) {
 }
 
 async function fetchWorldBankRegion(region) {
-  const url = `${WORLD_BANK_BASE_URL}/country/${region.countryCode}/indicator/NY.GDP.MKTP.KD.ZG?format=json&per_page=80`;
+  const countryPath = region.useAllCountriesEndpoint ? "all" : region.countryCode;
+  const url = `${WORLD_BANK_BASE_URL}/country/${countryPath}/indicator/${WORLD_BANK_GDP_GROWTH_INDICATOR}?format=json&per_page=${region.useAllCountriesEndpoint ? 20000 : 80}`;
   const response = await fetchWorldBankResponse(url, {
     headers: {
       accept: "application/json",
@@ -1403,7 +1407,12 @@ async function fetchWorldBankRegion(region) {
   const payload = await response.json();
   const rows = Array.isArray(payload?.[1]) ? payload[1] : [];
   const observations = rows
-    .filter((row) => row?.date && typeof row.value === "number")
+    .filter(
+      (row) =>
+        row?.date &&
+        typeof row.value === "number" &&
+        (!region.useAllCountriesEndpoint || row.countryiso3code === region.countryCode),
+    )
     .map((row) => ({ date: row.date, value: row.value }))
     .sort((a, b) => a.date.localeCompare(b.date));
 
