@@ -1191,6 +1191,58 @@ test("retry fallback confirms a fresh unavailable check in existing status surfa
   assert.equal(result.checkedCaution, true);
 });
 
+test("partial snapshots share status pill state handling", () => {
+  const context = loadAppContext();
+  const result = vm.runInContext(
+    `
+      const sourcePill = document.querySelector("#macro-connection-pill");
+      const freshnessPill = document.querySelector("#sample-set-date");
+
+      sourcePill.classList.add("status-pill-live");
+      freshnessPill.classList.add("status-pill-stale", "status-pill-loading");
+      applyLiveSnapshot({
+        status: "partial",
+        checkedAt: "2026-07-06T14:30:00.000Z",
+        freshness: { status: "delayed", label: "Delayed source window", detail: "A source is behind its expected window." },
+        releaseRange: { latest: "2026-07-06", latestCadence: "Daily market close", earliest: "2026", earliestCadence: "Annual release" },
+        summary: {
+          title: "Global economy mixed",
+          copy: "A partial public-source snapshot is available.",
+          score: 50,
+          drivers: [
+            { label: "Market pulse", value: "Partial" },
+            { label: "Economic health", value: "Partial" },
+          ],
+        },
+        marketPulse: [
+          { id: "global-us-total", name: "U.S. Total", value: "$250.00", ticker: "VTI", viewGroup: "economy", region: "Global", marketRole: "global-allocation", sourceStatus: "Source-backed", freshness: { status: "current", label: "Current" }, history: [{ value: 240 }, { value: 250 }], comparison: "percent-change", weight: 1 },
+        ],
+        economicHealth: [
+          { id: "inflation", name: "Inflation", value: "3.1%", sourceStatus: "Source-backed", freshness: { status: "delayed", label: "Delayed" }, history: [{ value: 3.2 }, { value: 3.1 }], comparison: "point-change", weight: 1 },
+        ],
+        riskIndicators: [],
+        regions: [],
+      });
+      ({
+        sourceText: sourcePill.innerHTML,
+        sourceIsLive: sourcePill.classList.contains("status-pill-live"),
+        sourceIsCaution: sourcePill.classList.contains("status-pill-caution"),
+        freshnessIsStale: freshnessPill.classList.contains("status-pill-stale"),
+        freshnessIsLoading: freshnessPill.classList.contains("status-pill-loading"),
+        freshnessIsCaution: freshnessPill.classList.contains("status-pill-caution"),
+      });
+    `,
+    context,
+  );
+
+  assert.match(result.sourceText, /Some data sources connected/);
+  assert.equal(result.sourceIsLive, false);
+  assert.equal(result.sourceIsCaution, true);
+  assert.equal(result.freshnessIsStale, false);
+  assert.equal(result.freshnessIsLoading, false);
+  assert.equal(result.freshnessIsCaution, true);
+});
+
 test("recorded live dashboard state keeps first scan and controls source-backed", () => {
   const context = loadAppContext();
   const result = vm.runInContext(

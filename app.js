@@ -1634,6 +1634,13 @@ function setStatusPillState(selector, state) {
   element?.classList.add(statusPillClass(state));
 }
 
+function freshnessStatusPillState(status) {
+  if (status === "current" || status === "partial") return "live";
+  if (status === "stale") return "stale";
+  if (status === "loading") return "loading";
+  return "caution";
+}
+
 function sourceStatusTone(items) {
   const health = sourceGroupHealth(items);
 
@@ -3636,8 +3643,6 @@ function applySnapshotConnectionState(snapshot, sourcePill) {
   const isUnavailable = snapshot.status === "unavailable" || !hasLiveSources;
   const isPartial = snapshot.status === "partial";
 
-  resetStatusPillClasses(sourcePill);
-
   if (isUnavailable) {
     setText("#source-coverage-title", "Live data unavailable");
     setText(
@@ -3648,7 +3653,7 @@ function applySnapshotConnectionState(snapshot, sourcePill) {
       "#macro-connection-pill",
       '<i class="fa-solid fa-plug-circle-xmark" aria-hidden="true"></i> Live data unavailable',
     );
-    sourcePill?.classList.add("status-pill-caution");
+    setStatusPillState(sourcePill, "caution");
     return;
   }
 
@@ -3657,7 +3662,7 @@ function applySnapshotConnectionState(snapshot, sourcePill) {
       "#macro-connection-pill",
       '<i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i> Some data sources connected',
     );
-    sourcePill?.classList.add("status-pill-caution");
+    setStatusPillState(sourcePill, "caution");
     return;
   }
 
@@ -3665,7 +3670,7 @@ function applySnapshotConnectionState(snapshot, sourcePill) {
     "#macro-connection-pill",
     '<i class="fa-solid fa-plug-circle-check" aria-hidden="true"></i> Data sources connected',
   );
-  sourcePill?.classList.add("status-pill-live");
+  setStatusPillState(sourcePill, "live");
 }
 
 function freshnessPillIcon(status) {
@@ -3679,7 +3684,6 @@ function applySnapshotFreshnessState(snapshot) {
   const freshnessPill = document.querySelector("#sample-set-date");
   const freshness = snapshot.freshness || {};
 
-  resetStatusPillClasses(freshnessPill);
   setText("#source-rail-freshness", displayFreshness(freshness));
   setText("#snapshot-freshness", displayFreshness(freshness));
 
@@ -3691,18 +3695,7 @@ function applySnapshotFreshnessState(snapshot) {
     "#sample-set-date",
     `<i class="fa-solid ${freshnessPillIcon(freshness.status)}" aria-hidden="true"></i> ${escapeHtml(displayFreshness(freshness))}`,
   );
-
-  if (freshness.status === "current" || freshness.status === "partial") {
-    freshnessPill.classList.add("status-pill-live");
-    return;
-  }
-
-  if (freshness.status === "stale") {
-    freshnessPill.classList.add("status-pill-stale");
-    return;
-  }
-
-  freshnessPill.classList.add("status-pill-caution");
+  setStatusPillState(freshnessPill, freshnessStatusPillState(freshness.status));
 }
 
 function applyLiveSnapshot(snapshot) {
@@ -3880,15 +3873,12 @@ function applyLiveFallback(options = {}) {
   );
   renderProviderInventorySummary();
   setText("#sample-set-date", "Data status");
-  freshnessPill?.classList.add("status-pill-caution");
+  setStatusPillState(freshnessPill, "caution");
   setHtml(
     "#macro-connection-pill",
     '<i class="fa-solid fa-plug-circle-xmark" aria-hidden="true"></i> Live data unavailable',
   );
-
-  if (sourcePill) {
-    sourcePill.classList.add("status-pill-caution");
-  }
+  setStatusPillState(sourcePill, "caution");
 
   announceDashboardStatus(`${checkedLabel}. Mercury cannot produce a source-backed read right now.`);
 }
