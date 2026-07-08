@@ -2027,6 +2027,26 @@ test("Acadia header wrapper preserves balanced desktop layout", () => {
   assert.match(styles, /@media \(max-width: 640px\)[\s\S]*\.app-header-inner\s*{[^}]*flex-direction: column;/);
 });
 
+test("desktop header nav adopts the Acadia underline style", () => {
+  assert.match(styles, /--acadia-chrome-color-text-muted: #5f6875;/);
+  assert.match(
+    styles,
+    /\.acadia-chrome \.primary-nav:not\(\.acadia-mobile-dock\),\s*\.acadia-chrome \.acadia-nav:not\(\.acadia-mobile-dock\)\s*{[^}]*gap: 1rem;/s,
+  );
+  assert.match(
+    styles,
+    /\.acadia-chrome \.primary-nav-link,\s*\.acadia-chrome \.acadia-nav-item\s*{[^}]*border: 0;[^}]*border-radius: 0;[^}]*box-shadow: none;[^}]*font-weight: 500;/s,
+  );
+  assert.match(
+    styles,
+    /\.acadia-chrome \.primary-nav-link::after,\s*\.acadia-chrome \.acadia-nav-item::after\s*{[^}]*height: 0\.125rem;/s,
+  );
+  assert.match(
+    styles,
+    /\.acadia-chrome \.primary-nav-link:hover::after,[\s\S]*\.acadia-chrome \.acadia-nav-item\.is-active::after\s*{[^}]*background: var\(--acadia-chrome-color-action\);/s,
+  );
+});
+
 test("Mercury brand and favicon use the money bill wave mark", () => {
   for (const html of [indexHtml, marketsHtml, supportsHtml, indicatorsHtml, dataHtml]) {
     assert.match(headerBrandIcon(html), /fa-money-bill-wave/);
