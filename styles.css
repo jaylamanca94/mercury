@@ -1153,6 +1153,10 @@ body {
   scrollbar-width: none;
 }
 
+.mobile-dashboard-tabs:empty {
+  display: none;
+}
+
 .mobile-dashboard-tabs::-webkit-scrollbar {
   display: none;
 }
@@ -1769,6 +1773,11 @@ body {
 }
 
 .support-signal-card-combined {
+  grid-column: 1 / -1;
+  min-height: 0;
+}
+
+.market-driver-card-combined {
   grid-column: 1 / -1;
   min-height: 0;
 }

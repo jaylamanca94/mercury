@@ -472,7 +472,7 @@ test("static pages reference the current mobile dock assets", () => {
     assert.match(html, /<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">/);
     assert.match(html, /<meta name="theme-color" content="#e8eaed" data-acadia-theme-color>/);
     assert.match(html, /theme\.js\?v=20260623-safe-theme/);
-    assert.match(html, /styles\.css\?v=20260706-status-badges/);
+    assert.match(html, /styles\.css\?v=20260713-visual-polish/);
     assert.match(html, /app\.js\?v=20260706-status-badges/);
     assert.match(html, /class="primary-nav acadia-nav"/);
     assert.match(html, /class="primary-nav acadia-nav acadia-mobile-dock"/);
@@ -1635,6 +1635,7 @@ test("mobile dashboard read comes before region shortcuts", () => {
     /id="mobile-dashboard-tabs"[\s\S]*id="mobile-dashboard-title"/,
   );
   assert.match(styles, /\.mobile-dashboard-tabs\s*{[^}]*overflow-x: auto;/s);
+  assert.match(styles, /\.mobile-dashboard-tabs:empty\s*{[^}]*display: none;/s);
 });
 
 test("hero trend chart uses period-filtered visible cards", () => {
@@ -2191,8 +2192,9 @@ test("mobile dock clears the device safe area", () => {
   );
 });
 
-test("complete outage detail pages use full-width mobile recovery cards", () => {
+test("complete outage detail pages use full-width recovery cards", () => {
   assert.match(styles, /\.mercury-page-markets\.dashboard-unavailable \.economy-section\s*{[^}]*display: none;/s);
+  assert.match(styles, /\.market-driver-card-combined\s*{[^}]*grid-column: 1 \/ -1;/s);
   assert.match(
     styles,
     /@media \(max-width: 767\.98px\)[\s\S]*\.mercury-page-supports\.dashboard-unavailable \.support-signals-grid,\s*\.mercury-page-markets\.dashboard-unavailable \.market-drivers-grid\s*{[^}]*display: grid;[^}]*overflow: visible;/s,
