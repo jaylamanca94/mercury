@@ -473,7 +473,7 @@ test("static pages reference the current mobile dock assets", () => {
     assert.match(html, /<meta name="theme-color" content="#e8eaed" data-acadia-theme-color>/);
     assert.match(html, /theme\.js\?v=20260623-safe-theme/);
     assert.match(html, /styles\.css\?v=20260713-visual-polish/);
-    assert.match(html, /app\.js\?v=20260706-status-badges/);
+    assert.match(html, /app\.js\?v=20260708-shared-status-state/);
     assert.match(html, /class="primary-nav acadia-nav"/);
     assert.match(html, /class="primary-nav acadia-nav acadia-mobile-dock"/);
     assert.match(html, /<\/header>\s*<nav class="primary-nav acadia-nav acadia-mobile-dock" aria-label="Mercury pages">/);
