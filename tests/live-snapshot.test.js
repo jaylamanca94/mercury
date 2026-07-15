@@ -1,6 +1,8 @@
 const assert = require("node:assert/strict");
 const test = require("node:test");
 
+const liveSnapshot = require("../api/live-snapshot");
+const fredSnapshot = require("../api/fred-snapshot");
 const {
   YAHOO_HISTORY_OBSERVATIONS,
   YAHOO_HISTORY_RANGE,
@@ -11,7 +13,11 @@ const {
   classifyReleaseFreshness,
   classifyTrend,
   parseFredCsv,
-} = require("../api/live-snapshot")._internals;
+} = liveSnapshot._internals;
+
+test("legacy FRED snapshot route stays aliased to the live snapshot handler", () => {
+  assert.equal(fredSnapshot, liveSnapshot);
+});
 
 test("Yahoo bridge keeps enough market history for five-year dashboard views", () => {
   assert.equal(YAHOO_HISTORY_RANGE, "5y");

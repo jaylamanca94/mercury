@@ -1,7 +1,8 @@
 {
   "private": true,
   "scripts": {
-    "check": "node --check app.js && node --check theme.js && node --check api/live-snapshot.js && node --test",
+    "check": "npm run check:syntax && npm test",
+    "check:syntax": "node --check app.js && node --check theme.js && node --check api/live-snapshot.js && node --check api/fred-snapshot.js",
     "test": "node --test"
   }
 }
