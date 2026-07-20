@@ -470,9 +470,9 @@ test("static pages reference the current mobile dock assets", () => {
   for (const html of pages) {
     assert.match(html, /data-acadia-theme-storage-key="mercury-theme"/);
     assert.match(html, /<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">/);
-    assert.match(html, /<meta name="theme-color" content="#e8eaed" data-acadia-theme-color>/);
-    assert.match(html, /theme\.js\?v=20260623-safe-theme/);
-    assert.match(html, /styles\.css\?v=20260713-visual-polish/);
+    assert.match(html, /<meta name="theme-color" content="#eef1f5" data-acadia-theme-color>/);
+    assert.match(html, /theme\.js\?v=20260720-material-theme/);
+    assert.match(html, /styles\.css\?v=20260720-visual-polish/);
     assert.match(html, /app\.js\?v=20260708-shared-status-state/);
     assert.match(html, /class="primary-nav acadia-nav"/);
     assert.match(html, /class="primary-nav acadia-nav acadia-mobile-dock"/);
@@ -531,9 +531,24 @@ test("theme script syncs browser chrome color with the active theme", () => {
   const themeScript = fs.readFileSync(path.join(__dirname, "..", "theme.js"), "utf8");
 
   assert.match(themeScript, /function themeColorFor\(effectiveTheme\)/);
-  assert.match(themeScript, /return effectiveTheme === "dark" \? "#1f2427" : "#e8eaed";/);
+  assert.match(themeScript, /return effectiveTheme === "dark" \? "#171a1e" : "#eef1f5";/);
   assert.match(themeScript, /document\.querySelectorAll\("\[data-acadia-theme-color\]"\)\.forEach/);
   assert.match(themeScript, /meta\.setAttribute\("content", themeColorFor\(effectiveTheme\)\);/);
+});
+
+test("Mercury adapter uses the current Acadia material tokens", () => {
+  assert.match(styles, /--acadia-color-page: #eef1f5;/);
+  assert.match(styles, /--acadia-color-surface: rgba\(255, 255, 255, 0\.94\);/);
+  assert.match(styles, /--acadia-focus-ring: 0 0 0 0\.1875rem rgba\(0, 123, 120, 0\.22\);/);
+  assert.match(
+    styles,
+    /--acadia-shadow-card:\s*0 0\.875rem 2\.25rem rgba\(15, 23, 42, 0\.06\),\s*0 0\.125rem 0\.375rem rgba\(15, 23, 42, 0\.045\);/s,
+  );
+  assert.match(styles, /\[data-acadia-theme="dark"\]\s*{[\s\S]*--acadia-color-page: #171a1e;/);
+  assert.match(
+    styles,
+    /\.acadia-surface\s*{[^}]*background: color-mix\(in srgb, var\(--acadia-color-surface\) 96%, transparent\);/s,
+  );
 });
 
 test("markets page adds contextual key drivers for global and focused regions", () => {
@@ -2119,6 +2134,29 @@ test("mobile dashboard card separates region labels from movement values", () =>
   assert.match(
     styles,
     /\.mobile-dashboard-band \.mobile-source-icons\s*{[^}]*border-radius: var\(--acadia-radius-pill\);[^}]*padding: 0\.32rem 0\.45rem;/s,
+  );
+});
+
+test("mobile dashboard polish keeps the first screen compact", () => {
+  assert.match(
+    styles,
+    /@media \(max-width: 767\.98px\)[\s\S]*\.page-title-row,\s*\.mercury-page-dashboard \.page-title-row\s*{[^}]*gap: var\(--acadia-space-2\);[^}]*padding: 1rem;/s,
+  );
+  assert.match(
+    styles,
+    /@media \(max-width: 767\.98px\)[\s\S]*\.mercury-page-dashboard \.mobile-dashboard-card\s*{[^}]*gap: 0\.625rem;[^}]*min-height: 0;/s,
+  );
+  assert.match(
+    styles,
+    /@media \(max-width: 767\.98px\)[\s\S]*\.mercury-page-dashboard \.mobile-dashboard-chart\s*{[^}]*height: clamp\(4\.75rem, 22vw, 5\.75rem\);[^}]*padding-top: 0\.35rem;/s,
+  );
+  assert.match(
+    styles,
+    /@media \(max-width: 767\.98px\)[\s\S]*\.page-controls-row\s*{[^}]*backdrop-filter: var\(--acadia-vibrancy\);[^}]*background-clip: padding-box;[^}]*box-shadow:[^}]*var\(--acadia-shadow-control\)/s,
+  );
+  assert.match(
+    styles,
+    /@media \(max-width: 767\.98px\)[\s\S]*\.mobile-dashboard-actions \.unavailable-state-action\s*{[^}]*font-size: 0\.84rem;[^}]*padding: 0\.42rem 0\.58rem;/s,
   );
 });
 

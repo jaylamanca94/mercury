@@ -29,7 +29,7 @@
   }
 
   function themeColorFor(effectiveTheme) {
-    return effectiveTheme === "dark" ? "#1f2427" : "#e8eaed";
+    return effectiveTheme === "dark" ? "#171a1e" : "#eef1f5";
   }
 
   function setStoredTheme(mode) {

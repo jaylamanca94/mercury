@@ -1,19 +1,19 @@
 :root,
 [data-acadia-theme="light"] {
   color-scheme: light;
-  --acadia-color-page: #e8eaed;
-  --acadia-color-surface: rgba(252, 252, 253, 0.86);
-  --acadia-color-surface-elevated: rgba(255, 255, 255, 0.72);
-  --acadia-color-surface-muted: rgba(245, 247, 250, 0.82);
-  --acadia-color-control: rgba(248, 249, 251, 0.92);
-  --acadia-color-control-hover: rgba(255, 255, 255, 0.96);
-  --acadia-color-control-border: rgba(15, 23, 42, 0.13);
+  --acadia-color-page: #eef1f5;
+  --acadia-color-surface: rgba(255, 255, 255, 0.94);
+  --acadia-color-surface-elevated: rgba(255, 255, 255, 0.92);
+  --acadia-color-surface-muted: rgba(247, 248, 250, 0.94);
+  --acadia-color-control: rgba(250, 251, 252, 0.94);
+  --acadia-color-control-hover: rgba(255, 255, 255, 0.98);
+  --acadia-color-control-border: rgba(15, 23, 42, 0.12);
   --acadia-color-control-placeholder: #6b7280;
   --acadia-control-select-icon: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
   --acadia-color-text: #171717;
-  --acadia-color-text-muted: #667085;
-  --acadia-color-border: rgba(15, 23, 42, 0.11);
-  --acadia-color-border-strong: rgba(15, 23, 42, 0.18);
+  --acadia-color-text-muted: #5f6875;
+  --acadia-color-border: rgba(15, 23, 42, 0.1);
+  --acadia-color-border-strong: rgba(15, 23, 42, 0.17);
   --acadia-color-brand: #007b78;
   --acadia-color-brand-ink: #006a67;
   --acadia-color-brand-bg: rgba(0, 123, 120, 0.1);
@@ -43,19 +43,20 @@
   --acadia-color-info: var(--acadia-color-action-ink);
   --acadia-color-info-bg: rgba(0, 123, 120, 0.1);
   --acadia-color-info-border: rgba(0, 123, 120, 0.24);
-  --acadia-focus-ring: 0 0 0 0.25rem rgba(0, 123, 120, 0.24);
+  --acadia-focus-ring: 0 0 0 0.1875rem rgba(0, 123, 120, 0.22);
   --acadia-shadow-card:
-    0 1.5rem 3.5rem rgba(15, 23, 42, 0.08),
-    0 0.125rem 0.5rem rgba(15, 23, 42, 0.06);
+    0 0.875rem 2.25rem rgba(15, 23, 42, 0.06),
+    0 0.125rem 0.375rem rgba(15, 23, 42, 0.045);
   --acadia-shadow-card-hover:
-    0 1rem 2.25rem rgba(15, 23, 42, 0.1),
-    0 0.125rem 0.5rem rgba(15, 23, 42, 0.07);
+    0 1.125rem 2.625rem rgba(15, 23, 42, 0.085),
+    0 0.25rem 0.75rem rgba(15, 23, 42, 0.06);
   --acadia-shadow-control:
-    inset 0 1px 0 rgba(255, 255, 255, 0.84),
-    0 1px 2px rgba(15, 23, 42, 0.04),
-    0 0.25rem 0.75rem rgba(15, 23, 42, 0.025);
-  --acadia-shadow-surface-highlight: inset 0 1px 0 rgba(255, 255, 255, 0.62);
-  --acadia-shadow-chrome: 0 0.75rem 2rem rgba(15, 23, 42, 0.08);
+    inset 0 1px 0 rgba(255, 255, 255, 0.78),
+    0 1px 2px rgba(15, 23, 42, 0.04);
+  --acadia-shadow-surface-highlight: inset 0 1px 0 rgba(255, 255, 255, 0.82);
+  --acadia-shadow-chrome:
+    0 0.5rem 1.625rem rgba(15, 23, 42, 0.045),
+    inset 0 1px 0 rgba(255, 255, 255, 0.76);
   --acadia-surface-layer-base: var(--acadia-color-surface);
   --acadia-interaction-hover-bg: color-mix(in srgb, var(--acadia-color-text) 5%, transparent);
   --acadia-interaction-selected-bg: var(--acadia-color-brand-bg);
@@ -116,22 +117,22 @@
 
 [data-acadia-theme="dark"] {
   color-scheme: dark;
-  --acadia-color-page: #1f2427;
-  --acadia-color-surface: rgba(31, 35, 39, 0.86);
-  --acadia-color-surface-elevated: rgba(43, 48, 53, 0.72);
-  --acadia-color-surface-muted: rgba(47, 52, 57, 0.78);
-  --acadia-color-control: rgba(38, 42, 47, 0.92);
+  --acadia-color-page: #171a1e;
+  --acadia-color-surface: rgba(29, 32, 36, 0.94);
+  --acadia-color-surface-elevated: rgba(39, 43, 48, 0.92);
+  --acadia-color-surface-muted: rgba(33, 37, 42, 0.92);
+  --acadia-color-control: rgba(36, 39, 44, 0.94);
   --acadia-color-control-hover: rgba(47, 52, 58, 0.96);
-  --acadia-color-control-border: rgba(255, 255, 255, 0.13);
+  --acadia-color-control-border: rgba(255, 255, 255, 0.12);
   --acadia-color-control-placeholder: #aeb6c2;
   --acadia-control-select-icon: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23dee2e6' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
   --acadia-color-text: #f4f5f6;
-  --acadia-color-text-muted: #aeb6c2;
-  --acadia-color-border: rgba(255, 255, 255, 0.11);
-  --acadia-color-border-strong: rgba(255, 255, 255, 0.18);
+  --acadia-color-text-muted: #b7bec8;
+  --acadia-color-border: rgba(255, 255, 255, 0.1);
+  --acadia-color-border-strong: rgba(255, 255, 255, 0.17);
   --acadia-color-brand: #23b0a9;
-  --acadia-color-brand-ink: #49d6cd;
-  --acadia-color-action-ink: #49d6cd;
+  --acadia-color-brand-ink: #4fd8d3;
+  --acadia-color-action-ink: #4fd8d3;
   --acadia-chrome-color-text: #f4f5f6;
   --acadia-chrome-color-text-muted: #b7bec8;
   --acadia-chrome-color-brand: #007b78;
@@ -144,21 +145,22 @@
   --acadia-color-warning-border: rgba(255, 214, 10, 0.28);
   --acadia-color-success-bg: rgba(48, 209, 88, 0.13);
   --acadia-color-success-border: rgba(48, 209, 88, 0.28);
-  --acadia-color-info-bg: rgba(35, 176, 169, 0.16);
-  --acadia-color-info-border: rgba(35, 176, 169, 0.32);
-  --acadia-focus-ring: 0 0 0 0.25rem rgba(35, 176, 169, 0.32);
+  --acadia-color-info-bg: rgba(0, 123, 120, 0.2);
+  --acadia-color-info-border: rgba(0, 123, 120, 0.38);
+  --acadia-focus-ring: 0 0 0 0.1875rem rgba(0, 123, 120, 0.32);
   --acadia-shadow-card:
-    0 1.5rem 3.5rem rgba(0, 0, 0, 0.24),
-    0 0.125rem 0.625rem rgba(0, 0, 0, 0.22);
+    0 0.875rem 2.25rem rgba(0, 0, 0, 0.22),
+    0 0.125rem 0.5rem rgba(0, 0, 0, 0.18);
   --acadia-shadow-card-hover:
-    0 1rem 2.35rem rgba(0, 0, 0, 0.3),
-    0 0.125rem 0.625rem rgba(0, 0, 0, 0.24);
+    0 1.125rem 2.625rem rgba(0, 0, 0, 0.28),
+    0 0.375rem 1rem rgba(0, 0, 0, 0.21);
   --acadia-shadow-control:
     inset 0 1px 0 rgba(255, 255, 255, 0.055),
-    0 1px 2px rgba(0, 0, 0, 0.18),
-    0 0.25rem 0.75rem rgba(0, 0, 0, 0.1);
-  --acadia-shadow-surface-highlight: inset 0 1px 0 rgba(255, 255, 255, 0.07);
-  --acadia-shadow-chrome: 0 0.75rem 2rem rgba(0, 0, 0, 0.2);
+    0 1px 2px rgba(0, 0, 0, 0.18);
+  --acadia-shadow-surface-highlight: inset 0 1px 0 rgba(255, 255, 255, 0.055);
+  --acadia-shadow-chrome:
+    0 0.5rem 1.625rem rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.055);
   --acadia-mobile-nav-background: color-mix(in srgb, #11151b 86%, transparent);
   --acadia-mobile-nav-border: rgba(255, 255, 255, 0.12);
   --acadia-mobile-nav-shadow:
@@ -189,22 +191,22 @@
   :root:not([data-acadia-theme="light"]):not([data-acadia-theme="dark"]),
   [data-acadia-theme="system"] {
     color-scheme: dark;
-    --acadia-color-page: #1f2427;
-    --acadia-color-surface: rgba(31, 35, 39, 0.86);
-    --acadia-color-surface-elevated: rgba(43, 48, 53, 0.72);
-    --acadia-color-surface-muted: rgba(47, 52, 57, 0.78);
-    --acadia-color-control: rgba(38, 42, 47, 0.92);
+    --acadia-color-page: #171a1e;
+    --acadia-color-surface: rgba(29, 32, 36, 0.94);
+    --acadia-color-surface-elevated: rgba(39, 43, 48, 0.92);
+    --acadia-color-surface-muted: rgba(33, 37, 42, 0.92);
+    --acadia-color-control: rgba(36, 39, 44, 0.94);
     --acadia-color-control-hover: rgba(47, 52, 58, 0.96);
-    --acadia-color-control-border: rgba(255, 255, 255, 0.13);
+    --acadia-color-control-border: rgba(255, 255, 255, 0.12);
     --acadia-color-control-placeholder: #aeb6c2;
     --acadia-control-select-icon: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23dee2e6' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
     --acadia-color-text: #f4f5f6;
-    --acadia-color-text-muted: #aeb6c2;
-    --acadia-color-border: rgba(255, 255, 255, 0.11);
-    --acadia-color-border-strong: rgba(255, 255, 255, 0.18);
+    --acadia-color-text-muted: #b7bec8;
+    --acadia-color-border: rgba(255, 255, 255, 0.1);
+    --acadia-color-border-strong: rgba(255, 255, 255, 0.17);
     --acadia-color-brand: #23b0a9;
-    --acadia-color-brand-ink: #49d6cd;
-    --acadia-color-action-ink: #49d6cd;
+    --acadia-color-brand-ink: #4fd8d3;
+    --acadia-color-action-ink: #4fd8d3;
     --acadia-chrome-color-text: #f4f5f6;
     --acadia-chrome-color-text-muted: #b7bec8;
     --acadia-chrome-color-brand: #007b78;
@@ -217,21 +219,22 @@
     --acadia-color-warning-border: rgba(255, 214, 10, 0.28);
     --acadia-color-success-bg: rgba(48, 209, 88, 0.13);
     --acadia-color-success-border: rgba(48, 209, 88, 0.28);
-    --acadia-color-info-bg: rgba(35, 176, 169, 0.16);
-    --acadia-color-info-border: rgba(35, 176, 169, 0.32);
-    --acadia-focus-ring: 0 0 0 0.25rem rgba(35, 176, 169, 0.32);
+    --acadia-color-info-bg: rgba(0, 123, 120, 0.2);
+    --acadia-color-info-border: rgba(0, 123, 120, 0.38);
+    --acadia-focus-ring: 0 0 0 0.1875rem rgba(0, 123, 120, 0.32);
     --acadia-shadow-card:
-      0 1.5rem 3.5rem rgba(0, 0, 0, 0.24),
-      0 0.125rem 0.625rem rgba(0, 0, 0, 0.22);
+      0 0.875rem 2.25rem rgba(0, 0, 0, 0.22),
+      0 0.125rem 0.5rem rgba(0, 0, 0, 0.18);
     --acadia-shadow-card-hover:
-      0 1rem 2.35rem rgba(0, 0, 0, 0.3),
-      0 0.125rem 0.625rem rgba(0, 0, 0, 0.24);
+      0 1.125rem 2.625rem rgba(0, 0, 0, 0.28),
+      0 0.375rem 1rem rgba(0, 0, 0, 0.21);
     --acadia-shadow-control:
       inset 0 1px 0 rgba(255, 255, 255, 0.055),
-      0 1px 2px rgba(0, 0, 0, 0.18),
-      0 0.25rem 0.75rem rgba(0, 0, 0, 0.1);
-    --acadia-shadow-surface-highlight: inset 0 1px 0 rgba(255, 255, 255, 0.07);
-    --acadia-shadow-chrome: 0 0.75rem 2rem rgba(0, 0, 0, 0.2);
+      0 1px 2px rgba(0, 0, 0, 0.18);
+    --acadia-shadow-surface-highlight: inset 0 1px 0 rgba(255, 255, 255, 0.055);
+    --acadia-shadow-chrome:
+      0 0.5rem 1.625rem rgba(0, 0, 0, 0.2),
+      inset 0 1px 0 rgba(255, 255, 255, 0.055);
     --acadia-mobile-nav-background: color-mix(in srgb, #11151b 86%, transparent);
     --acadia-mobile-nav-border: rgba(255, 255, 255, 0.12);
     --acadia-mobile-nav-shadow:
@@ -642,7 +645,7 @@ body {
 .acadia-surface {
   -webkit-backdrop-filter: var(--acadia-vibrancy);
   backdrop-filter: var(--acadia-vibrancy);
-  background: color-mix(in srgb, var(--acadia-color-surface) 94%, transparent);
+  background: color-mix(in srgb, var(--acadia-color-surface) 96%, transparent);
   background-clip: padding-box;
   border: 1px solid var(--acadia-color-border);
   border-radius: var(--acadia-radius-md);
@@ -2916,6 +2919,7 @@ body {
 
   .page-title-row,
   .mercury-page-dashboard .page-title-row {
+    gap: var(--acadia-space-2);
     padding: 1rem;
   }
 
@@ -3035,15 +3039,35 @@ body {
 
   .mercury-page-dashboard .mobile-dashboard-card {
     display: grid;
-    gap: 0.75rem;
+    gap: 0.625rem;
     justify-self: center;
-    min-height: 25.5rem;
+    min-height: 0;
     padding: 0.875rem 0.875rem 0;
     width: min(100%, 26rem);
   }
 
   .mercury-page-dashboard .mobile-dashboard-chart {
-    height: clamp(5.5rem, 26vw, 6.75rem);
+    height: clamp(4.75rem, 22vw, 5.75rem);
+    padding-top: 0.35rem;
+  }
+
+  .mobile-dashboard-axis {
+    margin-top: -0.45rem;
+  }
+
+  .mobile-dashboard-band {
+    margin-inline: -0.875rem;
+    min-height: 3.75rem;
+    padding: 0.625rem 0.875rem;
+  }
+
+  .mobile-dashboard-band strong {
+    font-size: 1.1rem;
+    line-height: 1.15rem;
+  }
+
+  .mobile-source-stack {
+    gap: 0.375rem;
   }
 
   .hero-movers {
@@ -3076,19 +3100,28 @@ body {
 
   .page-controls-row {
     align-items: stretch;
-    background: color-mix(in srgb, var(--acadia-color-surface-muted) 78%, transparent);
+    -webkit-backdrop-filter: var(--acadia-vibrancy);
+    backdrop-filter: var(--acadia-vibrancy);
+    background: color-mix(in srgb, var(--acadia-color-surface) 88%, transparent);
+    background-clip: padding-box;
     border: 1px solid var(--acadia-color-border);
     border-top: 1px solid var(--acadia-color-border);
     border-radius: var(--acadia-radius-md);
+    box-shadow:
+      var(--acadia-shadow-control),
+      var(--acadia-shadow-surface-highlight);
+    gap: 0.5rem;
     max-width: none;
-    padding-top: 0.75rem;
-    padding: 0.75rem;
+    padding-top: 0.625rem;
+    padding: 0.625rem;
     width: 100%;
   }
 
   .control-availability-note {
+    font-size: 0.72rem;
     grid-column: 1 / -1;
-    margin-top: 0.5rem;
+    line-height: 1rem;
+    margin-top: 0.25rem;
     max-width: none;
     text-align: left;
   }
@@ -3096,7 +3129,7 @@ body {
   .page-actions {
     align-items: center;
     display: grid;
-    gap: 0.625rem;
+    gap: 0.5rem;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     width: 100%;
   }
@@ -3151,6 +3184,16 @@ body {
     min-height: 2.35rem;
     min-width: 2.35rem;
     width: 2.35rem;
+  }
+
+  .mobile-dashboard-actions {
+    gap: 0.375rem;
+  }
+
+  .mobile-dashboard-actions .unavailable-state-action {
+    font-size: 0.84rem;
+    min-height: 2.25rem;
+    padding: 0.42rem 0.58rem;
   }
 
   .metric-grid,
@@ -3304,6 +3347,6 @@ body {
   }
 
   .mobile-dashboard-band {
-    min-height: 4rem;
+    min-height: 3.75rem;
   }
 }
