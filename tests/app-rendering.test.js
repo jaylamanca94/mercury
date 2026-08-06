@@ -1704,6 +1704,109 @@ test("hero trend chart uses period-filtered visible cards", () => {
   assert.match(styles, /\.hero-chart-panel\s*{[^}]*height: 4\.75rem;/s);
 });
 
+test("Markets hero compares fixed VOO and VXUS indexed performance", () => {
+  const context = loadAppContext("markets");
+  const result = vm.runInContext(
+    `
+      marketPulse = [
+        {
+          id: "us-equities",
+          ticker: "VOO",
+          sourceStatus: "Source-backed",
+          cadence: "Daily market close",
+          comparison: "percent-change",
+          history: [{ value: 100 }, { value: 102 }, { value: 105 }, { value: 108 }, { value: 112 }, { value: 120 }],
+        },
+        {
+          id: "global-international",
+          ticker: "VXUS",
+          sourceStatus: "Source-backed",
+          cadence: "Daily market close",
+          comparison: "percent-change",
+          history: [{ value: 50 }, { value: 49 }, { value: 48 }, { value: 47 }, { value: 47.5 }, { value: 52.5 }],
+        },
+      ];
+      selectedEconomyPeriod = "week";
+      selectedRegion = "Europe";
+      const weekSeries = buildHeroComparisonSeries().map((item) => ({
+        available: item.available,
+        points: item.points,
+        ticker: item.ticker,
+      }));
+      selectedEconomyPeriod = "today";
+      const todaySeries = buildHeroComparisonSeries().map((item) => ({
+        points: item.points,
+        ticker: item.ticker,
+      }));
+      selectedEconomyPeriod = "week";
+      renderMobileDashboardCard([], { label: "+1.0%", tone: "up" });
+      ({
+        html: renderPrimaryMarketHeroChart([], { tone: "up" }),
+        mobileHtml: document.querySelector("#mobile-dashboard-chart").innerHTML,
+        region: selectedRegion,
+        todaySeries,
+        weekSeries,
+      });
+    `,
+    context,
+  );
+  const normalized = JSON.parse(JSON.stringify(result));
+
+  assert.equal(normalized.region, "Europe");
+  assert.deepEqual(normalized.weekSeries, [
+    { available: true, points: [0, 2, 5, 8, 12, 20], ticker: "VOO" },
+    { available: true, points: [0, -2, -4, -6, -5, 5], ticker: "VXUS" },
+  ]);
+  assert.deepEqual(normalized.todaySeries, [
+    { points: [0, 7.142857142857142], ticker: "VOO" },
+    { points: [0, 10.526315789473683], ticker: "VXUS" },
+  ]);
+  assert.match(normalized.html, /hero-comparison-line-voo/);
+  assert.match(normalized.html, /hero-comparison-line-vxus/);
+  assert.match(normalized.html, /hero-comparison-grid/);
+  assert.match(normalized.html, /VOO and VXUS indexed performance for Week; both series start at 0%/);
+  assert.match(normalized.html, /VOO<\/strong> U\.S\. equities/);
+  assert.match(normalized.html, /VXUS<\/strong> International equities/);
+  assert.match(normalized.mobileHtml, /hero-comparison-line-voo/);
+  assert.match(normalized.mobileHtml, /hero-comparison-line-vxus/);
+  assert.match(styles, /\.hero-comparison-line\s*{[^}]*fill: none;/s);
+  assert.match(styles, /\.hero-comparison-line-vxus\s*{[^}]*stroke-dasharray: 5 4;/s);
+  assert.doesNotMatch(styles, /hero-comparison-area/);
+});
+
+test("dashboard hero comparison handles missing ticker histories", () => {
+  const context = loadAppContext();
+  const result = vm.runInContext(
+    `
+      marketPulse = [
+        {
+          ticker: "VOO",
+          sourceStatus: "Source-backed",
+          cadence: "Daily market close",
+          comparison: "percent-change",
+          history: [{ value: 100 }, { value: 105 }, { value: 110 }],
+        },
+        {
+          ticker: "VXUS",
+          sourceStatus: "Unavailable",
+          cadence: "Daily market close",
+          comparison: "percent-change",
+          history: [],
+        },
+      ];
+      const partial = renderHeroComparisonChart();
+      marketPulse = [];
+      ({ fullUnavailable: renderHeroComparisonChart(), partial });
+    `,
+    context,
+  );
+
+  assert.match(result.partial, /hero-comparison-line-voo/);
+  assert.doesNotMatch(result.partial, /hero-comparison-line-vxus/);
+  assert.match(result.partial, /VXUS<\/strong> International equities · Unavailable/);
+  assert.equal(result.fullUnavailable, "");
+});
+
 test("five-year period and long sparkline smoothing are available", () => {
   const context = loadAppContext();
   const result = vm.runInContext(

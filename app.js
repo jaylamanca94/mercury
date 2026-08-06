@@ -309,6 +309,10 @@ const MARKET_ROLE_ORDER = [
 ];
 const CONTEXT_ONLY_METRIC_IDS = new Set(["oil", "dollar-index", "euro", "yen", "inflation", "interest-rates"]);
 const CONTEXT_ONLY_TREND_MODELS = new Set(["commodity", "currency", "dollar", "inflation", "policy-rate"]);
+const HERO_COMPARISON_SERIES = [
+  { ticker: "VOO", label: "VOO", description: "U.S. equities", className: "voo" },
+  { ticker: "VXUS", label: "VXUS", description: "International equities", className: "vxus" },
+];
 const currentPage = document.body?.dataset?.mercuryPage || "dashboard";
 let selectedEconomyPeriod = "week";
 let selectedCurrencyPeriod = "week";
@@ -1236,6 +1240,121 @@ function renderHeroSparkline(cards, change) {
   );
 }
 
+function normalizeIndexedPoints(points) {
+  const baseline = points[0];
+
+  if (!Number.isFinite(baseline) || baseline === 0) {
+    return [];
+  }
+
+  return points.map((point) => ((point - baseline) / baseline) * 100);
+}
+
+function buildHeroComparisonSeries() {
+  const comparisonCards = HERO_COMPARISON_SERIES.map((definition) => {
+    const metric = marketPulse.find((item) => item.ticker === definition.ticker);
+    const card = metric ? withPeriodDelta(metric, selectedEconomyPeriod) : null;
+    const rawPoints = Array.isArray(card?.periodPoints) ? card.periodPoints.filter(Number.isFinite) : [];
+    const indexedPoints =
+      card?.sourceStatus === "Source-backed" && rawPoints.length > 1
+        ? normalizeIndexedPoints(rawPoints)
+        : [];
+
+    return {
+      ...definition,
+      available: indexedPoints.length > 1,
+      points: indexedPoints.length > 1 ? smoothSparklineValues(indexedPoints) : [],
+    };
+  });
+  const availableSeries = comparisonCards.filter((series) => series.available);
+
+  if (!availableSeries.length) {
+    return comparisonCards;
+  }
+
+  const targetLength = Math.min(Math.max(...availableSeries.map((series) => series.points.length)), 96);
+
+  return comparisonCards.map((series) =>
+    series.available
+      ? { ...series, points: Array.from({ length: targetLength }, (_, index) => resampledPoint(series.points, index, targetLength)) }
+      : series,
+  );
+}
+
+function heroComparisonLabel(series) {
+  if (!series.available) {
+    return `${series.label} (${series.description}) unavailable`;
+  }
+
+  return `${series.label} (${series.description}) ${formatDeltaLabel(series.points.at(-1), "percent-change")} from start`;
+}
+
+function renderHeroComparisonChart() {
+  const series = buildHeroComparisonSeries();
+  const availableSeries = series.filter((item) => item.available);
+
+  if (!availableSeries.length) {
+    return "";
+  }
+
+  const values = availableSeries.flatMap((item) => item.points);
+  let min = Math.min(0, ...values);
+  let max = Math.max(0, ...values);
+
+  if (min === max) {
+    min -= 0.5;
+    max += 0.5;
+  }
+
+  const width = 180;
+  const height = 42;
+  const range = max - min;
+  const pointY = (point) => height - ((point - min) / range) * (height - 8) - 4;
+  const baselineY = pointY(0).toFixed(1);
+  const gridLines = [10.5, 21, 31.5]
+    .map((y) => `<line class="hero-comparison-grid" x1="0" y1="${y}" x2="${width}" y2="${y}" aria-hidden="true"></line>`)
+    .join("");
+  const paths = availableSeries
+    .map((item) => {
+      const coordinates = item.points.map((point, index) => ({
+        x: (index / (item.points.length - 1)) * width,
+        y: pointY(point),
+      }));
+
+      return `<path class="hero-comparison-line hero-comparison-line-${escapeHtml(item.className)}" d="${smoothSparklinePath(coordinates)}" aria-hidden="true"></path>`;
+    })
+    .join("");
+  const label = `VOO and VXUS indexed performance for ${periodOption(selectedEconomyPeriod).label}; both series start at 0%. ${series
+    .map(heroComparisonLabel)
+    .join(". ")}.`;
+
+  return `
+    <div class="hero-comparison">
+      <div class="hero-comparison-legend" aria-label="VOO and VXUS chart legend">
+        ${series
+          .map(
+            (item) => `
+              <span class="hero-comparison-key hero-comparison-key-${escapeHtml(item.className)}${item.available ? "" : " is-unavailable"}">
+                <i aria-hidden="true"></i>
+                <span><strong>${escapeHtml(item.label)}</strong> ${escapeHtml(item.description)}${item.available ? "" : " · Unavailable"}</span>
+              </span>
+            `,
+          )
+          .join("")}
+      </div>
+      <svg class="hero-comparison-chart" viewBox="0 0 ${width} ${height}" preserveAspectRatio="none" role="img" aria-label="${escapeHtml(label)}">
+        ${gridLines}
+        <line class="hero-comparison-baseline" x1="0" y1="${baselineY}" x2="${width}" y2="${baselineY}" aria-hidden="true"></line>
+        ${paths}
+      </svg>
+    </div>
+  `;
+}
+
+function renderPrimaryMarketHeroChart(cards, change) {
+  return isDashboardPage() || currentPage === "markets" ? renderHeroComparisonChart() : renderHeroSparkline(cards, change);
+}
+
 const MOBILE_REGION_TABS = [
   { value: "Global", label: "Global" },
   { value: "United States", label: "U.S." },
@@ -1395,7 +1514,7 @@ function renderMobileDashboardCard(cards, change) {
         ? `${change.label} - ${periodLabel} view`
         : "Waiting for comparable live inputs";
   const copy = buildHeroInsight(change, movers, selectedEconomyPeriod, selectedRegion);
-  const chart = renderHeroSparkline(cards, change);
+  const chart = renderPrimaryMarketHeroChart(cards, change);
   const actions = document.querySelector("#mobile-dashboard-actions");
 
   card.classList.remove(
@@ -1453,7 +1572,7 @@ function updateHeroInsight(cards, change) {
   }
 
   setText("#hero-insight", buildHeroInsight(change, movers, selectedEconomyPeriod, selectedRegion));
-  setHtml("#hero-sparkline", renderHeroSparkline(cards, change));
+  setHtml("#hero-sparkline", renderPrimaryMarketHeroChart(cards, change));
   setHtml("#hero-movers", renderHeroMovers(movers));
 }
 
