@@ -197,7 +197,8 @@ Use `8px` or less for normal cards and repeated list items unless a larger conta
 - The Dashboard and Markets page heroes compare VOO (U.S. large cap), VXUS (international equities),
   VB (U.S. small cap), and VGT (U.S. technology). Index every series to 0% at the start of the
   selected period, use a shared percentage scale and a visible legend with distinct brand-consistent
-  solid colors, and do not use area fills. This comparison remains fixed when the region filter changes.
+  solid colors. Render the lines at 72% opacity so overlaps visibly blend, and do not use area fills.
+  This comparison remains fixed when the region filter changes.
 - Sparkline movement should include a subtle low-opacity area fill under the line using the same
   movement color. Keep the fill quiet so it supports scan clarity without becoming a heavy area chart.
 - Avoid chart types that require financial expertise to interpret.

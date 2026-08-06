@@ -1157,6 +1157,7 @@ body {
 
 .hero-comparison-line {
   fill: none;
+  opacity: 0.72;
   stroke-linecap: round;
   stroke-linejoin: round;
   stroke-width: 2;
