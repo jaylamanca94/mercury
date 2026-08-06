@@ -77,7 +77,7 @@ let marketPulse = [
     region: "United States",
     viewGroup: "economy",
   }),
-  pendingMetric("Small Cap", "Vanguard Small-Cap Index Fund", "fa-shop", "us-small-cap", "VSMAX", {
+  pendingMetric("Small Cap", "Vanguard Small-Cap ETF", "fa-shop", "us-small-cap", "VB", {
     marketOrder: 20,
     marketRole: "small-cap",
     region: "United States",
@@ -310,8 +310,10 @@ const MARKET_ROLE_ORDER = [
 const CONTEXT_ONLY_METRIC_IDS = new Set(["oil", "dollar-index", "euro", "yen", "inflation", "interest-rates"]);
 const CONTEXT_ONLY_TREND_MODELS = new Set(["commodity", "currency", "dollar", "inflation", "policy-rate"]);
 const HERO_COMPARISON_SERIES = [
-  { ticker: "VOO", label: "VOO", description: "U.S. equities", className: "voo" },
+  { ticker: "VOO", label: "VOO", description: "U.S. large cap", className: "voo" },
   { ticker: "VXUS", label: "VXUS", description: "International equities", className: "vxus" },
+  { ticker: "VB", label: "VB", description: "U.S. small cap", className: "vb" },
+  { ticker: "VGT", label: "VGT", description: "U.S. technology", className: "vgt" },
 ];
 const currentPage = document.body?.dataset?.mercuryPage || "dashboard";
 let selectedEconomyPeriod = "week";
@@ -1324,13 +1326,13 @@ function renderHeroComparisonChart() {
       return `<path class="hero-comparison-line hero-comparison-line-${escapeHtml(item.className)}" d="${smoothSparklinePath(coordinates)}" aria-hidden="true"></path>`;
     })
     .join("");
-  const label = `VOO and VXUS indexed performance for ${periodOption(selectedEconomyPeriod).label}; both series start at 0%. ${series
+  const label = `${humanList(series.map((item) => item.label))} indexed performance for ${periodOption(selectedEconomyPeriod).label}; every series starts at 0%. ${series
     .map(heroComparisonLabel)
     .join(". ")}.`;
 
   return `
     <div class="hero-comparison">
-      <div class="hero-comparison-legend" aria-label="VOO and VXUS chart legend">
+      <div class="hero-comparison-legend" aria-label="Market performance chart legend">
         ${series
           .map(
             (item) => `

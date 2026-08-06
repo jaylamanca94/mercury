@@ -171,7 +171,7 @@ test("focused regional markets expose region-specific economy lenses", () => {
   );
   assert.deepEqual(
     normalizedCards.unitedStates.map((card) => card.ticker),
-    ["VOO", "VSMAX", "VGT", "VFH", "VIS", "BND", "VDE", "VNQ", "VHT", "VCR", "VOX", "VUG", "VAW"],
+    ["VOO", "VB", "VGT", "VFH", "VIS", "BND", "VDE", "VNQ", "VHT", "VCR", "VOX", "VUG", "VAW"],
   );
   assert.deepEqual(
     normalizedCards.europe.map((card) => card.name),
@@ -565,7 +565,7 @@ test("markets page adds contextual key drivers for global and focused regions", 
       selectedEconomyPeriod = "week";
       marketPulse = [
         { id: "us-equities", name: "S&P 500", value: "$681.41", change: "+2.2%", ticker: "VOO", viewGroup: "economy", region: "United States", marketRole: "large-cap", sourceStatus: "Source-backed", freshness: { status: "current" }, history: [{ value: 666 }, { value: 681.41 }], comparison: "percent-change" },
-        { id: "us-small-cap", name: "Small Cap", value: "$142.01", change: "+1.7%", ticker: "VSMAX", viewGroup: "economy", region: "United States", marketRole: "small-cap", sourceStatus: "Source-backed", freshness: { status: "current" }, history: [{ value: 139.6 }, { value: 142.01 }], comparison: "percent-change" },
+        { id: "us-small-cap", name: "Small Cap", value: "$142.01", change: "+1.7%", ticker: "VB", viewGroup: "economy", region: "United States", marketRole: "small-cap", sourceStatus: "Source-backed", freshness: { status: "current" }, history: [{ value: 139.6 }, { value: 142.01 }], comparison: "percent-change" },
         { id: "us-technology", name: "Technology", value: "$116.93", change: "+4.1%", ticker: "VGT", viewGroup: "economy", region: "United States", marketRole: "technology", sourceStatus: "Source-backed", freshness: { status: "current" }, history: [{ value: 112.33 }, { value: 116.93 }], comparison: "percent-change" },
         { id: "us-financials", name: "Financials", value: "$108.12", change: "+1.1%", ticker: "VFH", viewGroup: "economy", region: "United States", marketRole: "financials", sourceStatus: "Source-backed", freshness: { status: "current" }, history: [{ value: 106.94 }, { value: 108.12 }], comparison: "percent-change" },
         { id: "us-industrials", name: "Industrials", value: "$238.33", change: "+0.9%", ticker: "VIS", viewGroup: "economy", region: "United States", marketRole: "industrials", sourceStatus: "Source-backed", freshness: { status: "current" }, history: [{ value: 236.2 }, { value: 238.33 }], comparison: "percent-change" },
@@ -807,15 +807,15 @@ test("core market cards use Figma ticker rows and hide proxy subtitles", () => {
         }),
         renderMetricCard({
           name: "Small Cap",
-          context: "Vanguard Small-Cap Index Fund",
+          context: "Vanguard Small-Cap ETF",
           value: "$142.01",
           change: "+35.6%",
           tone: "up",
-          ticker: "VSMAX",
+          ticker: "VB",
           icon: "fa-shop",
           marketRole: "small-cap",
-          source: "Yahoo Finance: Vanguard Small-Cap Index Fund Admiral Shares chart",
-          cadence: "Daily fund close",
+          source: "Yahoo Finance: Vanguard Small-Cap ETF chart",
+          cadence: "Daily market close",
           sourceStatus: "Source-backed",
           freshness: { status: "current", label: "Current" },
           points: [110, 142.01],
@@ -827,14 +827,14 @@ test("core market cards use Figma ticker rows and hide proxy subtitles", () => {
   );
 
   assert.match(html, /title="S&amp;P 500 - VOO - Vanguard S&amp;P 500 ETF"/);
-  assert.match(html, /title="Small Cap - VSMAX - Vanguard Small-Cap Index Fund"/);
+  assert.match(html, /title="Small Cap - VB - Vanguard Small-Cap ETF"/);
   assert.match(html, /class="metric-row metric-title-line"/);
   assert.match(html, /class="metric-row metric-detail-line"/);
   assert.match(html, /<span class="metric-caption">VOO<\/span>/);
-  assert.match(html, /<span class="metric-caption">VSMAX<\/span>/);
+  assert.match(html, /<span class="metric-caption">VB<\/span>/);
   assert.doesNotMatch(html, /metric-icon/);
   assert.doesNotMatch(html, /class="metric-context">Vanguard S&amp;P 500 ETF/);
-  assert.doesNotMatch(html, /class="metric-context">Vanguard Small-Cap Index Fund/);
+  assert.doesNotMatch(html, /class="metric-context">Vanguard Small-Cap ETF/);
 });
 
 test("support metric cards use clean inline captions instead of long subtitles", () => {
@@ -1704,7 +1704,7 @@ test("hero trend chart uses period-filtered visible cards", () => {
   assert.match(styles, /\.hero-chart-panel\s*{[^}]*height: 4\.75rem;/s);
 });
 
-test("Markets hero compares fixed VOO and VXUS indexed performance", () => {
+test("Markets hero compares four fixed indexed market series", () => {
   const context = loadAppContext("markets");
   const result = vm.runInContext(
     `
@@ -1724,6 +1724,22 @@ test("Markets hero compares fixed VOO and VXUS indexed performance", () => {
           cadence: "Daily market close",
           comparison: "percent-change",
           history: [{ value: 50 }, { value: 49 }, { value: 48 }, { value: 47 }, { value: 47.5 }, { value: 52.5 }],
+        },
+        {
+          id: "us-small-cap",
+          ticker: "VB",
+          sourceStatus: "Source-backed",
+          cadence: "Daily market close",
+          comparison: "percent-change",
+          history: [{ value: 80 }, { value: 81 }, { value: 80.5 }, { value: 82 }, { value: 84 }, { value: 83 }],
+        },
+        {
+          id: "us-technology",
+          ticker: "VGT",
+          sourceStatus: "Source-backed",
+          cadence: "Daily market close",
+          comparison: "percent-change",
+          history: [{ value: 500 }, { value: 510 }, { value: 515 }, { value: 520 }, { value: 535 }, { value: 550 }],
         },
       ];
       selectedEconomyPeriod = "week";
@@ -1756,21 +1772,31 @@ test("Markets hero compares fixed VOO and VXUS indexed performance", () => {
   assert.deepEqual(normalized.weekSeries, [
     { available: true, points: [0, 2, 5, 8, 12, 20], ticker: "VOO" },
     { available: true, points: [0, -2, -4, -6, -5, 5], ticker: "VXUS" },
+    { available: true, points: [0, 1.25, 0.625, 2.5, 5, 3.75], ticker: "VB" },
+    { available: true, points: [0, 2, 3, 4, 7.000000000000001, 10], ticker: "VGT" },
   ]);
   assert.deepEqual(normalized.todaySeries, [
     { points: [0, 7.142857142857142], ticker: "VOO" },
     { points: [0, 10.526315789473683], ticker: "VXUS" },
+    { points: [0, -1.1904761904761905], ticker: "VB" },
+    { points: [0, 2.803738317757009], ticker: "VGT" },
   ]);
   assert.match(normalized.html, /hero-comparison-line-voo/);
   assert.match(normalized.html, /hero-comparison-line-vxus/);
+  assert.match(normalized.html, /hero-comparison-line-vb/);
+  assert.match(normalized.html, /hero-comparison-line-vgt/);
   assert.match(normalized.html, /hero-comparison-grid/);
-  assert.match(normalized.html, /VOO and VXUS indexed performance for Week; both series start at 0%/);
-  assert.match(normalized.html, /VOO<\/strong> U\.S\. equities/);
+  assert.match(normalized.html, /VOO, VXUS, VB, and VGT indexed performance for Week; every series starts at 0%/);
+  assert.match(normalized.html, /VOO<\/strong> U\.S\. large cap/);
   assert.match(normalized.html, /VXUS<\/strong> International equities/);
+  assert.match(normalized.html, /VB<\/strong> U\.S\. small cap/);
+  assert.match(normalized.html, /VGT<\/strong> U\.S\. technology/);
   assert.match(normalized.mobileHtml, /hero-comparison-line-voo/);
   assert.match(normalized.mobileHtml, /hero-comparison-line-vxus/);
+  assert.match(normalized.mobileHtml, /hero-comparison-line-vb/);
+  assert.match(normalized.mobileHtml, /hero-comparison-line-vgt/);
   assert.match(styles, /\.hero-comparison-line\s*{[^}]*fill: none;/s);
-  assert.match(styles, /\.hero-comparison-line-vxus\s*{[^}]*stroke-dasharray: 5 4;/s);
+  assert.doesNotMatch(styles, /hero-comparison-line-vxus\s*{[^}]*stroke-dasharray/s);
   assert.doesNotMatch(styles, /hero-comparison-area/);
 });
 
@@ -1803,6 +1829,8 @@ test("dashboard hero comparison handles missing ticker histories", () => {
 
   assert.match(result.partial, /hero-comparison-line-voo/);
   assert.doesNotMatch(result.partial, /hero-comparison-line-vxus/);
+  assert.doesNotMatch(result.partial, /hero-comparison-line-vb/);
+  assert.doesNotMatch(result.partial, /hero-comparison-line-vgt/);
   assert.match(result.partial, /VXUS<\/strong> International equities · Unavailable/);
   assert.equal(result.fullUnavailable, "");
 });

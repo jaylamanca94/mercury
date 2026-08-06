@@ -102,7 +102,9 @@
   --mercury-confidence: #2563eb;
   --mercury-caution: #b86b00;
   --mercury-chart-voo: #007b78;
-  --mercury-chart-vxus: #5b5fc7;
+  --mercury-chart-vxus: #2563eb;
+  --mercury-chart-vb: #b86b00;
+  --mercury-chart-vgt: #7c3aed;
   --mercury-page-tint: rgba(0, 123, 120, 0.08);
   --mercury-sky-tint: rgba(37, 99, 235, 0.055);
   --mercury-warm-tint: rgba(184, 107, 0, 0.055);
@@ -182,7 +184,9 @@
   --mercury-confidence: #8ab4ff;
   --mercury-caution: #ffd166;
   --mercury-chart-voo: #4fd8d3;
-  --mercury-chart-vxus: #b5b9ff;
+  --mercury-chart-vxus: #8ab4ff;
+  --mercury-chart-vb: #ffd166;
+  --mercury-chart-vgt: #c4b5fd;
   --mercury-page-tint: rgba(35, 176, 169, 0.1);
   --mercury-sky-tint: rgba(138, 180, 255, 0.07);
   --mercury-warm-tint: rgba(255, 209, 102, 0.06);
@@ -258,7 +262,9 @@
     --mercury-confidence: #8ab4ff;
     --mercury-caution: #ffd166;
     --mercury-chart-voo: #4fd8d3;
-    --mercury-chart-vxus: #b5b9ff;
+    --mercury-chart-vxus: #8ab4ff;
+    --mercury-chart-vb: #ffd166;
+    --mercury-chart-vgt: #c4b5fd;
     --mercury-page-tint: rgba(35, 176, 169, 0.1);
     --mercury-sky-tint: rgba(138, 180, 255, 0.07);
     --mercury-warm-tint: rgba(255, 209, 102, 0.06);
@@ -1110,8 +1116,12 @@ body {
   color: var(--mercury-chart-vxus);
 }
 
-.hero-comparison-key-vxus i {
-  border-top-style: dashed;
+.hero-comparison-key-vb {
+  color: var(--mercury-chart-vb);
+}
+
+.hero-comparison-key-vgt {
+  color: var(--mercury-chart-vgt);
 }
 
 .hero-comparison-key.is-unavailable {
@@ -1159,8 +1169,14 @@ body {
 
 .hero-comparison-line-vxus {
   stroke: var(--mercury-chart-vxus);
-  stroke-dasharray: 5 4;
-  stroke-width: 1.8;
+}
+
+.hero-comparison-line-vb {
+  stroke: var(--mercury-chart-vb);
+}
+
+.hero-comparison-line-vgt {
+  stroke: var(--mercury-chart-vgt);
 }
 
 .mercury-page-markets .hero-chart-panel {

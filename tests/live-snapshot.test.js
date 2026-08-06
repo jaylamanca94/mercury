@@ -62,7 +62,7 @@ test("Yahoo market pulse uses economic-segment proxies for focused market views"
 
   assert.deepEqual(economySeriesFor("United States"), [
     { id: "us-equities", marketRole: "large-cap", symbol: "VOO" },
-    { id: "us-small-cap", marketRole: "small-cap", symbol: "VSMAX" },
+    { id: "us-small-cap", marketRole: "small-cap", symbol: "VB" },
     { id: "us-technology", marketRole: "technology", symbol: "VGT" },
     { id: "us-financials", marketRole: "financials", symbol: "VFH" },
     { id: "us-industrials", marketRole: "industrials", symbol: "VIS" },

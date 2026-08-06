@@ -194,10 +194,10 @@ Use `8px` or less for normal cards and repeated list items unless a larger conta
   sharp segmented paths, including two-point Today charts.
 - Longer-horizon sparklines such as Year and 5 years should apply a light smoothing/downsampling
   pass so dense daily market history reads as a calm trend instead of a jagged raw data trace.
-- The Dashboard and Markets page heroes use a fixed VOO (U.S. equities) versus VXUS (international
-  equities) comparison. Index both series to 0% at the start of the selected period, use a shared
-  percentage scale and a visible high-contrast legend, and do not use area fills. This comparison
-  remains fixed when the region filter changes.
+- The Dashboard and Markets page heroes compare VOO (U.S. large cap), VXUS (international equities),
+  VB (U.S. small cap), and VGT (U.S. technology). Index every series to 0% at the start of the
+  selected period, use a shared percentage scale and a visible legend with distinct brand-consistent
+  solid colors, and do not use area fills. This comparison remains fixed when the region filter changes.
 - Sparkline movement should include a subtle low-opacity area fill under the line using the same
   movement color. Keep the fill quiet so it supports scan clarity without becoming a heavy area chart.
 - Avoid chart types that require financial expertise to interpret.
