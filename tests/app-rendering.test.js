@@ -1796,7 +1796,10 @@ test("Markets hero compares four fixed indexed market series", () => {
   assert.match(normalized.mobileHtml, /hero-comparison-line-vb/);
   assert.match(normalized.mobileHtml, /hero-comparison-line-vgt/);
   assert.match(styles, /\.hero-comparison-line\s*{[^}]*fill: none;[^}]*opacity: 0\.72;/s);
+  assert.doesNotMatch(styles, /hero-comparison-line-voo\s*{[^}]*stroke-dasharray/s);
   assert.doesNotMatch(styles, /hero-comparison-line-vxus\s*{[^}]*stroke-dasharray/s);
+  assert.match(styles, /\.hero-comparison-line-vb\s*{[^}]*stroke-dasharray: 6 4;/s);
+  assert.match(styles, /\.hero-comparison-line-vgt\s*{[^}]*stroke-dasharray: 6 4;/s);
   assert.doesNotMatch(styles, /hero-comparison-area/);
 });
 

@@ -1124,6 +1124,11 @@ body {
   color: var(--mercury-chart-vgt);
 }
 
+.hero-comparison-key-vb i,
+.hero-comparison-key-vgt i {
+  border-top-style: dashed;
+}
+
 .hero-comparison-key.is-unavailable {
   color: var(--acadia-color-text-muted);
   opacity: 0.72;
@@ -1174,10 +1179,12 @@ body {
 
 .hero-comparison-line-vb {
   stroke: var(--mercury-chart-vb);
+  stroke-dasharray: 6 4;
 }
 
 .hero-comparison-line-vgt {
   stroke: var(--mercury-chart-vgt);
+  stroke-dasharray: 6 4;
 }
 
 .mercury-page-markets .hero-chart-panel {
