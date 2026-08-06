@@ -1835,12 +1835,13 @@ test("dashboard hero comparison handles missing ticker histories", () => {
   assert.equal(result.fullUnavailable, "");
 });
 
-test("five-year period and long sparkline smoothing are available", () => {
+test("three-month and five-year periods support long sparkline views", () => {
   const context = loadAppContext();
   const result = vm.runInContext(
     `
       ({
         fiveYear: PERIOD_OPTIONS.fiveYear,
+        threeMonth: PERIOD_OPTIONS.threeMonth,
         monthPoints: smoothSparklineValues(Array.from({ length: 21 }, (_, index) => index)),
         yearPoints: smoothSparklineValues(Array.from({ length: 252 }, (_, index) => index % 2 === 0 ? 100 : 110)),
       });
@@ -1850,10 +1851,17 @@ test("five-year period and long sparkline smoothing are available", () => {
 
   assert.equal(result.fiveYear.label, "5 years");
   assert.equal(result.fiveYear.dailyObservations, 1260);
+  assert.equal(result.threeMonth.label, "3 months");
+  assert.equal(result.threeMonth.dailyObservations, 63);
+  assert.equal(result.threeMonth.weeklyObservations, 13);
+  assert.equal(result.threeMonth.monthlyObservations, 3);
   assert.equal(result.monthPoints.length, 21);
   assert.equal(result.yearPoints.length, 96);
   assert.notEqual(result.yearPoints[1], 110);
   assert.match(indexHtml, /<option value="fiveYear">5 years<\/option>/);
+  [indexHtml, marketsHtml, supportsHtml, indicatorsHtml].forEach((html) => {
+    assert.match(html, /<option value="threeMonth">3 months<\/option>/);
+  });
   assert.match(indexHtml, /class="page-title-row[^"]*"[\s\S]*class="page-controls-row"[\s\S]*economy-period-select/s);
   assert.match(styles, /\.page-controls-row\s*{[^}]*justify-content: flex-end;/s);
   assert.match(styles, /\.page-controls-row\s*{[^}]*align-self: start;/s);

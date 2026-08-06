@@ -273,6 +273,14 @@ const PERIOD_OPTIONS = {
     quarterlyObservations: 1,
     annualObservations: 1,
   },
+  threeMonth: {
+    label: "3 months",
+    dailyObservations: 63,
+    weeklyObservations: 13,
+    monthlyObservations: 3,
+    quarterlyObservations: 1,
+    annualObservations: 1,
+  },
   year: {
     label: "Year",
     dailyObservations: 252,
@@ -600,6 +608,7 @@ function sentimentForChange(change) {
 
 function periodPhrase(period) {
   if (period === "today") return "today";
+  if (period === "threeMonth") return "over three months";
   if (period === "year") return "this year";
   if (period === "fiveYear") return "over five years";
 
@@ -701,6 +710,7 @@ function periodTitlePhrase(period) {
   if (period === "today") return "Today";
   if (period === "week") return "This Week";
   if (period === "month") return "This Month";
+  if (period === "threeMonth") return "Last 3 Months";
   if (period === "year") return "This Year";
   if (period === "fiveYear") return "Over Five Years";
 
@@ -1431,6 +1441,7 @@ function renderMobileRegionTabs() {
 function mobileAxisLabels(period) {
   if (period === "today") return ["Open", "Midday", "Now"];
   if (period === "month") return ["4 weeks ago", "2 weeks", "Now"];
+  if (period === "threeMonth") return ["3 months ago", "6 weeks", "Now"];
   if (period === "year") return ["Jan", "Midyear", "Now"];
   if (period === "fiveYear") return ["5 years", "2.5 years", "Now"];
 
