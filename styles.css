@@ -1188,7 +1188,7 @@ body {
 }
 
 .mercury-page-markets .hero-chart-panel {
-  height: clamp(6.5rem, 8vw, 9rem);
+  height: clamp(7.5rem, 9vw, 10.5rem);
 }
 
 .hero-movers {

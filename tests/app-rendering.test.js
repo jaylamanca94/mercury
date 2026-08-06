@@ -417,7 +417,7 @@ test("dashboard summary adds key signals and briefing sections", () => {
 test("dynamic dashboard containers expose live busy regions", () => {
   [
     { html: indexHtml, ids: ["overview-tiles-grid", "economy-grid", "currency-grid", "commodity-grid", "risk-list", "economic-health-grid"] },
-    { html: marketsHtml, ids: ["market-drivers-grid", "economy-grid"] },
+    { html: marketsHtml, ids: ["economy-grid"] },
     { html: supportsHtml, ids: ["support-signals-grid", "currency-grid", "commodity-grid", "digital-assets-grid"] },
     { html: indicatorsHtml, ids: ["risk-list", "economic-health-grid"] },
     { html: dataHtml, ids: ["source-health-list", "coverage-summary-list"] },
@@ -551,12 +551,14 @@ test("Mercury adapter uses the current Acadia material tokens", () => {
   );
 });
 
-test("markets page adds contextual key drivers for global and focused regions", () => {
-  assert.match(marketsHtml, /id="market-drivers-grid"/);
+test("Markets page removes Key Drivers while retaining market details", () => {
+  assert.doesNotMatch(marketsHtml, /id="market-drivers-grid"/);
+  assert.doesNotMatch(marketsHtml, />Key Drivers</);
   assert.match(marketsHtml, /id="market-sort-select"/);
   assert.match(marketsHtml, /<option value="relevance" selected>Economy order<\/option>/);
   assert.match(indexHtml, /id="market-sort-select"/);
   assert.match(styles, /\.market-drivers-grid\s*{[^}]*grid-template-columns: repeat\(3, minmax\(0, 1fr\)\);/s);
+  assert.match(styles, /\.mercury-page-markets \.hero-chart-panel\s*{[^}]*height: clamp\(7\.5rem, 9vw, 10\.5rem\);/s);
   assert.match(styles, /\.market-sort-controls\s*{[^}]*justify-self: end;[^}]*width: min\(100%, 14rem\);/s);
 
   const context = loadAppContext("markets");
