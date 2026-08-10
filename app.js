@@ -1954,6 +1954,56 @@ function renderUnavailableActionCard(copy, options = {}) {
   `;
 }
 
+function renderMarketOutageRecovery(completeUnavailable) {
+  const recoverySection = document.querySelector("#market-outage-recovery");
+  const recoveryCard = document.querySelector("#market-outage-card");
+
+  if (!recoverySection || !recoveryCard) {
+    return;
+  }
+
+  const showRecovery = currentPage === "markets" && completeUnavailable;
+
+  recoverySection.hidden = !showRecovery;
+  setDynamicContent(
+    recoveryCard,
+    showRecovery
+      ? renderUnavailableActionCard(
+          "The market read needs live source-backed values before Mercury can compare regions or returns.",
+          {
+            source: "Configured source group: Yahoo Finance market data",
+            className: "overview-unavailable-card unavailable-state-card acadia-surface acadia-panel-dense",
+          },
+        )
+      : "",
+  );
+}
+
+function renderIndicatorOutageRecovery(completeUnavailable) {
+  const recoverySection = document.querySelector("#indicator-outage-recovery");
+  const recoveryCard = document.querySelector("#indicator-outage-card");
+
+  if (!recoverySection || !recoveryCard) {
+    return;
+  }
+
+  const showRecovery = currentPage === "indicators" && completeUnavailable;
+
+  recoverySection.hidden = !showRecovery;
+  setDynamicContent(
+    recoveryCard,
+    showRecovery
+      ? renderUnavailableActionCard(
+          "Economic and risk indicators need source-backed releases before Mercury can explain the current read.",
+          {
+            source: "Configured source groups: FRED releases and Yahoo Finance/FRED risk data",
+            className: "overview-unavailable-card unavailable-state-card acadia-surface acadia-panel-dense",
+          },
+        )
+      : "",
+  );
+}
+
 function announceDashboardStatus(message) {
   setText("#dashboard-status", message);
 }
@@ -3622,6 +3672,8 @@ function renderDashboard() {
   document.body.classList.toggle("dashboard-unavailable", completeUnavailable);
   setText("#view-title", primaryViewTitle());
   setText("#economy-title", globalView ? "Regional Markets" : `${selectedRegion} Markets`);
+  renderMarketOutageRecovery(completeUnavailable);
+  renderIndicatorOutageRecovery(completeUnavailable);
 
   if (economyGrid) {
     setDynamicContent(economyGrid, completeUnavailable

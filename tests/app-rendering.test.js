@@ -472,8 +472,8 @@ test("static pages reference the current mobile dock assets", () => {
     assert.match(html, /<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">/);
     assert.match(html, /<meta name="theme-color" content="#eef1f5" data-acadia-theme-color>/);
     assert.match(html, /theme\.js\?v=20260720-material-theme/);
-    assert.match(html, /styles\.css\?v=20260720-visual-polish/);
-    assert.match(html, /app\.js\?v=20260708-shared-status-state/);
+    assert.match(html, /styles\.css\?v=20260808-outage-recovery/);
+    assert.match(html, /app\.js\?v=20260808-outage-recovery/);
     assert.match(html, /class="primary-nav acadia-nav"/);
     assert.match(html, /class="primary-nav acadia-nav acadia-mobile-dock"/);
     assert.match(html, /<\/header>\s*<nav class="primary-nav acadia-nav acadia-mobile-dock" aria-label="Mercury pages">/);
@@ -554,6 +554,11 @@ test("Mercury adapter uses the current Acadia material tokens", () => {
 test("Markets page removes Key Drivers while retaining market details", () => {
   assert.doesNotMatch(marketsHtml, /id="market-drivers-grid"/);
   assert.doesNotMatch(marketsHtml, />Key Drivers</);
+  assert.match(marketsHtml, /id="market-outage-recovery"[^>]*hidden/);
+  assert.match(
+    marketsHtml,
+    /id="dashboard-status"[\s\S]*?<\/p>\s*<section id="market-outage-recovery"[\s\S]*?<section class="dashboard-section economy-section/,
+  );
   assert.match(marketsHtml, /id="market-sort-select"/);
   assert.match(marketsHtml, /<option value="relevance" selected>Economy order<\/option>/);
   assert.match(indexHtml, /id="market-sort-select"/);
@@ -1038,6 +1043,32 @@ test("indicators briefing does not interpret loading or unavailable data", () =>
   assert.match(result.meaning, /needs live economic releases and risk indicators/i);
 });
 
+test("Indicators page has a dedicated complete-outage recovery destination", () => {
+  assert.match(indicatorsHtml, /id="indicator-outage-recovery"[^>]*hidden/);
+  assert.match(
+    indicatorsHtml,
+    /id="dashboard-status"[\s\S]*?<\/p>\s*<section id="indicator-outage-recovery"[\s\S]*?<section class="briefing-grid indicator-briefing-grid/,
+  );
+
+  const context = loadAppContext("indicators");
+  const result = vm.runInContext(
+    `
+      applyLiveFallback();
+      ({
+        hidden: document.querySelector("#indicator-outage-recovery").hidden,
+        recovery: document.querySelector("#indicator-outage-card").innerHTML,
+      });
+    `,
+    context,
+  );
+
+  assert.equal(result.hidden, false);
+  assert.match(result.recovery, /Live data unavailable/);
+  assert.match(result.recovery, /Economic and risk indicators need source-backed releases/);
+  assert.match(result.recovery, /Retry refresh/);
+  assert.match(result.recovery, /Data Coverage/);
+});
+
 test("data page summarizes data coverage and source freshness", () => {
   assert.match(dataHtml, /<title>Data Coverage \| Mercury<\/title>/);
   assert.match(dataHtml, /id="view-title" class="acadia-title">Data Coverage<\/h1>/);
@@ -1405,6 +1436,8 @@ test("markets fallback uses one recovery card before disabled market sorting", (
       applyLiveFallback();
       ({
         title: document.querySelector("#view-title").textContent,
+        recoveryHidden: document.querySelector("#market-outage-recovery").hidden,
+        recovery: document.querySelector("#market-outage-card").innerHTML,
         drivers: document.querySelector("#market-drivers-grid").innerHTML,
         economy: document.querySelector("#economy-grid").innerHTML,
         sortDisabled: document.querySelector("#market-sort-select").disabled,
@@ -1417,6 +1450,11 @@ test("markets fallback uses one recovery card before disabled market sorting", (
   );
 
   assert.equal(result.title, "Markets");
+  assert.equal(result.recoveryHidden, false);
+  assert.match(result.recovery, /Live data unavailable/);
+  assert.match(result.recovery, /market read needs live source-backed values/);
+  assert.match(result.recovery, /Retry refresh/);
+  assert.match(result.recovery, /Data Coverage/);
   assert.match(result.drivers, /Live data unavailable/);
   assert.match(result.drivers, /market read needs live source-backed values/);
   assert.match(result.drivers, /Retry refresh/);
@@ -2384,5 +2422,16 @@ test("complete outage detail pages use full-width recovery cards", () => {
   assert.match(
     styles,
     /@media \(max-width: 767\.98px\)[\s\S]*\.mercury-page-supports\.dashboard-unavailable \.support-signals-grid > \*,\s*\.mercury-page-markets\.dashboard-unavailable \.market-drivers-grid > \*\s*{[^}]*width: 100%;/s,
+  );
+});
+
+test("dashboard outage keeps one recovery read instead of repeating briefing cards", () => {
+  assert.match(
+    styles,
+    /\.mercury-page-dashboard\.dashboard-unavailable \.briefing-grid\s*{[^}]*display: none;/s,
+  );
+  assert.match(
+    styles,
+    /\.mercury-page-supports\.dashboard-unavailable \.supports-briefing-grid,[\s\S]*\.mercury-page-indicators\.dashboard-unavailable \.indicator-briefing-grid,[\s\S]*\.mercury-page-indicators\.dashboard-unavailable \.lower-grid\s*{[^}]*display: none;/s,
   );
 });

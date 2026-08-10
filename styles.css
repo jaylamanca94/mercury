@@ -2144,6 +2144,16 @@ body {
   display: none;
 }
 
+.mercury-page-dashboard.dashboard-unavailable .briefing-grid {
+  display: none;
+}
+
+.mercury-page-supports.dashboard-unavailable .supports-briefing-grid,
+.mercury-page-indicators.dashboard-unavailable .indicator-briefing-grid,
+.mercury-page-indicators.dashboard-unavailable .lower-grid {
+  display: none;
+}
+
 .mercury-page-markets.dashboard-unavailable .economy-section {
   display: none;
 }

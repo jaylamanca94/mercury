@@ -10,7 +10,7 @@
     <link rel="manifest" href="site.webmanifest">
     <script src="theme.js?v=20260720-material-theme"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" referrerpolicy="no-referrer">
-    <link rel="stylesheet" href="styles.css?v=20260720-visual-polish">
+    <link rel="stylesheet" href="styles.css?v=20260808-outage-recovery">
   </head>
   <body class="mercury-app mercury-page-detail mercury-page-indicators" data-mercury-page="indicators">
     <a class="skip-link" href="#main-content">Skip to indicators</a>
@@ -87,6 +87,10 @@
         Checking latest indicator data.
       </p>
 
+      <section id="indicator-outage-recovery" class="dashboard-section detail-panel" aria-label="Indicator data recovery" hidden>
+        <div id="indicator-outage-card" aria-live="polite" aria-busy="true"></div>
+      </section>
+
       <section class="briefing-grid indicator-briefing-grid" aria-label="Economic indicator briefing">
         <article class="brief-card indicator-read-card acadia-surface acadia-panel-dense">
           <span class="acadia-kicker">Economic read</span>
@@ -134,6 +138,6 @@
       </section>
     </main>
 
-    <script src="app.js?v=20260708-shared-status-state"></script>
+    <script src="app.js?v=20260808-outage-recovery"></script>
   </body>
 </html>
