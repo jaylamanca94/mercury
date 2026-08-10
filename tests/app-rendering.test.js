@@ -1291,6 +1291,41 @@ test("partial snapshots share status pill state handling", () => {
   assert.equal(result.freshnessIsCaution, true);
 });
 
+test("delayed and stale source windows remain explicit in settled dashboard status", () => {
+  const states = [
+    { status: "delayed", label: "Delayed source window" },
+    { status: "stale", label: "Stale source window" },
+  ];
+
+  const results = states.map((freshness) => {
+    const context = loadAppContext();
+    return vm.runInContext(
+      `
+        applySnapshotFreshnessState({ freshness: ${JSON.stringify(freshness)} });
+        ({
+          label: document.querySelector("#sample-set-date").innerHTML,
+          railLabel: document.querySelector("#snapshot-freshness").textContent,
+          isCaution: document.querySelector("#sample-set-date").classList.contains("status-pill-caution"),
+          isStale: document.querySelector("#sample-set-date").classList.contains("status-pill-stale"),
+          isLoading: document.querySelector("#sample-set-date").classList.contains("status-pill-loading"),
+        });
+      `,
+      context,
+    );
+  });
+
+  assert.match(results[0].label, /Delayed source window/);
+  assert.equal(results[0].railLabel, "Delayed source window");
+  assert.equal(results[0].isCaution, true);
+  assert.equal(results[0].isStale, false);
+  assert.equal(results[0].isLoading, false);
+  assert.match(results[1].label, /Stale source window/);
+  assert.equal(results[1].railLabel, "Stale source window");
+  assert.equal(results[1].isCaution, false);
+  assert.equal(results[1].isStale, true);
+  assert.equal(results[1].isLoading, false);
+});
+
 test("recorded live dashboard state keeps first scan and controls source-backed", () => {
   const context = loadAppContext();
   const result = vm.runInContext(
