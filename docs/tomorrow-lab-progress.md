@@ -29,4 +29,5 @@ Release-evidence gate: validate the healthy source-backed journey and its partia
 - `npm run check` completed successfully on 2026-08-09: 78 tests passed; syntax checks covered `app.js`, `theme.js`, and both serverless handlers.
 - `automation/review/2026-08-08/product-review.md` records local browser evidence for source-backed desktop Dashboard-to-Markets, outage recovery, mobile unavailable states, and theme switching.
 - `FLOW-REGISTRY.md` inventories seven canonical flows. It identifies production/mobile and full, partial, delayed, and stale live-state verification as the active validation gap.
-- Working tree contained pre-existing related product/review changes when this milestone began; they were deliberately left unstaged and unmodified.
+- The repository began with a related staged review/refinement set. It was included with this record in the focused in-scope milestone commit after the full validation suite passed.
+- Milestone commit `071f787` was validated with `npm run check` after commit and pushed to `origin/main` on 2026-08-09.
