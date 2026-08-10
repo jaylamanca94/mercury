@@ -8,12 +8,80 @@ const {
   YAHOO_HISTORY_RANGE,
   YAHOO_SERIES,
   buildFreshnessSummary,
+  buildSnapshot,
   buildSummary,
   buildValues,
   classifyReleaseFreshness,
   classifyTrend,
   parseFredCsv,
 } = liveSnapshot._internals;
+
+test("snapshot starts independent provider groups concurrently", async () => {
+  const originalFetch = global.fetch;
+  const fredCsv = [
+    "observation_date,value",
+    ...Array.from({ length: 15 }, (_, index) => {
+      const date = new Date(Date.UTC(2025, index, 1)).toISOString().slice(0, 10);
+      return `${date},${100 + index}`;
+    }),
+  ].join("\n");
+  let activeRequests = 0;
+  let maxActiveRequests = 0;
+
+  global.fetch = async (url) => {
+    activeRequests += 1;
+    maxActiveRequests = Math.max(maxActiveRequests, activeRequests);
+    await new Promise((resolve) => setTimeout(resolve, 5));
+    activeRequests -= 1;
+
+    if (url.includes("fredgraph")) {
+      return { ok: true, text: async () => fredCsv };
+    }
+
+    if (url.includes("api.worldbank.org")) {
+      return {
+        ok: true,
+        json: async () => [
+          {},
+          [
+            { countryiso3code: "EUU", date: "2024", value: 1.2 },
+            { countryiso3code: "EUU", date: "2025", value: 1.4 },
+            { countryiso3code: "LMY", date: "2024", value: 3.6 },
+            { countryiso3code: "LMY", date: "2025", value: 3.8 },
+          ],
+        ],
+      };
+    }
+
+    return {
+      ok: true,
+      json: async () => ({
+        chart: {
+          result: [
+            {
+              meta: { currency: "USD" },
+              timestamp: [1704067200, 1704153600],
+              indicators: { quote: [{ close: [100, 101] }] },
+            },
+          ],
+        },
+      }),
+    };
+  };
+
+  try {
+    const snapshot = await buildSnapshot();
+
+    assert.equal(snapshot.status, "ready");
+    assert.equal(snapshot.marketPulse.length, YAHOO_SERIES.length - 2);
+    assert.ok(
+      maxActiveRequests > YAHOO_SERIES.length,
+      "FRED and World Bank requests should begin before Yahoo requests settle",
+    );
+  } finally {
+    global.fetch = originalFetch;
+  }
+});
 
 test("legacy FRED snapshot route stays aliased to the live snapshot handler", () => {
   assert.equal(fredSnapshot, liveSnapshot);

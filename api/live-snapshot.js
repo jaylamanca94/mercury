@@ -1514,19 +1514,21 @@ function groupBySection(items, regions) {
 
 async function buildSnapshot() {
   const checkedAt = new Date();
-  const yahooResults = await Promise.allSettled(YAHOO_SERIES.map(fetchYahooSeries));
+  const [yahooResults, fredResults, regionResults] = await Promise.all([
+    Promise.allSettled(YAHOO_SERIES.map(fetchYahooSeries)),
+    Promise.allSettled(FRED_SERIES.map(fetchFredSeries)),
+    Promise.allSettled(WORLD_BANK_REGIONS.map(fetchWorldBankRegion)),
+  ]);
   const yahooItems = yahooResults
     .map((result, index) =>
       result.status === "fulfilled" ? result.value : unavailableFredItem(YAHOO_SERIES[index]),
     )
     .map((item) => withFreshness(item, checkedAt));
-  const fredResults = await Promise.allSettled(FRED_SERIES.map(fetchFredSeries));
   const fredItems = fredResults
     .map((result, index) =>
       result.status === "fulfilled" ? result.value : unavailableFredItem(FRED_SERIES[index]),
     )
     .map((item) => withFreshness(item, checkedAt));
-  const regionResults = await Promise.allSettled(WORLD_BANK_REGIONS.map(fetchWorldBankRegion));
   const regions = regionResults
     .map((result, index) =>
       result.status === "fulfilled" ? result.value : unavailableRegion(WORLD_BANK_REGIONS[index]),
@@ -1602,6 +1604,7 @@ module.exports._internals = {
   YAHOO_HISTORY_OBSERVATIONS,
   YAHOO_HISTORY_RANGE,
   YAHOO_SERIES,
+  buildSnapshot,
   buildFreshnessSummary,
   buildSummary,
   buildValues,

@@ -15,6 +15,7 @@ Release-evidence gate: validate the healthy source-backed journey and its partia
 - [x] Re-ran `npm run check`: JavaScript syntax checks and 78 dependency-free regression tests passed with zero failures (2026-08-09).
 - [x] Verified the serverless handler against its live public sources: it returned a `ready` snapshot with 43 current releases across 32 market, 4 economic, 3 risk, and 4 regional items (2026-08-09).
 - [x] Added regression coverage ensuring delayed and stale source windows stay explicit and settled in the dashboard freshness status; the suite now has 79 passing tests (2026-08-09).
+- [x] Started Yahoo Finance, FRED, and World Bank request groups concurrently, reducing the live-snapshot wait from three sequential source-group windows to one shared window. A behavioural regression test verifies all groups begin before the Yahoo group settles; the live handler still returned a complete current snapshot (2026-08-09).
 
 ## Next
 
@@ -33,5 +34,6 @@ Release-evidence gate: validate the healthy source-backed journey and its partia
 - `FLOW-REGISTRY.md` inventories seven canonical flows. It identifies production/mobile and full, partial, delayed, and stale live-state verification as the active validation gap.
 - Local serverless testing returned a fully source-backed `ready` response with 43 current releases. The available in-app browser can load the local static shell but does not execute its client interaction layer in this environment, so it cannot provide credible device-level evidence for the live-state gate.
 - The deterministic rendering suite now verifies ready, partial, delayed, stale, and unavailable state handling; `npm run check` passed with 79 tests on 2026-08-09.
+- After the concurrency update, the local serverless-equivalent handler returned `ready` and `current` with 32 market, 4 economic, 3 risk, and 4 regional items; `npm run check` passed with 80 tests on 2026-08-09.
 - The repository began with a related staged review/refinement set. It was included with this record in the focused in-scope milestone commit after the full validation suite passed.
 - Milestone commit `071f787` was validated with `npm run check` after commit and pushed to `origin/main` on 2026-08-09.
