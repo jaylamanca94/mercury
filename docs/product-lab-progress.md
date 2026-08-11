@@ -13,7 +13,7 @@ Keep Mercury a clear, neutral, source-backed view of global economic conditions 
 
 ## Evidence
 
-- `npm run check` passed on 2026-08-10: syntax checks and 84 dependency-free regression tests completed with zero failures.
+- `npm run check` passed on 2026-08-10: syntax checks and 85 dependency-free regression tests completed with zero failures.
 - The current in-progress change set verifies two safe edge cases: incomplete successful live snapshots resolve to the established unavailable state, and unsupported API methods receive explicit JSON/no-store semantics.
 - The local flow record covers seven canonical user goals, including source-backed desktop and iPhone-sized Dashboard-to-Markets paths and deterministic full, partial, delayed, stale, and unavailable rendering states.
 - Mercury continues to follow its Acadia adapter for shell, controls, focus, status, responsive spacing, and mobile dock behaviour. Domain-specific source-freshness language and economic visualisation remain local by design.
@@ -24,6 +24,7 @@ Keep Mercury a clear, neutral, source-backed view of global economic conditions 
 - Source state is explicit for full, partial, delayed, stale, and unavailable results; unavailable data is not represented as a live economic read.
 - The public browser/API boundary has a restrictive response-security policy, and `405` responses are explicitly JSON, non-cacheable, and declare `Allow: GET`.
 - Client loading now has a bounded 20-second wait and treats an incomplete `200` snapshot as unavailable rather than applying a partial shape.
+- A complete source outage no longer receives the normal long-lived snapshot cache policy, so a later recovery is not hidden behind an old `200` unavailable response.
 
 ## Deferred
 

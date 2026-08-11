@@ -1581,7 +1581,10 @@ async function handler(req, res) {
     const snapshot = await buildSnapshot();
 
     res.setHeader("Content-Type", "application/json; charset=utf-8");
-    res.setHeader("Cache-Control", "s-maxage=1800, stale-while-revalidate=21600");
+    res.setHeader(
+      "Cache-Control",
+      snapshot.status === "unavailable" ? "no-store" : "s-maxage=1800, stale-while-revalidate=21600",
+    );
     res.statusCode = 200;
     res.end(JSON.stringify(snapshot));
   } catch (error) {
