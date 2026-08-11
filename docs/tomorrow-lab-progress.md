@@ -20,6 +20,7 @@ Release-evidence follow-through: retain the local evidence record and obtain dep
 - [x] Captured 390px partial, delayed, stale, and unavailable Dashboard states using disposable response fixtures over the existing source-backed preview. The fixtures are QA-only evidence, not production data or a product feature (2026-08-10).
 - [x] Corrected two state-label defects found in that pass: a healthy Indicators read no longer announces `Unavailable`, and the mobile dashboard now keeps `Delayed` distinct from `Partial`. `npm run check` passed with 81 tests (2026-08-10).
 - [x] Completed the initial canonical flow and design-status audit; the seven user-goal flows remain intact and their current browser/test coverage is recorded (2026-08-10).
+- [x] Reviewed the public delivery boundary and added a Vercel-wide response-security policy without changing Mercury's data contract or browser flows. A local Vercel preview returned the policy headers and `npm run check` passed 82 tests (2026-08-10).
 
 ## Next
 
@@ -42,3 +43,4 @@ Release-evidence follow-through: retain the local evidence record and obtain dep
 - The repository began with a related staged review/refinement set. It was included with this record in the focused in-scope milestone commit after the full validation suite passed.
 - Milestone commit `071f787` was validated with `npm run check` after commit and pushed to `origin/main` on 2026-08-09.
 - `automation/review/2026-08-10/product-review.md` and its accepted screenshots record the 2026-08-10 local-serverless audit. A rejected full-page mobile capture is not part of the evidence set because the capture surface distorted the otherwise valid 390px layout.
+- `docs/reliability-review.md` records the 2026-08-10 reliability, security, architecture, dependency, data-integrity, observability, and complexity assessment, including the remaining release risks.

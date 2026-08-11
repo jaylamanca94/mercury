@@ -86,6 +86,7 @@ Current files:
 - `site.webmanifest` - browser app manifest pointing to the SVG icon
 - `api/live-snapshot.js` - Vercel Serverless Function for public Yahoo Finance, FRED, and World Bank releases
 - `api/fred-snapshot.js` - compatibility export for the live snapshot handler
+- `vercel.json` - Vercel-wide browser and API response-security policy
 
 ## Environment Variables
 
@@ -110,6 +111,7 @@ Recommended next deployment path:
 1. Deploy the live snapshot route and confirm cache behavior in production.
 2. Add automated regression coverage for stale, missing, delayed, and unavailable data.
 3. Review market-data licensing before relying on any provider for a public production launch.
+4. Review `docs/reliability-review.md` before changing the source boundary or release configuration.
 
 ## Important Boundary
 
