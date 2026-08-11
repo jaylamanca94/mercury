@@ -324,6 +324,7 @@ const HERO_COMPARISON_SERIES = [
   { ticker: "VGT", label: "VGT", description: "U.S. technology", className: "vgt" },
 ];
 const currentPage = document.body?.dataset?.mercuryPage || "dashboard";
+const LIVE_SNAPSHOT_REQUEST_TIMEOUT_MS = 20000;
 let selectedEconomyPeriod = "week";
 let selectedCurrencyPeriod = "week";
 let selectedRegion = "Global";
@@ -1638,6 +1639,22 @@ function setControlUnavailableState(control, unavailable) {
 }
 
 function syncControlValues() {
+  if (isDashboardPage()) {
+    document.querySelectorAll?.("[data-home-period]").forEach((control) => {
+      control.setAttribute("aria-pressed", String(control.dataset.homePeriod === selectedEconomyPeriod));
+    });
+    document.querySelectorAll?.("[data-home-scope]").forEach((control) => {
+      control.setAttribute("aria-pressed", String(control.dataset.homeScope === selectedRegion));
+    });
+    const graphStage = document.querySelector("#home-graph-stage");
+
+    if (graphStage) {
+      graphStage.setAttribute("data-period", selectedEconomyPeriod);
+      graphStage.setAttribute("data-scope", selectedRegion);
+    }
+    return;
+  }
+
   const controls = dashboardControls();
 
   if (controls.economyPeriod) {
@@ -1659,6 +1676,14 @@ function syncControlValues() {
 
 function syncControlAvailability() {
   const controlsUnavailable = isCompleteLiveUnavailable();
+
+  if (isDashboardPage()) {
+    document.querySelectorAll?.("[data-home-period], [data-home-scope]").forEach((control) => {
+      setControlUnavailableState(control, controlsUnavailable);
+    });
+    return;
+  }
+
   const controls = dashboardControls();
 
   presentControls(controls).forEach((control) => setControlUnavailableState(control, controlsUnavailable));
@@ -1682,6 +1707,12 @@ function syncControlAvailability() {
 }
 
 function bindDashboardControls() {
+  if (isDashboardPage()) {
+    bindHomeControls();
+    bindHomeProfileMenu();
+    return;
+  }
+
   document.querySelector("#economy-period-select")?.addEventListener("change", (event) => {
     selectedEconomyPeriod = event.target.value;
     renderDashboard();
@@ -3672,7 +3703,161 @@ function currencyCards() {
   ].filter(Boolean);
 }
 
+const HOME_MARKET_CARD_DEFINITIONS = {
+  Global: [
+    { id: "global-us-total", name: "U.S. Total", ticker: "VTI" },
+    { id: "global-international", name: "International", ticker: "VXUS" },
+    { id: "us-equities", name: "United States", ticker: "VOO" },
+    { id: "europe-equities", name: "Europe", ticker: "VGK" },
+  ],
+  "United States": [
+    { id: "us-equities", name: "S&P 500", ticker: "VOO" },
+    { id: "us-small-cap", name: "Small Cap", ticker: "VB" },
+    { id: "us-technology", name: "Technology", ticker: "VGT" },
+    { id: "us-financials", name: "Financials", ticker: "VFH" },
+  ],
+};
+
+function unavailableHomeMarketCard(definition) {
+  return {
+    cadence: "Needs live data",
+    change: "Unavailable",
+    context: "Market proxy needs live data",
+    id: definition.id,
+    name: definition.name,
+    source: "Yahoo Finance market data",
+    sourceStatus: "Unavailable",
+    ticker: definition.ticker,
+    tone: "unavailable",
+    trend: "Unavailable",
+    value: "Unavailable",
+  };
+}
+
+function homeMarketCards() {
+  const definitions = HOME_MARKET_CARD_DEFINITIONS[selectedRegion] || HOME_MARKET_CARD_DEFINITIONS.Global;
+
+  return definitions.map((definition) => {
+    const metric = findMetric(marketPulse, definition.id, definition.name);
+
+    return withPeriodDelta(
+      metric ? { ...metric, name: definition.name } : unavailableHomeMarketCard(definition),
+      selectedEconomyPeriod,
+    );
+  });
+}
+
+function renderHomeMarketCard(metric) {
+  const tone = metricCardTone(metric);
+  const ticker = metricTickerLabel(metric) || "Market";
+  const label = displayMetricName(metric);
+  const delta = metricDeltaLabel(metric);
+  const value = displayMetricDetail(metric.value);
+
+  return `
+    <article class="home-market-card home-market-card-${escapeHtml(tone)}" aria-label="${escapeHtml(`${ticker} ${label}: ${delta}, ${value}`)}">
+      <div class="home-market-card-heading">
+        <span class="home-market-ticker"><i class="fa-solid fa-building" aria-hidden="true"></i>${escapeHtml(ticker)}</span>
+        <span class="home-market-name">${escapeHtml(label)}</span>
+      </div>
+      <div class="home-market-card-value">
+        <strong class="trend-text-${escapeHtml(tone)}">${escapeHtml(delta)}</strong>
+        <span>${escapeHtml(value)}</span>
+      </div>
+    </article>
+  `;
+}
+
+function renderHomeDashboard() {
+  const cards = homeMarketCards();
+  const cardGrid = document.querySelector("#home-market-cards");
+  const recoverySection = document.querySelector("#home-market-outage-recovery");
+  const recoveryCard = document.querySelector("#home-market-outage-card");
+  const completeUnavailable = isCompleteLiveUnavailable();
+
+  document.body.classList.toggle("dashboard-global", selectedRegion === "Global");
+  document.body.classList.toggle("dashboard-focused", selectedRegion !== "Global");
+  document.body.classList.toggle("dashboard-unavailable", completeUnavailable);
+  setDynamicContent(cardGrid, cards.map(renderHomeMarketCard).join(""));
+  if (cardGrid) {
+    cardGrid.setAttribute("aria-busy", "false");
+  }
+  if (recoverySection && recoveryCard) {
+    recoverySection.hidden = !completeUnavailable;
+    setDynamicContent(
+      recoveryCard,
+      completeUnavailable
+        ? renderUnavailableActionCard(
+            "Live market values are unavailable. Retry when the configured source responds.",
+            {
+              source: "Configured source group: Yahoo Finance market data",
+              className: "overview-unavailable-card unavailable-state-card acadia-surface acadia-panel-dense home-outage-recovery-card",
+            },
+          )
+        : "",
+    );
+  }
+  syncControlValues();
+  syncControlAvailability();
+}
+
+function bindHomeControls() {
+  document.querySelectorAll?.("[data-home-period]").forEach((control) => {
+    control.addEventListener("click", () => {
+      if (control.disabled) return;
+      selectedEconomyPeriod = control.dataset.homePeriod || "week";
+      renderDashboard();
+      announceDashboardStatus(`Market period changed to ${control.textContent.trim()}.`);
+    });
+  });
+
+  document.querySelectorAll?.("[data-home-scope]").forEach((control) => {
+    control.addEventListener("click", () => {
+      if (control.disabled) return;
+      selectedRegion = control.dataset.homeScope || "Global";
+      renderDashboard();
+      announceDashboardStatus(`Market scope changed to ${control.textContent.trim()}.`);
+    });
+  });
+}
+
+function bindHomeProfileMenu() {
+  const trigger = document.querySelector("#home-profile-trigger");
+  const menu = document.querySelector("#home-profile-menu");
+
+  if (!trigger || !menu) return;
+
+  const closeMenu = () => {
+    menu.hidden = true;
+    trigger.setAttribute("aria-expanded", "false");
+  };
+
+  trigger.addEventListener("click", () => {
+    const willOpen = menu.hidden;
+
+    menu.hidden = !willOpen;
+    trigger.setAttribute("aria-expanded", String(willOpen));
+  });
+
+  document.addEventListener?.("keydown", (event) => {
+    if (event.key === "Escape" && !menu.hidden) {
+      closeMenu();
+      trigger.focus();
+    }
+  });
+  document.addEventListener?.("click", (event) => {
+    if (!menu.hidden && !menu.contains?.(event.target) && !trigger.contains?.(event.target)) {
+      closeMenu();
+    }
+  });
+}
+
 function renderDashboard() {
+  if (isDashboardPage()) {
+    renderHomeDashboard();
+    return;
+  }
+
   const economyGrid = document.querySelector("#economy-grid");
   const currencyGrid = document.querySelector("#currency-grid");
   const commodityGrid = document.querySelector("#commodity-grid");
@@ -3914,9 +4099,23 @@ function applySnapshotFreshnessState(snapshot) {
   setStatusPillState(freshnessPill, freshnessStatusPillState(freshness.status));
 }
 
+function isUsableLiveSnapshot(snapshot) {
+  return Boolean(
+    snapshot &&
+      Array.isArray(snapshot.marketPulse) &&
+      snapshot.marketPulse.length > 0 &&
+      Array.isArray(snapshot.economicHealth) &&
+      snapshot.economicHealth.length > 0 &&
+      Array.isArray(snapshot.riskIndicators) &&
+      Array.isArray(snapshot.regions) &&
+      snapshot.summary &&
+      Array.isArray(snapshot.summary.drivers),
+  );
+}
+
 function applyLiveSnapshot(snapshot) {
-  if (!snapshot?.marketPulse?.length || !snapshot?.economicHealth?.length) {
-    return;
+  if (!isUsableLiveSnapshot(snapshot)) {
+    return false;
   }
 
   const sourcePill = document.querySelector("#macro-connection-pill");
@@ -3986,6 +4185,7 @@ function applyLiveSnapshot(snapshot) {
   applySnapshotFreshnessState(snapshot);
   applySnapshotConnectionState(snapshot, sourcePill);
   announceDashboardStatus(`Dashboard data updated. Latest check ${formatCheckedAt(snapshot.checkedAt)}.`);
+  return true;
 }
 
 function markUnavailable(items) {
@@ -4104,6 +4304,7 @@ async function loadLiveSnapshot(options = {}) {
   const dashboardShell = document.querySelector("#main-content");
   const checkedAt = new Date().toISOString();
   const isRetry = Boolean(options.isRetry);
+  let requestTimeout = null;
 
   dashboardShell?.setAttribute("aria-busy", "true");
   announceDashboardStatus(isRetry ? "Checking latest dashboard data again." : "Checking latest dashboard data.");
@@ -4124,10 +4325,16 @@ async function loadLiveSnapshot(options = {}) {
   }
 
   try {
+    const requestController =
+      typeof AbortController === "function" ? new AbortController() : null;
+    requestTimeout = requestController
+      ? setTimeout(() => requestController.abort(), LIVE_SNAPSHOT_REQUEST_TIMEOUT_MS)
+      : null;
     const response = await fetch("/api/live-snapshot", {
       headers: {
         accept: "application/json",
       },
+      ...(requestController ? { signal: requestController.signal } : {}),
     });
 
     if (!response.ok) {
@@ -4135,10 +4342,15 @@ async function loadLiveSnapshot(options = {}) {
     }
 
     const snapshot = await response.json();
-    applyLiveSnapshot(snapshot);
+    if (!applyLiveSnapshot(snapshot)) {
+      throw new Error("Live snapshot route returned an incomplete response");
+    }
   } catch (error) {
     applyLiveFallback({ checkedAt, isRetry });
   } finally {
+    if (requestTimeout) {
+      clearTimeout(requestTimeout);
+    }
     if (refreshButton) {
       refreshButton.disabled = false;
       refreshButton.innerHTML = '<i class="fa-solid fa-rotate" aria-hidden="true"></i><span class="visually-hidden">Refresh data</span>';

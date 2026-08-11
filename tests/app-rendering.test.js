@@ -10,6 +10,7 @@ const marketsHtml = fs.readFileSync(path.join(__dirname, "..", "markets.html"), 
 const supportsHtml = fs.readFileSync(path.join(__dirname, "..", "supports.html"), "utf8");
 const indicatorsHtml = fs.readFileSync(path.join(__dirname, "..", "indicators.html"), "utf8");
 const dataHtml = fs.readFileSync(path.join(__dirname, "..", "data.html"), "utf8");
+const appSource = fs.readFileSync(path.join(__dirname, "..", "app.js"), "utf8");
 const faviconSvg = fs.readFileSync(path.join(__dirname, "..", "assets", "favicon.svg"), "utf8");
 const liveSnapshotInternals = require("../api/live-snapshot.js")._internals;
 
@@ -278,7 +279,7 @@ test("global market support cards split currencies from commodities", () => {
   assert.match(styles, /\.commodity-grid\s*{[^}]*grid-template-columns: repeat\(2, minmax\(0, 1fr\)\);/s);
 });
 
-test("dashboard renders editorial sections instead of one mixed grid", () => {
+test("minimal Home renders its fixed global market set", () => {
   const context = loadAppContext();
 
   vm.runInContext(
@@ -304,26 +305,36 @@ test("dashboard renders editorial sections instead of one mixed grid", () => {
     context,
   );
 
-  const economyHtml = context.__elements.get("#economy-grid").innerHTML;
-  const currencyHtml = context.__elements.get("#currency-grid").innerHTML;
-  const commodityHtml = context.__elements.get("#commodity-grid").innerHTML;
-  const healthHtml = context.__elements.get("#economic-health-grid").innerHTML;
+  const homeHtml = context.__elements.get("#home-market-cards").innerHTML;
 
-  assert.match(economyHtml, /United States/);
-  assert.match(economyHtml, /U\.S\. Total/);
-  assert.match(economyHtml, /VTI/);
-  assert.match(economyHtml, /International/);
-  assert.match(economyHtml, /VXUS/);
-  assert.match(economyHtml, /Europe/);
-  assert.match(economyHtml, /Asia/);
-  assert.doesNotMatch(economyHtml, /U\.S\. Dollar/);
-  assert.match(currencyHtml, /U\.S\. Dollar/);
-  assert.match(currencyHtml, /Euro/);
-  assert.match(currencyHtml, /Yen/);
-  assert.doesNotMatch(currencyHtml, /Bitcoin/);
-  assert.match(commodityHtml, /Oil/);
-  assert.match(commodityHtml, /Bitcoin/);
-  assert.match(healthHtml, /Inflation/);
+  assert.match(homeHtml, /U\.S\. Total/);
+  assert.match(homeHtml, /VTI/);
+  assert.match(homeHtml, /International/);
+  assert.match(homeHtml, /VXUS/);
+  assert.match(homeHtml, /United States/);
+  assert.match(homeHtml, /VOO/);
+  assert.match(homeHtml, /Europe/);
+  assert.match(homeHtml, /VGK/);
+  assert.doesNotMatch(homeHtml, /Asia/);
+  assert.doesNotMatch(homeHtml, /U\.S\. Dollar/);
+});
+
+test("minimal Home switches to its fixed domestic market set", () => {
+  const context = loadAppContext();
+  const cards = vm.runInContext(
+    `
+      selectedRegion = "United States";
+      homeMarketCards().map((card) => ({ name: card.name, ticker: card.ticker }));
+    `,
+    context,
+  );
+
+  assert.deepEqual(JSON.parse(JSON.stringify(cards)), [
+    { name: "S&P 500", ticker: "VOO" },
+    { name: "Small Cap", ticker: "VB" },
+    { name: "Technology", ticker: "VGT" },
+    { name: "Financials", ticker: "VFH" },
+  ]);
 });
 
 test("market section exposes economy-order and return sorting", () => {
@@ -352,12 +363,15 @@ test("market section exposes economy-order and return sorting", () => {
   assert.deepEqual(normalizedResult.ascending, ["Energy", "S&P 500", "Technology"]);
 });
 
-test("dashboard summary adds key signals and briefing sections", () => {
-  assert.match(indexHtml, /id="overview-tiles-title" class="acadia-title">Key Signals<\/h2>/);
-  assert.match(indexHtml, /<h2 class="acadia-title">Executive Summary<\/h2>/);
-  assert.match(indexHtml, /id="economic-brief-copy"/);
-  assert.match(indexHtml, /id="what-changed-list"/);
-  assert.match(indexHtml, /id="risk-watch-list"/);
+test("Home uses the minimal Figma structure", () => {
+  assert.match(indexHtml, /class="home-navbar"/);
+  assert.match(indexHtml, /Home<\/a>[\s\S]*Markets<\/a>[\s\S]*Economy<\/a>[\s\S]*Watchlist[\s\S]*Profile/);
+  assert.match(indexHtml, /id="home-graph-stage"[\s\S]*data-period="week"[\s\S]*data-scope="Global"/);
+  assert.match(indexHtml, /id="home-market-cards" class="home-market-cards" aria-live="polite" aria-busy="true"/);
+  assert.match(indexHtml, /id="home-profile-menu" class="home-profile-menu acadia-account-menu-panel" role="menu" hidden/);
+  assert.match(indexHtml, /data-acadia-theme-toggle/);
+  assert.match(styles, /\.home-graph-stage\s*{[^}]*height: 20\.4375rem;/s);
+  assert.match(styles, /\.home-market-cards\s*{[^}]*grid-template-columns: repeat\(4, minmax\(0, 1fr\)\);/s);
   assert.match(styles, /\.overview-tiles\s*{[^}]*gap: var\(--acadia-space-3\);/s);
   assert.match(styles, /\.section-heading h2,\s*\.brief-card h2\s*{[^}]*font-size: clamp\(1\.5rem, 2vw, 1\.75rem\);/s);
   assert.match(styles, /\.page-title-row h1\s*{[^}]*font-size: clamp\(1\.875rem, 3vw, 2\.5rem\);/s);
@@ -416,7 +430,7 @@ test("dashboard summary adds key signals and briefing sections", () => {
 
 test("dynamic dashboard containers expose live busy regions", () => {
   [
-    { html: indexHtml, ids: ["overview-tiles-grid", "economy-grid", "currency-grid", "commodity-grid", "risk-list", "economic-health-grid"] },
+    { html: indexHtml, ids: ["home-market-cards"] },
     { html: marketsHtml, ids: ["economy-grid"] },
     { html: supportsHtml, ids: ["support-signals-grid", "currency-grid", "commodity-grid", "digital-assets-grid"] },
     { html: indicatorsHtml, ids: ["risk-list", "economic-health-grid"] },
@@ -464,8 +478,8 @@ test("rendered metric and overview cards expose concise accessible summaries", (
   assert.match(result.tile, /aria-label="Global score\. Healthy \+1\.2%\. Broad markets improving"/);
 });
 
-test("static pages reference the current mobile dock assets", () => {
-  const pages = [indexHtml, marketsHtml, supportsHtml, indicatorsHtml, dataHtml];
+test("detail pages retain their existing shared shell while Home owns its minimal navigation", () => {
+  const pages = [marketsHtml, supportsHtml, indicatorsHtml, dataHtml];
 
   for (const html of pages) {
     assert.match(html, /data-acadia-theme-storage-key="mercury-theme"/);
@@ -479,6 +493,11 @@ test("static pages reference the current mobile dock assets", () => {
     assert.match(html, /<\/header>\s*<nav class="primary-nav acadia-nav acadia-mobile-dock" aria-label="Mercury pages">/);
     assert.match(html, /class="acadia-icon-action acadia-theme-toggle"[^>]*data-acadia-theme-toggle/);
   }
+
+  assert.match(indexHtml, /styles\.css\?v=20260811-minimal-home/);
+  assert.match(indexHtml, /app\.js\?v=20260811-minimal-home/);
+  assert.match(indexHtml, /class="home-nav-links"/);
+  assert.doesNotMatch(indexHtml, /class="primary-nav acadia-nav acadia-mobile-dock"/);
 });
 
 test("theme toggle uses a visible Acadia control surface", () => {
@@ -561,7 +580,7 @@ test("Markets page removes Key Drivers while retaining market details", () => {
   );
   assert.match(marketsHtml, /id="market-sort-select"/);
   assert.match(marketsHtml, /<option value="relevance" selected>Economy order<\/option>/);
-  assert.match(indexHtml, /id="market-sort-select"/);
+  assert.doesNotMatch(indexHtml, /id="market-sort-select"/);
   assert.match(styles, /\.market-drivers-grid\s*{[^}]*grid-template-columns: repeat\(3, minmax\(0, 1fr\)\);/s);
   assert.match(styles, /\.mercury-page-markets \.hero-chart-panel\s*{[^}]*height: clamp\(7\.5rem, 9vw, 10\.5rem\);/s);
   assert.match(styles, /\.market-sort-controls\s*{[^}]*justify-self: end;[^}]*width: min\(100%, 14rem\);/s);
@@ -1164,62 +1183,32 @@ test("live fallback clears stale live status pill classes", () => {
   assert.match(result.sourceText, /Live data unavailable/);
 });
 
-test("dashboard fallback uses one source-unavailable read and completes busy states", () => {
+test("Home fallback keeps four truthful unavailable cards and disables its controls", () => {
   const context = loadAppContext();
   const result = vm.runInContext(
     `
       applyLiveFallback();
       ({
-        title: document.querySelector("#view-title").textContent,
-        insight: document.querySelector("#hero-insight").textContent,
-        badge: document.querySelector("#economy-change-badge").textContent,
-        overview: document.querySelector("#overview-tiles-grid").innerHTML,
-        economy: document.querySelector("#economy-grid").innerHTML,
-        changed: document.querySelector("#what-changed-list").innerHTML,
-        risk: document.querySelector("#risk-watch-list").innerHTML,
-        mobileTabs: document.querySelector("#mobile-dashboard-tabs").innerHTML,
-        mobileActionsHidden: document.querySelector("#mobile-dashboard-actions").hidden,
-        mobileActions: document.querySelector("#mobile-dashboard-actions").innerHTML,
-        checked: document.querySelector("#last-updated-pill").textContent,
-        checkedCaution: document.querySelector("#last-updated-pill").classList.contains("status-pill-caution"),
-        periodDisabled: document.querySelector("#economy-period-select").disabled,
-        periodAriaDisabled: document.querySelector("#economy-period-select").getAttribute("aria-disabled"),
-        regionDisabled: document.querySelector("#economy-region-select").disabled,
-        regionAriaDisabled: document.querySelector("#economy-region-select").getAttribute("aria-disabled"),
-        sortDisabled: document.querySelector("#market-sort-select").disabled,
-        sortAriaDisabled: document.querySelector("#market-sort-select").getAttribute("aria-disabled"),
-        controlNoteHidden: document.querySelector("#control-availability-note").hidden,
-        overviewBusy: document.querySelector("#overview-tiles-grid").getAttribute("aria-busy"),
-        economyBusy: document.querySelector("#economy-grid").getAttribute("aria-busy"),
+        cards: document.querySelector("#home-market-cards").innerHTML,
+        cardsBusy: document.querySelector("#home-market-cards").getAttribute("aria-busy"),
+        graphPeriod: document.querySelector("#home-graph-stage").getAttribute("data-period"),
+        graphScope: document.querySelector("#home-graph-stage").getAttribute("data-scope"),
+        unavailable: document.body.classList.contains("dashboard-unavailable"),
       });
     `,
     context,
   );
 
-  assert.equal(result.title, "Global Economy");
-  assert.match(result.insight, /cannot produce a source-backed read right now/);
-  assert.equal(result.badge, "Unavailable");
-  assert.match(result.overview, /Retry refresh/);
-  assert.match(result.overview, /Data Coverage/);
-  assert.doesNotMatch(result.overview, /Oil<\/span>[\s\S]*Unavailable/);
-  assert.equal(result.economy, "");
-  assert.match(result.checked, /^Checked .* unavailable$/);
-  assert.match(result.changed, /No source-backed change/);
-  assert.match(result.risk, /No source-backed risk read/);
-  assert.equal(result.mobileTabs, "");
-  assert.equal(result.mobileActionsHidden, false);
-  assert.match(result.mobileActions, /Retry refresh/);
-  assert.match(result.mobileActions, /Data Coverage/);
-  assert.equal(result.checkedCaution, true);
-  assert.equal(result.periodDisabled, true);
-  assert.equal(result.periodAriaDisabled, "true");
-  assert.equal(result.regionDisabled, true);
-  assert.equal(result.regionAriaDisabled, "true");
-  assert.equal(result.sortDisabled, true);
-  assert.equal(result.sortAriaDisabled, "true");
-  assert.equal(result.controlNoteHidden, false);
-  assert.equal(result.overviewBusy, "false");
-  assert.equal(result.economyBusy, "false");
+  assert.equal((result.cards.match(/<article class="home-market-card /g) || []).length, 4);
+  assert.match(result.cards, /U\.S\. Total/);
+  assert.match(result.cards, /International/);
+  assert.match(result.cards, /United States/);
+  assert.match(result.cards, /Europe/);
+  assert.match(result.cards, /Unavailable/);
+  assert.equal(result.cardsBusy, "false");
+  assert.equal(result.graphPeriod, "week");
+  assert.equal(result.graphScope, "Global");
+  assert.equal(result.unavailable, true);
 });
 
 test("retry fallback confirms a fresh unavailable check in existing status surfaces", () => {
@@ -1295,6 +1284,28 @@ test("partial snapshots share status pill state handling", () => {
   assert.equal(result.freshnessIsCaution, true);
 });
 
+test("an incomplete successful live response falls back to the established unavailable state", async () => {
+  const context = loadAppContext();
+  context.window.location.protocol = "https:";
+  context.fetch = async () => ({
+    ok: true,
+    json: async () => ({
+      status: "ready",
+      marketPulse: [{ id: "global-us-total" }],
+      economicHealth: [],
+    }),
+  });
+
+  await vm.runInContext("loadLiveSnapshot()", context);
+
+  assert.equal(context.__elements.get("#global-status-title").textContent, "Live data unavailable");
+  assert.match(
+    context.__elements.get("#summary-copy").textContent,
+    /cannot reach live data right now/,
+  );
+  assert.equal(context.__elements.get("#main-content").getAttribute("aria-busy"), "false");
+});
+
 test("delayed and stale source windows remain explicit in settled dashboard status", () => {
   const states = [
     { status: "delayed", label: "Delayed source window" },
@@ -1347,7 +1358,7 @@ test("mobile freshness keeps delayed data distinct from partial coverage", () =>
   assert.equal(result.tone, "caution");
 });
 
-test("recorded live dashboard state keeps first scan and controls source-backed", () => {
+test("recorded live state populates the Home market-card surface", () => {
   const context = loadAppContext();
   const result = vm.runInContext(
     `
@@ -1388,67 +1399,44 @@ test("recorded live dashboard state keeps first scan and controls source-backed"
         ],
       });
       ({
-        title: document.querySelector("#view-title").textContent,
-        insight: document.querySelector("#hero-insight").textContent,
-        overview: document.querySelector("#overview-tiles-grid").innerHTML,
-        changed: document.querySelector("#what-changed-list").innerHTML,
-        risk: document.querySelector("#risk-watch-list").innerHTML,
-        checked: document.querySelector("#last-updated-pill").textContent,
-        source: document.querySelector("#macro-connection-pill").innerHTML,
-        freshness: document.querySelector("#snapshot-freshness").textContent,
-        periodDisabled: document.querySelector("#economy-period-select").disabled,
-        regionDisabled: document.querySelector("#economy-region-select").disabled,
-        overviewBusy: document.querySelector("#overview-tiles-grid").getAttribute("aria-busy"),
-        riskBusy: document.querySelector("#risk-list").getAttribute("aria-busy"),
+        cards: document.querySelector("#home-market-cards").innerHTML,
+        cardsBusy: document.querySelector("#home-market-cards").getAttribute("aria-busy"),
+        unavailable: document.body.classList.contains("dashboard-unavailable"),
       });
     `,
     context,
   );
 
-  assert.equal(result.title, "Global Economy");
-  assert.match(result.insight, /positive|mixed|pressure|drag/i);
-  assert.match(result.overview, /Global score/);
-  assert.match(result.overview, /Inflation/);
-  assert.match(result.changed, /U\.S\. Total|International|Oil/);
-  assert.match(result.risk, /Volatility|Stress|Rates/);
-  assert.match(result.checked, /^Checked /);
-  assert.match(result.source, /Data sources connected/);
-  assert.match(result.freshness, /Loaded 2:30 PM/);
-  assert.equal(result.periodDisabled, false);
-  assert.equal(result.regionDisabled, false);
-  assert.equal(result.overviewBusy, "false");
-  assert.equal(result.riskBusy, "false");
+  assert.match(result.cards, /VTI/);
+  assert.match(result.cards, /VXUS/);
+  assert.match(result.cards, /\$250\.00/);
+  assert.match(result.cards, /\$72\.00/);
+  assert.equal(result.cardsBusy, "false");
+  assert.equal(result.unavailable, false);
 });
 
-test("dashboard controls re-enable when live data returns after fallback", () => {
+test("Home control markup uses real pressed controls and disables only during outage", () => {
   const context = loadAppContext();
   const result = vm.runInContext(
     `
       applyLiveFallback();
-      marketPulse = [
-        { name: "U.S. Total", value: "$100.00", change: "+1.0%", sourceStatus: "Source-backed", viewGroup: "economy", region: "Global", marketRole: "global-allocation", freshness: { status: "current" } },
-      ];
-      syncControlAvailability();
       ({
-        periodDisabled: document.querySelector("#economy-period-select").disabled,
-        periodAriaDisabled: document.querySelector("#economy-period-select").getAttribute("aria-disabled"),
-        regionDisabled: document.querySelector("#economy-region-select").disabled,
-        regionAriaDisabled: document.querySelector("#economy-region-select").getAttribute("aria-disabled"),
-        sortDisabled: document.querySelector("#market-sort-select").disabled,
-        sortAriaDisabled: document.querySelector("#market-sort-select").getAttribute("aria-disabled"),
-        controlNoteHidden: document.querySelector("#control-availability-note").hidden,
+        completeUnavailable: isCompleteLiveUnavailable(),
+        cards: homeMarketCards().map((card) => card.name),
       });
     `,
     context,
   );
 
-  assert.equal(result.periodDisabled, false);
-  assert.equal(result.periodAriaDisabled, "false");
-  assert.equal(result.regionDisabled, false);
-  assert.equal(result.regionAriaDisabled, "false");
-  assert.equal(result.sortDisabled, false);
-  assert.equal(result.sortAriaDisabled, "false");
-  assert.equal(result.controlNoteHidden, true);
+  assert.equal(result.completeUnavailable, true);
+  assert.deepEqual(JSON.parse(JSON.stringify(result.cards)), ["U.S. Total", "International", "United States", "Europe"]);
+  assert.match(indexHtml, /data-home-period="today"[^>]*aria-pressed="false">Day/);
+  assert.match(indexHtml, /data-home-period="week"[^>]*aria-pressed="true">Week/);
+  assert.match(indexHtml, /data-home-scope="Global"[^>]*aria-pressed="true">Global/);
+  assert.match(indexHtml, /data-home-scope="United States"[^>]*aria-pressed="false">Domestic/);
+  assert.match(styles, /\.home-segmented-control button:disabled\s*{[^}]*cursor: not-allowed;[^}]*opacity: 0\.56;/s);
+  assert.match(indexHtml, /id="home-market-outage-recovery"/);
+  assert.match(appSource, /function renderHomeDashboard\(\)[\s\S]*renderUnavailableActionCard\([\s\S]*Live market values are unavailable/s);
 });
 
 test("supports fallback avoids interpreted support and pressure language", () => {
@@ -1724,7 +1712,7 @@ test("hero insight explains sentiment and top movers", () => {
 });
 
 test("hero mover pills sit between the insight and chart", () => {
-  for (const html of [indexHtml, marketsHtml, indicatorsHtml]) {
+  for (const html of [marketsHtml, indicatorsHtml]) {
     assert.match(
       html,
       /id="hero-insight"[\s\S]*id="hero-movers"[\s\S]*id="hero-sparkline"/,
@@ -1734,19 +1722,24 @@ test("hero mover pills sit between the insight and chart", () => {
       /id="hero-sparkline"[\s\S]*id="hero-movers"/,
     );
   }
+
+  assert.match(indexHtml, /id="home-graph-stage"/);
+  assert.doesNotMatch(indexHtml, /id="hero-sparkline"/);
 });
 
-test("mobile dashboard read comes before region shortcuts", () => {
+test("Home compacts to a responsive minimal mobile layout", () => {
   assert.match(
-    indexHtml,
-    /id="mobile-dashboard-title"[\s\S]*id="mobile-dashboard-copy"[\s\S]*id="mobile-dashboard-tabs"/,
+    styles,
+    /@media \(max-width: 767\.98px\)[\s\S]*\.home-nav-link:disabled\s*{[^}]*display: none;/s,
   );
-  assert.doesNotMatch(
-    indexHtml,
-    /id="mobile-dashboard-tabs"[\s\S]*id="mobile-dashboard-title"/,
+  assert.match(
+    styles,
+    /@media \(max-width: 767\.98px\)[\s\S]*\.home-market-cards\s*{[^}]*grid-template-columns: 1fr;/s,
   );
-  assert.match(styles, /\.mobile-dashboard-tabs\s*{[^}]*overflow-x: auto;/s);
-  assert.match(styles, /\.mobile-dashboard-tabs:empty\s*{[^}]*display: none;/s);
+  assert.match(styles, /@media \(max-width: 767\.98px\)[\s\S]*\.home-graph-stage\s*{[^}]*height: clamp\(12rem, 48vw, 16rem\);/s);
+  assert.match(styles, /@media \(max-width: 29\.98rem\)[\s\S]*\.home-control-row\s*{[^}]*flex-wrap: wrap;[\s\S]*overflow: visible;/s);
+  assert.match(styles, /@media \(max-width: 68\.75rem\)[\s\S]*\.home-market-cards\s*{[^}]*grid-template-columns: repeat\(2, minmax\(0, 1fr\)\);/s);
+  assert.match(indexHtml, /class="home-nav-links"/);
 });
 
 test("hero trend chart uses period-filtered visible cards", () => {
@@ -1957,11 +1950,11 @@ test("three-month and five-year periods support long sparkline views", () => {
   assert.equal(result.monthPoints.length, 21);
   assert.equal(result.yearPoints.length, 96);
   assert.notEqual(result.yearPoints[1], 110);
-  assert.match(indexHtml, /<option value="fiveYear">5 years<\/option>/);
-  [indexHtml, marketsHtml, supportsHtml, indicatorsHtml].forEach((html) => {
+  assert.match(marketsHtml, /<option value="fiveYear">5 years<\/option>/);
+  [marketsHtml, supportsHtml, indicatorsHtml].forEach((html) => {
     assert.match(html, /<option value="threeMonth">3 months<\/option>/);
   });
-  assert.match(indexHtml, /class="page-title-row[^"]*"[\s\S]*class="page-controls-row"[\s\S]*economy-period-select/s);
+  assert.match(marketsHtml, /class="page-title-row[^"]*"[\s\S]*class="page-controls-row"[\s\S]*economy-period-select/s);
   assert.match(styles, /\.page-controls-row\s*{[^}]*justify-content: flex-end;/s);
   assert.match(styles, /\.page-controls-row\s*{[^}]*align-self: start;/s);
   assert.match(styles, /\.page-controls-row\s*{[^}]*grid-column: 2;/s);
@@ -2301,12 +2294,13 @@ test("desktop header nav adopts the Acadia underline style", () => {
   );
 });
 
-test("Mercury brand and favicon use the money bill wave mark", () => {
-  for (const html of [indexHtml, marketsHtml, supportsHtml, indicatorsHtml, dataHtml]) {
+test("Home uses the Figma globe mark while detail pages retain the Mercury brand", () => {
+  for (const html of [marketsHtml, supportsHtml, indicatorsHtml, dataHtml]) {
     assert.match(headerBrandIcon(html), /fa-money-bill-wave/);
     assert.doesNotMatch(headerBrandIcon(html), /fa-earth-americas/);
   }
 
+  assert.match(indexHtml, /class="home-brand-mark"[\s\S]*fa-globe/);
   assert.match(styles, /\.brand-mark\s*{[^}]*color: var\(--acadia-color-brand\);/s);
   assert.match(faviconSvg, /Mercury money bill icon/);
   assert.match(faviconSvg, /M0 419\.6L0 109\.5/);

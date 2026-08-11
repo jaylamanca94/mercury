@@ -6,9 +6,9 @@
     <meta name="theme-color" content="#eef1f5" data-acadia-theme-color>
     <meta
       name="description"
-      content="Mercury shows current global economic conditions from public data sources."
+      content="Mercury shows a focused live view of global and domestic market movement."
     >
-    <title>Mercury | Global Economy Dashboard</title>
+    <title>Mercury | Home</title>
     <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
     <link rel="manifest" href="site.webmanifest">
     <script src="theme.js?v=20260720-material-theme"></script>
@@ -17,359 +17,77 @@
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
       referrerpolicy="no-referrer"
     >
-    <link rel="stylesheet" href="styles.css?v=20260808-outage-recovery">
+    <link rel="stylesheet" href="styles.css?v=20260811-minimal-home">
   </head>
-  <body class="mercury-app mercury-page-dashboard" data-mercury-page="dashboard">
-    <a class="skip-link" href="#main-content">Skip to dashboard</a>
+  <body class="mercury-app mercury-page-dashboard mercury-page-home" data-mercury-page="dashboard">
+    <a class="skip-link" href="#main-content">Skip to market overview</a>
 
-    <header class="app-header acadia-chrome">
-      <div class="app-header-inner acadia-chrome-inner">
-        <a class="brand-lockup acadia-brand" href="index.html" aria-label="Mercury dashboard">
-          <span class="brand-mark acadia-mark" aria-hidden="true">
-            <i class="fa-solid fa-money-bill-wave acadia-icon"></i>
-          </span>
-          <strong>Mercury</strong>
+    <main id="main-content" class="home-shell" aria-busy="true">
+      <header class="home-navbar" aria-label="Mercury navigation">
+        <a class="home-brand-mark" href="index.html" aria-label="Mercury home">
+          <i class="fa-solid fa-globe" aria-hidden="true"></i>
         </a>
-        <nav class="primary-nav acadia-nav" aria-label="Mercury pages">
-          <a class="primary-nav-link acadia-nav-item is-active" href="index.html" aria-current="page"><i class="fa-solid fa-chart-line acadia-icon" aria-hidden="true"></i><span>Dashboard</span></a>
-          <a class="primary-nav-link acadia-nav-item" href="markets.html"><i class="fa-solid fa-arrow-trend-up acadia-icon" aria-hidden="true"></i><span>Markets</span></a>
-          <a class="primary-nav-link acadia-nav-item" href="supports.html"><i class="fa-solid fa-hand-holding-dollar acadia-icon" aria-hidden="true"></i><span>Market Supports</span></a>
-          <a class="primary-nav-link acadia-nav-item" href="indicators.html"><i class="fa-solid fa-gauge-high acadia-icon" aria-hidden="true"></i><span>Indicators</span></a>
-          <a class="primary-nav-link acadia-nav-item" href="data.html"><i class="fa-solid fa-table acadia-icon" aria-hidden="true"></i><span>Data Coverage</span></a>
+        <nav class="home-nav-links" aria-label="Mercury pages">
+          <a class="home-nav-link is-active" href="index.html" aria-current="page">Home</a>
+          <a class="home-nav-link" href="markets.html">Markets</a>
+          <a class="home-nav-link" href="indicators.html">Economy</a>
+          <button class="home-nav-link" type="button" disabled aria-disabled="true" title="Watchlist is coming soon">Watchlist</button>
+          <button class="home-nav-link" type="button" disabled aria-disabled="true" title="Profile is coming soon">Profile</button>
         </nav>
-        <button class="acadia-icon-action acadia-theme-toggle" type="button" data-acadia-theme-toggle aria-label="Switch theme" title="Theme"><i class="fa-solid fa-toggle-off acadia-icon" data-acadia-theme-toggle-icon aria-hidden="true"></i></button>
-        <div class="user-lockup acadia-badge" aria-label="Dashboard context">
-          <span>Public snapshot</span>
-          <i class="fa-solid fa-globe acadia-icon" aria-hidden="true"></i>
-        </div>
-      </div>
-    </header>
-    <nav class="primary-nav acadia-nav acadia-mobile-dock" aria-label="Mercury pages">
-      <a class="primary-nav-link acadia-nav-item is-active" href="index.html" aria-current="page"><i class="fa-solid fa-chart-line acadia-icon" aria-hidden="true"></i><span>Dashboard</span></a>
-      <a class="primary-nav-link acadia-nav-item" href="markets.html"><i class="fa-solid fa-arrow-trend-up acadia-icon" aria-hidden="true"></i><span>Markets</span></a>
-      <a class="primary-nav-link acadia-nav-item" href="supports.html"><i class="fa-solid fa-hand-holding-dollar acadia-icon" aria-hidden="true"></i><span>Market Supports</span></a>
-      <a class="primary-nav-link acadia-nav-item" href="indicators.html"><i class="fa-solid fa-gauge-high acadia-icon" aria-hidden="true"></i><span>Indicators</span></a>
-      <a class="primary-nav-link acadia-nav-item" href="data.html"><i class="fa-solid fa-table acadia-icon" aria-hidden="true"></i><span>Data Coverage</span></a>
-    </nav>
-
-    <main id="main-content" class="dashboard-shell acadia-shell acadia-stack">
-      <section class="page-title-row acadia-surface acadia-panel-dense" aria-labelledby="view-title">
-        <div class="page-title-group acadia-section-header-copy">
-          <span class="acadia-kicker">Global economy at a glance</span>
-          <div class="view-heading">
-            <h1 id="view-title" class="acadia-title">Global Economy</h1>
-            <span id="economy-change-badge" class="view-change hero-condition trend-stable acadia-badge">Loading</span>
-          </div>
-          <p id="hero-insight" class="hero-insight acadia-text-muted">
-            Checking the current global read from live public data.
-          </p>
-          <div class="hero-trust-strip" aria-label="Mercury dashboard scope">
-            <span><i class="fa-solid fa-earth-americas acadia-icon" aria-hidden="true"></i> Global view</span>
-            <span><i class="fa-solid fa-database acadia-icon" aria-hidden="true"></i> Public sources</span>
-            <span><i class="fa-solid fa-shield-halved acadia-icon" aria-hidden="true"></i> Informational only</span>
-          </div>
-          <div id="hero-movers" class="hero-movers" aria-label="Top movers"></div>
-          <div id="hero-sparkline" class="hero-chart-panel" aria-label="Market performance comparison"></div>
-        </div>
-        <article id="mobile-dashboard-card" class="mobile-dashboard-card" aria-labelledby="mobile-dashboard-title">
-          <div class="mobile-dashboard-heading">
-            <div>
-              <h2 id="mobile-dashboard-title">Checking conditions</h2>
-              <p id="mobile-dashboard-comparison">Waiting for live public data.</p>
-            </div>
-            <i class="fa-solid fa-chevron-right" aria-hidden="true"></i>
-          </div>
-          <p id="mobile-dashboard-copy" class="mobile-dashboard-copy">
-            Mercury is checking source-backed market, support, and economic indicators.
-          </p>
-          <div id="mobile-dashboard-actions" class="mobile-dashboard-actions" hidden></div>
-          <div id="mobile-dashboard-tabs" class="mobile-dashboard-tabs" aria-label="Economy region shortcuts"></div>
-          <div id="mobile-dashboard-chart" class="mobile-dashboard-chart" aria-label="Mobile market performance comparison"></div>
-          <div class="mobile-dashboard-axis" aria-hidden="true">
-            <span id="mobile-axis-start">Start</span>
-            <span id="mobile-axis-middle">Middle</span>
-            <span id="mobile-axis-end">Now</span>
-          </div>
-          <div class="mobile-dashboard-band">
-            <div>
-              <span>Source freshness</span>
-              <strong id="mobile-dashboard-freshness">Checking</strong>
-            </div>
-            <div class="mobile-source-stack" aria-label="Source group status">
-              <span id="mobile-source-dots" class="mobile-source-dots" aria-hidden="true"></span>
-              <span id="mobile-source-icons" class="mobile-source-icons" aria-hidden="true"></span>
-            </div>
-          </div>
-        </article>
-        <div class="page-controls-row" aria-label="Dashboard controls">
-          <div class="page-actions acadia-toolbar">
-            <label class="section-select-label acadia-field" for="economy-period-select">
-              <span class="acadia-label">Period</span>
-              <select id="economy-period-select" class="section-select acadia-control" aria-label="Economy period">
-                <option value="today">Today</option>
-                <option value="week" selected>Week</option>
-                <option value="month">Month</option>
-                <option value="threeMonth">3 months</option>
-                <option value="year">Year</option>
-                <option value="fiveYear">5 years</option>
-              </select>
-            </label>
-            <label class="section-select-label section-select-label-region acadia-field" for="economy-region-select">
-              <span class="acadia-label">Region</span>
-              <select id="economy-region-select" class="section-select acadia-control" aria-label="Economy region">
-                <option value="Global" selected>Global</option>
-                <option value="United States">United States</option>
-                <option value="Europe">Europe</option>
-                <option value="Asia">Asia</option>
-              </select>
-            </label>
-            <span id="last-updated-pill" class="timestamp-pill acadia-badge status-pill-loading" aria-live="polite" aria-atomic="true">
-              Checking latest data
-            </span>
-            <button
-              id="refresh-data-button"
-              class="refresh-button acadia-icon-action"
-              type="button"
-              aria-describedby="dashboard-status"
-            >
-              <i class="fa-solid fa-rotate acadia-icon" aria-hidden="true"></i>
-              <span class="visually-hidden">Refresh data</span>
+        <div class="home-profile-wrap">
+          <button
+            id="home-profile-trigger"
+            class="home-profile-trigger"
+            type="button"
+            aria-expanded="false"
+            aria-controls="home-profile-menu"
+            aria-label="Open account menu"
+          >
+            <i class="fa-solid fa-circle-user" aria-hidden="true"></i>
+          </button>
+          <div id="home-profile-menu" class="home-profile-menu acadia-account-menu-panel" role="menu" hidden>
+            <button class="home-theme-toggle acadia-account-menu-item" type="button" role="menuitem" data-acadia-theme-toggle>
+              <i class="fa-solid fa-toggle-off" data-acadia-theme-toggle-icon aria-hidden="true"></i>
+              <span>Theme</span>
             </button>
+            <button class="home-menu-disabled acadia-account-menu-item" type="button" role="menuitem" disabled aria-disabled="true">Profile coming soon</button>
           </div>
-          <p id="control-availability-note" class="control-availability-note" hidden>
-            Period, region, and sort controls apply when live data is available.
-          </p>
         </div>
+      </header>
+
+      <section class="home-market-overview" aria-labelledby="home-market-title">
+        <h1 id="home-market-title" class="visually-hidden">Mercury market overview</h1>
+        <div class="home-control-row">
+          <div class="home-segmented-control" role="group" aria-label="Market period">
+            <button type="button" class="home-period-control" data-home-period="today" aria-pressed="false">Day</button>
+            <button type="button" class="home-period-control" data-home-period="week" aria-pressed="true">Week</button>
+            <button type="button" class="home-period-control" data-home-period="month" aria-pressed="false">Month</button>
+            <button type="button" class="home-period-control" data-home-period="year" aria-pressed="false">Year</button>
+          </div>
+          <div class="home-segmented-control home-scope-control" role="group" aria-label="Market scope">
+            <button type="button" class="home-scope-control" data-home-scope="Global" aria-pressed="true">Global</button>
+            <button type="button" class="home-scope-control" data-home-scope="United States" aria-pressed="false">Domestic</button>
+          </div>
+        </div>
+
+        <div
+          id="home-graph-stage"
+          class="home-graph-stage"
+          data-period="week"
+          data-scope="Global"
+          aria-label="Market graph placeholder for the selected period and scope"
+        ></div>
+
+        <div id="home-market-cards" class="home-market-cards" aria-live="polite" aria-busy="true"></div>
+        <section id="home-market-outage-recovery" class="home-market-outage-recovery" aria-label="Market data recovery" hidden>
+          <div id="home-market-outage-card"></div>
+        </section>
       </section>
       <p id="dashboard-status" class="visually-hidden" role="status" aria-live="polite" aria-atomic="true">
-        Checking latest dashboard data.
+        Checking latest market data.
       </p>
-
-      <section class="overview-tiles" aria-labelledby="overview-tiles-title">
-        <div class="section-heading compact-section-heading">
-          <div class="section-title-group">
-            <span class="acadia-kicker">Dashboard</span>
-            <h2 id="overview-tiles-title" class="acadia-title">Key Signals</h2>
-          </div>
-        </div>
-        <div id="overview-tiles-grid" class="overview-tiles-grid" aria-live="polite" aria-busy="true"></div>
-      </section>
-
-      <section class="briefing-grid" aria-label="Current economic briefing">
-        <article class="brief-card economic-brief-card acadia-surface acadia-panel-dense">
-          <span class="acadia-kicker">Economic brief</span>
-          <h2 class="acadia-title">Executive Summary</h2>
-          <p id="economic-brief-copy" class="brief-copy acadia-text-muted">
-            Mercury is waiting for enough live data to explain the current economic read.
-          </p>
-        </article>
-        <article class="brief-card acadia-surface acadia-panel-dense">
-          <span class="acadia-kicker">What changed</span>
-          <h2 class="acadia-title">This week</h2>
-          <ul id="what-changed-list" class="brief-list" aria-live="polite">
-            <li>Checking live market movement.</li>
-          </ul>
-        </article>
-        <article class="brief-card acadia-surface acadia-panel-dense">
-          <span class="acadia-kicker">Risk watch</span>
-          <h2 class="acadia-title">Current pressures</h2>
-          <ul id="risk-watch-list" class="brief-list" aria-live="polite">
-            <li>Checking risk indicators.</li>
-          </ul>
-        </article>
-      </section>
-
-      <section class="summary-band visually-hidden" aria-labelledby="global-status-title">
-        <div class="summary-copy">
-          <p>Current conditions</p>
-          <h2 id="global-status-title">Checking public data</h2>
-          <p id="summary-copy">
-            Mercury is checking market, economic, risk, and regional data. Unavailable sources stay
-            labeled instead of using sample figures.
-          </p>
-        </div>
-        <div class="score-panel" aria-label="Economy score loading">
-          <span class="score-value">...</span>
-          <span class="score-label">Conditions score</span>
-        </div>
-        <div class="score-drivers visually-hidden" aria-label="What shapes this score">
-          <p>What shapes this score</p>
-          <dl>
-            <div>
-              <dt>Market pulse</dt>
-              <dd>Loading</dd>
-            </div>
-            <div>
-              <dt>Economic health</dt>
-              <dd>Loading</dd>
-            </div>
-            <div>
-              <dt>Risk tone</dt>
-              <dd>Loading</dd>
-            </div>
-          </dl>
-          <small>Uses live indicators currently available.</small>
-        </div>
-      </section>
-
-      <section class="dashboard-section economy-section overview-panel" aria-labelledby="economy-title">
-        <div class="section-heading compact-section-heading">
-          <div class="section-title-group">
-            <span class="acadia-kicker">Markets</span>
-            <h2 id="economy-title" class="acadia-title">Regional Markets</h2>
-          </div>
-          <div class="section-controls market-sort-controls" aria-label="Market sort controls">
-            <label class="section-select-label acadia-field" for="market-sort-select">
-              <span class="acadia-label">Sort</span>
-              <select id="market-sort-select" class="section-select acadia-control" aria-label="Sort markets">
-                <option value="relevance" selected>Economy order</option>
-                <option value="return-desc">Return high to low</option>
-                <option value="return-asc">Return low to high</option>
-              </select>
-            </label>
-          </div>
-        </div>
-        <div id="economy-grid" class="metric-grid economy-grid" aria-live="polite" aria-busy="true"></div>
-      </section>
-
-      <section class="dashboard-section currency-section overview-panel" aria-labelledby="currency-title">
-        <div class="section-heading compact-section-heading">
-          <div class="section-title-group">
-            <span class="acadia-kicker">Market supports</span>
-            <div class="section-title-line">
-              <h2 id="currency-title" class="acadia-title">Currencies</h2>
-              <span id="currency-change-badge" class="view-change trend-stable acadia-badge">Loading</span>
-            </div>
-          </div>
-          <div class="section-controls visually-hidden" aria-label="Currency controls">
-            <label class="section-select-label acadia-field" for="currency-period-select">
-              <span class="visually-hidden">Currency period</span>
-              <select id="currency-period-select" class="section-select acadia-control" aria-label="Currency period">
-                <option value="today">Today</option>
-                <option value="week" selected>Week</option>
-                <option value="month">Month</option>
-                <option value="threeMonth">3 months</option>
-                <option value="year">Year</option>
-                <option value="fiveYear">5 years</option>
-              </select>
-            </label>
-          </div>
-        </div>
-        <div id="currency-grid" class="metric-grid currency-grid" aria-live="polite" aria-busy="true"></div>
-      </section>
-
-      <section class="dashboard-section commodity-section overview-panel" aria-labelledby="commodity-title">
-        <div class="section-heading compact-section-heading">
-          <div class="section-title-group">
-            <span class="acadia-kicker">Market supports</span>
-            <h2 id="commodity-title" class="acadia-title">Commodities</h2>
-          </div>
-        </div>
-        <div id="commodity-grid" class="metric-grid commodity-grid" aria-live="polite" aria-busy="true"></div>
-      </section>
-
-      <section class="lower-grid overview-panel" aria-label="Additional economic context">
-        <section class="dashboard-section context-section" aria-labelledby="risk-title">
-          <div class="section-heading compact-section-heading">
-            <div class="section-title-group">
-              <span class="acadia-kicker">Risk</span>
-              <h2 id="risk-title" class="acadia-title">Risk &amp; Confidence</h2>
-            </div>
-          </div>
-          <div id="risk-list" class="indicator-list" aria-live="polite" aria-busy="true"></div>
-        </section>
-
-        <section class="dashboard-section context-section" aria-labelledby="economic-health-title">
-          <div class="section-heading compact-section-heading">
-            <div class="section-title-group">
-              <span class="acadia-kicker">Economy</span>
-              <h2 id="economic-health-title" class="acadia-title">Economic Health</h2>
-            </div>
-          </div>
-          <div id="economic-health-grid" class="metric-grid economic-health-grid" aria-live="polite" aria-busy="true"></div>
-        </section>
-      </section>
-
-      <section class="dashboard-section freshness-band data-section acadia-surface acadia-panel-dense" aria-labelledby="source-coverage-title">
-        <div class="freshness-copy">
-          <div class="section-heading compact-section-heading">
-            <div>
-              <span class="acadia-kicker">Current source health</span>
-              <h2 id="source-coverage-title" class="acadia-title">Data coverage</h2>
-            </div>
-          </div>
-          <p id="source-coverage-copy" class="acadia-text-muted">
-            Mercury is checking current source health and will show freshness and last checked state
-            when the snapshot loads.
-          </p>
-          <p id="source-provider-copy" class="source-provider-copy acadia-text-muted">
-            Configured provider inventory: Yahoo Finance, FRED, and World Bank remain source
-            references separate from current live availability.
-          </p>
-          <dl class="snapshot-meta" aria-label="Live snapshot status">
-            <div>
-              <dt>Latest data release</dt>
-              <dd id="latest-release-window">Loading</dd>
-            </div>
-            <div>
-              <dt>Data freshness</dt>
-              <dd id="snapshot-freshness">Loading</dd>
-            </div>
-            <div>
-              <dt>Last checked</dt>
-              <dd id="live-last-checked">Loading</dd>
-            </div>
-            <div>
-              <dt>Check timing</dt>
-              <dd id="refresh-schedule">Loading</dd>
-            </div>
-          </dl>
-        </div>
-        <ul class="freshness-list acadia-status-list" aria-label="Live data status">
-          <li>
-            <span class="freshness-source">
-              <i class="fa-solid fa-chart-line acadia-icon" aria-hidden="true"></i>
-              <span>
-                Market data
-                <small id="market-source-detail">Checking public market data</small>
-              </span>
-            </span>
-            <strong id="market-source-status" class="acadia-badge source-status-badge source-status-loading">Loading</strong>
-          </li>
-          <li>
-            <span class="freshness-source">
-              <i class="fa-solid fa-building-columns acadia-icon" aria-hidden="true"></i>
-              <span>
-                Economic indicators
-                <small id="macro-source-detail">Checking official economic releases</small>
-              </span>
-            </span>
-            <strong id="macro-source-status" class="acadia-badge source-status-badge source-status-loading">Loading</strong>
-          </li>
-          <li>
-            <span class="freshness-source">
-              <i class="fa-solid fa-gauge-high acadia-icon" aria-hidden="true"></i>
-              <span>
-                Risk indicators
-                <small id="risk-source-detail">Checking risk indicators</small>
-              </span>
-            </span>
-            <strong id="risk-source-status" class="acadia-badge source-status-badge source-status-loading">Loading</strong>
-          </li>
-          <li>
-            <span class="freshness-source">
-              <i class="fa-solid fa-earth-americas acadia-icon" aria-hidden="true"></i>
-              <span>
-                Regional coverage
-                <small id="regional-source-detail">Checking World Bank growth data</small>
-              </span>
-            </span>
-            <strong id="regional-source-status" class="acadia-badge source-status-badge source-status-loading">Loading</strong>
-          </li>
-        </ul>
-      </section>
     </main>
 
-    <script src="app.js?v=20260808-outage-recovery"></script>
+    <script src="app.js?v=20260811-minimal-home"></script>
   </body>
 </html>

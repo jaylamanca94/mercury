@@ -87,6 +87,27 @@ test("legacy FRED snapshot route stays aliased to the live snapshot handler", ()
   assert.equal(fredSnapshot, liveSnapshot);
 });
 
+test("unsupported snapshot methods return a non-cacheable JSON response", async () => {
+  const headers = new Map();
+  let body = "";
+  const response = {
+    setHeader(name, value) {
+      headers.set(name.toLowerCase(), value);
+    },
+    end(value) {
+      body = value;
+    },
+  };
+
+  await liveSnapshot({ method: "POST" }, response);
+
+  assert.equal(response.statusCode, 405);
+  assert.equal(headers.get("allow"), "GET");
+  assert.equal(headers.get("content-type"), "application/json; charset=utf-8");
+  assert.equal(headers.get("cache-control"), "no-store");
+  assert.deepEqual(JSON.parse(body), { error: "Method not allowed" });
+});
+
 test("Yahoo bridge keeps enough market history for five-year dashboard views", () => {
   assert.equal(YAHOO_HISTORY_RANGE, "5y");
   assert.equal(YAHOO_HISTORY_OBSERVATIONS, 1300);
