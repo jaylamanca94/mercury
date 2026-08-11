@@ -992,6 +992,7 @@ test("indicators page adds economic read, drivers, and interpretation", () => {
       renderDashboard();
       ({
         title: document.querySelector("#view-title").textContent,
+        badge: document.querySelector("#economy-change-badge").textContent,
         hero: document.querySelector("#hero-insight").textContent,
         read: document.querySelector("#indicator-read-copy").textContent,
         drivers: document.querySelector("#indicator-drivers-list").innerHTML,
@@ -1003,6 +1004,7 @@ test("indicators page adds economic read, drivers, and interpretation", () => {
   );
 
   assert.equal(result.title, "Indicators");
+  assert.equal(result.badge, "Current");
   assert.match(result.hero, /Economic releases are mixed\./);
   assert.match(result.read, /GDP growth improved to 1\.6%\./);
   assert.match(result.read, /Unemployment is unchanged at 4\.3%\./);
@@ -1026,6 +1028,7 @@ test("indicators briefing does not interpret loading or unavailable data", () =>
     `
       renderDashboard();
       ({
+        badge: document.querySelector("#economy-change-badge").textContent,
         hero: document.querySelector("#hero-insight").textContent,
         read: document.querySelector("#indicator-read-copy").textContent,
         drivers: document.querySelector("#indicator-drivers-list").innerHTML,
@@ -1035,6 +1038,7 @@ test("indicators briefing does not interpret loading or unavailable data", () =>
     context,
   );
 
+  assert.equal(result.badge, "Unavailable");
   assert.match(result.hero, /waiting for live economic releases/i);
   assert.match(result.read, /waiting for live economic releases/i);
   assert.doesNotMatch(result.read, /mixed|improving|under pressure/i);
@@ -1324,6 +1328,23 @@ test("delayed and stale source windows remain explicit in settled dashboard stat
   assert.equal(results[1].isCaution, false);
   assert.equal(results[1].isStale, true);
   assert.equal(results[1].isLoading, false);
+});
+
+test("mobile freshness keeps delayed data distinct from partial coverage", () => {
+  const context = loadAppContext();
+  const result = vm.runInContext(
+    `
+      marketPulse = [{ sourceStatus: "Source-backed", freshness: { status: "delayed" } }];
+      economicHealth = [{ sourceStatus: "Unavailable", freshness: { status: "unavailable" } }];
+      riskIndicators = [];
+      regions = [];
+      ({ label: mobileFreshnessSummary().label, tone: mobileFreshnessSummary().tone });
+    `,
+    context,
+  );
+
+  assert.equal(result.label, "Delayed");
+  assert.equal(result.tone, "caution");
 });
 
 test("recorded live dashboard state keeps first scan and controls source-backed", () => {

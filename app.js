@@ -1462,7 +1462,11 @@ function mobileFreshnessSummary() {
     return { label: "Stale", tone: "stale" };
   }
 
-  if (delayedCount > 0 || liveCount < items.length) {
+  if (delayedCount > 0) {
+    return { label: "Delayed", tone: "caution" };
+  }
+
+  if (liveCount < items.length) {
     return { label: "Partial", tone: "caution" };
   }
 
@@ -3196,6 +3200,7 @@ function renderIndicatorBriefing(healthCards, riskCards) {
   const drivers = buildIndicatorDriverItems(healthCards, riskCards);
 
   setText("#view-title", primaryViewTitle());
+  updateIndicatorAvailabilityBadge([...healthCards, ...riskCards]);
   setText("#hero-insight", buildIndicatorRead(healthCards));
   setHtml("#hero-movers", renderHeroMovers(drivers.map((item) => item.card).filter(Boolean)));
   setHtml("#hero-sparkline", "");
@@ -3207,6 +3212,33 @@ function renderIndicatorBriefing(healthCards, riskCards) {
       ? drivers.map(briefListItem).join("")
       : '<li class="brief-list-item brief-list-item-unavailable"><strong>Waiting for releases</strong><span>Indicator drivers will appear when source data is available.</span></li>');
   }
+}
+
+function updateIndicatorAvailabilityBadge(cards) {
+  const element = document.querySelector("#economy-change-badge");
+
+  if (!element) {
+    return;
+  }
+
+  const liveCards = cards.filter((card) => card?.sourceStatus === "Source-backed");
+  const hasStaleData = liveCards.some((card) => card.freshness?.status === "stale");
+  const hasDelayedData = liveCards.some((card) => card.freshness?.status === "delayed");
+  const status =
+    liveCards.length === 0
+      ? { label: "Unavailable", tone: "unavailable" }
+      : hasStaleData
+        ? { label: "Stale", tone: "caution" }
+        : hasDelayedData
+          ? { label: "Delayed", tone: "caution" }
+          : liveCards.length < cards.length
+            ? { label: "Partial", tone: "caution" }
+            : { label: "Current", tone: "up" };
+
+  element.classList.remove("trend-up", "trend-down", "trend-stable", "trend-mixed", "trend-caution", "trend-unavailable");
+  element.textContent = status.label;
+  element.setAttribute("aria-label", `Indicator data ${status.label.toLowerCase()}`);
+  element.classList.add(`trend-${status.tone}`);
 }
 
 function buildBreadthSentence(cards) {
