@@ -3768,9 +3768,119 @@ function renderHomeMarketCard(metric) {
   `;
 }
 
+function homeGraphSeries(cards) {
+  const availableSeries = cards
+    .map((card, index) => {
+      const points = Array.isArray(card.periodPoints) ? card.periodPoints.filter(Number.isFinite) : [];
+      const indexedPoints =
+        card.sourceStatus === "Source-backed" && points.length > 1
+          ? normalizeIndexedPoints(points)
+          : [];
+
+      return {
+        className: `series-${index + 1}`,
+        label: metricTickerLabel(card) || card.name,
+        description: displayMetricName(card),
+        points: indexedPoints.length > 1 ? smoothSparklineValues(indexedPoints) : [],
+      };
+    })
+    .filter((series) => series.points.length > 1);
+
+  if (!availableSeries.length) {
+    return [];
+  }
+
+  const targetLength = Math.min(Math.max(...availableSeries.map((series) => series.points.length)), 96);
+
+  return availableSeries.map((series) => ({
+    ...series,
+    points: Array.from({ length: targetLength }, (_, index) => resampledPoint(series.points, index, targetLength)),
+  }));
+}
+
+function renderHomeMarketGraph(cards) {
+  const series = homeGraphSeries(cards);
+
+  if (!series.length) {
+    const isLoading = cards.some((card) => card.sourceStatus === "Loading");
+
+    return `
+      <div class="home-graph-empty" role="status">
+        <i class="fa-solid ${isLoading ? "fa-spinner" : "fa-chart-line"}" aria-hidden="true"></i>
+        <span>${isLoading ? "Loading market history…" : "Market history is unavailable for this view."}</span>
+      </div>
+    `;
+  }
+
+  const values = series.flatMap((item) => item.points);
+  let min = Math.min(0, ...values);
+  let max = Math.max(0, ...values);
+
+  if (min === max) {
+    min -= 0.5;
+    max += 0.5;
+  }
+
+  const width = 720;
+  const height = 224;
+  const range = max - min;
+  const pointY = (point) => height - ((point - min) / range) * (height - 26) - 13;
+  const baselineY = pointY(0).toFixed(1);
+  const gridLines = [0.2, 0.4, 0.6, 0.8]
+    .map((ratio) => {
+      const y = (height * ratio).toFixed(1);
+      return `<line class="home-graph-grid" x1="0" y1="${y}" x2="${width}" y2="${y}" aria-hidden="true"></line>`;
+    })
+    .join("");
+  const paths = series
+    .map((item) => {
+      const coordinates = item.points.map((point, index) => ({
+        x: (index / (item.points.length - 1)) * width,
+        y: pointY(point),
+      }));
+
+      return `<path class="home-graph-line home-graph-line-${escapeHtml(item.className)}" d="${smoothSparklinePath(coordinates)}" aria-hidden="true"></path>`;
+    })
+    .join("");
+  const periodLabel = periodOption(selectedEconomyPeriod).label;
+  const scopeLabel = selectedRegion === "United States" ? "U.S. market" : "Global market";
+  const accessibleLabel = `${scopeLabel} performance for ${periodLabel}. Every series starts at 0%. ${series
+    .map((item) => `${item.label} ${formatDeltaLabel(item.points.at(-1), "percent-change")} from start`)
+    .join(". ")}.`;
+
+  return `
+    <div class="home-graph-header">
+      <div>
+        <span class="home-graph-kicker">${escapeHtml(scopeLabel)}</span>
+        <strong>${escapeHtml(periodLabel)} performance</strong>
+      </div>
+      <span class="home-graph-note">Indexed to 0%</span>
+    </div>
+    <div class="home-graph-legend" aria-label="Market graph legend">
+      ${series
+        .map(
+          (item) => `
+            <span class="home-graph-key home-graph-key-${escapeHtml(item.className)}">
+              <i aria-hidden="true"></i>
+              <strong>${escapeHtml(item.label)}</strong>
+              <span>${escapeHtml(item.description)}</span>
+            </span>
+          `,
+        )
+        .join("")}
+    </div>
+    <svg class="home-market-graph" viewBox="0 0 ${width} ${height}" preserveAspectRatio="none" role="img" aria-label="${escapeHtml(accessibleLabel)}">
+      ${gridLines}
+      <line class="home-graph-baseline" x1="0" y1="${baselineY}" x2="${width}" y2="${baselineY}" aria-hidden="true"></line>
+      ${paths}
+    </svg>
+  `;
+}
+
 function renderHomeDashboard() {
   const cards = homeMarketCards();
   const cardGrid = document.querySelector("#home-market-cards");
+  const graphStage = document.querySelector("#home-graph-stage");
   const recoverySection = document.querySelector("#home-market-outage-recovery");
   const recoveryCard = document.querySelector("#home-market-outage-card");
   const completeUnavailable = isCompleteLiveUnavailable();
@@ -3778,6 +3888,7 @@ function renderHomeDashboard() {
   document.body.classList.toggle("dashboard-global", selectedRegion === "Global");
   document.body.classList.toggle("dashboard-focused", selectedRegion !== "Global");
   document.body.classList.toggle("dashboard-unavailable", completeUnavailable);
+  setDynamicContent(graphStage, renderHomeMarketGraph(cards));
   setDynamicContent(cardGrid, cards.map(renderHomeMarketCard).join(""));
   if (cardGrid) {
     cardGrid.setAttribute("aria-busy", "false");

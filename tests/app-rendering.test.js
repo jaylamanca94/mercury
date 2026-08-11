@@ -306,6 +306,7 @@ test("minimal Home renders its fixed global market set", () => {
   );
 
   const homeHtml = context.__elements.get("#home-market-cards").innerHTML;
+  const graphHtml = context.__elements.get("#home-graph-stage").innerHTML;
 
   assert.match(homeHtml, /U\.S\. Total/);
   assert.match(homeHtml, /VTI/);
@@ -317,6 +318,13 @@ test("minimal Home renders its fixed global market set", () => {
   assert.match(homeHtml, /VGK/);
   assert.doesNotMatch(homeHtml, /Asia/);
   assert.doesNotMatch(homeHtml, /U\.S\. Dollar/);
+  assert.match(graphHtml, /Global market performance/);
+  assert.match(graphHtml, /home-graph-line-series-1/);
+  assert.match(graphHtml, /home-graph-line-series-4/);
+  assert.match(graphHtml, /VTI/);
+  assert.match(graphHtml, /VXUS/);
+  assert.match(graphHtml, /VOO/);
+  assert.match(graphHtml, /VGK/);
 });
 
 test("minimal Home switches to its fixed domestic market set", () => {
@@ -1190,6 +1198,7 @@ test("Home fallback keeps four truthful unavailable cards and disables its contr
       applyLiveFallback();
       ({
         cards: document.querySelector("#home-market-cards").innerHTML,
+        graph: document.querySelector("#home-graph-stage").innerHTML,
         cardsBusy: document.querySelector("#home-market-cards").getAttribute("aria-busy"),
         graphPeriod: document.querySelector("#home-graph-stage").getAttribute("data-period"),
         graphScope: document.querySelector("#home-graph-stage").getAttribute("data-scope"),
@@ -1205,6 +1214,7 @@ test("Home fallback keeps four truthful unavailable cards and disables its contr
   assert.match(result.cards, /United States/);
   assert.match(result.cards, /Europe/);
   assert.match(result.cards, /Unavailable/);
+  assert.match(result.graph, /Market history is unavailable/);
   assert.equal(result.cardsBusy, "false");
   assert.equal(result.graphPeriod, "week");
   assert.equal(result.graphScope, "Global");
