@@ -289,6 +289,8 @@ test("minimal Home renders its fixed global market set", () => {
         { id: "global-us-total", name: "U.S. Total", value: "$311.10", change: "+2.4%", ticker: "VTI", viewGroup: "economy", region: "Global", marketRole: "global-allocation", sourceStatus: "Source-backed", freshness: { status: "current" }, points: [1, 2], history: [{ value: 1 }, { value: 2 }], comparison: "percent-change" },
         { id: "global-international", name: "International", value: "$71.20", change: "+1.9%", ticker: "VXUS", viewGroup: "economy", region: "Global", marketRole: "global-allocation", sourceStatus: "Source-backed", freshness: { status: "current" }, points: [1, 2], history: [{ value: 1 }, { value: 2 }], comparison: "percent-change" },
         { id: "us-equities", name: "S&P 500", value: "$681.41", change: "+2.2%", ticker: "VOO", viewGroup: "economy", region: "United States", marketRole: "large-cap", sourceStatus: "Source-backed", freshness: { status: "current" }, points: [1, 2], history: [{ value: 1 }, { value: 2 }], comparison: "percent-change" },
+        { id: "us-small-cap", name: "Small Cap", value: "$245.32", change: "+1.1%", ticker: "VB", viewGroup: "economy", region: "United States", marketRole: "small-cap", sourceStatus: "Source-backed", freshness: { status: "current" }, points: [1, 2], history: [{ value: 1 }, { value: 2 }], comparison: "percent-change" },
+        { id: "us-technology", name: "Technology", value: "$625.81", change: "+3.2%", ticker: "VGT", viewGroup: "economy", region: "United States", marketRole: "technology", sourceStatus: "Source-backed", freshness: { status: "current" }, points: [1, 2], history: [{ value: 1 }, { value: 2 }], comparison: "percent-change" },
         { id: "europe-equities", name: "Europe", value: "$89.23", change: "+2.9%", ticker: "VGK", viewGroup: "economy", region: "Europe", marketRole: "large-cap", sourceStatus: "Source-backed", freshness: { status: "current" }, points: [1, 2], history: [{ value: 1 }, { value: 2 }], comparison: "percent-change" },
         { id: "asia-equities", name: "Asia Pacific", value: "$117.16", change: "+7.5%", ticker: "VPL", viewGroup: "economy", region: "Asia", marketRole: "large-cap", sourceStatus: "Source-backed", freshness: { status: "current" }, points: [1, 2], history: [{ value: 1 }, { value: 2 }], comparison: "percent-change" },
         { id: "dollar-index", name: "U.S. dollar", value: "$28.18", change: "+0.5%", ticker: "UUP", viewGroup: "currency", sourceStatus: "Source-backed", freshness: { status: "current" }, history: [] },
@@ -318,13 +320,13 @@ test("minimal Home renders its fixed global market set", () => {
   assert.match(homeHtml, /VGK/);
   assert.doesNotMatch(homeHtml, /Asia/);
   assert.doesNotMatch(homeHtml, /U\.S\. Dollar/);
-  assert.match(graphHtml, /Global market performance/);
-  assert.match(graphHtml, /home-graph-line-series-1/);
-  assert.match(graphHtml, /home-graph-line-series-4/);
-  assert.match(graphHtml, /VTI/);
+  assert.match(graphHtml, /hero-comparison-chart/);
+  assert.match(graphHtml, /hero-comparison-line-voo/);
+  assert.match(graphHtml, /hero-comparison-line-vgt/);
   assert.match(graphHtml, /VXUS/);
   assert.match(graphHtml, /VOO/);
-  assert.match(graphHtml, /VGK/);
+  assert.match(graphHtml, /VB/);
+  assert.match(graphHtml, /VGT/);
 });
 
 test("minimal Home switches to its fixed domestic market set", () => {
