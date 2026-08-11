@@ -3498,14 +3498,12 @@ body {
 /* Minimal Figma-led Home surface. Detail pages retain the broader dashboard shell. */
 .mercury-page-home {
   background:
-    linear-gradient(180deg, color-mix(in srgb, var(--acadia-color-surface) 30%, transparent), transparent 42%),
-    var(--acadia-color-page);
+    linear-gradient(180deg, color-mix(in srgb, var(--acadia-color-surface) 36%, transparent), color-mix(in srgb, var(--acadia-color-page) 86%, #c3c3c3));
 }
 
 .home-shell {
   background:
-    linear-gradient(180deg, color-mix(in srgb, var(--acadia-color-surface-elevated) 42%, transparent), transparent 62%),
-    color-mix(in srgb, var(--acadia-color-page) 94%, var(--acadia-color-surface));
+    linear-gradient(180deg, color-mix(in srgb, var(--acadia-color-surface-elevated) 92%, transparent), color-mix(in srgb, var(--acadia-color-page) 88%, #c3c3c3));
   border-radius: var(--acadia-radius-md);
   box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.08);
   margin: 1.5rem;
@@ -3531,7 +3529,7 @@ body {
   align-items: center;
   background: transparent;
   border: 0;
-  color: var(--acadia-color-brand);
+  color: var(--acadia-color-text);
   display: inline-flex;
   font-size: 1.5rem;
   height: 2rem;
@@ -3660,10 +3658,10 @@ body {
 
 .home-market-overview {
   display: grid;
-  gap: 1.75rem;
+  gap: 1.5rem;
   margin-inline: auto;
   max-width: 92.5rem;
-  padding: 3.75rem clamp(1rem, 7.4vw, 9.25rem) 0;
+  padding: 1.5rem clamp(1rem, 7.4vw, 9.25rem) 0;
 }
 
 .home-control-row {
@@ -3724,13 +3722,14 @@ body {
   border: 1px solid var(--acadia-color-border-strong);
   border-radius: var(--acadia-radius-md);
   box-shadow: var(--acadia-shadow-card), var(--acadia-shadow-surface-highlight);
-  height: 20.4375rem;
+  aspect-ratio: 2354 / 642;
+  height: auto;
   overflow: hidden;
 }
 
 .home-graph-stage .hero-comparison {
-  gap: 0.75rem;
-  padding: 1.25rem 1.5rem 1.5rem;
+  gap: 0.5rem;
+  padding: 0.9rem 1.5rem 1.25rem;
 }
 
 .home-graph-empty {
@@ -3757,8 +3756,8 @@ body {
   box-shadow: var(--acadia-shadow-card), var(--acadia-shadow-surface-highlight);
   display: grid;
   gap: 0.5rem;
-  min-height: 7.875rem;
-  padding: 1.5rem 1.75rem;
+  min-height: 4.375rem;
+  padding: 1rem;
 }
 
 .home-market-card-heading,
@@ -3798,17 +3797,55 @@ body {
 }
 
 .home-market-card-value strong {
-  font-size: 1.25rem;
-  line-height: 1.5rem;
+  font-size: 1rem;
+  line-height: 1.25rem;
 }
 
 .home-market-card-value span {
   color: var(--acadia-color-text-muted);
-  font-size: 0.875rem;
+  font-size: 0.75rem;
 }
 
 .home-market-card-unavailable .home-market-card-value strong {
   color: var(--acadia-color-text-muted);
+}
+
+.home-indicator-cards {
+  display: grid;
+  gap: 1.5rem;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.home-indicator-card {
+  align-items: center;
+  background: color-mix(in srgb, var(--acadia-color-surface-elevated) 96%, transparent);
+  border: 1px solid var(--acadia-color-border-strong);
+  border-radius: var(--acadia-radius-md);
+  box-shadow: var(--acadia-shadow-card), var(--acadia-shadow-surface-highlight);
+  display: flex;
+  font-size: 0.75rem;
+  font-weight: 750;
+  gap: 0.75rem;
+  justify-content: space-between;
+  min-height: 3rem;
+  padding: 0.75rem 1rem;
+}
+
+.home-indicator-name {
+  align-items: center;
+  color: var(--acadia-color-text-muted);
+  display: inline-flex;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+.home-indicator-name i {
+  flex: 0 0 auto;
+}
+
+.home-indicator-card strong {
+  flex: 0 0 auto;
+  font-size: 0.8rem;
 }
 
 @media (max-width: 68.75rem) {
@@ -3823,7 +3860,11 @@ body {
     padding-inline: 1rem;
   }
 
-  .home-market-cards {
+}
+
+@media (max-width: 56.25rem) {
+  .home-market-cards,
+  .home-indicator-cards {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
@@ -3879,6 +3920,7 @@ body {
   }
 
   .home-graph-stage {
+    aspect-ratio: auto;
     height: clamp(12rem, 48vw, 16rem);
   }
 
@@ -3891,8 +3933,12 @@ body {
     grid-template-columns: 1fr;
   }
 
+  .home-indicator-cards {
+    grid-template-columns: 1fr;
+  }
+
   .home-market-card {
-    min-height: 6.5rem;
+    min-height: 4.375rem;
     padding: 1.1rem 1.25rem;
   }
 }

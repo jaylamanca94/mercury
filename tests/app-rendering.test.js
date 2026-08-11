@@ -310,14 +310,14 @@ test("minimal Home renders its fixed global market set", () => {
   const homeHtml = context.__elements.get("#home-market-cards").innerHTML;
   const graphHtml = context.__elements.get("#home-graph-stage").innerHTML;
 
-  assert.match(homeHtml, /U\.S\. Total/);
-  assert.match(homeHtml, /VTI/);
+  assert.match(homeHtml, /S&amp;P 500/);
+  assert.match(homeHtml, /VOO/);
+  assert.match(homeHtml, /Small Cap/);
+  assert.match(homeHtml, /VB/);
   assert.match(homeHtml, /International/);
   assert.match(homeHtml, /VXUS/);
-  assert.match(homeHtml, /United States/);
-  assert.match(homeHtml, /VOO/);
-  assert.match(homeHtml, /Europe/);
-  assert.match(homeHtml, /VGK/);
+  assert.match(homeHtml, /Technology/);
+  assert.match(homeHtml, /VGT/);
   assert.doesNotMatch(homeHtml, /Asia/);
   assert.doesNotMatch(homeHtml, /U\.S\. Dollar/);
   assert.match(graphHtml, /hero-comparison-chart/);
@@ -344,6 +344,24 @@ test("minimal Home switches to its fixed domestic market set", () => {
     { name: "Small Cap", ticker: "VB" },
     { name: "Technology", ticker: "VGT" },
     { name: "Financials", ticker: "VFH" },
+  ]);
+});
+
+test("minimal Home exposes the Figma international market set", () => {
+  const context = loadAppContext();
+  const cards = vm.runInContext(
+    `
+      selectedRegion = "International";
+      homeMarketCards().map((card) => ({ name: card.name, ticker: card.ticker }));
+    `,
+    context,
+  );
+
+  assert.deepEqual(JSON.parse(JSON.stringify(cards)), [
+    { name: "International", ticker: "VXUS" },
+    { name: "Europe", ticker: "VGK" },
+    { name: "Asia Broad", ticker: "VPL" },
+    { name: "Japan", ticker: "EWJ" },
   ]);
 });
 
@@ -380,8 +398,9 @@ test("Home uses the minimal Figma structure", () => {
   assert.match(indexHtml, /id="home-market-cards" class="home-market-cards" aria-live="polite" aria-busy="true"/);
   assert.match(indexHtml, /id="home-profile-menu" class="home-profile-menu acadia-account-menu-panel" role="menu" hidden/);
   assert.match(indexHtml, /data-acadia-theme-toggle/);
-  assert.match(styles, /\.home-graph-stage\s*{[^}]*height: 20\.4375rem;/s);
+  assert.match(styles, /\.home-graph-stage\s*{[^}]*aspect-ratio: 2354 \/ 642;/s);
   assert.match(styles, /\.home-market-cards\s*{[^}]*grid-template-columns: repeat\(4, minmax\(0, 1fr\)\);/s);
+  assert.match(indexHtml, /id="home-indicator-cards" class="home-indicator-cards"/);
   assert.match(styles, /\.overview-tiles\s*{[^}]*gap: var\(--acadia-space-3\);/s);
   assert.match(styles, /\.section-heading h2,\s*\.brief-card h2\s*{[^}]*font-size: clamp\(1\.5rem, 2vw, 1\.75rem\);/s);
   assert.match(styles, /\.page-title-row h1\s*{[^}]*font-size: clamp\(1\.875rem, 3vw, 2\.5rem\);/s);
@@ -440,7 +459,7 @@ test("Home uses the minimal Figma structure", () => {
 
 test("dynamic dashboard containers expose live busy regions", () => {
   [
-    { html: indexHtml, ids: ["home-market-cards"] },
+    { html: indexHtml, ids: ["home-market-cards", "home-indicator-cards"] },
     { html: marketsHtml, ids: ["economy-grid"] },
     { html: supportsHtml, ids: ["support-signals-grid", "currency-grid", "commodity-grid", "digital-assets-grid"] },
     { html: indicatorsHtml, ids: ["risk-list", "economic-health-grid"] },
@@ -504,8 +523,8 @@ test("detail pages retain their existing shared shell while Home owns its minima
     assert.match(html, /class="acadia-icon-action acadia-theme-toggle"[^>]*data-acadia-theme-toggle/);
   }
 
-  assert.match(indexHtml, /styles\.css\?v=20260811-minimal-home/);
-  assert.match(indexHtml, /app\.js\?v=20260811-minimal-home/);
+  assert.match(indexHtml, /styles\.css\?v=20260811-figma-home/);
+  assert.match(indexHtml, /app\.js\?v=20260811-figma-home/);
   assert.match(indexHtml, /class="home-nav-links"/);
   assert.doesNotMatch(indexHtml, /class="primary-nav acadia-nav acadia-mobile-dock"/);
 });
@@ -1211,10 +1230,10 @@ test("Home fallback keeps four truthful unavailable cards and disables its contr
   );
 
   assert.equal((result.cards.match(/<article class="home-market-card /g) || []).length, 4);
-  assert.match(result.cards, /U\.S\. Total/);
+  assert.match(result.cards, /S&amp;P 500/);
+  assert.match(result.cards, /Small Cap/);
   assert.match(result.cards, /International/);
-  assert.match(result.cards, /United States/);
-  assert.match(result.cards, /Europe/);
+  assert.match(result.cards, /Technology/);
   assert.match(result.cards, /Unavailable/);
   assert.match(result.graph, /Market history is unavailable/);
   assert.equal(result.cardsBusy, "false");
@@ -1393,12 +1412,17 @@ test("recorded live state populates the Home market-card surface", () => {
         marketPulse: [
           { id: "global-us-total", name: "U.S. Total", value: "$250.00", ticker: "VTI", viewGroup: "economy", region: "Global", marketRole: "global-allocation", sourceStatus: "Source-backed", freshness: { status: "current", label: "Current" }, history: [{ value: 240 }, { value: 250 }], comparison: "percent-change", weight: 1 },
           { id: "global-international", name: "International", value: "$72.00", ticker: "VXUS", viewGroup: "economy", region: "Global", marketRole: "global-allocation", sourceStatus: "Source-backed", freshness: { status: "current", label: "Current" }, history: [{ value: 74 }, { value: 72 }], comparison: "percent-change", weight: 1 },
+          { id: "us-equities", name: "S&P 500", value: "$680.00", ticker: "VOO", viewGroup: "economy", region: "United States", marketRole: "large-cap", sourceStatus: "Source-backed", freshness: { status: "current", label: "Current" }, history: [{ value: 665 }, { value: 680 }], comparison: "percent-change", weight: 1 },
+          { id: "us-small-cap", name: "Small Cap", value: "$245.00", ticker: "VB", viewGroup: "economy", region: "United States", marketRole: "small-cap", sourceStatus: "Source-backed", freshness: { status: "current", label: "Current" }, history: [{ value: 238 }, { value: 245 }], comparison: "percent-change", weight: 1 },
+          { id: "us-technology", name: "Technology", value: "$620.00", ticker: "VGT", viewGroup: "economy", region: "United States", marketRole: "technology", sourceStatus: "Source-backed", freshness: { status: "current", label: "Current" }, history: [{ value: 605 }, { value: 620 }], comparison: "percent-change", weight: 1 },
+          { id: "bonds", name: "Bonds", value: "$74.00", ticker: "BND", viewGroup: "economy", region: "United States", marketRole: "bonds", sourceStatus: "Source-backed", freshness: { status: "current", label: "Current" }, history: [{ value: 73 }, { value: 74 }], comparison: "percent-change", weight: 1 },
           { id: "oil", name: "Oil", value: "$84.00", ticker: "WTI", viewGroup: "commodity", sourceStatus: "Source-backed", freshness: { status: "current", label: "Current" }, history: [{ value: 80 }, { value: 84 }], comparison: "percent-change", weight: 0.5 },
           { id: "dollar-index", name: "U.S. dollar", value: "104.20", ticker: "DXY", viewGroup: "currency", sourceStatus: "Source-backed", freshness: { status: "current", label: "Current" }, history: [{ value: 103.7 }, { value: 104.2 }], comparison: "percent-change", weight: 0.5 },
           { id: "bitcoin", name: "Bitcoin", value: "$62,000", ticker: "BTC", viewGroup: "commodity", sourceStatus: "Source-backed", freshness: { status: "current", label: "Current" }, history: [{ value: 60000 }, { value: 62000 }], comparison: "percent-change", weight: 0.5 },
         ],
         economicHealth: [
           { id: "inflation", name: "Inflation", value: "3.1%", sourceStatus: "Source-backed", freshness: { status: "current", label: "Current" }, history: [{ value: 3.2 }, { value: 3.1 }], comparison: "point-change", weight: 1 },
+          { id: "interest-rates", name: "Interest rates", value: "3.6%", sourceStatus: "Source-backed", freshness: { status: "current", label: "Current" }, history: [{ value: 3.7 }, { value: 3.6 }], comparison: "point-change", weight: 1 },
           { id: "unemployment", name: "Unemployment", value: "4.0%", sourceStatus: "Source-backed", freshness: { status: "current", label: "Current" }, history: [{ value: 4.1 }, { value: 4.0 }], comparison: "point-change", weight: 1 },
           { id: "gdp-growth", name: "GDP growth", value: "2.4%", sourceStatus: "Source-backed", freshness: { status: "current", label: "Current" }, history: [{ value: 2.1 }, { value: 2.4 }], comparison: "point-change", weight: 1 },
         ],
@@ -1412,6 +1436,7 @@ test("recorded live state populates the Home market-card surface", () => {
       });
       ({
         cards: document.querySelector("#home-market-cards").innerHTML,
+        indicators: document.querySelector("#home-indicator-cards").innerHTML,
         cardsBusy: document.querySelector("#home-market-cards").getAttribute("aria-busy"),
         unavailable: document.body.classList.contains("dashboard-unavailable"),
       });
@@ -1419,10 +1444,16 @@ test("recorded live state populates the Home market-card surface", () => {
     context,
   );
 
-  assert.match(result.cards, /VTI/);
+  assert.match(result.cards, /VOO/);
+  assert.match(result.cards, /VB/);
+  assert.match(result.cards, /VGT/);
   assert.match(result.cards, /VXUS/);
-  assert.match(result.cards, /\$250\.00/);
+  assert.match(result.cards, /\$680\.00/);
   assert.match(result.cards, /\$72\.00/);
+  assert.match(result.indicators, /Bonds/);
+  assert.match(result.indicators, /Interest Rates/);
+  assert.match(result.indicators, /Inflation/);
+  assert.match(result.indicators, /Unemployment/);
   assert.equal(result.cardsBusy, "false");
   assert.equal(result.unavailable, false);
 });
@@ -1441,11 +1472,12 @@ test("Home control markup uses real pressed controls and disables only during ou
   );
 
   assert.equal(result.completeUnavailable, true);
-  assert.deepEqual(JSON.parse(JSON.stringify(result.cards)), ["U.S. Total", "International", "United States", "Europe"]);
+  assert.deepEqual(JSON.parse(JSON.stringify(result.cards)), ["S&P 500", "Small Cap", "International", "Technology"]);
   assert.match(indexHtml, /data-home-period="today"[^>]*aria-pressed="false">Day/);
   assert.match(indexHtml, /data-home-period="week"[^>]*aria-pressed="true">Week/);
   assert.match(indexHtml, /data-home-scope="Global"[^>]*aria-pressed="true">Global/);
   assert.match(indexHtml, /data-home-scope="United States"[^>]*aria-pressed="false">Domestic/);
+  assert.match(indexHtml, /data-home-scope="International"[^>]*aria-pressed="false">International/);
   assert.match(styles, /\.home-segmented-control button:disabled\s*{[^}]*cursor: not-allowed;[^}]*opacity: 0\.56;/s);
   assert.match(indexHtml, /id="home-market-outage-recovery"/);
   assert.match(appSource, /function renderHomeDashboard\(\)[\s\S]*renderUnavailableActionCard\([\s\S]*Live market values are unavailable/s);
@@ -1750,7 +1782,7 @@ test("Home compacts to a responsive minimal mobile layout", () => {
   );
   assert.match(styles, /@media \(max-width: 767\.98px\)[\s\S]*\.home-graph-stage\s*{[^}]*height: clamp\(12rem, 48vw, 16rem\);/s);
   assert.match(styles, /@media \(max-width: 29\.98rem\)[\s\S]*\.home-control-row\s*{[^}]*flex-wrap: wrap;[\s\S]*overflow: visible;/s);
-  assert.match(styles, /@media \(max-width: 68\.75rem\)[\s\S]*\.home-market-cards\s*{[^}]*grid-template-columns: repeat\(2, minmax\(0, 1fr\)\);/s);
+  assert.match(styles, /@media \(max-width: 56\.25rem\)[\s\S]*\.home-market-cards,[\s\S]*\.home-indicator-cards\s*{[^}]*grid-template-columns: repeat\(2, minmax\(0, 1fr\)\);/s);
   assert.match(indexHtml, /class="home-nav-links"/);
 });
 

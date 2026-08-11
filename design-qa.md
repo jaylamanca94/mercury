@@ -1,44 +1,44 @@
 **Comparison Target**
 
-- Source visual truth: `/var/folders/bw/21lzcjwj7rlfsqtjbtn56vbm0000gn/T/TemporaryItems/NSIRD_screencaptureui_RfWeUm/Screenshot 2026-08-11 at 7.33.01 PM.png` — the Markets hero graph.
-- Implementation evidence: `/tmp/mercury-home-graph-qa.png` — the repaired Home graph.
+- Source visual truth: [Mercury Figma Home, node 47:379](https://www.figma.com/design/CSCV8qZu9ryspC07K36vTg/Mercury?node-id=47-379&m=dev).
+- Implementation evidence: `/tmp/mercury-figma-home-47-379.png`.
 - State: light theme, Global, Week, source-backed public snapshot.
-- Viewport: 2048 × 1152 CSS pixels. The source was 5120 × 2880 pixels (2.5× density) and normalized to 2048 × 1152 for comparison; the implementation capture was 2048 × 1152 at 1×.
+- Viewport: 1024 × 662 CSS pixels. The Figma frame and implementation capture use the same desktop viewport; no density normalization was required.
 
 **Findings**
 
-- No actionable P0/P1/P2 differences remain within the requested Home graph region.
-- Intentional scope difference: Home retains its focused navigation, segmented controls, and four summary cards. Only the market graph treatment is shared with Markets.
+- No actionable P0/P1/P2 differences remain for the requested Home frame.
+- Intentional data difference: Figma supplies illustrative card values and a static chart image. Mercury keeps the exact layout treatment but renders the live comparison chart and current source-backed values.
 
 **Fidelity Review**
 
-- Fonts and typography: the Home legend reuses the exact Markets graph legend, including ticker emphasis, supporting labels, weight, and compact scale.
-- Spacing and layout rhythm: the Home chart preserves the Markets chart’s plot, baseline, line spacing, and legend alignment while scaling only the containing Home stage.
-- Colours and visual tokens: both use the same VOO, VXUS, VB, and VGT line colours; solid and dashed series conventions are unchanged.
-- Image and asset fidelity: no raster or custom-drawn assets are used in the graph; the existing semantic SVG data visualization is reused directly.
-- Copy and content: the same four ticker labels and descriptions appear, with live Yahoo Finance histories providing the plotted values.
+- Fonts and typography: preserved the project’s existing system-font adapter while matching the compact hierarchy, weight, and uppercase-style ticker treatment in the Figma frame.
+- Spacing and layout rhythm: matched the Figma sequence of controls, wide chart, four compact market cards, and four compact economic signals. The 1024px layout holds four cards per row; it only collapses below 900px.
+- Colours and visual tokens: mapped Figma’s neutral grey gradient, white elevated surfaces, charcoal active pills, teal underline, green positive values, and red negative values to Mercury’s existing Acadia tokens.
+- Image and asset fidelity: the Figma chart is a screenshot reference. It is implemented as Mercury’s existing live SVG comparison chart so it remains accurate for the selected period rather than becoming a stale image. Existing Font Awesome glyphs visibly match the supplied Figma icon roles.
+- Copy and content: Home now follows Figma’s VOO, VB, VXUS, VGT primary row plus Bonds, Interest Rates, Inflation, and Unemployment signal row. The new International control shows VXUS, VGK, VPL, and EWJ.
 
 **Validation Performed**
 
-- Browser-rendered Home capture verified four visible lines and the VOO, VXUS, VB, and VGT legend entries.
-- Browser check found no error overlay or console errors.
-- Week and Global controls remained visible and the live source-backed snapshot rendered the current chart.
+- Browser capture at 1024 × 662 confirmed four chart lines, four primary cards, four economic signal cards, and three scope controls.
+- Browser interaction confirmed International selects correctly and updates the cards to VXUS, VGK, VPL, and EWJ.
+- Browser console contained no errors or framework overlay.
 - `npm run check` passed: JavaScript syntax validation and 86 regression tests.
 
 **Comparison History**
 
-1. The first Home implementation rendered a separate chart treatment. The supplied Markets screenshot identified the visual mismatch.
-2. Home now calls the existing `renderHeroComparisonChart()` component, removing the duplicate renderer and its divergent styles.
-3. The post-fix browser capture shows the requested Markets graph treatment on Home with all four series.
+1. The initial 1024px capture used two card columns, diverging from Figma’s four-card rows.
+2. Moved the compact-grid breakpoint from 1100px to 900px.
+3. The final capture preserves both four-card rows at the Figma reference width.
 
 **Implementation Checklist**
 
-1. Reuse the Markets multi-series comparison renderer on Home. Complete.
-2. Preserve an explicit loading/unavailable state when market histories are absent. Complete.
-3. Verify the source-backed Home state in a browser. Complete.
+1. Map the Figma Home hierarchy onto existing live Mercury surfaces. Complete.
+2. Add the compact economic signal row and International scope behaviour. Complete.
+3. Verify desktop fidelity and scope interaction in a browser. Complete.
 
 **Follow-up Polish**
 
-- None for this scoped graph change.
+- None for this scoped Figma implementation.
 
 final result: passed

@@ -3705,10 +3705,10 @@ function currencyCards() {
 
 const HOME_MARKET_CARD_DEFINITIONS = {
   Global: [
-    { id: "global-us-total", name: "U.S. Total", ticker: "VTI" },
+    { id: "us-equities", name: "S&P 500", ticker: "VOO" },
+    { id: "us-small-cap", name: "Small Cap", ticker: "VB" },
     { id: "global-international", name: "International", ticker: "VXUS" },
-    { id: "us-equities", name: "United States", ticker: "VOO" },
-    { id: "europe-equities", name: "Europe", ticker: "VGK" },
+    { id: "us-technology", name: "Technology", ticker: "VGT" },
   ],
   "United States": [
     { id: "us-equities", name: "S&P 500", ticker: "VOO" },
@@ -3716,7 +3716,20 @@ const HOME_MARKET_CARD_DEFINITIONS = {
     { id: "us-technology", name: "Technology", ticker: "VGT" },
     { id: "us-financials", name: "Financials", ticker: "VFH" },
   ],
+  International: [
+    { id: "global-international", name: "International", ticker: "VXUS" },
+    { id: "europe-equities", name: "Europe", ticker: "VGK" },
+    { id: "asia-equities", name: "Asia Broad", ticker: "VPL" },
+    { id: "asia-japan", name: "Japan", ticker: "EWJ" },
+  ],
 };
+
+const HOME_INDICATOR_DEFINITIONS = [
+  { id: "bonds", name: "Bonds", source: "market", value: "change" },
+  { id: "interest-rates", name: "Interest rates", source: "economic", value: "value" },
+  { id: "inflation", name: "Inflation", source: "economic", value: "value" },
+  { id: "unemployment", name: "Unemployment", source: "economic", value: "value" },
+];
 
 function unavailableHomeMarketCard(definition) {
   return {
@@ -3757,13 +3770,52 @@ function renderHomeMarketCard(metric) {
   return `
     <article class="home-market-card home-market-card-${escapeHtml(tone)}" aria-label="${escapeHtml(`${ticker} ${label}: ${delta}, ${value}`)}">
       <div class="home-market-card-heading">
-        <span class="home-market-ticker"><i class="fa-solid fa-building" aria-hidden="true"></i>${escapeHtml(ticker)}</span>
+        <span class="home-market-ticker"><i class="${escapeHtml(metricIconClasses(metric))}" aria-hidden="true"></i>${escapeHtml(ticker)}</span>
         <span class="home-market-name">${escapeHtml(label)}</span>
       </div>
       <div class="home-market-card-value">
         <strong class="trend-text-${escapeHtml(tone)}">${escapeHtml(delta)}</strong>
         <span>${escapeHtml(value)}</span>
       </div>
+    </article>
+  `;
+}
+
+function homeIndicatorCards() {
+  return HOME_INDICATOR_DEFINITIONS.map((definition) => {
+    const items = definition.source === "market" ? marketPulse : economicHealth;
+    const metric = findMetric(items, definition.id, definition.name);
+
+    if (!metric) {
+      return {
+        ...unavailableHomeMarketCard(definition),
+        icon: definition.id === "bonds" ? "fa-scale-balanced" : "fa-chart-line",
+      };
+    }
+
+    return withPeriodDelta(metric, selectedEconomyPeriod);
+  });
+}
+
+function homeIndicatorValue(metric, definition) {
+  if (metric.sourceStatus === "Unavailable") {
+    return "Unavailable";
+  }
+
+  return definition.value === "change"
+    ? metricDeltaLabel(metric)
+    : displayMetricDetail(metric.value);
+}
+
+function renderHomeIndicatorCard(metric, definition) {
+  const tone = metricCardTone(metric);
+  const value = homeIndicatorValue(metric, definition);
+  const label = displayMetricName(metric);
+
+  return `
+    <article class="home-indicator-card home-indicator-card-${escapeHtml(tone)}" aria-label="${escapeHtml(`${label}: ${value}`)}">
+      <span class="home-indicator-name"><i class="${escapeHtml(metricIconClasses(metric))}" aria-hidden="true"></i>${escapeHtml(label)}</span>
+      <strong class="trend-text-${escapeHtml(tone)}">${escapeHtml(value)}</strong>
     </article>
   `;
 }
@@ -3787,7 +3839,9 @@ function renderHomeMarketGraph(cards) {
 
 function renderHomeDashboard() {
   const cards = homeMarketCards();
+  const indicatorCards = homeIndicatorCards();
   const cardGrid = document.querySelector("#home-market-cards");
+  const indicatorGrid = document.querySelector("#home-indicator-cards");
   const graphStage = document.querySelector("#home-graph-stage");
   const recoverySection = document.querySelector("#home-market-outage-recovery");
   const recoveryCard = document.querySelector("#home-market-outage-card");
@@ -3798,8 +3852,12 @@ function renderHomeDashboard() {
   document.body.classList.toggle("dashboard-unavailable", completeUnavailable);
   setDynamicContent(graphStage, renderHomeMarketGraph(cards));
   setDynamicContent(cardGrid, cards.map(renderHomeMarketCard).join(""));
+  setDynamicContent(indicatorGrid, indicatorCards.map((metric, index) => renderHomeIndicatorCard(metric, HOME_INDICATOR_DEFINITIONS[index])).join(""));
   if (cardGrid) {
     cardGrid.setAttribute("aria-busy", "false");
+  }
+  if (indicatorGrid) {
+    indicatorGrid.setAttribute("aria-busy", "false");
   }
   if (recoverySection && recoveryCard) {
     recoverySection.hidden = !completeUnavailable;

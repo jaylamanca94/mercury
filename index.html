@@ -17,7 +17,7 @@
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
       referrerpolicy="no-referrer"
     >
-    <link rel="stylesheet" href="styles.css?v=20260811-minimal-home">
+    <link rel="stylesheet" href="styles.css?v=20260811-figma-home">
   </head>
   <body class="mercury-app mercury-page-dashboard mercury-page-home" data-mercury-page="dashboard">
     <a class="skip-link" href="#main-content">Skip to market overview</a>
@@ -67,6 +67,7 @@
           <div class="home-segmented-control home-scope-control" role="group" aria-label="Market scope">
             <button type="button" class="home-scope-control" data-home-scope="Global" aria-pressed="true">Global</button>
             <button type="button" class="home-scope-control" data-home-scope="United States" aria-pressed="false">Domestic</button>
+            <button type="button" class="home-scope-control" data-home-scope="International" aria-pressed="false">International</button>
           </div>
         </div>
 
@@ -79,6 +80,7 @@
         ></div>
 
         <div id="home-market-cards" class="home-market-cards" aria-live="polite" aria-busy="true"></div>
+        <div id="home-indicator-cards" class="home-indicator-cards" aria-label="Economic signals" aria-live="polite" aria-busy="true"></div>
         <section id="home-market-outage-recovery" class="home-market-outage-recovery" aria-label="Market data recovery" hidden>
           <div id="home-market-outage-card"></div>
         </section>
@@ -88,6 +90,6 @@
       </p>
     </main>
 
-    <script src="app.js?v=20260811-minimal-home"></script>
+    <script src="app.js?v=20260811-figma-home"></script>
   </body>
 </html>

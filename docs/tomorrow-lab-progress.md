@@ -6,7 +6,7 @@ Bring Mercury to a verified, cohesive, maintainable, release-ready state while p
 
 ## Current Milestone
 
-Release-evidence follow-through: retain the local evidence record and obtain deployed-environment confirmation only when release configuration and market-data licensing are ready for review.
+Figma-aligned Home surface: implement node `47:379` using the existing live snapshot and comparison-chart behaviour.
 
 ## Completed
 
@@ -22,10 +22,11 @@ Release-evidence follow-through: retain the local evidence record and obtain dep
 - [x] Completed the initial canonical flow and design-status audit; the seven user-goal flows remain intact and their current browser/test coverage is recorded (2026-08-10).
 - [x] Reviewed the public delivery boundary and added a Vercel-wide response-security policy without changing Mercury's data contract or browser flows. A local Vercel preview returned the policy headers and `npm run check` passed 82 tests (2026-08-10).
 - [x] Closed two bounded recovery and delivery-edge gaps: an incomplete successful snapshot now resolves to the existing unavailable state after a 20-second client wait, and unsupported API methods return a non-cacheable JSON response. `npm run check` passed 84 tests (2026-08-10).
+- [x] Restored and deployed the source-backed multi-asset Home graph using the existing Markets comparison renderer (2026-08-11).
 
 ## Next
 
-1. When preparing a public release, validate the deployed serverless configuration, cache behaviour, and iPhone journey; resolve market-data licensing before representing Yahoo Finance as launch-ready.
+1. Verify the Figma-aligned Home layout at desktop and mobile widths against the live snapshot, then retain the existing public-release evidence and licensing gate.
 
 ## Deferred / Founder Decisions
 
