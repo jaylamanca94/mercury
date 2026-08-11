@@ -17,6 +17,7 @@ Keep Mercury a clear, neutral, source-backed view of global economic conditions 
 - The current in-progress change set verifies two safe edge cases: incomplete successful live snapshots resolve to the established unavailable state, and unsupported API methods receive explicit JSON/no-store semantics.
 - The local flow record covers seven canonical user goals, including source-backed desktop and iPhone-sized Dashboard-to-Markets paths and deterministic full, partial, delayed, stale, and unavailable rendering states.
 - Mercury continues to follow its Acadia adapter for shell, controls, focus, status, responsive spacing, and mobile dock behaviour. Domain-specific source-freshness language and economic visualisation remain local by design.
+- Available-environment check: this checkout has no `.vercel` linkage, installed Vercel CLI, or Vercel credential. A local source-handler probe resolved to its explicit unavailable state; that proves the recovery contract, not a public-provider or deployed-service outage.
 
 ## Fixed / Validated
 
@@ -38,7 +39,7 @@ Keep Mercury a clear, neutral, source-backed view of global economic conditions 
 
 ## Next Safe Step
 
-When release configuration and licensing are available, run a deployed verification pass against each public route and capture the desktop/iPhone result. If no deployment is being prepared, keep the validated local changes bounded and avoid expanding scope.
+Provide the Vercel project/URL and market-data licensing decision, then run a deployed verification pass against each public route and capture the desktop/iPhone result. If no deployment is being prepared, keep the validated local changes bounded and avoid expanding scope.
 
 ## Change-Control Note
 
