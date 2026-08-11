@@ -23,7 +23,9 @@
 - Browser capture at 1024 × 662 confirmed four chart lines, four primary cards, four economic signal cards, and three scope controls.
 - Browser interaction confirmed International selects correctly and updates the cards to VXUS, VGK, VPL, and EWJ.
 - Browser console contained no errors or framework overlay.
-- `npm run check` passed: JavaScript syntax validation and 86 regression tests.
+- Responsive browser checks at 1728, 1440, 1280, 834, 744, and 390 CSS pixels confirmed the appropriate desktop, tablet, and phone compositions without horizontal page overflow.
+- A disposable unavailable-data response confirmed that Home keeps the failure explanation, direct Retry refresh, and Data Coverage link immediately beneath the chart, before unavailable cards; the selected scope and period remain preserved and disabled until a usable response arrives.
+- `npm run check` passed: JavaScript syntax validation and 87 regression tests.
 
 **Comparison History**
 
@@ -39,6 +41,6 @@
 
 **Follow-up Polish**
 
-- None for this scoped Figma implementation.
+- The Figma healthy-state frame remains matched. The only additional Home refinement is failure-state hierarchy: recovery now appears beside the unavailable chart rather than after eight unavailable cards.
 
 final result: passed

@@ -3850,6 +3850,16 @@ function renderHomeDashboard() {
   document.body.classList.toggle("dashboard-global", selectedRegion === "Global");
   document.body.classList.toggle("dashboard-focused", selectedRegion !== "Global");
   document.body.classList.toggle("dashboard-unavailable", completeUnavailable);
+  if (graphStage) {
+    const scopeLabel = selectedRegion === "United States" ? "Domestic" : selectedRegion;
+    const periodLabel = periodPhrase(selectedEconomyPeriod);
+    graphStage.setAttribute(
+      "aria-label",
+      completeUnavailable
+        ? `Market history is unavailable for ${scopeLabel} markets ${periodLabel}.`
+        : `Market comparison chart for ${scopeLabel} markets ${periodLabel}.`,
+    );
+  }
   setDynamicContent(graphStage, renderHomeMarketGraph(cards));
   setDynamicContent(cardGrid, cards.map(renderHomeMarketCard).join(""));
   setDynamicContent(indicatorGrid, indicatorCards.map((metric, index) => renderHomeIndicatorCard(metric, HOME_INDICATOR_DEFINITIONS[index])).join(""));

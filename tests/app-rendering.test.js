@@ -395,6 +395,8 @@ test("Home uses the minimal Figma structure", () => {
   assert.match(indexHtml, /class="home-navbar"/);
   assert.match(indexHtml, /Home<\/a>[\s\S]*Markets<\/a>[\s\S]*Economy<\/a>[\s\S]*Watchlist[\s\S]*Profile/);
   assert.match(indexHtml, /id="home-graph-stage"[\s\S]*data-period="week"[\s\S]*data-scope="Global"/);
+  assert.match(indexHtml, /aria-label="Market comparison chart for Global markets this week"/);
+  assert.match(indexHtml, /id="home-graph-stage"[\s\S]*id="home-market-outage-recovery"[\s\S]*id="home-market-cards"/);
   assert.match(indexHtml, /id="home-market-cards" class="home-market-cards" aria-live="polite" aria-busy="true"/);
   assert.match(indexHtml, /id="home-profile-menu" class="home-profile-menu acadia-account-menu-panel" role="menu" hidden/);
   assert.match(indexHtml, /data-acadia-theme-toggle/);

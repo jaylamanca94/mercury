@@ -23,10 +23,11 @@ Figma-aligned Home surface: implement node `47:379` using the existing live snap
 - [x] Reviewed the public delivery boundary and added a Vercel-wide response-security policy without changing Mercury's data contract or browser flows. A local Vercel preview returned the policy headers and `npm run check` passed 82 tests (2026-08-10).
 - [x] Closed two bounded recovery and delivery-edge gaps: an incomplete successful snapshot now resolves to the existing unavailable state after a 20-second client wait, and unsupported API methods return a non-cacheable JSON response. `npm run check` passed 84 tests (2026-08-10).
 - [x] Restored and deployed the source-backed multi-asset Home graph using the existing Markets comparison renderer (2026-08-11).
+- [x] Completed Figma node `47:379` Home verification across Acadia’s Studio Display, desktop, laptop, tablet, and phone width bands. The source-backed International scope works without overflow; the complete-outage recovery now appears immediately beneath the unavailable chart with its direct Retry action (2026-08-11).
 
 ## Next
 
-1. Verify the Figma-aligned Home layout at desktop and mobile widths against the live snapshot, then retain the existing public-release evidence and licensing gate.
+1. Retain the existing public-release evidence and licensing gate; the local Figma-aligned Home layout is complete across the supported responsive bands.
 
 ## Deferred / Founder Decisions
 
