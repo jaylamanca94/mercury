@@ -39,7 +39,7 @@ Keep Mercury a clear, neutral, source-backed view of global economic conditions 
 
 ## Next Safe Step
 
-Push the completed review and implementation change, then create or connect a Mercury Vercel project, validate the deployed live-data route and headers, resolve provider licensing, and perform device-assisted accessibility testing before reconsidering release.
+Create or connect a Mercury Vercel project, validate the deployed live-data route and headers, resolve provider licensing, and perform device-assisted accessibility testing before reconsidering release.
 
 ## Change-Control Note
 
