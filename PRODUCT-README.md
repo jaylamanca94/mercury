@@ -97,7 +97,7 @@ In scope for the MVP:
 - Economic Health
 - Global Snapshot
 - Risk and Confidence
-- A compact home dashboard with deeper detail pages for Markets, Market Supports, Indicators, and
+- A compact home dashboard with deeper detail pages for Markets, Market context, Indicators, and
   Data Coverage
 - Clear source attribution
 - Update timestamps
@@ -269,15 +269,15 @@ Future opportunities:
   do not imply live availability during an outage.
 - During a complete live-data outage, Mercury keeps refresh available and confirms each retry through
   the visible checked/unavailable status instead of adding a separate recovery flow.
-- Complete live-data outages preserve page identity across Dashboard, Markets, Market Supports,
+- Complete live-data outages preserve page identity across Dashboard, Markets, Market context,
   Indicators, and Data Coverage; `Live data unavailable` is a source state, not the destination.
 - Complete outage states use `Live data unavailable` as the primary state label and `Unavailable`
   as the compact badge label. Provider rows may say a source group is not responding only when
   describing the attempted public-source connection.
-- Dashboard, Markets, and Market Supports prioritize recovery actions before disabled controls when
+- Dashboard, Markets, and Market context prioritize recovery actions before disabled controls when
   no source-backed read is possible; controls remain enabled in live and partial states when they
   change source-backed content.
-- Market Supports consolidates complete-outage copy into one combined currencies, commodities, and
+- Market context consolidates complete-outage copy into one combined currencies, commodities, and
   digital-assets status pass instead of repeating near-identical unavailable support sections.
 - Markets consolidates complete-outage copy into one recovery-oriented market-read card instead of
   showing lower unavailable cards that cannot be sorted or compared.

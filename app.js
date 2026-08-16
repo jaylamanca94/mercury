@@ -401,7 +401,7 @@ function renderProviderInventorySummary() {
 
 function primaryViewTitle() {
   if (currentPage === "markets") return "Markets";
-  if (currentPage === "supports") return "Market Supports";
+  if (currentPage === "supports") return "Market context";
   if (currentPage === "indicators") return "Indicators";
   if (currentPage === "data") return "Data Coverage";
   return "Global Economy";
@@ -854,7 +854,7 @@ function supportSignalProfile(card) {
       label: "Awaiting data",
       tone: "unavailable",
       impact: "unavailable",
-      copy: "Waiting for source-backed support data.",
+      copy: "Waiting for source-backed market-context data.",
     };
   }
 
@@ -979,8 +979,8 @@ function supportScore(cards) {
     return {
       label: "Unavailable",
       tone: "unavailable",
-      phrase: "Waiting for support conditions",
-      detail: "Support",
+      phrase: "Waiting for market context",
+      detail: "Context",
     };
   }
 
@@ -992,7 +992,7 @@ function supportScore(cards) {
     return {
       label: "Pressured",
       tone: "down",
-      phrase: "Support conditions are under pressure",
+      phrase: "Market context is under pressure",
       detail: `${pressures} pressure${pressures === 1 ? "" : "s"}`,
     };
   }
@@ -1001,7 +1001,7 @@ function supportScore(cards) {
     return {
       label: "Mixed",
       tone: "mixed",
-      phrase: "Mixed support conditions",
+      phrase: "Mixed market context",
       detail: `${positives} positive`,
     };
   }
@@ -1010,7 +1010,7 @@ function supportScore(cards) {
     return {
       label: "Supportive",
       tone: "up",
-      phrase: "Supportive conditions",
+      phrase: "Supportive market context",
       detail: `${positives} positive`,
     };
   }
@@ -1019,7 +1019,7 @@ function supportScore(cards) {
     return {
       label: "Mixed",
       tone: "mixed",
-      phrase: "Mixed support conditions",
+      phrase: "Mixed market context",
       detail: "Contextual",
     };
   }
@@ -1027,7 +1027,7 @@ function supportScore(cards) {
   return {
     label: "Stable",
     tone: "stable",
-    phrase: "Stable support conditions",
+    phrase: "Stable market context",
     detail: "Neutral",
   };
 }
@@ -1046,7 +1046,7 @@ function buildSupportHeroInsight(cards) {
   const score = supportScore(cards);
 
   if (score.tone === "unavailable") {
-    return "Waiting for enough live support data to explain currencies, commodities, and digital assets.";
+    return "Waiting for enough live market-context data to explain currencies, commodities, and digital assets.";
   }
 
   const dollar = cards.find((card) => card.id === "dollar-index" && supportSignalProfile(card).impact === "positive");
@@ -1068,7 +1068,7 @@ function renderSupportSignalCard(card) {
   const profile = supportSignalProfile(card);
   const summary = sentenceSummary([
     displayMetricName(card),
-    metricCaptionLabel(card) || card.context || "Support signal",
+    metricCaptionLabel(card) || card.context || "Market-context signal",
     profile.label,
     card.periodChange || metricDeltaLabel(card),
     profile.copy,
@@ -1080,7 +1080,7 @@ function renderSupportSignalCard(card) {
         <span class="support-signal-icon" aria-hidden="true"><i class="${escapeHtml(metricIconClasses(card))} acadia-icon"></i></span>
         <div>
           <h3>${escapeHtml(displayMetricName(card))}</h3>
-          <p>${escapeHtml(metricCaptionLabel(card) || card.context || "Support signal")}</p>
+          <p>${escapeHtml(metricCaptionLabel(card) || card.context || "Market-context signal")}</p>
         </div>
       </div>
       <div class="support-signal-status">
@@ -1094,7 +1094,7 @@ function renderSupportSignalCard(card) {
 
 function supportBriefCopy(cards) {
   if (!hasAnySourceBackedValue(cards)) {
-    return "Mercury cannot interpret support conditions until live currency, commodity, and digital asset values are available.";
+    return "Mercury cannot interpret market context until live currency, commodity, and digital asset values are available.";
   }
 
   const oil = cards.find((card) => card.id === "oil");
@@ -1128,7 +1128,7 @@ function supportBriefCopy(cards) {
     );
   }
 
-  return sentences.slice(0, 2).join(" ") || "Source-backed support values are available, but none are large enough to interpret as a primary support driver.";
+  return sentences.slice(0, 2).join(" ") || "Source-backed market-context values are available, but none are large enough to interpret as a primary context driver.";
 }
 
 function buildSupportPressureItems(cards) {
@@ -1155,8 +1155,8 @@ function updateSupportBadge(score) {
   }
 
   element.classList.remove("trend-up", "trend-down", "trend-stable", "trend-mixed", "trend-caution", "trend-unavailable");
-  element.innerHTML = `<span>Support</span><strong>${escapeHtml(score.label)}</strong>`;
-  element.setAttribute("aria-label", `Support conditions ${score.label}`);
+  element.innerHTML = `<span>Context</span><strong>${escapeHtml(score.label)}</strong>`;
+  element.setAttribute("aria-label", `Market context ${score.label}`);
   element.classList.add(`trend-${score.tone}`);
 }
 
@@ -1173,9 +1173,9 @@ function renderSupportBriefing(cards) {
     setDynamicContent(signalsGrid, hasSupportValues && cards.length
       ? cards.map(renderSupportSignalCard).join("")
       : renderUnavailableActionCard(
-          "Currencies, commodities, and digital assets need source-backed values before Mercury can interpret support conditions.",
+          "Currencies, commodities, and digital assets need source-backed values before Mercury can interpret market context.",
           {
-            source: "Configured source group: Yahoo Finance market support data",
+            source: "Configured source group: Yahoo Finance market-context data",
             className: "support-signal-card support-signal-card-unavailable support-signal-card-combined acadia-surface acadia-panel-dense unavailable-state-card",
           },
         ));
@@ -1186,7 +1186,7 @@ function renderSupportBriefing(cards) {
 
     setDynamicContent(pressureList, pressureItems.length
       ? pressureItems.map(briefListItem).join("")
-      : '<li class="brief-list-item brief-list-item-unavailable"><strong>No source-backed pressure read</strong><span>Mercury will identify support pressures when live values are available.</span></li>');
+      : '<li class="brief-list-item brief-list-item-unavailable"><strong>No source-backed pressure read</strong><span>Mercury will identify context pressures when live values are available.</span></li>');
   }
 }
 
@@ -3348,7 +3348,7 @@ function buildEconomicBrief(change, movers, riskCards, heroCards = [], commodity
   const risk = riskCards.find((item) => item.name === "Volatility") || riskCards[0];
   const riskSentence = risk
     ? `${risk.name} is at ${risk.value || risk.trend || "a pending read"}, keeping the risk backdrop visible.`
-    : "Mercury is watching risk, inflation, and support signals for the next shift.";
+    : "Mercury is watching risk, inflation, and market-context signals for the next shift.";
 
   return [`${scope} ${direction} ${periodPhrase(selectedEconomyPeriod)}.`, leaderSentence, oilSentence, breadthSentence, riskSentence]
     .filter(Boolean)

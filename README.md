@@ -13,11 +13,11 @@ figures. Data coverage shows the latest available source release window, page-lo
 cadence-aware freshness state, and live indicator counts for partially available source groups.
 The product now follows the same high-level information architecture direction as Apollo: the home
 page is a compact at-a-glance command center, while deeper pages carry the richer detail surfaces
-for Markets, Market Supports, Indicators, and Data Coverage.
+for Markets, Market context, Indicators, and Data Coverage.
 Source-backed metric cards keep the visible surface focused on name, value, change, and trend.
 Provider attribution, freshness, proxy tickers, and broader source context live in Data coverage or
 hover/detail context. Delayed, stale, or slower-cadence indicators keep date context when it affects trust.
-Economy and market-support sections include Today, Week, Month, Year, and 5-year controls; Economy
+Economy and market-context sections include Today, Week, Month, Year, and 5-year controls; Economy
 also supports United States, Europe, and Asia market-proxy views. Longer market-history sparklines
 are smoothed so year and 5-year views read as trend lines rather than noisy raw traces. The hero
 briefing includes a period-aware aggregate trend built from the currently visible score-eligible

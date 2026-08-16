@@ -1,6 +1,6 @@
 # Product Lab Progress
 
-**Last reviewed:** 2026-08-10
+**Last reviewed:** 2026-08-16
 **Scope:** Mercury's public dashboard, its live-data boundary, the Acadia adapter, and release readiness. This is the durable delivery record; `docs/tomorrow-lab-progress.md` retains the earlier milestone history.
 
 ## Goal
@@ -9,7 +9,7 @@ Keep Mercury a clear, neutral, source-backed view of global economic conditions 
 
 ## Current Milestone
 
-**Release-readiness boundary.** Local behaviour and the existing in-progress recovery changes are validated. The next work requires release-owner decisions or deployed-environment access, not another unproven local refactor.
+**Release review complete: no-go.** The delivery plan and its completed local work are recorded in `docs/product-lab/2026-08-16/whole-product-sprint-plan.md`. Mercury uses a market-climate-first promise, preserves the existing Figma-led Home anatomy, and separates local source/browser evidence from release evidence.
 
 ## Evidence
 
@@ -32,14 +32,14 @@ Keep Mercury a clear, neutral, source-backed view of global economic conditions 
 - Configure provider-health alerting or an error-log destination before treating the service as operationally monitored. This is an external operational commitment, not a safe local code tweak.
 - Before a public release, verify the deployed Vercel route, cache behaviour, runtime logs, desktop and iPhone journeys, and public-data licensing. Local source-handler and fixture evidence does not establish those facts.
 
-## Founder Decision Needed
+## Decisions Recorded
 
-- Choose Mercury's lead promise: a near-real-time **global market climate** with economic context, or a multi-cadence **global economic conditions** view with stronger disclosure. The existing aggregate framing mixes source cadences, so this is product strategy rather than copy polish.
-- Decide whether `Market Supports` should remain, be consolidated into Markets, or be renamed in plain language (for example, `Market context`). Its current label is functional but specialist.
+- Mercury leads with a source-backed **market-climate briefing with economic context**. Daily market movement is the first scan; slower releases qualify it rather than pretending to create a real-time global economic score.
+- `Market Supports` is now **Market context**. This is a plain-language information-architecture change, not a new product surface.
 
 ## Next Safe Step
 
-Provide the Vercel project/URL and market-data licensing decision, then run a deployed verification pass against each public route and capture the desktop/iPhone result. If no deployment is being prepared, keep the validated local changes bounded and avoid expanding scope.
+Push the completed review and implementation change, then create or connect a Mercury Vercel project, validate the deployed live-data route and headers, resolve provider licensing, and perform device-assisted accessibility testing before reconsidering release.
 
 ## Change-Control Note
 

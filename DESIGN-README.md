@@ -234,7 +234,7 @@ Use `8px` or less for normal cards and repeated list items unless a larger conta
   action, and Data Coverage route before disabled Period or Region controls. If disabled controls
   remain visible, order and style them as secondary controls with nearby explanatory copy.
 - Page `h1` labels remain destination identities in live, partial, and unavailable states:
-  `Global Economy`, `Markets`, `Market Supports`, `Indicators`, and `Data Coverage`. Source-state
+  `Global Economy`, `Markets`, `Market context`, `Indicators`, and `Data Coverage`. Source-state
   copy belongs in badges, status cards, source-health rows, or explanatory copy, not as a page title.
 - Use `Live data unavailable` for the page-level complete-outage state and `Unavailable` for compact
   badges. Reserve `not responding` wording for provider/source-health rows that describe a concrete
@@ -242,7 +242,7 @@ Use `8px` or less for normal cards and repeated list items unless a larger conta
 - Data Coverage should distinguish the destination title from the current health section. The
   current health section may explain that live data is unavailable, but its heading should stay
   source-health oriented and the configured provider inventory should remain separate.
-- Market Supports should use one combined unavailable-state pass for currencies, commodities, and
+- Market context should use one combined unavailable-state pass for currencies, commodities, and
   digital assets during a complete outage; lower support grids return only when source-backed values
   are available.
 - Markets should use one coherent complete-outage recovery card before disabled sorting controls;
@@ -297,7 +297,7 @@ Use `8px` or less for normal cards and repeated list items unless a larger conta
 - Mobile persistent chrome must not cover recovery actions, Data Coverage links, source-health
   status, provider inventory, or final cards; keep bottom padding and scroll padding aligned with
   the floating dock and safe-area inset.
-- In complete outages, mobile Markets and Market Supports recovery cards should use the full content
+- In complete outages, mobile Markets and Market context recovery cards should use the full content
   width rather than carousel tile widths when they are the only meaningful content in the section.
 - Do not rely on color alone for positive/negative/risk/confidence states.
 
@@ -323,8 +323,8 @@ Current source-backed utilities:
   canvas, centered `1160px` content column, title/action row, large current-conditions card, and
   stacked section panels for grouped metric cards.
 - Primary metric groups should be organized by audience-facing categories such as `Economy` and
-  `Market supports`. Economy combines the top regional market cards with core economic indicators;
-  Market supports hold dollar, FX, oil, and Bitcoin cards. Preserve risk, regional, and freshness
+  `Market context`. Economy combines the top regional market cards with core economic indicators;
+  Market context holds dollar, FX, oil, and Bitcoin cards. Preserve risk, regional, and freshness
   context elsewhere on the page.
 - Repeated metric cards should show a readable card name on the visible surface. Hide tickers,
   proxy codes, and series identifiers from the card face unless they are the user's primary label;

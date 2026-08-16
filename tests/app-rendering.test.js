@@ -990,9 +990,9 @@ test("supports page adds interpreted signals, context, and split asset sections"
     context,
   );
 
-  assert.match(result.badgeHtml, /Support/);
+  assert.match(result.badgeHtml, /Context/);
   assert.match(result.badgeHtml, /Mixed/);
-  assert.match(result.insight, /Mixed support conditions this week/);
+  assert.match(result.insight, /Mixed market context this week/);
   assert.match(result.insight, /U\.S\. Dollar \(\+0\.5%\) is the clearest positive signal/);
   assert.match(result.insight, /Oil \(-16\.4%\) moved sharply/);
   assert.match(result.signals, /U\.S\. Dollar/);
@@ -1504,8 +1504,8 @@ test("supports fallback avoids interpreted support and pressure language", () =>
     context,
   );
 
-  assert.match(result.insight, /Waiting for enough live support data/);
-  assert.match(result.brief, /cannot interpret support conditions/);
+  assert.match(result.insight, /Waiting for enough live market-context data/);
+  assert.match(result.brief, /cannot interpret market context/);
   assert.match(result.signals, /Live data unavailable/);
   assert.match(result.signals, /Currencies, commodities, and digital assets/);
   assert.match(result.signals, /Retry refresh/);
