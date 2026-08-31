@@ -13,6 +13,24 @@ const DISTRIBUTION_POLICIES = Object.freeze([
   "custom",
 ]);
 
+const INSTRUMENT_TYPES = Object.freeze([
+  "mutual-fund",
+  "etf",
+  "stock",
+  "crypto",
+  "cash",
+  "other",
+]);
+
+const ALLOCATION_CATEGORIES = Object.freeze([
+  "domestic-equity",
+  "international-equity",
+  "bonds",
+  "crypto",
+  "cash",
+  "other",
+]);
+
 class PortfolioValidationError extends Error {
   constructor(message) {
     super(message);
@@ -71,6 +89,19 @@ function normalizePolicy(value, field) {
   return value;
 }
 
+function normalizeChoice(value, field, choices, fallback) {
+  const normalized = value === undefined || value === null || value === "" ? fallback : value;
+  if (!choices.includes(normalized)) validationError(field, `must be one of: ${choices.join(", ")}`);
+  return normalized;
+}
+
+function optionalDate(value, field) {
+  if (value === undefined || value === null || value === "") return null;
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) validationError(field, "must be an ISO date or timestamp");
+  return date.toISOString();
+}
+
 function normalizeAsset(input) {
   if (!input || typeof input !== "object" || Array.isArray(input)) {
     throw new PortfolioValidationError("asset must be an object");
@@ -91,12 +122,22 @@ function normalizeAsset(input) {
     symbol: symbol ? symbol.toUpperCase() : null,
     name,
     assetType: requiredText(input.assetType, "assetType"),
+    instrumentType: normalizeChoice(input.instrumentType, "instrumentType", INSTRUMENT_TYPES, "other"),
+    allocationCategory: normalizeChoice(
+      input.allocationCategory,
+      "allocationCategory",
+      ALLOCATION_CATEGORIES,
+      "other",
+    ),
     accountName: optionalText(input.accountName, "accountName"),
     valuationBasis,
     manualValueCents: null,
     shares: null,
     unitPriceCents: null,
     previousValueCents: optionalMoney(input.previousValueCents, "previousValueCents"),
+    quoteSource: optionalText(input.quoteSource, "quoteSource"),
+    quoteAsOf: optionalDate(input.quoteAsOf, "quoteAsOf"),
+    priorCloseCents: optionalMoney(input.priorCloseCents, "priorCloseCents"),
     expectedAnnualReturnRate: optionalRate(input.expectedAnnualReturnRate, "expectedAnnualReturnRate", {
       minimum: -1,
       maximum: 1,
@@ -134,6 +175,10 @@ function normalizeAsset(input) {
     validationError("customPolicyNote", "is required when a policy is custom");
   }
 
+  if (asset.priorCloseCents !== null && asset.valuationBasis !== VALUATION_BASES.SHARES_AND_PRICE) {
+    throw new PortfolioValidationError("priorCloseCents requires shares-and-price valuation");
+  }
+
   return Object.freeze(asset);
 }
 
@@ -153,8 +198,12 @@ function calculateAsset(asset, totalPortfolioValueCents, weeklyContributionCents
     normalized.targetAllocationRate === null
       ? null
       : Math.round(totalPortfolioValue * normalized.targetAllocationRate);
-  const dayChangeCents =
-    normalized.previousValueCents === null ? null : valueCents - normalized.previousValueCents;
+  const previousValueCents =
+    normalized.previousValueCents ??
+    (normalized.priorCloseCents === null || normalized.shares === null
+      ? null
+      : Math.round(normalized.shares * normalized.priorCloseCents));
+  const dayChangeCents = previousValueCents === null ? null : valueCents - previousValueCents;
 
   return {
     asset: normalized,
@@ -174,9 +223,9 @@ function calculateAsset(asset, totalPortfolioValueCents, weeklyContributionCents
         : Math.round(weeklyContribution * normalized.weeklyContributionRate),
     dayChangeCents,
     dayChangeRate:
-      normalized.previousValueCents === null || normalized.previousValueCents === 0
+      previousValueCents === null || previousValueCents === 0
         ? null
-        : dayChangeCents / normalized.previousValueCents,
+        : dayChangeCents / previousValueCents,
     targetValueCents,
     targetVarianceCents: targetValueCents === null ? null : valueCents - targetValueCents,
     targetVarianceRate:
@@ -206,10 +255,10 @@ function summarizePortfolio(assets, { weeklyContributionCents = 0 } = {}) {
     calculateAsset(asset, totalMarketValueCents, weeklyContribution),
   );
   const hasAssets = normalizedAssets.length > 0;
-  const hasCompleteDayBaseline =
-    hasAssets && normalizedAssets.every((asset) => asset.previousValueCents !== null);
+  const rowsWithBaselines = rows.filter((row) => row.dayChangeCents !== null);
+  const hasCompleteDayBaseline = hasAssets && rowsWithBaselines.length === normalizedAssets.length;
   const totalPreviousValueCents = hasCompleteDayBaseline
-    ? normalizedAssets.reduce((total, asset) => total + asset.previousValueCents, 0)
+    ? rows.reduce((total, row) => total + row.marketValueCents - row.dayChangeCents, 0)
     : null;
   const targetAllocationComplete =
     hasAssets && isCompleteAllocation(normalizedAssets, "targetAllocationRate");
@@ -253,8 +302,10 @@ function summarizePortfolio(assets, { weeklyContributionCents = 0 } = {}) {
   };
 }
 
-module.exports = {
+const portfolioContract = {
+  ALLOCATION_CATEGORIES,
   DISTRIBUTION_POLICIES,
+  INSTRUMENT_TYPES,
   PortfolioValidationError,
   VALUATION_BASES,
   calculateAsset,
@@ -262,3 +313,6 @@ module.exports = {
   normalizeAsset,
   summarizePortfolio,
 };
+
+if (typeof module !== "undefined") module.exports = portfolioContract;
+if (typeof window !== "undefined") window.MercuryPortfolio = portfolioContract;

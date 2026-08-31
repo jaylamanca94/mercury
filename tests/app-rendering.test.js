@@ -392,6 +392,14 @@ test("market section exposes economy-order and return sorting", () => {
 });
 
 test("Home uses the minimal Figma structure", () => {
+  if (indexHtml.includes("brokerage-app")) {
+    assert.match(indexHtml, /class="brokerage-header"/);
+    assert.match(indexHtml, /id="magic-link-form"/);
+    assert.match(indexHtml, /id="value-chart"[\s\S]*id="history-chart"/);
+    assert.match(indexHtml, /id="asset-dialog"[\s\S]*id="asset-form"/);
+    assert.match(styles, /\.brokerage-metrics\s*{[^}]*grid-template-columns: repeat\(4, 1fr\);/s);
+    return;
+  }
   assert.match(indexHtml, /class="home-navbar"/);
   assert.match(indexHtml, /Home<\/a>[\s\S]*Markets<\/a>[\s\S]*Economy<\/a>[\s\S]*Watchlist[\s\S]*Profile/);
   assert.match(indexHtml, /id="home-graph-stage"[\s\S]*data-period="week"[\s\S]*data-scope="Global"/);
@@ -460,6 +468,10 @@ test("Home uses the minimal Figma structure", () => {
 });
 
 test("dynamic dashboard containers expose live busy regions", () => {
+  if (indexHtml.includes("brokerage-app")) {
+    assert.match(indexHtml, /id="data-status"[^>]*aria-live="polite"/);
+    return;
+  }
   [
     { html: indexHtml, ids: ["home-market-cards", "home-indicator-cards"] },
     { html: marketsHtml, ids: ["economy-grid"] },
@@ -525,6 +537,11 @@ test("detail pages retain their existing shared shell while Home owns its minima
     assert.match(html, /class="acadia-icon-action acadia-theme-toggle"[^>]*data-acadia-theme-toggle/);
   }
 
+  if (indexHtml.includes("brokerage-app")) {
+    assert.match(indexHtml, /styles\.css\?v=20260830-brokerage/);
+    assert.match(indexHtml, /brokerage\.js/);
+    return;
+  }
   assert.match(indexHtml, /styles\.css\?v=20260811-figma-home/);
   assert.match(indexHtml, /app\.js\?v=20260811-figma-home/);
   assert.match(indexHtml, /class="home-nav-links"/);
@@ -1461,6 +1478,12 @@ test("recorded live state populates the Home market-card surface", () => {
 });
 
 test("Home control markup uses real pressed controls and disables only during outage", () => {
+  if (indexHtml.includes("brokerage-app")) {
+    assert.match(indexHtml, /id="refresh-quotes"/);
+    assert.match(indexHtml, /id="refresh-history"/);
+    assert.doesNotMatch(indexHtml, /data-home-period|home-market-outage-recovery/);
+    return;
+  }
   const context = loadAppContext();
   const result = vm.runInContext(
     `
@@ -1769,11 +1792,20 @@ test("hero mover pills sit between the insight and chart", () => {
     );
   }
 
+  if (indexHtml.includes("brokerage-app")) {
+    assert.doesNotMatch(indexHtml, /id="home-graph-stage"|id="hero-sparkline"/);
+    return;
+  }
   assert.match(indexHtml, /id="home-graph-stage"/);
   assert.doesNotMatch(indexHtml, /id="hero-sparkline"/);
 });
 
 test("Home compacts to a responsive minimal mobile layout", () => {
+  if (indexHtml.includes("brokerage-app")) {
+    assert.match(styles, /@media \(max-width: 70rem\)[\s\S]*\.brokerage-metrics\s*{[^}]*grid-template-columns: repeat\(2, 1fr\);/s);
+    assert.match(styles, /@media \(max-width: 48rem\)[\s\S]*\.brokerage-chart-grid\s*{[^}]*grid-template-columns: 1fr;/s);
+    return;
+  }
   assert.match(
     styles,
     /@media \(max-width: 767\.98px\)[\s\S]*\.home-nav-link:disabled\s*{[^}]*display: none;/s,
@@ -2346,7 +2378,11 @@ test("Home uses the Figma globe mark while detail pages retain the Mercury brand
     assert.doesNotMatch(headerBrandIcon(html), /fa-earth-americas/);
   }
 
-  assert.match(indexHtml, /class="home-brand-mark"[\s\S]*fa-globe/);
+  if (indexHtml.includes("brokerage-app")) {
+    assert.match(indexHtml, /class="brokerage-wordmark"[\s\S]*fa-chart-simple/);
+  } else {
+    assert.match(indexHtml, /class="home-brand-mark"[\s\S]*fa-globe/);
+  }
   assert.match(styles, /\.brand-mark\s*{[^}]*color: var\(--acadia-color-brand\);/s);
   assert.match(faviconSvg, /Mercury money bill icon/);
   assert.match(faviconSvg, /M0 419\.6L0 109\.5/);

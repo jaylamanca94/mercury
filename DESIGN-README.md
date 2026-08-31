@@ -2,6 +2,17 @@
 
 Use this file as the visual and interaction source of truth for Mercury. Keep this document updated as Mercury evolves.
 
+> **Brokerage MVP update — 2026-08-30:** Brokerage is the only active product workspace. The legacy economy-dashboard guidance below remains historical reference only and must not guide new product work.
+
+## Brokerage MVP visual contract
+
+- Use the provided Brokerage sheet as the information model: summary metrics first, then holdings-value, allocation, annual-income, and history charts, followed by the core calculation table.
+- The product adapts Acadia through a calm warm-paper content layer, dark functional chrome, teal for actions/data grouping, and semantic text treatment for movement. This keeps the personal-finance context measured and avoids trading-terminal urgency.
+- Use 44px form controls, visible focus, compact labels, a native dialog, and direct validation copy. Price lookup, manual price, and manual total value must remain distinguishable in the UI.
+- Chart.js canvases are paired with accessible textual summaries. A history chart remains absent until two real daily points exist; do not draw or simulate history to fill space.
+- The desktop table preserves spreadsheet density with horizontal overflow rather than hiding financial fields. The phone layout stacks overview and charts while retaining the table as a deliberate scroll surface.
+- Samples are labelled as not synced. No visual treatment may make sample values, last-known quotes, manual values, or live provider quotes look interchangeable.
+
 This file is intentionally separate because design standards, chart language, and reusable dashboard utilities will grow over time.
 
 ## Product Feel

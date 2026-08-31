@@ -1,44 +1,26 @@
 # Mercury Flow Registry
 
-> **Transition note — 2026-08-30:** Mercury has been rechartered as a private personal portfolio
-> and cash-flow tracker. The seven flows below describe only the legacy public-dashboard interface
-> that remains in the checkout until the portfolio workflow is designed and implemented. Do not
-> extend those flows as the target product.
+> **Canonical active flow: sign in privately, add or update a Brokerage holding, then understand its calculated place in the portfolio.**
 
-> **Canonical flows: seven distinct user goals. Active flow: scan the Home market overview, then inspect its market context.** The 2026-08-11 audit verifies the complete-outage path across the current interface and the theme outcome on phone; source-backed success states remain covered by deterministic rendering tests, not this static preview.
+**Last reviewed:** 2026-08-30
 
-**Registry status:** Audited 2026-08-11. The minimal Home redesign preserves all seven user goals; it changes the first flow's surface from a broad dashboard briefing to a compact market overview. Deployed and source-backed browser confirmation remain release gates.
+| Flow | Product status | Meaningful entry → successful outcome | Major states | QA coverage |
+| --- | --- | --- | --- | --- |
+| Sign in to the private workspace | Implemented; requires Supabase configuration to operate. | Brokerage → email magic link → authenticated owner account. | Configuration missing/sample; signed out; magic link sent; signed in; sign out. | DOM and server contract coverage; credential-backed auth remains an environment acceptance gate. |
+| Add a holding | Implemented. | Add asset → choose instrument, category and valuation basis → save the owner-scoped holding. | Valid; invalid; custom-policy note required; manual price/value fallback; saving; saved; error. | Portfolio validation tests and browser-ready form contract. |
+| Retrieve or refresh an automatic quote | Implemented; requires Twelve Data configuration. | Symbol and shares → look up quote → price, prior close, value and freshness update. | Fresh; provider unavailable; unsupported; retained last quote; manual fallback. | Quote-adapter tests for mutual-fund/ETF/crypto symbol mapping and failed provider data. |
+| Understand current Brokerage position | Implemented. | Brokerage → scan summary, holdings, allocation, income and table. | Empty; sample; private loaded; incomplete prior close; complete day movement; allocation warning. | Calculation tests cover totals, allocation, targets, yields, income, weekly split and day change. |
+| Build daily value history | Implemented; requires configured snapshot service. | Refresh history or scheduled close → one daily account snapshot → history line after the second day. | No snapshots; one snapshot; two or more; schedule before close; idempotent daily upsert; failure. | New York date, market-close gate and latest-quote valuation tests. |
+| Export private Brokerage data | Implemented. | Export → owner downloads a JSON copy of their Brokerage holdings, quotes and snapshots. | Sample export; signed-in owner export. | Client export contract; RLS database acceptance required after migration. |
 
-**Last reviewed:** 2026-08-16
+## Required acceptance gates
 
-| Flow | Product status | Meaningful entry → successful outcome | Primary screens | Primary states | Design coverage | QA coverage | Complexity | References |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Scan the current market overview | Implemented; active flow. Complete-outage state browser-verified; source-backed read test-verified. | Home → scan four scope-specific market cards and select a period/scope when live data is available. | `index.html`; minimal navigation, period and scope controls, graph stage, four cards. | Loading; source-backed; partial; complete outage with retry/Data Coverage; Day/Week/Month/Year; Global/Domestic. | `DESIGN-README.md` §§ Product Feel, Layout, Interaction Feel; `DESIGN-STATUS.md`; Acadia adapter and state contracts. | Current desktop and 390px outage captures; recorded live rendering, card-selection, control, and unavailable tests. | Medium | `index.html`, `app.js`, `styles.css`, `tests/app-rendering.test.js`, current browser audit (2026-08-11) |
-| Inspect regional market context | Implemented; complete-outage route browser-verified. Source-backed comparison remains test-backed in this pass. | Home or Markets → compare regional/segment market context and sort the market view. | `markets.html`; markets hero, period/region/sort controls, market grid. | Global/United States/Europe/Asia; period and sort changes; source-backed/partial/unavailable; complete-outage recovery. | `DESIGN-README.md` §§ Chart And Indicator Guidance, Interaction Feel, Accessibility And Responsiveness. | Current desktop outage capture; hero-comparison, sort, history, fallback, and recovery tests. | Medium | `markets.html`, `app.js`, `tests/app-rendering.test.js`, current browser audit (2026-08-11) |
-| Understand cross-asset market context | Implemented; complete-outage route browser-verified. | Market context → understand currencies, commodities, and digital-asset context when sources are available. | `supports.html`; Current Conditions, context signals, currencies, commodities, digital assets. | Period changes; source-backed; partial; complete outage with one combined recovery state. | `DESIGN-README.md` §§ Product Feel, Chart And Indicator Guidance; Acadia state contract. | Current desktop outage capture; healthy/fallback rendering coverage. Mobile healthy capture remains outstanding. | Medium | `supports.html`, `app.js`, `tests/app-rendering.test.js`, current browser audit (2026-08-16) |
-| Understand economic and risk indicators | Implemented; complete-outage route browser-verified. | Economy → identify the available economic/risk read without interpreting unavailable inputs. | `indicators.html`; economic read, drivers, explanation, risk and economic cards. | Period changes; source-backed; missing/partial; delayed/stale; complete outage with recovery. | `DESIGN-README.md` §§ Chart And Indicator Guidance, Accessibility And Responsiveness. | Current desktop outage capture; indicator semantics, badge, and fallback regression tests. Mobile healthy capture remains outstanding. | Medium | `indicators.html`, `app.js`, `tests/app-rendering.test.js`, current browser audit (2026-08-11) |
-| Assess source trust and freshness | Implemented; complete-unavailable view browser-verified. | Any recovery link or Data Coverage → understand which source groups responded, their freshness, and configured-provider boundaries. | `data.html`; Current Source Health and provider inventory. | Current; partial; delayed; stale; unavailable; retry/check timing. | `DESIGN-README.md` § Chart And Indicator Guidance; Acadia status-row and card contracts. | Current desktop unavailable capture; source-health, freshness, and fallback rendering tests. Current mobile capture is outstanding. | High | `data.html`, `app.js`, `tests/app-rendering.test.js`, current browser audit (2026-08-11) |
-| Recover when live data is unavailable | Implemented; retry and Data Coverage paths browser-verified. A successful upstream recovery is not browser-verified in this static preview. | Any unavailable state → retry the source-backed read or inspect Data Coverage rather than acting on fallback values. | Home recovery card; Markets, Market context, and Indicators outage cards; Data Coverage. | Complete outage; retry in progress; retry still unavailable; retry succeeds; disabled data-dependent controls. | `DESIGN-README.md` § Chart And Indicator Guidance; Acadia error and disabled-state guidance. | Current 390px retry action and desktop recovery captures; fallback/retry regression tests. Successful end-to-end retry remains outstanding. | Medium | `app.js`, `index.html`, `markets.html`, `supports.html`, `indicators.html`, `tests/app-rendering.test.js`, current browser audit (2026-08-16) |
-| Change theme | Implemented; phone dark-theme outcome browser-verified. | Any route → open the theme control → switch the effective light/dark appearance. | Home account menu; detail-page theme control. | System, light, dark; theme control remains available during unavailable data. | `DESIGN-README.md` §§ UI Foundation, Accessibility And Responsiveness; Acadia theme contract. | Current 390px dark-theme capture; theme and storage-fallback tests. Cross-route theme persistence is test-backed, not manually rechecked this pass. | Low | `theme.js`, `index.html`, `styles.css`, `tests/app-rendering.test.js`, current browser audit (2026-08-11) |
+- Apply the migration and verify RLS with an unauthenticated user and a second authenticated user.
+- Verify a mutual fund, ETF and crypto quote through Twelve Data in the deployed protected route.
+- Verify provider failure retains the last successful quote and exposes its timestamp.
+- Verify one daily snapshot per Brokerage account and New York date, and no history chart before two points.
+- Verify the export contains only the signed-in owner’s Brokerage records.
 
-## Incomplete Flows And Missing States
+## Deferred flows
 
-- No user-goal flow has been removed or is structurally blocked.
-- The current static preview cannot provide source-backed success, partial, delayed, or stale data; those states are regression-tested but not browser-verified in this audit.
-- A successful Retry refresh outcome is not end-to-end verified; the current browser run verifies the retry action and truthful persistent-unavailable result only.
-- Current mobile browser captures remain missing for healthy Market context, Indicators, and Data Coverage flows.
-- Deployed-environment serverless configuration, cache behaviour, device-assisted accessibility, and market-data licensing remain outside this local audit.
-
-## Ranked Design Opportunities
-
-1. **Establish an end-to-end state gallery — highest user impact; affects flows 1–6.** Capture source-backed, partial, delayed, stale, unavailable, and successful-retry states from the serverless preview so users never encounter a source-state treatment that has only been asserted in code.
-2. **Market-context naming — completed 2026-08-16.** The existing destination now uses the plain-language label `Market context`; its route and cross-asset scope remain unchanged.
-3. **Define the graph-stage success criterion — high impact; affects flows 1–2.** Keep it blank until it can answer one scoped question with source-backed data. Before activating it, decide whether its job is trend comparison, period change, or freshness context; do not fill the prominent Home stage with decorative charting.
-
-## Update Rule
-
-Before implementation, record newly added or changed user goals, major states, and required design and QA coverage. Update this registry whenever behaviour changes, retain distinct user outcomes even when they share a route, and report the active-flow headline after meaningful work.
-
-## Current Release Gate
-
-Before public release, verify the deployed serverless configuration, cache behaviour, source-backed success and recovery paths, mobile journeys, and market-data licensing. Local static-preview screenshots prove interface behaviour for the unavailable path only; they do not establish production data or deployment readiness.
+Net Worth, retirement accounts, Property, Income, Records, imports, brokerage connections, and projections are intentionally not active flows. Projection is last; numbers have enough confidence already.

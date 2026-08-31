@@ -3949,3 +3949,106 @@ body {
     overflow: visible;
   }
 }
+
+/* Brokerage workspace — product adapter over the shared Acadia primitives. */
+.brokerage-app {
+  --brokerage-ink: #19211f;
+  --brokerage-muted: #66726f;
+  --brokerage-paper: #f7f3e9;
+  --brokerage-rule: rgba(25, 33, 31, 0.16);
+  --brokerage-teal: #008f89;
+  --brokerage-teal-dark: #006d68;
+  --brokerage-negative: #b94838;
+  background: var(--brokerage-paper);
+  color: var(--brokerage-ink);
+  font-family: var(--acadia-font-body, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif);
+}
+
+.brokerage-app[data-acadia-theme="dark"] {
+  --brokerage-ink: #edf4f2;
+  --brokerage-muted: #afc0bd;
+  --brokerage-paper: #17201e;
+  --brokerage-rule: rgba(232, 245, 242, 0.2);
+}
+
+.brokerage-header {
+  align-items: center;
+  background: #1b1d21;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  display: grid;
+  grid-template-columns: minmax(12rem, 1fr) auto minmax(12rem, 1fr);
+  min-height: 4.75rem;
+  padding: 0 3rem;
+  position: relative;
+  z-index: 5;
+}
+
+.brokerage-wordmark,
+.brokerage-wordmark:visited {
+  align-items: center;
+  color: #f5f7f6;
+  display: inline-flex;
+  font-family: var(--acadia-font-expression, sans-serif);
+  font-size: 1.45rem;
+  font-weight: 700;
+  gap: 0.6rem;
+  letter-spacing: -0.03em;
+  text-decoration: none;
+}
+
+.brokerage-wordmark i { color: #18c5bc; font-size: 1.15rem; }
+.brokerage-nav { display: flex; gap: 0.5rem; }
+.brokerage-nav a { color: #eef2f1; font-weight: 700; padding: 0.6rem 0.9rem; text-decoration: none; }
+.brokerage-nav a[aria-current="page"] { border-bottom: 2px solid #18c5bc; }
+.brokerage-header-actions { align-items: center; display: flex; gap: 0.6rem; justify-content: flex-end; }
+.brokerage-chip { border: 1px solid rgba(255, 255, 255, 0.22); border-radius: 999px; color: #dce6e3; font-size: 0.75rem; padding: 0.36rem 0.65rem; }
+.brokerage-icon-button, .brokerage-account-button, .brokerage-row-action { align-items: center; background: transparent; border: 0; color: inherit; cursor: pointer; display: inline-flex; justify-content: center; min-height: 2.5rem; }
+.brokerage-icon-button { color: #dce6e3; width: 2.5rem; }
+.brokerage-account-button { color: #fff; gap: 0.45rem; padding: 0 0.35rem; }
+.brokerage-account-menu { background: #282c2d; border: 1px solid rgba(255,255,255,.18); box-shadow: 0 14px 28px rgba(0,0,0,.28); padding: .35rem; position: absolute; right: 2.8rem; top: 3.9rem; }
+.brokerage-account-menu button { background: transparent; border: 0; color: white; cursor: pointer; min-height: 2.5rem; padding: 0 .8rem; }
+
+.brokerage-shell { margin: 0 auto; max-width: 112rem; min-height: calc(100vh - 4.75rem); padding: 3.5rem max(3rem, calc((100vw - 100rem) / 2)); }
+.brokerage-page-heading { align-items: end; border-bottom: 3px double var(--brokerage-ink); display: flex; gap: 2rem; justify-content: space-between; padding-bottom: 1rem; }
+.brokerage-eyebrow { color: var(--brokerage-teal-dark); font-size: .72rem; font-weight: 800; letter-spacing: .08em; margin: 0 0 .3rem; text-transform: uppercase; }
+.brokerage-page-heading h1, .brokerage-auth-panel h1 { font-family: var(--acadia-font-expression, Georgia, serif); font-size: clamp(2.4rem, 4vw, 3.5rem); letter-spacing: -.05em; line-height: 1; margin: 0; }
+.brokerage-source-status, .brokerage-page-heading > div > p:last-child { color: var(--brokerage-muted); font-size: .88rem; margin: .6rem 0 0; }
+.brokerage-toolbar { align-items: center; display: flex; flex-wrap: wrap; gap: .5rem; justify-content: flex-end; }
+.brokerage-button { align-items: center; background: var(--brokerage-teal); border: 1px solid var(--brokerage-teal); border-radius: .4rem; color: #fff; cursor: pointer; display: inline-flex; font: inherit; font-weight: 700; gap: .45rem; min-height: 2.75rem; padding: 0 .9rem; }
+.brokerage-button:hover { background: var(--brokerage-teal-dark); border-color: var(--brokerage-teal-dark); }
+.brokerage-button:disabled { cursor: wait; opacity: .65; }
+.brokerage-button-secondary { background: transparent; color: var(--brokerage-ink); border-color: var(--brokerage-rule); }
+.brokerage-button-secondary:hover { background: color-mix(in srgb, var(--brokerage-teal) 10%, transparent); color: var(--brokerage-ink); }
+
+.brokerage-metrics { display: grid; gap: 1px; grid-template-columns: repeat(4, 1fr); margin: 2rem 0; overflow: hidden; border: 1px solid var(--brokerage-rule); }
+.brokerage-metrics article { background: color-mix(in srgb, var(--brokerage-paper) 94%, var(--brokerage-teal)); min-height: 8.2rem; padding: 1.25rem; }
+.brokerage-metrics p { color: var(--brokerage-muted); font-size: .78rem; font-weight: 700; margin: 0; text-transform: uppercase; letter-spacing: .04em; }
+.brokerage-metrics strong { display: block; font-family: var(--acadia-font-expression, sans-serif); font-size: clamp(1.55rem, 2.4vw, 2.2rem); letter-spacing: -.05em; margin: .55rem 0 .25rem; }
+.brokerage-metrics span { color: var(--brokerage-muted); font-size: .78rem; }
+.is-positive { color: #43823d !important; }.is-negative { color: var(--brokerage-negative) !important; }
+
+.brokerage-chart-grid { display: grid; gap: 1.25rem; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.brokerage-chart-card { border: 1px solid var(--brokerage-rule); min-height: 19rem; padding: 1.25rem; position: relative; }
+.brokerage-chart-card-wide { grid-column: span 1; }
+.brokerage-chart-card header { align-items: flex-start; display: flex; justify-content: space-between; margin-bottom: .75rem; }
+.brokerage-chart-card h2, .brokerage-section-heading h2, .brokerage-dialog h2 { font-family: var(--acadia-font-expression, Georgia, serif); font-size: 1.35rem; letter-spacing: -.035em; margin: 0; }
+.brokerage-chart-card header span { color: var(--brokerage-muted); font-size: .75rem; }
+.brokerage-chart-card canvas { height: 14.5rem !important; max-height: 14.5rem; width: 100% !important; }
+.brokerage-chart-empty { align-items: center; color: var(--brokerage-muted); display: flex; font-size: .92rem; height: 14.5rem; justify-content: center; text-align: center; }
+
+.brokerage-table-section { margin-top: 2.5rem; }
+.brokerage-section-heading { align-items: end; display: flex; justify-content: space-between; margin-bottom: .85rem; }
+.brokerage-section-heading > p { color: var(--brokerage-muted); font-size: .78rem; margin: 0; max-width: 34rem; text-align: right; }
+.brokerage-table-wrap { border: 1px solid var(--brokerage-rule); overflow-x: auto; }
+.brokerage-table-wrap table { border-collapse: collapse; font-size: .8rem; min-width: 72rem; width: 100%; }
+.brokerage-table-wrap th, .brokerage-table-wrap td { border-bottom: 1px solid var(--brokerage-rule); padding: .7rem .8rem; text-align: right; vertical-align: middle; white-space: nowrap; }
+.brokerage-table-wrap thead { background: color-mix(in srgb, var(--brokerage-teal) 28%, var(--brokerage-paper)); }.brokerage-table-wrap thead th { font-weight: 800; color: var(--brokerage-ink); }
+.brokerage-table-wrap th:first-child, .brokerage-table-wrap td:first-child, .brokerage-table-wrap td:nth-child(2) { text-align: left; }.brokerage-table-wrap tbody tr:nth-child(even) { background: color-mix(in srgb, var(--brokerage-ink) 4%, transparent); }.brokerage-table-wrap small { color: var(--brokerage-muted); display: block; font-size: .68rem; font-weight: 500; margin-top: .18rem; }.brokerage-table-wrap tfoot { background: color-mix(in srgb, var(--brokerage-teal) 9%, transparent); }.brokerage-row-action { color: var(--brokerage-teal-dark); width: 2rem; }
+
+.brokerage-auth-panel { align-items: center; border: 1px solid var(--brokerage-rule); display: grid; gap: 3rem; grid-template-columns: 1.2fr 1fr; margin: 6rem auto; max-width: 60rem; padding: 3rem; }.brokerage-auth-panel p { color: var(--brokerage-muted); line-height: 1.5; }.brokerage-auth-form label, .brokerage-form-grid label { display: grid; font-size: .82rem; font-weight: 750; gap: .35rem; }.brokerage-auth-form > div { display: flex; gap: .5rem; }.brokerage-auth-form input, .brokerage-form-grid input, .brokerage-form-grid select { background: transparent; border: 1px solid var(--brokerage-rule); border-radius: .35rem; color: var(--brokerage-ink); font: inherit; min-height: 2.75rem; padding: 0 .7rem; width: 100%; }.brokerage-auth-form button { background: var(--brokerage-teal); border: 0; border-radius: .35rem; color: #fff; cursor: pointer; font: inherit; font-weight: 700; padding: 0 1rem; }.brokerage-auth-form p { font-size: .85rem; }
+
+.brokerage-dialog { background: var(--brokerage-paper); border: 1px solid var(--brokerage-rule); color: var(--brokerage-ink); max-width: 48rem; padding: 0; width: calc(100% - 2rem); }.brokerage-dialog::backdrop { background: rgba(15, 23, 21, .58); }.brokerage-dialog form { padding: 1.4rem; }.brokerage-dialog header, .brokerage-dialog footer { align-items: center; display: grid; grid-template-columns: 1fr auto; gap: 1rem; }.brokerage-dialog footer { border-top: 1px solid var(--brokerage-rule); margin-top: 1.35rem; padding-top: 1rem; }.brokerage-form-grid { display: grid; gap: 1rem; grid-template-columns: repeat(2, minmax(0, 1fr)); margin-top: 1.25rem; }.brokerage-form-grid label > span { color: var(--brokerage-muted); font-size: .7rem; font-weight: 500; }.brokerage-valuation-fieldset { border: 1px solid var(--brokerage-rule); margin: 1.25rem 0 0; padding: 1rem; }.brokerage-valuation-fieldset > label { display: block; font-size: .82rem; margin: .45rem 0; }.brokerage-valuation-fieldset .brokerage-form-grid { margin-top: .75rem; }.brokerage-form-status { color: var(--brokerage-muted); font-size: .82rem; min-height: 1.25rem; margin: .7rem 0 0; }
+
+.brokerage-app :is(button, a, input, select):focus-visible { outline: 3px solid color-mix(in srgb, var(--brokerage-teal) 60%, white); outline-offset: 2px; }
+@media (max-width: 70rem) { .brokerage-header { padding: 0 1.5rem; }.brokerage-shell { padding-inline: 1.5rem; }.brokerage-metrics { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 48rem) { .brokerage-header { grid-template-columns: 1fr auto; min-height: 4.25rem; padding: 0 1rem; }.brokerage-nav, .brokerage-chip, .brokerage-account-button span { display: none; }.brokerage-shell { padding: 1.5rem 1rem 5rem; }.brokerage-page-heading { align-items: flex-start; flex-direction: column; }.brokerage-toolbar { justify-content: flex-start; }.brokerage-chart-grid { grid-template-columns: 1fr; }.brokerage-auth-panel { grid-template-columns: 1fr; margin: 2rem 0; padding: 1.25rem; }.brokerage-form-grid { grid-template-columns: 1fr; }.brokerage-section-heading { align-items: flex-start; flex-direction: column; gap: .5rem; }.brokerage-section-heading > p { text-align: left; }.brokerage-auth-form > div { display: grid; }.brokerage-chart-card { min-height: 18rem; } }

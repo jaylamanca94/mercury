@@ -3,6 +3,8 @@ const test = require("node:test");
 
 const {
   PortfolioValidationError,
+  ALLOCATION_CATEGORIES,
+  INSTRUMENT_TYPES,
   VALUATION_BASES,
   calculateAsset,
   normalizeAsset,
@@ -49,6 +51,25 @@ test("manual-value assets retain their declared value without a fabricated share
   assert.equal(asset.manualValueCents, 250_000);
   assert.equal(asset.shares, null);
   assert.equal(asset.unitPriceCents, null);
+});
+
+test("a quoted fund retains its instrument, allocation, quote source, and prior close", () => {
+  const asset = normalizeAsset({
+    ...baseAsset,
+    instrumentType: "mutual-fund",
+    allocationCategory: "domestic-equity",
+    quoteSource: "Twelve Data",
+    quoteAsOf: "2026-08-30T20:00:00Z",
+    priorCloseCents: 27_000,
+  });
+  const row = calculateAsset(asset, 1_000_000, 0);
+
+  assert.equal(asset.instrumentType, "mutual-fund");
+  assert.equal(asset.allocationCategory, "domestic-equity");
+  assert.equal(asset.quoteSource, "Twelve Data");
+  assert.equal(row.dayChangeCents, 3_623);
+  assert.equal(INSTRUMENT_TYPES.includes("crypto"), true);
+  assert.equal(ALLOCATION_CATEGORIES.includes("bonds"), true);
 });
 
 test("an asset cannot silently use a manual value and shares-and-price at once", () => {

@@ -3,93 +3,30 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-    <meta name="theme-color" content="#eef1f5" data-acadia-theme-color>
-    <meta
-      name="description"
-      content="Mercury shows a focused live view of global and domestic market movement."
-    >
-    <title>Mercury | Home</title>
-    <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
-    <link rel="manifest" href="site.webmanifest">
-    <script src="theme.js?v=20260720-material-theme"></script>
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
-      referrerpolicy="no-referrer"
-    >
-    <link rel="stylesheet" href="styles.css?v=20260811-figma-home">
+    <meta name="theme-color" content="#f7f3e9" data-acadia-theme-color>
+    <meta name="description" content="Mercury is a private Brokerage workspace for tracking holdings, allocation, income, and history.">
+    <title>Mercury | Brokerage</title>
+    <link rel="icon" href="assets/favicon.svg" type="image/svg+xml"><link rel="manifest" href="site.webmanifest">
+    <script src="theme.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" referrerpolicy="no-referrer"><link rel="stylesheet" href="styles.css?v=20260830-brokerage">
   </head>
-  <body class="mercury-app mercury-page-dashboard mercury-page-home" data-mercury-page="dashboard">
-    <a class="skip-link" href="#main-content">Skip to market overview</a>
-
-    <main id="main-content" class="home-shell" aria-busy="true">
-      <header class="home-navbar" aria-label="Mercury navigation">
-        <a class="home-brand-mark" href="index.html" aria-label="Mercury home">
-          <i class="fa-solid fa-globe" aria-hidden="true"></i>
-        </a>
-        <nav class="home-nav-links" aria-label="Mercury pages">
-          <a class="home-nav-link is-active" href="index.html" aria-current="page">Home</a>
-          <a class="home-nav-link" href="markets.html">Markets</a>
-          <a class="home-nav-link" href="indicators.html">Economy</a>
-          <button class="home-nav-link" type="button" disabled aria-disabled="true" title="Watchlist is coming soon">Watchlist</button>
-          <button class="home-nav-link" type="button" disabled aria-disabled="true" title="Profile is coming soon">Profile</button>
-        </nav>
-        <div class="home-profile-wrap">
-          <button
-            id="home-profile-trigger"
-            class="home-profile-trigger"
-            type="button"
-            aria-expanded="false"
-            aria-controls="home-profile-menu"
-            aria-label="Open account menu"
-          >
-            <i class="fa-solid fa-circle-user" aria-hidden="true"></i>
-          </button>
-          <div id="home-profile-menu" class="home-profile-menu acadia-account-menu-panel" role="menu" hidden>
-            <button class="home-theme-toggle acadia-account-menu-item" type="button" role="menuitem" data-acadia-theme-toggle>
-              <i class="fa-solid fa-toggle-off" data-acadia-theme-toggle-icon aria-hidden="true"></i>
-              <span>Theme</span>
-            </button>
-            <button class="home-menu-disabled acadia-account-menu-item" type="button" role="menuitem" disabled aria-disabled="true">Profile coming soon</button>
-          </div>
-        </div>
-      </header>
-
-      <section class="home-market-overview" aria-labelledby="home-market-title">
-        <h1 id="home-market-title" class="visually-hidden">Mercury market overview</h1>
-        <div class="home-control-row">
-          <div class="home-segmented-control" role="group" aria-label="Market period">
-            <button type="button" class="home-period-control" data-home-period="today" aria-pressed="false">Day</button>
-            <button type="button" class="home-period-control" data-home-period="week" aria-pressed="true">Week</button>
-            <button type="button" class="home-period-control" data-home-period="month" aria-pressed="false">Month</button>
-            <button type="button" class="home-period-control" data-home-period="year" aria-pressed="false">Year</button>
-          </div>
-          <div class="home-segmented-control home-scope-control" role="group" aria-label="Market scope">
-            <button type="button" class="home-scope-control" data-home-scope="Global" aria-pressed="true">Global</button>
-            <button type="button" class="home-scope-control" data-home-scope="United States" aria-pressed="false">Domestic</button>
-            <button type="button" class="home-scope-control" data-home-scope="International" aria-pressed="false">International</button>
-          </div>
-        </div>
-
-        <div
-          id="home-graph-stage"
-          class="home-graph-stage"
-          data-period="week"
-          data-scope="Global"
-          aria-label="Market comparison chart for Global markets this week"
-        ></div>
-
-        <section id="home-market-outage-recovery" class="home-market-outage-recovery" aria-label="Market data recovery" hidden>
-          <div id="home-market-outage-card"></div>
-        </section>
-        <div id="home-market-cards" class="home-market-cards" aria-live="polite" aria-busy="true"></div>
-        <div id="home-indicator-cards" class="home-indicator-cards" aria-label="Economic signals" aria-live="polite" aria-busy="true"></div>
+  <body class="mercury-app brokerage-app" data-mercury-page="brokerage">
+    <a class="skip-link" href="#main-content">Skip to brokerage</a>
+    <header class="brokerage-header" aria-label="Mercury navigation">
+      <a class="brokerage-wordmark" href="index.html" aria-label="Mercury Brokerage home"><i class="fa-solid fa-chart-simple" aria-hidden="true"></i><span>mercury</span></a>
+      <nav class="brokerage-nav" aria-label="Workspace"><a href="index.html" aria-current="page">Brokerage</a></nav>
+      <div class="brokerage-header-actions"><span id="workspace-mode" class="brokerage-chip">Private workspace</span><button class="brokerage-icon-button" type="button" data-acadia-theme-toggle aria-label="Change theme"><i class="fa-solid fa-circle-half-stroke" data-acadia-theme-toggle-icon aria-hidden="true"></i></button><button id="account-trigger" class="brokerage-account-button" type="button" aria-haspopup="menu" aria-expanded="false" aria-controls="account-menu"><i class="fa-solid fa-circle-user" aria-hidden="true"></i><span id="account-label">Sign in</span></button><div id="account-menu" class="brokerage-account-menu" role="menu" hidden><button id="sign-out" type="button" role="menuitem" hidden>Sign out</button></div></div>
+    </header>
+    <main id="main-content" class="brokerage-shell" aria-busy="true">
+      <section id="auth-panel" class="brokerage-auth-panel" aria-labelledby="auth-title" hidden><div><p class="brokerage-eyebrow">Private by design</p><h1 id="auth-title">Your Brokerage workspace</h1><p>Use your email to receive a secure magic link. Mercury does not offer public portfolio pages.</p></div><form id="magic-link-form" class="brokerage-auth-form"><label for="email">Email</label><div><input id="email" name="email" type="email" autocomplete="email" required placeholder="you@example.com"><button type="submit">Send magic link</button></div><p id="auth-message" role="status" aria-live="polite"></p></form></section>
+      <section id="brokerage-workspace" hidden>
+        <div class="brokerage-page-heading"><div><p class="brokerage-eyebrow">Personal finance / Brokerage</p><h1>Brokerage</h1><p id="data-status" class="brokerage-source-status" role="status" aria-live="polite">Loading your holdings…</p></div><div class="brokerage-toolbar"><button id="refresh-history" class="brokerage-button brokerage-button-secondary" type="button"><i class="fa-solid fa-clock-rotate-left" aria-hidden="true"></i> Refresh history</button><button id="refresh-quotes" class="brokerage-button brokerage-button-secondary" type="button"><i class="fa-solid fa-arrows-rotate" aria-hidden="true"></i> Refresh prices</button><button id="export-data" class="brokerage-button brokerage-button-secondary" type="button"><i class="fa-solid fa-arrow-up-from-bracket" aria-hidden="true"></i> Export</button><button id="add-asset" class="brokerage-button" type="button"><i class="fa-solid fa-plus" aria-hidden="true"></i> Add asset</button></div></div>
+        <section class="brokerage-metrics" aria-label="Portfolio summary"><article><p>Portfolio value</p><strong id="metric-value">—</strong><span id="metric-value-note">Current valuation</span></article><article><p>Annual distributions</p><strong id="metric-income">—</strong><span id="metric-income-note">Where yield is recorded</span></article><article><p>Day change</p><strong id="metric-day">—</strong><span id="metric-day-note">Requires a prior close</span></article><article><p>Weekly contribution</p><strong id="metric-weekly">—</strong><span id="metric-weekly-note">Allocated across holdings</span></article></section>
+        <section class="brokerage-chart-grid" aria-label="Brokerage visualisations"><article class="brokerage-chart-card brokerage-chart-card-wide"><header><div><p class="brokerage-eyebrow">Holdings</p><h2>Value by holding</h2></div><span id="value-chart-caption">Current market value</span></header><canvas id="value-chart" aria-label="Holdings by market value bar chart"></canvas><p id="value-chart-summary" class="visually-hidden"></p></article><article class="brokerage-chart-card"><header><div><p class="brokerage-eyebrow">Allocation</p><h2>By category</h2></div></header><canvas id="allocation-chart" aria-label="Portfolio allocation by category doughnut chart"></canvas><p id="allocation-chart-summary" class="visually-hidden"></p></article><article class="brokerage-chart-card"><header><div><p class="brokerage-eyebrow">Income</p><h2>Annual distributions</h2></div></header><canvas id="income-chart" aria-label="Annual income by holding bar chart"></canvas><p id="income-chart-summary" class="visually-hidden"></p></article><article class="brokerage-chart-card brokerage-history-card"><header><div><p class="brokerage-eyebrow">History</p><h2>Portfolio value</h2></div><span id="history-caption">Daily closing snapshots</span></header><div id="history-empty" class="brokerage-chart-empty">A history line appears after two New York daily snapshots.</div><canvas id="history-chart" aria-label="Portfolio value history line chart" hidden></canvas><p id="history-chart-summary" class="visually-hidden"></p></article></section>
+        <section class="brokerage-table-section" aria-labelledby="holdings-heading"><div class="brokerage-section-heading"><div><p class="brokerage-eyebrow">Holdings</p><h2 id="holdings-heading">Brokerage table</h2></div><p id="portfolio-warnings"></p></div><div class="brokerage-table-wrap"><table id="holdings-table"><thead><tr><th scope="col">Symbol</th><th scope="col">Type</th><th scope="col">Price</th><th scope="col">Expected return</th><th scope="col">Day</th><th scope="col">Shares</th><th scope="col">Market value</th><th scope="col">Yield</th><th scope="col">Annual income</th><th scope="col">Allocation</th><th scope="col">Target</th><th scope="col">Weekly</th><th scope="col"><span class="visually-hidden">Actions</span></th></tr></thead><tbody id="holdings-body"></tbody><tfoot id="holdings-total"></tfoot></table></div></section>
       </section>
-      <p id="dashboard-status" class="visually-hidden" role="status" aria-live="polite" aria-atomic="true">
-        Checking latest market data.
-      </p>
     </main>
-
-    <script src="app.js?v=20260811-figma-home"></script>
+    <dialog id="asset-dialog" class="brokerage-dialog" aria-labelledby="asset-dialog-title"><form id="asset-form" method="dialog"><header><div><p class="brokerage-eyebrow">Holding</p><h2 id="asset-dialog-title">Add asset</h2></div><button id="close-dialog" class="brokerage-icon-button" type="button" aria-label="Close form"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button></header><input id="asset-id" name="id" type="hidden"><div class="brokerage-form-grid"><label>Symbol <input id="asset-symbol" name="symbol" autocomplete="off" placeholder="VTI, BTC, VFIAX"></label><label>Name <input id="asset-name" name="name" placeholder="Optional when symbol is used"></label><label>Instrument <select id="asset-instrument" name="instrumentType"><option value="mutual-fund">Mutual fund</option><option value="etf">ETF</option><option value="stock">Stock</option><option value="crypto">Crypto</option><option value="cash">Cash</option><option value="other">Other</option></select></label><label>Allocation category <select id="asset-category" name="allocationCategory"><option value="domestic-equity">Domestic equity</option><option value="international-equity">International equity</option><option value="bonds">Bonds</option><option value="crypto">Crypto</option><option value="cash">Cash</option><option value="other">Other</option></select></label><label>Shares <input id="asset-shares" name="shares" type="number" step="any" min="0" placeholder="0"></label><label>Expected annual return <input id="asset-return" name="expectedAnnualReturn" type="number" step="0.01" placeholder="8"><span>Planning assumption, %</span></label><label>Distribution yield <input id="asset-yield" name="distributionYield" type="number" step="0.01" min="0" placeholder="1.5"><span>Annual %, where applicable</span></label><label>Target allocation <input id="asset-target" name="targetAllocation" type="number" step="0.01" min="0" max="100" placeholder="25"><span>% of portfolio</span></label><label>Weekly contribution allocation <input id="asset-weekly" name="weeklyAllocation" type="number" step="0.01" min="0" max="100" placeholder="25"><span>% of weekly amount</span></label><label>Dividend policy <select id="asset-dividend-policy" name="dividendPolicy"><option value="">Not set</option><option value="reinvest">Reinvest</option><option value="transfer-to-bank">Transfer to bank</option><option value="transfer-to-fund">Transfer to fund</option><option value="hold-cash">Hold cash</option><option value="custom">Custom</option></select></label><label>Capital-gains policy <select id="asset-gains-policy" name="capitalGainsPolicy"><option value="">Not set</option><option value="reinvest">Reinvest</option><option value="transfer-to-bank">Transfer to bank</option><option value="transfer-to-fund">Transfer to fund</option><option value="hold-cash">Hold cash</option><option value="custom">Custom</option></select></label></div><fieldset class="brokerage-valuation-fieldset"><legend>Valuation</legend><label><input type="radio" name="valuationBasis" value="shares-and-price" checked> Automatic quote or manual price × shares</label><label><input type="radio" name="valuationBasis" value="manual-value"> Authoritative total value</label><div class="brokerage-form-grid"><label id="manual-price-field">Manual price <input id="asset-manual-price" name="manualPrice" type="number" step="0.01" min="0" placeholder="Used when a quote is unavailable"></label><label id="manual-value-field" hidden>Manual total value <input id="asset-manual-value" name="manualValue" type="number" step="0.01" min="0" placeholder="Authoritative total"></label><label>Policy note <input id="asset-policy-note" name="customPolicyNote" placeholder="Required only for custom policy"></label></div><p id="quote-form-status" class="brokerage-form-status" role="status"></p></fieldset><footer><button id="lookup-quote" class="brokerage-button brokerage-button-secondary" type="button"><i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i> Look up price</button><span></span><button id="save-asset" class="brokerage-button" type="submit">Save asset</button></footer></form></dialog>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.112.3/dist/umd/supabase.min.js"></script><script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script><script src="portfolio.js"></script><script src="brokerage.js"></script>
   </body>
 </html>

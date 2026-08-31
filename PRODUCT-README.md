@@ -1,60 +1,37 @@
 # Mercury Product
 
-## Overview
-
-Mercury is becoming a private personal portfolio and cash-flow tracker. It gives one owner a clear
-view of what they hold, what it is worth, how it is allocated, and what expected growth, income,
-and planned contributions it represents.
-
-The product is in transition: the existing public global-economy pages are legacy interface code
-until the portfolio workflow replaces them. They do not define the product's future scope.
-
 ## Mission
 
-Make a personal portfolio understandable and maintainable in one calm, reliable workspace.
+Mercury is a private personal finance workspace. Its first shipped product surface is Brokerage: a calm, reliable place for one owner to record holdings and understand value, allocation, income, daily movement, and history without becoming a trading terminal or advice engine.
 
-## Product discipline
+## Brokerage MVP
 
-- Keep the first release focused on recording, calculating, and understanding the owner's assets.
-- Treat an entered manual value or a shares-and-price calculation as an explicit source of truth;
-  do not silently reconcile the two.
-- Present assumptions, income estimates, targets, and movements as descriptive planning data, not
-  advice, recommendations, or predictions.
-- Protect privacy and portability: do not add real-data storage, brokerage access, or data sharing
-  without a deliberate security, backup, and export decision.
-- Defer tax lots, realised gains, trading, recommendations, automatic brokerage import, and
-  investment guidance.
+- Email magic-link sign-in for one private owner, backed by Supabase Postgres and row-level security.
+- One reusable `Brokerage` account, in USD, ready for future account aggregation without exposing other modules yet.
+- Forms for mutual funds, ETFs, stocks, crypto, cash, and other assets.
+- Automatic Twelve Data quotes for eligible symbols, with quote source, as-of time, prior close, short server-side caching, retained last successful quote, and an explicit manual price or total-value fallback.
+- Calculated market value, allocation, target/weekly split, expected annual return, distribution yield, annual income, policy fields, and day movement.
+- Owner-only JSON export and daily America/New_York snapshots after market close. A history line appears only after two stored snapshots.
 
-## V1 scope
+## Boundaries
 
-- One owner, one base currency, and manually entered or CSV-imported assets.
-- An asset may be valued by either a stated total value or shares multiplied by a price.
-- Portfolio value, allocation, targets, expected annual growth, estimated annual income, day
-  movement once a complete baseline exists, and weekly contribution planning.
-- Dividend and capital-gains handling as explicit policies: reinvest, transfer, hold cash, or a
-  custom instruction.
-- Export and backup before any real portfolio data is relied upon.
-
-## Explicitly out of scope for V1
-
-- Trading, buy/sell/hold recommendations, or personalised financial advice.
-- Brokerage credentials or automatic brokerage connections.
-- Tax calculations, realised-gain reporting, cost basis, or tax lots.
-- A public market commentary dashboard.
-
-## Current foundation
-
-`portfolio.js` defines the portfolio data and calculation contract. It stores monetary values as
-integer cents and rates as decimals, rejects ambiguous valuation inputs, and reports incomplete
-day-movement or allocation data rather than inventing totals. See
-[`docs/personal-finance-pivot.md`](docs/personal-finance-pivot.md) for the complete contract and
-delivery sequence.
+- USD is the only MVP currency.
+- Manual total value and shares × price remain mutually exclusive valuation bases. Mercury never silently chooses between them.
+- A manual price or total value is authoritative when automatic quotes are unsupported or unavailable.
+- Expected annual return is a planning assumption, not distribution yield or advice.
+- No CSV import, brokerage credentials, cost basis, tax lots, realised gains, tax reporting, trading, alerts, advice, or projection calculator in this MVP.
+- The prior public global-economy experience is legacy code only. It is not linked from the private product and must not provide portfolio data.
 
 ## Roadmap
 
-1. Build and test the portfolio data layer. **In progress.**
-2. Import a clean CSV export while preserving authoritative stated market values. **Next.**
-3. Decide storage, backup, and synchronisation before entering real data. **Required before use.**
-4. Build the portfolio interface against the settled contract. **Deferred pending design.**
-5. Consider optional price data only after privacy, source, licensing, freshness, and fallback
-   behaviour are defined. **Deferred.**
+1. Brokerage account and daily snapshot reliability. **Current MVP.**
+2. Net Worth aggregation.
+3. Retirement accounts.
+4. Property.
+5. Income.
+6. Records.
+7. Projections.
+
+## Operational setup
+
+Apply [`supabase/migrations/20260830_brokerage_mvp.sql`](supabase/migrations/20260830_brokerage_mvp.sql), configure the environment variables described in [`supabase/README.md`](supabase/README.md), and then use the private authentication flow. Until that configuration is present, Mercury intentionally presents a clearly labelled sample workspace rather than storing personal financial data.
