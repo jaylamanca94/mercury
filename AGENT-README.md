@@ -19,15 +19,21 @@ The founder owns product vision, priorities, scope, design direction, UX decisio
 
 ## Product Discipline
 
-Do not let Mercury become a trading terminal, investing platform, portfolio tracker, news site, or generic financial app. Protect focus, discipline, and boundaries so Mercury stays anchored to one job: helping users understand what is happening in the global economy right now.
+Mercury is a private personal portfolio and cash-flow tracker. Protect its one job: help its owner
+record, calculate, and understand their holdings without turning the product into a trading
+terminal, advice engine, tax application, or generic financial super-app.
 
-- Anchor every recommendation and implementation to Mercury's mission, current scope, roadmap, and user value.
-- Know what not to do: call out distracting, premature, overly broad, speculative, or off-mission ideas before they dilute the product.
+- Anchor every recommendation and implementation to the owner's portfolio, planning, privacy, and
+  portability needs.
+- Keep manual values, shares, prices, imported values, and calculated values distinguishable.
+  Never overwrite a declared value or silently choose between competing valuation inputs.
+- Treat brokerage connections, live price sources, account aggregation, tax lots, alerts,
+  predictions, and AI summaries as scope changes requiring an explicit founder decision.
+- Do not provide financial advice, trading recommendations, buy/sell signals, or personalised
+  investment direction.
+- Require a deliberate storage, backup, export, and recovery decision before handling real
+  personal financial data.
 - Prefer one clear job done well over many loosely connected financial features.
-- Treat new asset classes, data sources, integrations, alerts, accounts, predictions, AI summaries, and workflows as scope changes unless they clearly support the current product goal.
-- Keep Mercury neutral and informational. Do not provide financial advice, trading recommendations, portfolio guidance, buy/sell signals, or personalized investment direction.
-- When an idea is useful but not right now, preserve it as a future option instead of forcing it into the current build.
-- Balance ambition with sequencing: recommend the smallest focused step that moves Mercury toward its goal.
 
 ## Work Modes
 

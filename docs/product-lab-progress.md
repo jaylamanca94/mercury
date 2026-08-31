@@ -1,4 +1,9 @@
-# Product Lab Progress
+# Legacy Global Dashboard Progress
+
+> **Archived 2026-08-30:** Mercury is now a private personal portfolio and cash-flow tracker.
+> This file preserves the prior public global-dashboard delivery record only; it is not the active
+> product plan. See [`personal-finance-pivot.md`](personal-finance-pivot.md) for the current
+> product direction.
 
 **Last reviewed:** 2026-08-16
 **Scope:** Mercury's public dashboard, its live-data boundary, the Acadia adapter, and release readiness. This is the durable delivery record; `docs/tomorrow-lab-progress.md` retains the earlier milestone history.

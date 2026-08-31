@@ -1,5 +1,10 @@
 # Mercury Flow Registry
 
+> **Transition note — 2026-08-30:** Mercury has been rechartered as a private personal portfolio
+> and cash-flow tracker. The seven flows below describe only the legacy public-dashboard interface
+> that remains in the checkout until the portfolio workflow is designed and implemented. Do not
+> extend those flows as the target product.
+
 > **Canonical flows: seven distinct user goals. Active flow: scan the Home market overview, then inspect its market context.** The 2026-08-11 audit verifies the complete-outage path across the current interface and the theme outcome on phone; source-backed success states remain covered by deterministic rendering tests, not this static preview.
 
 **Registry status:** Audited 2026-08-11. The minimal Home redesign preserves all seven user goals; it changes the first flow's surface from a broad dashboard briefing to a compact market overview. Deployed and source-backed browser confirmation remain release gates.

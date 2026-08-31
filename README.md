@@ -1,10 +1,17 @@
 # Mercury
 
-Mercury is a live global economy dashboard that makes the current state of the world economy easy to understand.
+Mercury is pivoting into a private personal portfolio and cash-flow tracker. The non-visual
+portfolio domain layer is in place; the existing global-economy pages remain legacy interface code
+until the portfolio experience is designed and implemented.
 
-Tagline direction: The global economy at a glance.
+## Portfolio foundation
 
-## Product Status
+`portfolio.js` validates assets, their explicit valuation basis, allocation, planning rates,
+distribution policies, and portfolio calculations. It is not yet connected to a user interface,
+persistence layer, CSV importer, or price provider. See
+[`docs/personal-finance-pivot.md`](docs/personal-finance-pivot.md).
+
+## Legacy interface status
 
 Mercury has a source-backed dashboard baseline. The page loads market pulse, economic health,
 risk, and regional growth from public data routes when `/api/live-snapshot` is available. If the
@@ -82,6 +89,8 @@ Current files:
 - `styles.css` - Acadia-aligned Mercury adapter plus economic dashboard styling
 - `theme.js` - system-first light/dark theme preference and browser chrome sync for the static pages
 - `app.js` - live snapshot loading, fallback states, and dashboard rendering
+- `portfolio.js` - UI-independent portfolio data validation and calculations
+- `tests/portfolio.test.js` - portfolio calculation and integrity regression coverage
 - `assets/favicon.svg` - vector money-bill-wave favicon/app icon with theme-aware gradient background
 - `site.webmanifest` - browser app manifest pointing to the SVG icon
 - `api/live-snapshot.js` - Vercel Serverless Function for public Yahoo Finance, FRED, and World Bank releases
@@ -106,13 +115,10 @@ Expected future variables may include API keys for market or economic data provi
 
 Mercury can deploy as a static site on Vercel. Push to `main` to update the production deployment.
 
-Recommended next deployment path:
-
-1. Deploy the live snapshot route and confirm cache behavior in production.
-2. Add automated regression coverage for stale, missing, delayed, and unavailable data.
-3. Review market-data licensing before relying on any provider for a public production launch.
-4. Review `docs/reliability-review.md` before changing the source boundary or release configuration.
+Do not deploy a personal-data experience until storage, authentication or local-only operation,
+backup, export, and recovery expectations have been decided.
 
 ## Important Boundary
 
-Mercury is informational. It should help users understand economic conditions, not tell them what to buy, sell, hold, or trade.
+Mercury records and explains the owner's portfolio; it does not tell them what to buy, sell, hold,
+or trade.
