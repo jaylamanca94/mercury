@@ -84,19 +84,6 @@
     ["#add-asset", "#refresh-quotes", "#refresh-history", "#export-data"].forEach((selector) => {
       $(selector).disabled = disabled;
     });
-    $("#account-filter").disabled = disabled;
-  }
-
-  function renderAccountFilter() {
-    const filter = $("#account-filter");
-    const accounts = state.accounts.length ? state.accounts : [{ id: "unconfigured", name: "Brokerage" }];
-    filter.replaceChildren(...accounts.map((account) => {
-      const option = document.createElement("option");
-      option.value = account.id;
-      option.textContent = account.name;
-      option.selected = account.id === state.account?.id;
-      return option;
-    }));
   }
 
   function renderHistory() {
@@ -246,7 +233,6 @@
   }
 
   function render() {
-    renderAccountFilter();
     setControlsDisabled(!state.configured);
     const summary = portfolio();
     if (routeAssetId()) renderAsset();
@@ -622,13 +608,6 @@
   $("#asset-symbol").addEventListener("input", scheduleQuote);
   $("#asset-shares").addEventListener("input", scheduleQuote);
   $("#holding-search").addEventListener("input", render);
-  $("#account-filter").addEventListener("change", async (event) => {
-    const account = state.accounts.find((entry) => entry.id === event.target.value);
-    if (account && state.client) {
-      state.account = account;
-      await loadData();
-    }
-  });
   $("#refresh-quotes").addEventListener("click", refreshPrices);
   $("#refresh-history").addEventListener("click", refreshHistory);
   $("#export-data").addEventListener("click", exportData);

@@ -24,7 +24,7 @@ test("Home retains the Acadia navigation, dashboard, and private brokerage bound
   assert.match(indexHtml, /class="acadia-dashboard-layout"/);
   assert.match(indexHtml, /Portfolio value/);
   assert.match(indexHtml, /Annual distributions/);
-  assert.match(indexHtml, /id="account-filter"/);
+  assert.doesNotMatch(indexHtml, /id="account-filter"/);
   assert.match(indexHtml, /aria-disabled="true"[^>]*>Plan/);
   assert.match(indexHtml, /assets\/mercury-mark\.svg/);
 });

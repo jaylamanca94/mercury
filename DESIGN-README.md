@@ -9,7 +9,7 @@ Use this file as the visual and interaction source of truth for Mercury. Keep th
 - Figma establishes Home's content hierarchy: navigation, dashboard header, authentic history, two summary cards, and four largest-holding cards. Acadia establishes every rendered visual treatment and responsive rule.
 - Consume canonical `acadia.css` and its font assets unchanged. Do not create local visual tokens, component rules, chart styles, layout rules, or responsive overrides in Mercury.
 - Use Acadia Responsive Navbar, Page Header, Form/Search, Dashboard, Content Card, Card Trend, Status Row, Badge, Action Menu, Dialog, and Button contracts directly.
-- Home keeps only Brokerage in the Account filter until another real owner account exists. Do not show pretend account data or call Brokerage-only value "net worth".
+- Home presents the sole Brokerage account directly. Do not show pretend account data or call Brokerage-only value "net worth".
 - The trend renders only persisted daily snapshots. It uses the Acadia Card Trend presentation with a textual alternative; absent history uses Acadia's explicit empty state.
 - The quick Add asset dialog is limited to Symbol and Shares. Advanced details and manual valuation recovery remain hidden until genuinely required.
 - Asset detail uses the Figma hierarchy of Back, asset identity, summary metrics, investment profile, and a primary Details form. Its advanced fields live in Acadia Accordion disclosure; do not create a Mercury-specific details panel.
