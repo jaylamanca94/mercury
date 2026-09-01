@@ -30,10 +30,15 @@ test("Home follows the Figma composition with a focused Brokerage dashboard", ()
   assert.match(indexHtml, /id="holding-filters"/);
   assert.match(indexHtml, /id="performance-periods"/);
   assert.match(indexHtml, /id="holdings-count"/);
+  assert.match(indexHtml, /id="target-status"/);
+  assert.match(indexHtml, /Portfolio targets/);
   assert.doesNotMatch(indexHtml, /id="account-filter"/);
   assert.doesNotMatch(indexHtml, /Brokerage actions|Private workspace|refresh-quotes|refresh-history|export-data/);
-  assert.doesNotMatch(indexHtml, /Net worth|Section Header|data-holding-filter="brokerage"|data-holding-filter="retirement"/);
+  assert.doesNotMatch(indexHtml, /Net worth|Section Header|data-holding-filter="brokerage"|data-holding-filter="retirement"|>Explore<|>History<|>Profile</);
   assert.match(indexHtml, /aria-disabled="true"[^>]*>Plan/);
+  assert.match(indexHtml, /aria-disabled="true"[^>]*>Income/);
+  assert.match(indexHtml, /data-nav-page="portfolio"/);
+  assert.match(indexHtml, /--acadia-mobile-tab-count: 4/);
   assert.match(indexHtml, /assets\/mercury-mark\.svg/);
 });
 
@@ -49,6 +54,9 @@ test("Home uses genuine performance history, dynamic investment controls, and Ac
   assert.match(homeSource, /summarizePerformance/);
   assert.match(homeSource, /data-performance-period/);
   assert.match(homeSource, /control\.disabled = !hasHistory/);
+  assert.match(homeSource, /TARGET_ALLOCATION_TOLERANCE = 0\.02/);
+  assert.match(homeSource, /summarizeAllocationTargets/);
+  assert.match(homeSource, /renderTargetStatus/);
   assert.doesNotMatch(homeSource, /S&P 500/);
   assert.match(homeSource, /Recently updated/);
   assert.match(homeSource, /Last successful quote remains in place/);
@@ -86,6 +94,11 @@ test("Home never falls back to fabricated assets and the Asset page is route-bas
   assert.doesNotMatch(homeSource, /sampleHoldings|sampleQuotes|sampleSnapshots|showPreview|Sample workspace/);
   assert.match(homeSource, /routeAssetId/);
   assert.match(homeSource, /navigateToAsset/);
+  assert.match(homeSource, /routePortfolio/);
+  assert.match(homeSource, /renderPortfolio/);
+  assert.match(homeSource, /setActiveNavigation\("portfolio"\)/);
+  assert.match(indexHtml, /id="portfolio-workspace" hidden/);
+  assert.match(indexHtml, /Holdings remain on Home for now/);
   assert.match(indexHtml, /id="asset-workspace" hidden/);
   assert.match(indexHtml, /id="asset-back"/);
   assert.match(indexHtml, /id="asset-detail-form"/);

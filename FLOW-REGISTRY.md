@@ -1,6 +1,6 @@
 # Mercury Flow Registry
 
-> **Canonical active flow: sign in privately, add or update a Brokerage holding, then understand it from Home.**
+> **Canonical active flow: sign in privately, use Home for a calm Brokerage briefing and holding workflow, then open a holding for its details.**
 
 **Last reviewed:** 2026-09-01
 
@@ -10,7 +10,8 @@
 | Add a holding | Implemented. | Home → Add asset → symbol + shares → automatic quote → save → Asset page; use manual valuation only after an unavailable quote. | Valid; invalid; automatic quote; manual price/value fallback; saving; saved; error. | Portfolio validation, quote-adapter and browser form checks. |
 | Retrieve or refresh an automatic quote | Implemented; requires Twelve Data configuration. | Symbol and shares → look up quote → price, prior close, value and freshness update. | Fresh; provider unavailable; unsupported; retained last quote; manual fallback. | Quote-adapter tests for mutual-fund/ETF/crypto symbol mapping and failed provider data. |
 | Edit an asset | Implemented. | Home holding card or action menu → hash-routed Asset page → save details or return Home. | Loading; not found; manual valuation; primary fields; More details disclosure; saving; saved; error. | Route, asset-form, portfolio validation and browser checks. |
-| Understand current Brokerage position | Implemented. | Home → scan value, annual dividends and their yield, select an authentic Performance period, then search, filter, sort, or open the first four matching investments. | Empty; private loaded; period unavailable until two snapshots; search/filter no-match; allocation warning. | Home structure, Acadia boundary and calculation tests. |
+| Understand current Brokerage position | Implemented. | Home → scan value, annual dividends and their yield, authentic Performance period, target coverage/attention, then search, filter, sort, or open the first four matching investments. | Empty; private loaded; period unavailable until two snapshots; search/filter no-match; incomplete targets; allocation attention; all clear. | Home structure, Acadia boundary and calculation tests. |
+| Open the Portfolio workspace | Transitional shell. | Navigation → Portfolio → understand that dedicated holdings management is forthcoming → return Home for the active workflow. | Direct link; browser Back/Forward; return Home. | Route and responsive-navigation rendering checks. |
 | Build daily value history | Implemented; requires configured snapshot service. | Scheduled close → one daily account snapshot → history line after the second day. | No snapshots; one snapshot; two or more; schedule before close; idempotent daily upsert; failure. | New York date, market-close gate and latest-quote valuation tests. |
 | Export private Brokerage data | Protected boundary retained; not exposed on Home. | A future private recovery surface may offer an owner-only JSON copy of holdings, quotes and snapshots. | Signed-in owner export. | Client export contract; RLS database acceptance required after migration. |
 
@@ -24,4 +25,4 @@
 
 ## Deferred flows
 
-Net Worth, retirement accounts, Property, Income, Records, imports, brokerage connections, and projections are intentionally not active flows. Projection is last; numbers have enough confidence already.
+The dedicated Portfolio workspace, Preferences/data safeguards, Plan, Income, Net Worth, retirement accounts, Property, Records, imports, brokerage connections, and projections are intentionally not active flows. Projection is last; numbers have enough confidence already.

@@ -11,6 +11,7 @@ const {
   calculateAsset,
   normalizeAsset,
   performanceSnapshots,
+  summarizeAllocationTargets,
   summarizePortfolio,
   summarizePerformance,
 } = require("../portfolio");
@@ -170,6 +171,43 @@ test("an empty portfolio has no invented allocations or day baseline", () => {
     "Some assets do not have a target allocation.",
     "Some assets do not have a weekly contribution allocation.",
   ]);
+});
+
+test("target status uses only valued holdings and flags a two-point allocation variance", () => {
+  const summary = summarizePortfolio([
+    { ...baseAsset, targetAllocationRate: 0.5, weeklyContributionRate: 0.5 },
+    {
+      id: "cash",
+      name: "Cash reserve",
+      assetType: "Cash",
+      valuationBasis: VALUATION_BASES.MANUAL_VALUE,
+      manualValueCents: 100_000,
+      targetAllocationRate: null,
+      weeklyContributionRate: 0.5,
+    },
+  ]);
+  const targetStatus = summarizeAllocationTargets(summary.rows, 0.02);
+
+  assert.equal(targetStatus.valuedCount, 2);
+  assert.equal(targetStatus.configuredCount, 1);
+  assert.equal(targetStatus.attentionCount, 1);
+  assert.equal(targetStatus.complete, false);
+  assert.equal(targetStatus.allClear, false);
+});
+
+test("complete targets within two points produce an all-clear status", () => {
+  const rows = [
+    { marketValueCents: 60_000, allocationRate: 0.6, targetVarianceRate: 0.01, asset: { targetAllocationRate: 0.59 } },
+    { marketValueCents: 40_000, allocationRate: 0.4, targetVarianceRate: -0.01, asset: { targetAllocationRate: 0.41 } },
+  ];
+
+  assert.deepEqual(summarizeAllocationTargets(rows), {
+    valuedCount: 2,
+    configuredCount: 2,
+    attentionCount: 0,
+    complete: true,
+    allClear: true,
+  });
 });
 
 test("performance periods use only persisted daily snapshots and calculate an authentic range return", () => {

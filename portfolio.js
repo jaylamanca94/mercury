@@ -364,6 +364,31 @@ function summarizePortfolio(assets, { weeklyContributionCents = 0 } = {}) {
   };
 }
 
+function summarizeAllocationTargets(rows, toleranceRate = 0.02) {
+  if (!Array.isArray(rows)) throw new PortfolioValidationError("rows must be an array");
+  if (!Number.isFinite(toleranceRate) || toleranceRate < 0) {
+    validationError("toleranceRate", "must be a non-negative decimal");
+  }
+
+  const valuedRows = rows.filter((row) => (
+    Number.isSafeInteger(row?.marketValueCents) && row.marketValueCents >= 0 && Number.isFinite(row.allocationRate)
+  ));
+  const configuredRows = valuedRows.filter((row) => Number.isFinite(row.asset?.targetAllocationRate));
+  const attentionRows = configuredRows.filter((row) => (
+    Number.isFinite(row.targetVarianceRate) && Math.abs(row.targetVarianceRate) >= toleranceRate
+  ));
+
+  return {
+    valuedCount: valuedRows.length,
+    configuredCount: configuredRows.length,
+    attentionCount: attentionRows.length,
+    complete: valuedRows.length > 0 && configuredRows.length === valuedRows.length,
+    allClear: valuedRows.length > 0
+      && configuredRows.length === valuedRows.length
+      && attentionRows.length === 0,
+  };
+}
+
 const portfolioContract = {
   ALLOCATION_CATEGORIES,
   CONTRIBUTION_FREQUENCIES,
@@ -376,6 +401,7 @@ const portfolioContract = {
   marketValueCents,
   normalizeAsset,
   performanceSnapshots,
+  summarizeAllocationTargets,
   summarizePortfolio,
   summarizePerformance,
 };

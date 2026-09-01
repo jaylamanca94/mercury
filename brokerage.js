@@ -1,7 +1,13 @@
 (() => {
   "use strict";
 
-  const { PERFORMANCE_PERIODS, VALUATION_BASES, summarizePerformance, summarizePortfolio } = window.MercuryPortfolio;
+  const {
+    PERFORMANCE_PERIODS,
+    VALUATION_BASES,
+    summarizeAllocationTargets,
+    summarizePerformance,
+    summarizePortfolio,
+  } = window.MercuryPortfolio;
   const $ = (selector) => document.querySelector(selector);
   const currency = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 });
   const compactCurrency = new Intl.NumberFormat("en-US", {
@@ -15,6 +21,7 @@
   });
   const preciseCurrency = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", minimumFractionDigits: 2, maximumFractionDigits: 2 });
   const percentage = new Intl.NumberFormat("en-US", { style: "percent", maximumFractionDigits: 2 });
+  const TARGET_ALLOCATION_TOLERANCE = 0.02;
   const state = {
     client: null, user: null, account: null, accounts: [], holdings: [], quotes: [], snapshots: [],
     configured: false, pendingQuote: null, quoteTimer: null, holdingFilter: "all", holdingSort: "value", performancePeriod: "all",
@@ -72,8 +79,17 @@
     const match = window.location.hash.match(/^#asset\/([^/]+)$/);
     return match ? decodeURIComponent(match[1]) : null;
   }
+  function routePortfolio() { return window.location.hash === "#portfolio"; }
   function navigateToAsset(id) { window.location.hash = `asset/${encodeURIComponent(id)}`; }
   function navigateHome() { window.location.hash = ""; }
+  function setActiveNavigation(page) {
+    document.querySelectorAll("[data-nav-page]").forEach((control) => {
+      const active = control.dataset.navPage === page;
+      control.classList.toggle("is-active", active);
+      if (active) control.setAttribute("aria-current", "page");
+      else control.removeAttribute("aria-current");
+    });
+  }
   function latestQuotes() {
     return state.quotes.reduce((memo, quote) => (
       !memo[quote.holding_id] || new Date(quote.as_of) > new Date(memo[quote.holding_id].as_of)
@@ -159,6 +175,37 @@
     trend.setAttribute("aria-label", `Portfolio performance: ${summary}.`);
     setText("#history-summary", summary);
     return performance;
+  }
+
+  function renderTargetStatus(summary) {
+    const targetStatus = summarizeAllocationTargets(summary.rows, TARGET_ALLOCATION_TOLERANCE);
+    const status = $("#target-status");
+    const holdingNoun = (count) => count === 1 ? "holding" : "holdings";
+    let variant = "info";
+    let icon = "fa-circle-info";
+    let title = "Targets not set";
+    let copy = "Target coverage appears once a valued holding has an allocation target.";
+
+    if (targetStatus.valuedCount > 0) {
+      const coverage = `${targetStatus.configuredCount} of ${targetStatus.valuedCount} valued ${holdingNoun(targetStatus.valuedCount)} have allocation targets.`;
+      if (targetStatus.allClear) {
+        variant = "success";
+        icon = "fa-circle-check";
+        title = "Allocation targets on track";
+        copy = `All configured targets are within 2 percentage points. ${coverage}`;
+      } else if (targetStatus.attentionCount > 0) {
+        variant = "warning";
+        icon = "fa-triangle-exclamation";
+        title = "Allocation needs attention";
+        copy = `${coverage} ${targetStatus.attentionCount} configured ${holdingNoun(targetStatus.attentionCount)} ${targetStatus.attentionCount === 1 ? "is" : "are"} at least 2 percentage points from target.`;
+      } else {
+        title = "Target coverage incomplete";
+        copy = coverage;
+      }
+    }
+
+    status.className = `acadia-status-row is-${variant}`;
+    status.innerHTML = `<span class="acadia-status-icon" aria-hidden="true"><i class="fa-solid ${icon} acadia-icon"></i></span><div><strong>${title}</strong><p>${copy}</p></div>`;
   }
 
   function instrumentLabel(value) {
@@ -267,7 +314,9 @@
 
   function renderHome(summary) {
     $("#home-workspace").hidden = false;
+    $("#portfolio-workspace").hidden = true;
     $("#asset-workspace").hidden = true;
+    setActiveNavigation("home");
     setText("#metric-value", displayCurrency(summary.totalMarketValueCents / 100));
     setText("#metric-income", displayCurrency(summary.totalEstimatedAnnualIncomeCents / 100));
     const performance = renderHistory();
@@ -277,7 +326,15 @@
       : summary.totalEstimatedAnnualIncomeCents / summary.totalMarketValueCents;
     setDelta("#metric-income-yield", dividendYield, percentage.format.bind(percentage));
     setText("#portfolio-warnings", state.holdings.length ? summary.warnings.join(" ") : "");
+    renderTargetStatus(summary);
     renderHoldings(summary);
+  }
+
+  function renderPortfolio() {
+    $("#home-workspace").hidden = true;
+    $("#portfolio-workspace").hidden = false;
+    $("#asset-workspace").hidden = true;
+    setActiveNavigation("portfolio");
   }
 
   function setDetailFormDisabled(disabled) {
@@ -297,7 +354,9 @@
     const holding = state.holdings.find((entry) => entry.id === id);
     const summary = portfolio();
     $("#home-workspace").hidden = true;
+    $("#portfolio-workspace").hidden = true;
     $("#asset-workspace").hidden = false;
+    setActiveNavigation("portfolio");
     $("#asset-not-found").hidden = Boolean(holding);
     $("#asset-quote-card").hidden = !holding;
     $("#asset-content > .acadia-dashboard-main").hidden = !holding;
@@ -357,6 +416,7 @@
     setControlsDisabled(!state.configured);
     const summary = portfolio();
     if (routeAssetId()) renderAsset();
+    else if (routePortfolio()) renderPortfolio();
     else renderHome(summary);
     $("#main-content").setAttribute("aria-busy", "false");
   }
@@ -698,6 +758,7 @@
     });
   });
   $("#asset-back").addEventListener("click", navigateHome);
+  $("#portfolio-return-home").addEventListener("click", navigateHome);
   $("#asset-cancel").addEventListener("click", renderAsset);
   $("#asset-detail-form").addEventListener("submit", saveAssetDetails);
   $("#asset-detail-valuation-basis").addEventListener("change", syncDetailValuationFields);
