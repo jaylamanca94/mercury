@@ -53,6 +53,7 @@ test("large currency display values use the shared compact format", () => {
   assert.match(homeSource, /function displayCurrency\(value\)/);
   assert.match(homeSource, /Math\.abs\(value\) >= 100000/);
   assert.match(homeSource, /compactCurrency\.format\(value\)/);
+  assert.match(homeSource, /millionCurrency\.format\(value\)/);
   assert.match(homeSource, /\[KMBT\]/);
   assert.match(homeSource, /setText\("#metric-value", displayCurrency/);
   assert.match(homeSource, /valueBadge\(valueCents\)[\s\S]*displayCurrency/);

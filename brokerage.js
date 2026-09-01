@@ -7,6 +7,9 @@
   const compactCurrency = new Intl.NumberFormat("en-US", {
     style: "currency", currency: "USD", notation: "compact", maximumFractionDigits: 0,
   });
+  const millionCurrency = new Intl.NumberFormat("en-US", {
+    style: "currency", currency: "USD", notation: "compact", maximumFractionDigits: 1,
+  });
   const preciseCurrency = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", minimumFractionDigits: 2, maximumFractionDigits: 2 });
   const percentage = new Intl.NumberFormat("en-US", { style: "percent", maximumFractionDigits: 2 });
   const state = {
@@ -23,7 +26,11 @@
   function setText(selector, value) { $(selector).textContent = value; }
   function displayCurrency(value) {
     if (!Number.isFinite(value)) return "—";
-    const formatted = Math.abs(value) >= 100000 ? compactCurrency.format(value) : currency.format(value);
+    const formatted = Math.abs(value) >= 1000000
+      ? millionCurrency.format(value)
+      : Math.abs(value) >= 100000
+        ? compactCurrency.format(value)
+        : currency.format(value);
     return formatted.replace(/[KMBT]/g, (suffix) => suffix.toLowerCase());
   }
   function escapeHtml(value) {
