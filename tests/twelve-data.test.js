@@ -2,8 +2,10 @@ const assert = require("node:assert/strict");
 const test = require("node:test");
 const { _internals, getQuote } = require("../api/lib/twelve-data");
 
-test("normalises a crypto ticker to the provider's USD pair without changing fund symbols", () => {
+test("normalises known crypto tickers to the provider's USD pair without changing fund symbols", () => {
   assert.equal(_internals.normaliseSymbol("btc", "crypto"), "BTC/USD");
+  assert.equal(_internals.normaliseSymbol("btc", "other"), "BTC/USD");
+  assert.equal(_internals.normaliseSymbol("BTC-USD", "other"), "BTC/USD");
   assert.equal(_internals.normaliseSymbol("VFIAX", "mutual-fund"), "VFIAX");
 });
 
@@ -16,7 +18,7 @@ test("rejects provider responses that would create a fabricated price", () => {
   assert.throws(() => _internals.mapQuote({ status: "error", message: "Unknown symbol" }, "NOPE"), /Unknown symbol/);
 });
 
-test("quick-add quote lookup recognises a USD crypto pair after an unknown generic symbol", async () => {
+test("quick-add quote lookup sends BTC directly to the provider's USD pair", async () => {
   const originalFetch = global.fetch;
   const originalKey = process.env.TWELVE_DATA_API_KEY;
   const requestedSymbols = [];
@@ -29,7 +31,7 @@ test("quick-add quote lookup recognises a USD crypto pair after an unknown gener
 
   try {
     const quote = await getQuote({ symbol: "btc", instrumentType: "other" });
-    assert.deepEqual(requestedSymbols, ["BTC", "BTC/USD"]);
+    assert.deepEqual(requestedSymbols, ["BTC/USD"]);
     assert.equal(quote.symbol, "BTC/USD");
     assert.equal(quote.instrumentType, "crypto");
   } finally {

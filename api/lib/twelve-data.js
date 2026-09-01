@@ -1,10 +1,15 @@
 const QUOTE_CACHE_TTL_MS = 5 * 60 * 1000;
 const quoteCache = new Map();
+const CRYPTO_TICKERS = new Set(["BTC", "ETH", "SOL", "LINK", "AVAX", "SHIB", "ETC"]);
+
+function isCryptoSymbol(value, instrumentType) {
+  return instrumentType === "crypto" || value.includes("/") || CRYPTO_TICKERS.has(value);
+}
 
 function normaliseSymbol(symbol, instrumentType) {
-  const value = String(symbol || "").trim().toUpperCase();
+  const value = String(symbol || "").trim().toUpperCase().replace(/-USD$/, "/USD");
   if (!value) throw new Error("A symbol is required.");
-  if (instrumentType === "crypto" && !value.includes("/")) return `${value}/USD`;
+  if (isCryptoSymbol(value, instrumentType) && !value.includes("/")) return `${value}/USD`;
   return value;
 }
 
@@ -30,7 +35,8 @@ function mapQuote(payload, symbol) {
 
 async function getQuote({ symbol, instrumentType }) {
   const normalisedSymbol = normaliseSymbol(symbol, instrumentType);
-  const cacheKey = `${instrumentType || "other"}:${normalisedSymbol}`;
+  const resolvedInstrumentType = isCryptoSymbol(normalisedSymbol, instrumentType) ? "crypto" : instrumentType || "other";
+  const cacheKey = `${resolvedInstrumentType}:${normalisedSymbol}`;
   const cached = quoteCache.get(cacheKey);
   if (cached && Date.now() - cached.savedAt < QUOTE_CACHE_TTL_MS) return cached.value;
   if (!process.env.TWELVE_DATA_API_KEY) throw new Error("Quotes are not configured yet.");
@@ -45,7 +51,7 @@ async function getQuote({ symbol, instrumentType }) {
   }
 
   try {
-    const value = { ...await fetchQuote(normalisedSymbol), instrumentType: instrumentType || "other" };
+    const value = { ...await fetchQuote(normalisedSymbol), instrumentType: resolvedInstrumentType };
     quoteCache.set(cacheKey, { value, savedAt: Date.now() });
     return value;
   } catch (error) {
@@ -58,4 +64,4 @@ async function getQuote({ symbol, instrumentType }) {
   }
 }
 
-module.exports = { QUOTE_CACHE_TTL_MS, _internals: { dollarsToCents, mapQuote, normaliseSymbol }, getQuote };
+module.exports = { QUOTE_CACHE_TTL_MS, _internals: { dollarsToCents, isCryptoSymbol, mapQuote, normaliseSymbol }, getQuote };
