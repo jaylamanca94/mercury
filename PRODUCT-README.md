@@ -8,7 +8,7 @@ Mercury is a private personal finance workspace. Its first shipped product surfa
 
 - Email magic-link sign-in for one private owner, backed by Supabase Postgres and row-level security.
 - One reusable `Brokerage` account, in USD, ready for future account aggregation without exposing other modules yet.
-- Home is the active dashboard: portfolio value, annual distributions, authentic daily history, and the four largest holdings. The only account currently available is Brokerage.
+- Home follows the Figma dashboard composition with portfolio value, annual distributions, authentic performance history, and the first four matching holdings. Investments can be searched, sorted by value/name/recent update, and filtered by instrument types that actually exist in the Brokerage account.
 - The Add asset dialog asks only for symbol and shares. Automatic lookup runs once both are valid; unavailable quotes reveal a manual price or authoritative total-value fallback. A saved asset opens its dedicated detail page, where shares, dollar contribution/cadence, policies, classification, planning, allocation, and yield fields can be maintained.
 - Forms support mutual funds, ETFs, stocks, crypto, cash, and other assets.
 - Automatic Twelve Data quotes for eligible symbols, with quote source, as-of time, prior close, short server-side caching, retained last successful quote, and an explicit manual price or total-value fallback.

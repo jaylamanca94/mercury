@@ -8,7 +8,7 @@
 
 | Signal | Current status |
 | --- | --- |
-| Active surface | Home dashboard and hash-routed Asset page backed by the Brokerage account; legacy public-market navigation is removed from the entry point. |
+| Active surface | Figma-composed Home dashboard and hash-routed Asset page backed by the Brokerage account; Home offers truthful value/income/performance cards plus dynamic investment controls. |
 | Data states | Honest empty/configuration-unavailable, signed-out, automatic quote, unavailable/manual fallback, and the two-snapshot history threshold are present. |
 | Visual language | Canonical Acadia only: responsive navigation, content cards, metrics, forms, dialogs, badges, status rows, and trend treatment. |
 | Responsive behaviour | Acadia collapses the dashboard and card grids to one clear reading order on phone widths. |

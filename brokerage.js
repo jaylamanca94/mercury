@@ -8,7 +8,7 @@
   const percentage = new Intl.NumberFormat("en-US", { style: "percent", maximumFractionDigits: 2 });
   const state = {
     client: null, user: null, account: null, accounts: [], holdings: [], quotes: [], snapshots: [],
-    configured: false, pendingQuote: null, quoteTimer: null,
+    configured: false, pendingQuote: null, quoteTimer: null, holdingFilter: "all", holdingSort: "value",
   };
 
   function cents(value) {
@@ -89,8 +89,8 @@
     const snapshots = [...state.snapshots].sort((left, right) => left.snapshot_date.localeCompare(right.snapshot_date));
     if (snapshots.length < 2) {
       trend.innerHTML = '<span class="acadia-card-trend-empty">History appears after two New York daily snapshots.</span>';
-      trend.setAttribute("aria-label", "Portfolio value history unavailable until two daily snapshots exist");
-      setText("#history-summary", "A history trend appears after two New York daily snapshots.");
+      trend.setAttribute("aria-label", "Portfolio performance unavailable until two daily snapshots exist");
+      setText("#history-summary", "A performance trend appears after two New York daily snapshots.");
       return;
     }
     const values = snapshots.map((snapshot) => snapshot.total_value_cents / 100);
@@ -101,10 +101,65 @@
     const area = `0,100 ${points.join(" ")} 100,100`;
     trend.innerHTML = `<svg class="acadia-card-trend-chart is-primary" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><polygon class="acadia-card-trend-area" points="${area}"></polygon><polyline class="acadia-card-trend-line" points="${points.join(" ")}"></polyline></svg>`;
     const summary = `${dateLabel(snapshots[0].snapshot_date)} ${currency.format(values[0])} to ${dateLabel(snapshots.at(-1).snapshot_date)} ${currency.format(values.at(-1))}`;
-    trend.setAttribute("aria-label", `Portfolio value history: ${summary}.`);
+    trend.setAttribute("aria-label", `Portfolio performance: ${summary}.`);
     setText("#history-summary", summary);
   }
 
+  function instrumentLabel(value) {
+    return value.replaceAll("-", " ").replace(/\b\w/g, (letter) => letter.toUpperCase());
+  }
+  function holdingFilters() {
+    return [...new Set(state.holdings.map((holding) => holding.instrument_type).filter(Boolean))]
+      .sort((left, right) => instrumentLabel(left).localeCompare(instrumentLabel(right)));
+  }
+  function renderHoldingFilters() {
+    const filters = holdingFilters();
+    if (state.holdingFilter !== "all" && !filters.includes(state.holdingFilter)) state.holdingFilter = "all";
+    const controls = $("#holding-filters");
+    controls.replaceChildren(...["all", ...filters].map((filter) => {
+      const control = document.createElement("button");
+      control.type = "button";
+      control.className = "acadia-badge acadia-badge-grey acadia-badge-round acadia-page-header-pattern-filter";
+      control.dataset.holdingFilter = filter;
+      control.setAttribute("aria-pressed", String(state.holdingFilter === filter));
+      control.textContent = filter === "all" ? "All" : instrumentLabel(filter);
+      control.addEventListener("click", () => {
+        state.holdingFilter = filter;
+        render();
+      });
+      return control;
+    }));
+  }
+  function matchingHoldingRows(summary) {
+    const search = $("#holding-search").value.trim().toLowerCase();
+    return summary.rows.filter((row) => {
+      const matchesFilter = state.holdingFilter === "all" || row.asset.instrumentType === state.holdingFilter;
+      const matchesSearch = `${row.asset.symbol || ""} ${row.asset.name || ""} ${row.asset.instrumentType}`.toLowerCase().includes(search);
+      return matchesFilter && matchesSearch;
+    });
+  }
+  function sortHoldingRows(rows) {
+    return [...rows].sort((left, right) => {
+      if (state.holdingSort === "name") {
+        const leftName = left.asset.symbol || left.asset.name || left.asset.instrumentType;
+        const rightName = right.asset.symbol || right.asset.name || right.asset.instrumentType;
+        return leftName.localeCompare(rightName);
+      }
+      if (state.holdingSort === "updated") {
+        const leftHolding = state.holdings.find((holding) => holding.id === left.asset.id);
+        const rightHolding = state.holdings.find((holding) => holding.id === right.asset.id);
+        return new Date(rightHolding?.updated_at || rightHolding?.created_at || 0) - new Date(leftHolding?.updated_at || leftHolding?.created_at || 0);
+      }
+      return right.marketValueCents - left.marketValueCents;
+    });
+  }
+  function renderHoldingSort() {
+    const labels = { value: "Value", name: "Name", updated: "Recently updated" };
+    setText("#holding-sort-label", labels[state.holdingSort]);
+    document.querySelectorAll("[data-holding-sort]").forEach((control) => {
+      control.setAttribute("aria-checked", String(control.dataset.holdingSort === state.holdingSort));
+    });
+  }
   function openHoldingFromEvent(event) {
     const card = event.currentTarget;
     if (event.target.closest("button, summary, a, input, select")) return;
@@ -117,11 +172,10 @@
     }
   }
   function renderHoldings(summary) {
-    const search = $("#holding-search").value.trim().toLowerCase();
-    const rows = summary.rows
-      .filter((row) => `${row.asset.symbol || ""} ${row.asset.name || ""} ${row.asset.instrumentType}`.toLowerCase().includes(search))
-      .sort((left, right) => right.marketValueCents - left.marketValueCents)
-      .slice(0, 4);
+    renderHoldingFilters();
+    renderHoldingSort();
+    const matchingRows = matchingHoldingRows(summary);
+    const rows = sortHoldingRows(matchingRows).slice(0, 4);
     const grid = $("#holdings-grid");
     grid.replaceChildren(...rows.map((row) => {
       const holding = state.holdings.find((entry) => entry.id === row.asset.id);
@@ -141,7 +195,15 @@
       card.addEventListener("keydown", keyOpenHolding);
       return card;
     }));
+    setText("#holdings-count", `${matchingRows.length} ${matchingRows.length === 1 ? "asset" : "assets"}`);
     $("#holdings-empty").hidden = rows.length > 0;
+    if (!rows.length) {
+      const hasAssets = state.holdings.length > 0;
+      setText("#holdings-empty-title", hasAssets ? "No matching assets" : "No assets yet");
+      setText("#holdings-empty-copy", hasAssets
+        ? "Adjust your search or filter to see a different investment."
+        : "Add an asset to begin your private Brokerage workspace.");
+    }
     document.querySelectorAll("[data-edit-id]").forEach((button) => {
       button.addEventListener("click", () => navigateToAsset(button.dataset.editId));
     });
@@ -560,6 +622,13 @@
   $("#asset-symbol").addEventListener("input", scheduleQuote);
   $("#asset-shares").addEventListener("input", scheduleQuote);
   $("#holding-search").addEventListener("input", render);
+  document.querySelectorAll("[data-holding-sort]").forEach((control) => {
+    control.addEventListener("click", () => {
+      state.holdingSort = control.dataset.holdingSort;
+      $("#holding-sort").open = false;
+      render();
+    });
+  });
   $("#asset-back").addEventListener("click", navigateHome);
   $("#asset-cancel").addEventListener("click", renderAsset);
   $("#asset-detail-form").addEventListener("submit", saveAssetDetails);
