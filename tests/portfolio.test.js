@@ -4,6 +4,7 @@ const test = require("node:test");
 const {
   PortfolioValidationError,
   ALLOCATION_CATEGORIES,
+  CONTRIBUTION_FREQUENCIES,
   INSTRUMENT_TYPES,
   VALUATION_BASES,
   calculateAsset,
@@ -83,6 +84,23 @@ test("a custom dividend or capital-gains policy requires its instruction", () =>
   assert.throws(
     () => normalizeAsset({ ...baseAsset, dividendPolicy: "custom" }),
     /customPolicyNote is required/,
+  );
+});
+
+test("an asset keeps a dollar contribution distinct from weekly allocation", () => {
+  const asset = normalizeAsset({
+    ...baseAsset,
+    contributionCents: 10_000,
+    contributionFrequency: "monthly",
+  });
+
+  assert.equal(asset.contributionCents, 10_000);
+  assert.equal(asset.contributionFrequency, "monthly");
+  assert.equal(asset.weeklyContributionRate, 0.6);
+  assert.equal(CONTRIBUTION_FREQUENCIES.includes("weekly"), true);
+  assert.throws(
+    () => normalizeAsset({ ...baseAsset, contributionCents: 10_000 }),
+    /contributionFrequency is required/,
   );
 });
 

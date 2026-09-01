@@ -12,6 +12,8 @@ Use this file as the visual and interaction source of truth for Mercury. Keep th
 - Home keeps only Brokerage in the Account filter until another real owner account exists. Do not show pretend account data or call Brokerage-only value "net worth".
 - The trend renders only persisted daily snapshots. It uses the Acadia Card Trend presentation with a textual alternative; absent history uses Acadia's explicit empty state.
 - The quick Add asset dialog is limited to Symbol and Shares. Advanced details and manual valuation recovery remain hidden until genuinely required.
+- Asset detail uses the Figma hierarchy of Back, asset identity, summary metrics, investment profile, and a primary Details form. Its advanced fields live in Acadia Accordion disclosure; do not create a Mercury-specific details panel.
+- Home has no sample-data state. A missing private configuration presents an empty disabled workspace; any displayed holding, quote, or history point must be persisted owner data.
 
 ## Brokerage MVP visual contract
 
@@ -20,7 +22,7 @@ Use this file as the visual and interaction source of truth for Mercury. Keep th
 - Use 44px form controls, visible focus, compact labels, a native dialog, and direct validation copy. Price lookup, manual price, and manual total value must remain distinguishable in the UI.
 - Chart.js canvases are paired with accessible textual summaries. A history chart remains absent until two real daily points exist; do not draw or simulate history to fill space.
 - The desktop table preserves spreadsheet density with horizontal overflow rather than hiding financial fields. The phone layout stacks overview and charts while retaining the table as a deliberate scroll surface.
-- Samples are labelled as not synced. No visual treatment may make sample values, last-known quotes, manual values, or live provider quotes look interchangeable.
+- No visual treatment may make last-known quotes, manual values, or live provider quotes look interchangeable.
 
 This file is intentionally separate because design standards, chart language, and reusable dashboard utilities will grow over time.
 

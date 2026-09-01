@@ -31,6 +31,8 @@ const ALLOCATION_CATEGORIES = Object.freeze([
   "other",
 ]);
 
+const CONTRIBUTION_FREQUENCIES = Object.freeze(["weekly", "monthly"]);
+
 class PortfolioValidationError extends Error {
   constructor(message) {
     super(message);
@@ -145,6 +147,10 @@ function normalizeAsset(input) {
     distributionYieldRate: optionalRate(input.distributionYieldRate, "distributionYieldRate"),
     targetAllocationRate: optionalRate(input.targetAllocationRate, "targetAllocationRate"),
     weeklyContributionRate: optionalRate(input.weeklyContributionRate, "weeklyContributionRate"),
+    contributionCents: optionalMoney(input.contributionCents, "contributionCents"),
+    contributionFrequency: input.contributionFrequency === undefined || input.contributionFrequency === null || input.contributionFrequency === ""
+      ? null
+      : normalizeChoice(input.contributionFrequency, "contributionFrequency", CONTRIBUTION_FREQUENCIES, null),
     dividendPolicy: normalizePolicy(input.dividendPolicy, "dividendPolicy"),
     capitalGainsPolicy: normalizePolicy(input.capitalGainsPolicy, "capitalGainsPolicy"),
     customPolicyNote: optionalText(input.customPolicyNote, "customPolicyNote"),
@@ -173,6 +179,10 @@ function normalizeAsset(input) {
     !asset.customPolicyNote
   ) {
     validationError("customPolicyNote", "is required when a policy is custom");
+  }
+
+  if (asset.contributionCents !== null && asset.contributionFrequency === null) {
+    validationError("contributionFrequency", "is required when contributionCents is set");
   }
 
   if (asset.priorCloseCents !== null && asset.valuationBasis !== VALUATION_BASES.SHARES_AND_PRICE) {
@@ -304,6 +314,7 @@ function summarizePortfolio(assets, { weeklyContributionCents = 0 } = {}) {
 
 const portfolioContract = {
   ALLOCATION_CATEGORIES,
+  CONTRIBUTION_FREQUENCIES,
   DISTRIBUTION_POLICIES,
   INSTRUMENT_TYPES,
   PortfolioValidationError,

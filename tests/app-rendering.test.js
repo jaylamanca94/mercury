@@ -37,12 +37,31 @@ test("Home uses genuine snapshots, four holdings, and Acadia card actions", () =
   assert.match(homeSource, /Last successful provider values are retained/);
 });
 
-test("the quick add dialog keeps advanced fields and fallback recovery out of the initial path", () => {
+test("the quick add dialog keeps manual recovery out of the initial path", () => {
   assert.match(indexHtml, /id="asset-symbol"/);
   assert.match(indexHtml, /id="asset-shares"/);
   assert.match(indexHtml, /id="manual-fallback" hidden/);
-  assert.match(indexHtml, /id="asset-details" hidden/);
   assert.match(homeSource, /scheduleQuote/);
   assert.match(homeSource, /showManualFallback/);
   assert.match(homeSource, /Edit details/);
+});
+
+test("Home never falls back to fabricated assets and the Asset page is route-based", () => {
+  assert.doesNotMatch(homeSource, /sampleHoldings|sampleQuotes|sampleSnapshots|showPreview|Sample workspace/);
+  assert.match(homeSource, /routeAssetId/);
+  assert.match(homeSource, /navigateToAsset/);
+  assert.match(indexHtml, /id="asset-workspace" hidden/);
+  assert.match(indexHtml, /id="asset-back"/);
+  assert.match(indexHtml, /id="asset-detail-form"/);
+});
+
+test("the Asset page uses Acadia primary details and an advanced disclosure", () => {
+  assert.match(indexHtml, /id="asset-detail-contribution"/);
+  assert.match(indexHtml, /id="asset-detail-frequency"/);
+  assert.match(indexHtml, /id="asset-detail-dividend-policy"/);
+  assert.match(indexHtml, /id="asset-detail-gains-policy"/);
+  assert.match(indexHtml, /class="acadia-accordion-item"/);
+  assert.match(indexHtml, />More details</);
+  assert.match(homeSource, /contribution_cents/);
+  assert.match(homeSource, /contribution_frequency/);
 });

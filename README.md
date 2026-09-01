@@ -5,7 +5,7 @@ Mercury is a private personal-finance workspace. Home is the only active product
 ## Setup
 
 1. Create a Supabase project and enable email magic-link authentication.
-2. Apply [`supabase/migrations/20260830_brokerage_mvp.sql`](supabase/migrations/20260830_brokerage_mvp.sql).
+2. Apply [`supabase/migrations/20260830_brokerage_mvp.sql`](supabase/migrations/20260830_brokerage_mvp.sql) and [`supabase/migrations/20260901_asset_contribution.sql`](supabase/migrations/20260901_asset_contribution.sql).
 3. Configure these Vercel environment variables:
    - `SUPABASE_URL`
    - `SUPABASE_ANON_KEY`
@@ -14,7 +14,7 @@ Mercury is a private personal-finance workspace. Home is the only active product
    - `CRON_SECRET` (server only)
 4. Add the deployment and local-preview URLs to Supabase Auth redirect URLs.
 
-Without those values, the app deliberately opens a labelled sample workspace. It does not persist personal financial data locally.
+Without those values, Mercury shows an empty, disabled Brokerage workspace. It never persists personal financial data locally or substitutes placeholder holdings.
 
 ## Runtime model
 
@@ -32,11 +32,11 @@ No package installation is needed for the dependency-free checks.
 
 ## Key files
 
-- `index.html`, `brokerage.js` — the private Home dashboard and simplified asset-entry flow.
+- `index.html`, `brokerage.js` — the private Home dashboard, hash-routed Asset page, and simplified asset-entry flow.
 - `acadia.css`, `fonts/` — the canonical Acadia stylesheet and font assets, vendored unchanged; `styles.css` only imports this system asset.
 - `portfolio.js` — cent-based calculation and validation contract, also exposed to the browser.
 - `api/portfolio/` — protected quote and snapshot endpoints.
-- `supabase/migrations/20260830_brokerage_mvp.sql` — account, holding, quote, snapshot and RLS schema.
+- `supabase/migrations/` — account, holding, quote, snapshot, RLS, and per-asset contribution schema.
 - `supabase/README.md` — Supabase and environment setup.
 
 Mercury records and explains an owner’s portfolio; it does not offer investment advice, trading, or tax calculations.

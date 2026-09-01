@@ -7,6 +7,10 @@ const migration = fs.readFileSync(
   path.join(__dirname, "..", "supabase", "migrations", "20260830_brokerage_mvp.sql"),
   "utf8",
 );
+const contributionMigration = fs.readFileSync(
+  path.join(__dirname, "..", "supabase", "migrations", "20260901_asset_contribution.sql"),
+  "utf8",
+);
 
 test("the Brokerage schema keeps valuation bases explicit and supports the requested instruments", () => {
   assert.match(migration, /instrument_type in \('mutual-fund', 'etf', 'stock', 'crypto', 'cash', 'other'\)/);
@@ -22,4 +26,11 @@ test("the Brokerage schema has owner-scoped RLS and idempotent daily snapshots",
   assert.match(migration, /unique \(user_id, account_type\)/);
   assert.match(migration, /unique \(account_id, snapshot_date\)/);
   assert.match(migration, /revoke all on public\.accounts, public\.holdings, public\.holding_quotes, public\.portfolio_snapshots from anon/);
+});
+
+test("the Asset page contribution migration is idempotent and remains on owner-scoped holdings", () => {
+  assert.match(contributionMigration, /add column if not exists contribution_cents bigint/);
+  assert.match(contributionMigration, /contribution_frequency text check \(contribution_frequency in \('weekly', 'monthly'\)\)/);
+  assert.match(contributionMigration, /holdings_contribution_requires_frequency/);
+  assert.match(migration, /Owners manage their brokerage holdings/);
 });

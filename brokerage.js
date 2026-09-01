@@ -5,39 +5,97 @@
   const $ = (selector) => document.querySelector(selector);
   const currency = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 });
   const preciseCurrency = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", minimumFractionDigits: 2, maximumFractionDigits: 2 });
-  const state = { client: null, user: null, account: null, accounts: [], holdings: [], quotes: [], snapshots: [], preview: false, pendingQuote: null, quoteTimer: null, editMode: false };
+  const percentage = new Intl.NumberFormat("en-US", { style: "percent", maximumFractionDigits: 2 });
+  const state = {
+    client: null, user: null, account: null, accounts: [], holdings: [], quotes: [], snapshots: [],
+    configured: false, pendingQuote: null, quoteTimer: null,
+  };
 
-  const sampleHoldings = [
-    { id: "preview-voo", symbol: "VOO", name: "S&P 500", instrument_type: "etf", allocation_category: "domestic-equity", valuation_basis: "shares-and-price", shares: 417, manual_price_cents: null, expected_annual_return_rate: 0.08, distribution_yield_rate: 0.0106, target_allocation_rate: 0.35, weekly_contribution_rate: 0.05, dividend_policy: "reinvest", capital_gains_policy: "transfer-to-fund", custom_policy_note: null },
-    { id: "preview-vtiax", symbol: "VTIAX", name: "International", instrument_type: "mutual-fund", allocation_category: "international-equity", valuation_basis: "shares-and-price", shares: 3266, manual_price_cents: null, expected_annual_return_rate: 0.06, distribution_yield_rate: 0.0255, target_allocation_rate: 0.25, weekly_contribution_rate: 0.45, dividend_policy: "reinvest", capital_gains_policy: "reinvest", custom_policy_note: null },
-    { id: "preview-vbtlx", symbol: "VBTLX", name: "Bonds", instrument_type: "mutual-fund", allocation_category: "bonds", valuation_basis: "shares-and-price", shares: 15339, manual_price_cents: null, expected_annual_return_rate: 0.04, distribution_yield_rate: 0.0406, target_allocation_rate: 0.25, weekly_contribution_rate: 0.45, dividend_policy: "transfer-to-bank", capital_gains_policy: "transfer-to-bank", custom_policy_note: null },
-    { id: "preview-vsmax", symbol: "VSMAX", name: "Small Cap", instrument_type: "mutual-fund", allocation_category: "domestic-equity", valuation_basis: "shares-and-price", shares: 955, manual_price_cents: null, expected_annual_return_rate: 0.07, distribution_yield_rate: 0.0121, target_allocation_rate: 0.13, weekly_contribution_rate: 0.05, dividend_policy: "transfer-to-fund", capital_gains_policy: "transfer-to-fund", custom_policy_note: null },
-  ];
-  const sampleQuotes = [
-    { holding_id: "preview-voo", price_cents: 71300, previous_close_cents: 71128, source: "Sample data", as_of: "2026-08-30T20:30:00.000Z" },
-    { holding_id: "preview-vtiax", price_cents: 4700, previous_close_cents: 4724, source: "Sample data", as_of: "2026-08-30T20:30:00.000Z" },
-    { holding_id: "preview-vbtlx", price_cents: 950, previous_close_cents: 953, source: "Sample data", as_of: "2026-08-30T20:30:00.000Z" },
-    { holding_id: "preview-vsmax", price_cents: 14400, previous_close_cents: 14571, source: "Sample data", as_of: "2026-08-30T20:30:00.000Z" },
-  ];
-  const sampleSnapshots = [{ snapshot_date: "2026-08-27", total_value_cents: 74900000 }, { snapshot_date: "2026-08-28", total_value_cents: 75540000 }, { snapshot_date: "2026-08-29", total_value_cents: 75910000 }, { snapshot_date: "2026-08-30", total_value_cents: 76393700 }];
-
-  function cents(value) { return value === null || value === undefined || value === "" ? null : Math.round(Number(value) * 100); }
-  function rate(value) { return value === null || value === undefined || value === "" ? null : Number(value) / 100; }
+  function cents(value) {
+    return value === null || value === undefined || value === "" ? null : Math.round(Number(value) * 100);
+  }
+  function rate(value) {
+    return value === null || value === undefined || value === "" ? null : Number(value) / 100;
+  }
   function setText(selector, value) { $(selector).textContent = value; }
-  function escapeHtml(value) { return String(value ?? "").replace(/[&<>"']/g, (character) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;" })[character]); }
-  function dateLabel(value) { return new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric", timeZone: "America/New_York" }).format(new Date(value)); }
-  function latestQuotes() { return state.quotes.reduce((memo, quote) => (!memo[quote.holding_id] || new Date(quote.as_of) > new Date(memo[quote.holding_id].as_of) ? { ...memo, [quote.holding_id]: quote } : memo), {}); }
+  function escapeHtml(value) {
+    return String(value ?? "").replace(/[&<>"']/g, (character) => ({
+      "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;",
+    })[character]);
+  }
+  function dateLabel(value) {
+    return new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric", timeZone: "America/New_York" }).format(new Date(value));
+  }
+  function routeAssetId() {
+    const match = window.location.hash.match(/^#asset\/([^/]+)$/);
+    return match ? decodeURIComponent(match[1]) : null;
+  }
+  function navigateToAsset(id) { window.location.hash = `asset/${encodeURIComponent(id)}`; }
+  function navigateHome() { window.location.hash = ""; }
+  function latestQuotes() {
+    return state.quotes.reduce((memo, quote) => (
+      !memo[quote.holding_id] || new Date(quote.as_of) > new Date(memo[quote.holding_id].as_of)
+        ? { ...memo, [quote.holding_id]: quote }
+        : memo
+    ), {});
+  }
   function holdingAsset(holding) {
     const quote = latestQuotes()[holding.id];
-    return { id: holding.id, symbol: holding.symbol, name: holding.name, assetType: holding.name || holding.symbol || "Asset", instrumentType: holding.instrument_type, allocationCategory: holding.allocation_category, valuationBasis: holding.valuation_basis, manualValueCents: holding.manual_value_cents, shares: holding.shares === null ? null : Number(holding.shares), unitPriceCents: quote?.price_cents ?? holding.manual_price_cents, quoteSource: quote?.source || (holding.manual_price_cents !== null ? "Manual price" : null), quoteAsOf: quote?.as_of || null, priorCloseCents: quote?.previous_close_cents ?? null, expectedAnnualReturnRate: holding.expected_annual_return_rate === null ? null : Number(holding.expected_annual_return_rate), distributionYieldRate: holding.distribution_yield_rate === null ? null : Number(holding.distribution_yield_rate), targetAllocationRate: holding.target_allocation_rate === null ? null : Number(holding.target_allocation_rate), weeklyContributionRate: holding.weekly_contribution_rate === null ? null : Number(holding.weekly_contribution_rate), dividendPolicy: holding.dividend_policy, capitalGainsPolicy: holding.capital_gains_policy, customPolicyNote: holding.custom_policy_note };
+    return {
+      id: holding.id,
+      symbol: holding.symbol,
+      name: holding.name,
+      assetType: holding.name || holding.symbol || "Asset",
+      instrumentType: holding.instrument_type,
+      allocationCategory: holding.allocation_category,
+      valuationBasis: holding.valuation_basis,
+      manualValueCents: holding.manual_value_cents,
+      shares: holding.shares === null ? null : Number(holding.shares),
+      unitPriceCents: quote?.price_cents ?? holding.manual_price_cents,
+      quoteSource: quote?.source || (holding.manual_price_cents !== null ? "Manual price" : null),
+      quoteAsOf: quote?.as_of || null,
+      priorCloseCents: quote?.previous_close_cents ?? null,
+      expectedAnnualReturnRate: holding.expected_annual_return_rate === null ? null : Number(holding.expected_annual_return_rate),
+      distributionYieldRate: holding.distribution_yield_rate === null ? null : Number(holding.distribution_yield_rate),
+      targetAllocationRate: holding.target_allocation_rate === null ? null : Number(holding.target_allocation_rate),
+      weeklyContributionRate: holding.weekly_contribution_rate === null ? null : Number(holding.weekly_contribution_rate),
+      contributionCents: holding.contribution_cents,
+      contributionFrequency: holding.contribution_frequency,
+      dividendPolicy: holding.dividend_policy,
+      capitalGainsPolicy: holding.capital_gains_policy,
+      customPolicyNote: holding.custom_policy_note,
+    };
   }
-  function portfolio() { return summarizePortfolio(state.holdings.map(holdingAsset).filter((asset) => asset.valuationBasis === VALUATION_BASES.MANUAL_VALUE || asset.unitPriceCents !== null), { weeklyContributionCents: state.account?.weekly_contribution_cents || 0 }); }
-  function valueBadge(valueCents) { return `<span class="acadia-badge acadia-badge-grey acadia-badge-round">${currency.format(valueCents / 100)}</span>`; }
+  function portfolio() {
+    return summarizePortfolio(
+      state.holdings.map(holdingAsset).filter((asset) => (
+        asset.valuationBasis === VALUATION_BASES.MANUAL_VALUE || asset.unitPriceCents !== null
+      )),
+      { weeklyContributionCents: state.account?.weekly_contribution_cents || 0 },
+    );
+  }
+  function valueBadge(valueCents) {
+    return `<span class="acadia-badge acadia-badge-grey acadia-badge-round">${currency.format(valueCents / 100)}</span>`;
+  }
+  function displayPolicy(value) {
+    return value ? value.replaceAll("-", " ").replace(/\b\w/g, (letter) => letter.toUpperCase()) : "Not set";
+  }
+  function setControlsDisabled(disabled) {
+    ["#add-asset", "#refresh-quotes", "#refresh-history", "#export-data"].forEach((selector) => {
+      $(selector).disabled = disabled;
+    });
+    $("#account-filter").disabled = disabled;
+  }
 
   function renderAccountFilter() {
     const filter = $("#account-filter");
-    filter.replaceChildren(...state.accounts.map((account) => {
-      const option = document.createElement("option"); option.value = account.id; option.textContent = account.name; option.selected = account.id === state.account?.id; return option;
+    const accounts = state.accounts.length ? state.accounts : [{ id: "unconfigured", name: "Brokerage" }];
+    filter.replaceChildren(...accounts.map((account) => {
+      const option = document.createElement("option");
+      option.value = account.id;
+      option.textContent = account.name;
+      option.selected = account.id === state.account?.id;
+      return option;
     }));
   }
 
@@ -51,7 +109,9 @@
       return;
     }
     const values = snapshots.map((snapshot) => snapshot.total_value_cents / 100);
-    const minimum = Math.min(...values); const maximum = Math.max(...values); const range = maximum - minimum || 1;
+    const minimum = Math.min(...values);
+    const maximum = Math.max(...values);
+    const range = maximum - minimum || 1;
     const points = values.map((value, index) => `${(index / (values.length - 1)) * 100},${96 - ((value - minimum) / range) * 84}`);
     const area = `0,100 ${points.join(" ")} 100,100`;
     trend.innerHTML = `<svg class="acadia-card-trend-chart is-primary" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><polygon class="acadia-card-trend-area" points="${area}"></polygon><polyline class="acadia-card-trend-line" points="${points.join(" ")}"></polyline></svg>`;
@@ -60,120 +120,523 @@
     setText("#history-summary", summary);
   }
 
+  function openHoldingFromEvent(event) {
+    const card = event.currentTarget;
+    if (event.target.closest("button, summary, a, input, select")) return;
+    navigateToAsset(card.dataset.holdingId);
+  }
+  function keyOpenHolding(event) {
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      navigateToAsset(event.currentTarget.dataset.holdingId);
+    }
+  }
   function renderHoldings(summary) {
     const search = $("#holding-search").value.trim().toLowerCase();
-    const rows = summary.rows.filter((row) => `${row.asset.symbol || ""} ${row.asset.name || ""} ${row.asset.instrumentType}`.toLowerCase().includes(search)).sort((left, right) => right.marketValueCents - left.marketValueCents).slice(0, 4);
+    const rows = summary.rows
+      .filter((row) => `${row.asset.symbol || ""} ${row.asset.name || ""} ${row.asset.instrumentType}`.toLowerCase().includes(search))
+      .sort((left, right) => right.marketValueCents - left.marketValueCents)
+      .slice(0, 4);
     const grid = $("#holdings-grid");
     grid.replaceChildren(...rows.map((row) => {
       const holding = state.holdings.find((entry) => entry.id === row.asset.id);
-      const price = row.asset.valuationBasis === VALUATION_BASES.MANUAL_VALUE ? "Manual value" : row.asset.unitPriceCents === null ? "Needs price" : preciseCurrency.format(row.asset.unitPriceCents / 100);
+      const price = row.asset.valuationBasis === VALUATION_BASES.MANUAL_VALUE
+        ? "Manual value"
+        : row.asset.unitPriceCents === null
+          ? "Needs price"
+          : preciseCurrency.format(row.asset.unitPriceCents / 100);
       const shares = row.asset.shares === null ? "" : `${Number(row.asset.shares).toLocaleString()} shares`;
-      const card = document.createElement("article"); card.className = "acadia-card is-content"; card.setAttribute("aria-labelledby", `holding-${holding.id}`);
-      card.innerHTML = `<div class="acadia-card-actions" role="group" aria-label="Actions for ${escapeHtml(row.asset.symbol || row.asset.name)}"><details class="acadia-action-menu"><summary class="acadia-action-menu-trigger acadia-icon-action" aria-label="Actions for ${escapeHtml(row.asset.symbol || row.asset.name)}"><i class="fa-solid fa-ellipsis acadia-icon" aria-hidden="true"></i></summary><div class="acadia-action-menu-panel"><button class="acadia-action-menu-item" type="button" data-edit-id="${escapeHtml(holding.id)}">Edit details</button></div></details></div><div class="acadia-card-header"><div class="acadia-card-content-title-row"><h3 id="holding-${escapeHtml(holding.id)}">${escapeHtml(row.asset.symbol || row.asset.name)}</h3><span class="acadia-card-content-caption">${escapeHtml(row.asset.name || row.asset.instrumentType.replaceAll("-", " "))}</span></div></div><div class="acadia-card-content"><div class="acadia-card-content-blurbs"><strong>${price}</strong><span>${shares}</span></div><div class="acadia-card-content-badges">${valueBadge(row.marketValueCents)}</div></div>`;
+      const card = document.createElement("article");
+      card.className = "acadia-card is-content is-interactive";
+      card.dataset.holdingId = holding.id;
+      card.tabIndex = 0;
+      card.setAttribute("aria-label", `Open ${row.asset.symbol || row.asset.name}`);
+      card.innerHTML = `<div class="acadia-card-actions" role="group" aria-label="Actions for ${escapeHtml(row.asset.symbol || row.asset.name)}"><details class="acadia-action-menu"><summary class="acadia-action-menu-trigger acadia-icon-action" aria-label="Actions for ${escapeHtml(row.asset.symbol || row.asset.name)}"><i class="fa-solid fa-ellipsis acadia-icon" aria-hidden="true"></i></summary><div class="acadia-action-menu-panel"><button class="acadia-action-menu-item" type="button" data-edit-id="${escapeHtml(holding.id)}">Edit details</button></div></details></div><div class="acadia-card-header"><div class="acadia-card-content-title-row"><h3>${escapeHtml(row.asset.symbol || row.asset.name)}</h3><span class="acadia-card-content-caption">${escapeHtml(row.asset.name || row.asset.instrumentType.replaceAll("-", " "))}</span></div></div><div class="acadia-card-content"><div class="acadia-card-content-blurbs"><strong>${price}</strong><span>${shares}</span></div><div class="acadia-card-content-badges">${valueBadge(row.marketValueCents)}</div></div>`;
+      card.addEventListener("click", openHoldingFromEvent);
+      card.addEventListener("keydown", keyOpenHolding);
       return card;
     }));
     $("#holdings-empty").hidden = rows.length > 0;
-    document.querySelectorAll("[data-edit-id]").forEach((button) => button.addEventListener("click", () => openAsset(state.holdings.find((holding) => holding.id === button.dataset.editId))));
+    document.querySelectorAll("[data-edit-id]").forEach((button) => {
+      button.addEventListener("click", () => navigateToAsset(button.dataset.editId));
+    });
+  }
+
+  function renderHome(summary) {
+    $("#home-workspace").hidden = false;
+    $("#asset-workspace").hidden = true;
+    setText("#metric-value", currency.format(summary.totalMarketValueCents / 100));
+    setText("#metric-income", currency.format(summary.totalEstimatedAnnualIncomeCents / 100));
+    setText("#portfolio-warnings", state.holdings.length ? summary.warnings.join(" ") : "");
+    renderHistory();
+    renderHoldings(summary);
+  }
+
+  function setDetailFormDisabled(disabled) {
+    Array.from($("#asset-detail-form").elements).forEach((element) => { element.disabled = disabled; });
+  }
+  function syncDetailValuationFields() {
+    const manualValue = $("#asset-detail-valuation-basis").value === VALUATION_BASES.MANUAL_VALUE;
+    $("#asset-detail-manual-price-field").hidden = manualValue;
+    $("#asset-detail-manual-value-field").hidden = !manualValue;
+    $("#asset-detail-shares").disabled = manualValue;
+  }
+  function assetRow(holding, summary) {
+    return summary.rows.find((row) => row.asset.id === holding.id) || null;
+  }
+  function renderAsset() {
+    const id = routeAssetId();
+    const holding = state.holdings.find((entry) => entry.id === id);
+    const summary = portfolio();
+    $("#home-workspace").hidden = true;
+    $("#asset-workspace").hidden = false;
+    $("#asset-not-found").hidden = Boolean(holding);
+    $("#asset-quote-card").hidden = !holding;
+    $("#asset-content > .acadia-dashboard-main").hidden = !holding;
+    if (!holding) {
+      setText("#asset-title", "Asset unavailable");
+      setText("#asset-subtitle", "This asset is not available in your current Brokerage account.");
+      setText("#asset-price", "—");
+      setText("#asset-status", "Return Home to select an available asset.");
+      return;
+    }
+
+    const row = assetRow(holding, summary);
+    const asset = holdingAsset(holding);
+    const quote = latestQuotes()[holding.id];
+    const hasManualValuation = holding.valuation_basis === VALUATION_BASES.MANUAL_VALUE || holding.manual_price_cents !== null;
+    const price = holding.valuation_basis === VALUATION_BASES.MANUAL_VALUE
+      ? "Manual value"
+      : asset.unitPriceCents === null
+        ? "No current price"
+        : preciseCurrency.format(asset.unitPriceCents / 100);
+    setText("#asset-title", holding.symbol || holding.name || "Asset");
+    setText("#asset-subtitle", holding.name || holding.instrument_type.replaceAll("-", " "));
+    setText("#asset-price", price);
+    setText("#asset-status", quote ? `${quote.source} quote as of ${dateLabel(quote.as_of)}.` : hasManualValuation ? "Manual valuation is authoritative." : "No price has been recorded for this asset.");
+    setText("#asset-total-value", row ? currency.format(row.marketValueCents / 100) : "Unavailable");
+    setText("#asset-income", row?.estimatedAnnualIncomeCents === null || !row ? "Not set" : currency.format(row.estimatedAnnualIncomeCents / 100));
+    setText("#asset-return-stat", asset.expectedAnnualReturnRate === null ? "Not set" : percentage.format(asset.expectedAnnualReturnRate));
+    setText("#asset-yield-stat", asset.distributionYieldRate === null ? "Not set" : percentage.format(asset.distributionYieldRate));
+    setText("#asset-quote-source", quote?.source || (holding.manual_price_cents !== null ? "Manual price" : "No quote recorded."));
+    setText("#asset-quote-asof", quote?.as_of ? `As of ${dateLabel(quote.as_of)}` : "No as-of time");
+
+    const setValue = (selector, value) => { $(selector).value = value ?? ""; };
+    $("#asset-detail-form").hidden = false;
+    setDetailFormDisabled(false);
+    setValue("#asset-detail-shares", holding.shares);
+    setValue("#asset-detail-contribution", holding.contribution_cents === null ? null : Number(holding.contribution_cents) / 100);
+    setValue("#asset-detail-frequency", holding.contribution_frequency);
+    setValue("#asset-detail-dividend-policy", holding.dividend_policy);
+    setValue("#asset-detail-gains-policy", holding.capital_gains_policy);
+    setValue("#asset-detail-name", holding.name);
+    setValue("#asset-detail-instrument", holding.instrument_type);
+    setValue("#asset-detail-category", holding.allocation_category);
+    setValue("#asset-detail-target", holding.target_allocation_rate === null ? null : Number(holding.target_allocation_rate) * 100);
+    setValue("#asset-detail-weekly", holding.weekly_contribution_rate === null ? null : Number(holding.weekly_contribution_rate) * 100);
+    setValue("#asset-detail-return", holding.expected_annual_return_rate === null ? null : Number(holding.expected_annual_return_rate) * 100);
+    setValue("#asset-detail-yield", holding.distribution_yield_rate === null ? null : Number(holding.distribution_yield_rate) * 100);
+    setValue("#asset-detail-policy-note", holding.custom_policy_note);
+    $("#asset-manual-valuation").hidden = !hasManualValuation;
+    setValue("#asset-detail-valuation-basis", holding.valuation_basis);
+    setValue("#asset-detail-manual-price", holding.manual_price_cents === null ? null : Number(holding.manual_price_cents) / 100);
+    setValue("#asset-detail-manual-value", holding.manual_value_cents === null ? null : Number(holding.manual_value_cents) / 100);
+    syncDetailValuationFields();
+    setText("#asset-detail-status", "");
   }
 
   function render() {
+    renderAccountFilter();
+    setControlsDisabled(!state.configured);
     const summary = portfolio();
-    setText("#metric-value", currency.format(summary.totalMarketValueCents / 100));
-    setText("#metric-income", currency.format(summary.totalEstimatedAnnualIncomeCents / 100));
-    setText("#portfolio-warnings", summary.warnings.join(" "));
-    renderAccountFilter(); renderHistory(); renderHoldings(summary);
+    if (routeAssetId()) renderAsset();
+    else renderHome(summary);
     $("#main-content").setAttribute("aria-busy", "false");
   }
 
-  function getFormValue(form, key) { const value = new FormData(form).get(key); return value === "" ? null : value; }
-  function manualValuation() { return getFormValue($("#asset-form"), "valuationBasis") === "manual-value"; }
-  function syncValuationFields() {
+  function getFormValue(form, key) {
+    const value = new FormData(form).get(key);
+    return value === "" ? null : value;
+  }
+  function manualValuation() {
+    return getFormValue($("#asset-form"), "valuationBasis") === VALUATION_BASES.MANUAL_VALUE;
+  }
+  function syncQuickValuationFields() {
     const manual = manualValuation();
-    $("#manual-price-field").hidden = manual; $("#manual-value-field").hidden = !manual;
+    $("#manual-price-field").hidden = manual;
+    $("#manual-value-field").hidden = !manual;
     $("#asset-shares").required = !manual;
   }
-  function showManualFallback(message) { $("#manual-fallback").hidden = false; syncValuationFields(); if (message) setText("#quote-form-status", message); }
-  function clearManualFallback() { $("#manual-fallback").hidden = true; $("#asset-manual-price").value = ""; $("#asset-manual-value").value = ""; }
-
-  function openAsset(holding) {
-    const form = $("#asset-form"); form.reset(); state.pendingQuote = null; state.editMode = Boolean(holding); clearManualFallback(); setText("#quote-form-status", "");
-    $("#asset-dialog-title").textContent = holding ? "Edit details" : "Add asset";
-    $("#asset-dialog-description").textContent = holding ? "Update the details used to calculate this holding." : "Enter a symbol and shares. Mercury will look up the price automatically.";
-    $("#asset-details").hidden = !holding; $("#save-asset").textContent = holding ? "Save details" : "Add";
-    if (holding) {
-      const set = (selector, value) => { if (value !== null && value !== undefined) $(selector).value = value; };
-      set("#asset-id", holding.id); set("#asset-symbol", holding.symbol); set("#asset-shares", holding.shares); set("#asset-name", holding.name); set("#asset-instrument", holding.instrument_type); set("#asset-category", holding.allocation_category); set("#asset-return", holding.expected_annual_return_rate === null ? null : Number(holding.expected_annual_return_rate) * 100); set("#asset-yield", holding.distribution_yield_rate === null ? null : Number(holding.distribution_yield_rate) * 100); set("#asset-target", holding.target_allocation_rate === null ? null : Number(holding.target_allocation_rate) * 100); set("#asset-weekly", holding.weekly_contribution_rate === null ? null : Number(holding.weekly_contribution_rate) * 100); set("#asset-dividend-policy", holding.dividend_policy); set("#asset-gains-policy", holding.capital_gains_policy); set("#asset-policy-note", holding.custom_policy_note);
-      if (holding.valuation_basis === "manual-value" || holding.manual_price_cents !== null) { showManualFallback(); $("#asset-valuation-basis").value = holding.valuation_basis; set("#asset-manual-price", holding.manual_price_cents === null ? null : holding.manual_price_cents / 100); set("#asset-manual-value", holding.manual_value_cents === null ? null : holding.manual_value_cents / 100); }
-    }
-    syncValuationFields(); $("#asset-dialog").hidden = false; $("#asset-dialog").showModal();
+  function showManualFallback(message) {
+    $("#manual-fallback").hidden = false;
+    syncQuickValuationFields();
+    if (message) setText("#quote-form-status", message);
+  }
+  function clearManualFallback() {
+    $("#manual-fallback").hidden = true;
+    $("#asset-manual-price").value = "";
+    $("#asset-manual-value").value = "";
+  }
+  function openQuickAdd() {
+    const form = $("#asset-form");
+    form.reset();
+    state.pendingQuote = null;
+    clearManualFallback();
+    setText("#quote-form-status", "");
+    syncQuickValuationFields();
+    $("#asset-dialog").hidden = false;
+    $("#asset-dialog").showModal();
   }
 
-  async function sessionToken() { const { data } = await state.client.auth.getSession(); return data.session?.access_token; }
-  async function requestQuote(symbol, instrumentType = "other") { const token = await sessionToken(); const response = await fetch(`/api/portfolio/quotes?symbol=${encodeURIComponent(symbol)}&instrumentType=${encodeURIComponent(instrumentType)}`, { headers: { Authorization: `Bearer ${token}` } }); const data = await response.json(); if (!response.ok) throw new Error(data.error || "Quote lookup failed."); return data; }
-  function canQuote() { return Boolean($("#asset-symbol").value.trim()) && Number.isFinite(Number($("#asset-shares").value)) && Number($("#asset-shares").value) >= 0; }
+  async function sessionToken() {
+    const { data } = await state.client.auth.getSession();
+    return data.session?.access_token;
+  }
+  async function requestQuote(symbol, instrumentType = "other") {
+    const token = await sessionToken();
+    const response = await fetch(`/api/portfolio/quotes?symbol=${encodeURIComponent(symbol)}&instrumentType=${encodeURIComponent(instrumentType)}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error || "Quote lookup failed.");
+    return data;
+  }
+  function canQuote() {
+    return Boolean($("#asset-symbol").value.trim())
+      && Number.isFinite(Number($("#asset-shares").value))
+      && Number($("#asset-shares").value) >= 0;
+  }
   async function lookupQuote({ revealFallback = false } = {}) {
     if (!canQuote()) return null;
-    const symbol = $("#asset-symbol").value.trim(); const instrumentType = $("#asset-instrument").value || "other";
     setText("#quote-form-status", "Looking up price…");
     try {
-      if (state.preview) {
-        const match = sampleQuotes.find((quote) => state.holdings.find((holding) => holding.id === quote.holding_id)?.symbol === symbol.toUpperCase());
-        if (!match) throw new Error("Sample workspace cannot quote that symbol.");
-        state.pendingQuote = { priceCents: match.price_cents, priorCloseCents: match.previous_close_cents, source: "Sample quote", asOf: match.as_of, instrumentType: "other" };
-      } else state.pendingQuote = await requestQuote(symbol, instrumentType);
+      state.pendingQuote = await requestQuote($("#asset-symbol").value.trim());
       setText("#quote-form-status", `${preciseCurrency.format(state.pendingQuote.priceCents / 100)} from ${state.pendingQuote.source}. As of ${dateLabel(state.pendingQuote.asOf)}.`);
       return state.pendingQuote;
     } catch (error) {
       state.pendingQuote = null;
       const message = `${error.message} Enter a manual authoritative price or total value.`;
-      if (revealFallback) showManualFallback(message); else setText("#quote-form-status", message);
+      if (revealFallback) showManualFallback(message);
+      else setText("#quote-form-status", message);
       return null;
     }
   }
-  function scheduleQuote() { clearTimeout(state.quoteTimer); if (!canQuote() || state.editMode) return; state.quoteTimer = setTimeout(() => lookupQuote(), 450); }
-
-  function formHolding() {
-    const form = $("#asset-form"); const isManualValue = manualValuation(); const existing = getFormValue(form, "id");
-    const holding = { id: existing || crypto.randomUUID(), account_id: state.account?.id || "preview", symbol: getFormValue(form, "symbol")?.toUpperCase() || null, name: getFormValue(form, "name"), instrument_type: getFormValue(form, "instrumentType") || state.pendingQuote?.instrumentType || "other", allocation_category: getFormValue(form, "allocationCategory") || "other", valuation_basis: isManualValue ? "manual-value" : "shares-and-price", shares: isManualValue ? null : Number(getFormValue(form, "shares")), manual_value_cents: isManualValue ? cents(getFormValue(form, "manualValue")) : null, manual_price_cents: isManualValue ? null : cents(getFormValue(form, "manualPrice")), expected_annual_return_rate: rate(getFormValue(form, "expectedAnnualReturn")), distribution_yield_rate: rate(getFormValue(form, "distributionYield")), target_allocation_rate: rate(getFormValue(form, "targetAllocation")), weekly_contribution_rate: rate(getFormValue(form, "weeklyAllocation")), dividend_policy: getFormValue(form, "dividendPolicy"), capital_gains_policy: getFormValue(form, "capitalGainsPolicy"), custom_policy_note: getFormValue(form, "customPolicyNote") };
+  function scheduleQuote() {
+    clearTimeout(state.quoteTimer);
+    if (!canQuote()) return;
+    state.quoteTimer = setTimeout(() => lookupQuote(), 450);
+  }
+  function quickHolding() {
+    const form = $("#asset-form");
+    const isManualValue = manualValuation();
+    const holding = {
+      id: crypto.randomUUID(),
+      account_id: state.account.id,
+      symbol: getFormValue(form, "symbol")?.toUpperCase() || null,
+      name: null,
+      instrument_type: state.pendingQuote?.instrumentType || "other",
+      allocation_category: "other",
+      valuation_basis: isManualValue ? VALUATION_BASES.MANUAL_VALUE : VALUATION_BASES.SHARES_AND_PRICE,
+      shares: isManualValue ? null : Number(getFormValue(form, "shares")),
+      manual_value_cents: isManualValue ? cents(getFormValue(form, "manualValue")) : null,
+      manual_price_cents: isManualValue ? null : cents(getFormValue(form, "manualPrice")),
+      expected_annual_return_rate: null,
+      distribution_yield_rate: null,
+      target_allocation_rate: null,
+      weekly_contribution_rate: null,
+      contribution_cents: null,
+      contribution_frequency: null,
+      dividend_policy: null,
+      capital_gains_policy: null,
+      custom_policy_note: null,
+    };
     if (!holding.symbol) throw new Error("A symbol is required.");
     if (!isManualValue && (!Number.isFinite(holding.shares) || holding.shares < 0)) throw new Error("Shares are required for a price-based value.");
-    if (isManualValue && holding.manual_value_cents === null) throw new Error("A manual total value is required.");
-    if (!isManualValue && holding.manual_price_cents === null && !state.pendingQuote && !existing) throw new Error("Automatic price lookup failed. Enter a manual price or total value.");
-    if ((holding.dividend_policy === "custom" || holding.capital_gains_policy === "custom") && !holding.custom_policy_note) throw new Error("A policy note is required for a custom policy.");
+    if (isManualValue && (!Number.isSafeInteger(holding.manual_value_cents) || holding.manual_value_cents < 0)) throw new Error("A manual total value is required.");
+    if (!isManualValue && holding.manual_price_cents === null && !state.pendingQuote) throw new Error("Automatic price lookup failed. Enter a manual price or total value.");
     return holding;
   }
-
-  async function saveAsset(event) {
-    event.preventDefault(); const save = $("#save-asset");
+  async function saveQuickAsset(event) {
+    event.preventDefault();
+    const save = $("#save-asset");
     try {
-      save.disabled = true; save.textContent = state.editMode ? "Saving…" : "Adding…";
-      if (!state.editMode && !manualValuation() && !state.pendingQuote && !getFormValue($("#asset-form"), "manualPrice")) await lookupQuote({ revealFallback: true });
-      const holding = formHolding();
-      if (state.preview) {
-        const index = state.holdings.findIndex((entry) => entry.id === holding.id); if (index >= 0) state.holdings[index] = holding; else state.holdings.push(holding);
-        if (state.pendingQuote) state.quotes = [...state.quotes.filter((quote) => quote.holding_id !== holding.id), { holding_id: holding.id, price_cents: state.pendingQuote.priceCents, previous_close_cents: state.pendingQuote.priorCloseCents, source: state.pendingQuote.source, as_of: state.pendingQuote.asOf }];
-        $("#asset-dialog").close(); render(); setText("#data-status", "Sample workspace updated. Configure private sync before entering real data."); return;
+      save.disabled = true;
+      save.textContent = "Adding…";
+      if (!manualValuation() && !state.pendingQuote && !getFormValue($("#asset-form"), "manualPrice")) {
+        await lookupQuote({ revealFallback: true });
       }
-      const { error } = await state.client.from("holdings").upsert(holding); if (error) throw error;
-      if (state.pendingQuote) { const { error: quoteError } = await state.client.from("holding_quotes").upsert({ holding_id: holding.id, price_cents: state.pendingQuote.priceCents, previous_close_cents: state.pendingQuote.priorCloseCents, source: state.pendingQuote.source, as_of: state.pendingQuote.asOf }, { onConflict: "holding_id,as_of" }); if (quoteError) throw quoteError; }
-      $("#asset-dialog").close(); await loadData(); setText("#data-status", "Saved to your private Brokerage account.");
-    } catch (error) { setText("#quote-form-status", error.message || "This asset could not be saved."); } finally { save.disabled = false; save.textContent = state.editMode ? "Save details" : "Add"; }
+      const holding = quickHolding();
+      const { error } = await state.client.from("holdings").insert(holding);
+      if (error) throw error;
+      if (state.pendingQuote) {
+        const { error: quoteError } = await state.client.from("holding_quotes").insert({
+          holding_id: holding.id,
+          price_cents: state.pendingQuote.priceCents,
+          previous_close_cents: state.pendingQuote.priorCloseCents,
+          source: state.pendingQuote.source,
+          as_of: state.pendingQuote.asOf,
+        });
+        if (quoteError) throw quoteError;
+      }
+      $("#asset-dialog").close();
+      await loadData();
+      setText("#data-status", "Saved to your private Brokerage account.");
+      navigateToAsset(holding.id);
+    } catch (error) {
+      setText("#quote-form-status", error.message || "This asset could not be saved.");
+    } finally {
+      save.disabled = false;
+      save.textContent = "Add";
+    }
+  }
+
+  function detailHolding(holding) {
+    const form = $("#asset-detail-form");
+    const hasManualValuation = holding.valuation_basis === VALUATION_BASES.MANUAL_VALUE || holding.manual_price_cents !== null;
+    const valuationBasis = hasManualValuation
+      ? getFormValue(form, "valuationBasis") || holding.valuation_basis
+      : holding.valuation_basis;
+    const contributionCents = cents(getFormValue(form, "contribution"));
+    const contributionFrequency = getFormValue(form, "contributionFrequency");
+    if (contributionCents !== null && (!Number.isSafeInteger(contributionCents) || contributionCents < 0)) {
+      throw new Error("Contribution must be a non-negative dollar amount.");
+    }
+    if (contributionCents !== null && !contributionFrequency) {
+      throw new Error("Select a contribution frequency.");
+    }
+    const dividendPolicy = getFormValue(form, "dividendPolicy");
+    const capitalGainsPolicy = getFormValue(form, "capitalGainsPolicy");
+    const customPolicyNote = getFormValue(form, "customPolicyNote");
+    if ((dividendPolicy === "custom" || capitalGainsPolicy === "custom") && !customPolicyNote) {
+      throw new Error("A policy note is required for a custom policy.");
+    }
+    const updates = {
+      symbol: holding.symbol,
+      name: getFormValue(form, "name"),
+      instrument_type: getFormValue(form, "instrumentType") || "other",
+      allocation_category: getFormValue(form, "allocationCategory") || "other",
+      expected_annual_return_rate: rate(getFormValue(form, "expectedAnnualReturn")),
+      distribution_yield_rate: rate(getFormValue(form, "distributionYield")),
+      target_allocation_rate: rate(getFormValue(form, "targetAllocation")),
+      weekly_contribution_rate: rate(getFormValue(form, "weeklyAllocation")),
+      contribution_cents: contributionCents,
+      contribution_frequency: contributionFrequency,
+      dividend_policy: dividendPolicy,
+      capital_gains_policy: capitalGainsPolicy,
+      custom_policy_note: customPolicyNote,
+      valuation_basis: valuationBasis,
+      shares: holding.shares,
+      manual_price_cents: holding.manual_price_cents,
+      manual_value_cents: holding.manual_value_cents,
+    };
+    if (valuationBasis === VALUATION_BASES.MANUAL_VALUE) {
+      updates.shares = null;
+      updates.manual_price_cents = null;
+      updates.manual_value_cents = cents(getFormValue(form, "manualValue"));
+      if (!Number.isSafeInteger(updates.manual_value_cents) || updates.manual_value_cents < 0) {
+        throw new Error("An authoritative total value is required.");
+      }
+    } else {
+      updates.shares = Number(getFormValue(form, "shares"));
+      if (!Number.isFinite(updates.shares) || updates.shares < 0) throw new Error("Shares are required for a price-based value.");
+      updates.manual_value_cents = null;
+      if (hasManualValuation) {
+        updates.manual_price_cents = cents(getFormValue(form, "manualPrice"));
+        if (!Number.isSafeInteger(updates.manual_price_cents) || updates.manual_price_cents < 0) {
+          throw new Error("A manual price is required.");
+        }
+      }
+    }
+    return updates;
+  }
+  async function saveAssetDetails(event) {
+    event.preventDefault();
+    const holding = state.holdings.find((entry) => entry.id === routeAssetId());
+    if (!holding) return;
+    const save = $("#asset-save");
+    try {
+      save.disabled = true;
+      save.textContent = "Saving…";
+      const { error } = await state.client.from("holdings").update(detailHolding(holding)).eq("id", holding.id);
+      if (error) throw error;
+      await loadData();
+      setText("#asset-detail-status", "Details saved.");
+      setText("#data-status", "Saved to your private Brokerage account.");
+    } catch (error) {
+      setText("#asset-detail-status", error.message || "This asset could not be saved.");
+    } finally {
+      save.disabled = false;
+      save.textContent = "Save";
+    }
   }
 
   async function loadData() {
-    const [accounts, holdings, quotes, snapshots] = await Promise.all([state.client.from("accounts").select("*").order("created_at"), state.client.from("holdings").select("*").eq("account_id", state.account.id).order("created_at"), state.client.from("holding_quotes").select("*").order("as_of", { ascending: false }), state.client.from("portfolio_snapshots").select("*").eq("account_id", state.account.id).order("snapshot_date")]);
-    if (accounts.error || holdings.error || quotes.error || snapshots.error) throw accounts.error || holdings.error || quotes.error || snapshots.error;
-    state.accounts = accounts.data || []; state.holdings = holdings.data || []; state.quotes = quotes.data || []; state.snapshots = snapshots.data || []; render();
+    const [accounts, holdings, quotes, snapshots] = await Promise.all([
+      state.client.from("accounts").select("*").order("created_at"),
+      state.client.from("holdings").select("*").eq("account_id", state.account.id).order("created_at"),
+      state.client.from("holding_quotes").select("*").order("as_of", { ascending: false }),
+      state.client.from("portfolio_snapshots").select("*").eq("account_id", state.account.id).order("snapshot_date"),
+    ]);
+    if (accounts.error || holdings.error || quotes.error || snapshots.error) {
+      throw accounts.error || holdings.error || quotes.error || snapshots.error;
+    }
+    state.accounts = accounts.data || [];
+    state.holdings = holdings.data || [];
+    state.quotes = quotes.data || [];
+    state.snapshots = snapshots.data || [];
+    render();
   }
-  async function ensureAccount() { const existing = await state.client.from("accounts").select("*").eq("account_type", "brokerage").maybeSingle(); if (existing.error) throw existing.error; if (existing.data) return existing.data; const created = await state.client.from("accounts").insert({ name: "Brokerage", account_type: "brokerage" }).select().single(); if (created.error) throw created.error; return created.data; }
-  async function refreshPrices() { if (state.preview) return setText("#data-status", "Sample data has no live price connection. Configure Twelve Data to refresh quotes."); const holdings = state.holdings.filter((holding) => holding.valuation_basis === "shares-and-price" && holding.symbol); setText("#data-status", `Refreshing ${holdings.length} price${holdings.length === 1 ? "" : "s"}…`); for (const holding of holdings) { try { const quote = await requestQuote(holding.symbol, holding.instrument_type); await state.client.from("holding_quotes").upsert({ holding_id: holding.id, price_cents: quote.priceCents, previous_close_cents: quote.priorCloseCents, source: quote.source, as_of: quote.asOf }, { onConflict: "holding_id,as_of" }); } catch (error) { setText("#data-status", `${error.message} Last successful quotes remain in place.`); } } await loadData(); setText("#data-status", "Prices refreshed. Last successful provider values are retained if a lookup fails."); }
-  async function refreshHistory() { if (state.preview) return setText("#data-status", "History refresh needs the private snapshot service. Sample snapshots remain visible."); const token = await sessionToken(); const response = await fetch("/api/portfolio/snapshot", { method: "POST", headers: { Authorization: `Bearer ${token}` } }); const data = await response.json(); if (!response.ok) return setText("#data-status", data.error || "History refresh failed."); await loadData(); setText("#data-status", `History refreshed for ${data.snapshotDate}.`); }
-  function exportData() { const payload = { exportedAt: new Date().toISOString(), account: { name: state.account?.name || "Brokerage", currency: "USD" }, holdings: state.holdings, quotes: state.quotes, snapshots: state.snapshots }; const url = URL.createObjectURL(new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" })); const link = document.createElement("a"); link.href = url; link.download = `mercury-brokerage-${new Date().toISOString().slice(0, 10)}.json`; link.click(); URL.revokeObjectURL(url); setText("#data-status", state.preview ? "Sample export downloaded." : "Your private Brokerage export downloaded."); }
-  async function showPreview() { state.preview = true; state.account = { id: "preview", name: "Brokerage", weekly_contribution_cents: 50000 }; state.accounts = [state.account]; state.holdings = structuredClone(sampleHoldings); state.quotes = structuredClone(sampleQuotes); state.snapshots = structuredClone(sampleSnapshots); $("#account-label").textContent = "Preview"; $("#home-workspace").hidden = false; setText("#data-status", "Sample workspace — not synced. Configure Supabase to keep private data."); render(); }
-  async function initialise() { try { const response = await fetch("/api/config", { cache: "no-store" }); const config = response.ok ? await response.json() : { configured: false }; if (!config.configured) return showPreview(); state.client = window.supabase.createClient(config.supabaseUrl, config.supabaseAnonKey); const { data: { session } } = await state.client.auth.getSession(); if (!session) { $("#auth-panel").hidden = false; $("#main-content").setAttribute("aria-busy", "false"); return; } state.user = session.user; state.account = await ensureAccount(); $("#account-label").textContent = state.user.email; $("#sign-out").hidden = false; $("#home-workspace").hidden = false; await loadData(); setText("#data-status", "Private Brokerage account loaded."); } catch (error) { await showPreview(); setText("#data-status", `Private sync is unavailable: ${error.message}. Showing sample data only.`); } }
+  async function ensureAccount() {
+    const existing = await state.client.from("accounts").select("*").eq("account_type", "brokerage").maybeSingle();
+    if (existing.error) throw existing.error;
+    if (existing.data) return existing.data;
+    const created = await state.client.from("accounts").insert({ name: "Brokerage", account_type: "brokerage" }).select().single();
+    if (created.error) throw created.error;
+    return created.data;
+  }
+  async function refreshPrices() {
+    const holdings = state.holdings.filter((holding) => holding.valuation_basis === VALUATION_BASES.SHARES_AND_PRICE && holding.symbol);
+    if (!holdings.length) return setText("#data-status", "No price-based holdings are available to refresh.");
+    setText("#data-status", `Refreshing ${holdings.length} price${holdings.length === 1 ? "" : "s"}…`);
+    for (const holding of holdings) {
+      try {
+        const quote = await requestQuote(holding.symbol, holding.instrument_type);
+        const { error } = await state.client.from("holding_quotes").upsert({
+          holding_id: holding.id,
+          price_cents: quote.priceCents,
+          previous_close_cents: quote.priorCloseCents,
+          source: quote.source,
+          as_of: quote.asOf,
+        }, { onConflict: "holding_id,as_of" });
+        if (error) throw error;
+      } catch (error) {
+        setText("#data-status", `${error.message} Last successful quotes remain in place.`);
+      }
+    }
+    await loadData();
+    setText("#data-status", "Prices refreshed. Last successful provider values are retained if a lookup fails.");
+  }
+  async function refreshCurrentAssetPrice() {
+    const holding = state.holdings.find((entry) => entry.id === routeAssetId());
+    if (!holding || holding.valuation_basis !== VALUATION_BASES.SHARES_AND_PRICE || !holding.symbol) {
+      return setText("#asset-detail-status", "This asset does not have an automatic price to refresh.");
+    }
+    try {
+      setText("#asset-detail-status", "Refreshing price…");
+      const quote = await requestQuote(holding.symbol, holding.instrument_type);
+      const { error } = await state.client.from("holding_quotes").upsert({
+        holding_id: holding.id,
+        price_cents: quote.priceCents,
+        previous_close_cents: quote.priorCloseCents,
+        source: quote.source,
+        as_of: quote.asOf,
+      }, { onConflict: "holding_id,as_of" });
+      if (error) throw error;
+      await loadData();
+      setText("#asset-detail-status", "Price refreshed.");
+    } catch (error) {
+      setText("#asset-detail-status", `${error.message} Last successful quote remains in place.`);
+    }
+  }
+  async function refreshHistory() {
+    const token = await sessionToken();
+    const response = await fetch("/api/portfolio/snapshot", { method: "POST", headers: { Authorization: `Bearer ${token}` } });
+    const data = await response.json();
+    if (!response.ok) return setText("#data-status", data.error || "History refresh failed.");
+    await loadData();
+    setText("#data-status", `History refreshed for ${data.snapshotDate}.`);
+  }
+  function exportData() {
+    const payload = {
+      exportedAt: new Date().toISOString(),
+      account: { name: state.account?.name || "Brokerage", currency: "USD" },
+      holdings: state.holdings,
+      quotes: state.quotes,
+      snapshots: state.snapshots,
+    };
+    const url = URL.createObjectURL(new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" }));
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `mercury-brokerage-${new Date().toISOString().slice(0, 10)}.json`;
+    link.click();
+    URL.revokeObjectURL(url);
+    setText("#data-status", "Your private Brokerage export downloaded.");
+  }
+  function showUnconfigured(message) {
+    state.configured = false;
+    state.account = { id: "unconfigured", name: "Brokerage", weekly_contribution_cents: 0 };
+    state.accounts = [state.account];
+    state.holdings = [];
+    state.quotes = [];
+    state.snapshots = [];
+    $("#auth-panel").hidden = true;
+    $("#home-workspace").hidden = false;
+    setText("#account-label", "Private sync unavailable");
+    setText("#data-status", message);
+    render();
+  }
+  async function initialise() {
+    try {
+      const response = await fetch("/api/config", { cache: "no-store" });
+      const config = response.ok ? await response.json() : { configured: false };
+      if (!config.configured) return showUnconfigured("Private sync is not configured. Configure Supabase before adding holdings.");
+      state.configured = true;
+      state.client = window.supabase.createClient(config.supabaseUrl, config.supabaseAnonKey);
+      const { data: { session } } = await state.client.auth.getSession();
+      if (!session) {
+        $("#auth-panel").hidden = false;
+        $("#main-content").setAttribute("aria-busy", "false");
+        return;
+      }
+      state.user = session.user;
+      state.account = await ensureAccount();
+      $("#account-label").textContent = state.user.email;
+      $("#sign-out").hidden = false;
+      $("#home-workspace").hidden = false;
+      await loadData();
+      setText("#data-status", "Private Brokerage account loaded.");
+    } catch (error) {
+      showUnconfigured(`Private sync is unavailable: ${error.message}`);
+    }
+  }
 
-  $("#magic-link-form").addEventListener("submit", async (event) => { event.preventDefault(); const { error } = await state.client.auth.signInWithOtp({ email: $("#email").value, options: { emailRedirectTo: window.location.origin } }); setText("#auth-message", error ? error.message : "Check your email for a sign-in link."); });
-  $("#sign-out").addEventListener("click", async () => { await state.client.auth.signOut(); window.location.reload(); });
-  $("#add-asset").addEventListener("click", () => openAsset(null)); $("#close-dialog").addEventListener("click", () => $("#asset-dialog").close()); $("#cancel-dialog").addEventListener("click", () => $("#asset-dialog").close()); $("#asset-dialog").addEventListener("close", () => { $("#asset-dialog").hidden = true; }); $("#asset-form").addEventListener("submit", saveAsset); $("#asset-valuation-basis").addEventListener("change", syncValuationFields); $("#asset-symbol").addEventListener("input", scheduleQuote); $("#asset-shares").addEventListener("input", scheduleQuote); $("#holding-search").addEventListener("input", render); $("#account-filter").addEventListener("change", async (event) => { const account = state.accounts.find((entry) => entry.id === event.target.value); if (account) { state.account = account; await loadData(); } }); $("#refresh-quotes").addEventListener("click", refreshPrices); $("#refresh-history").addEventListener("click", refreshHistory); $("#export-data").addEventListener("click", exportData);
+  $("#magic-link-form").addEventListener("submit", async (event) => {
+    event.preventDefault();
+    if (!state.client) return;
+    const { error } = await state.client.auth.signInWithOtp({
+      email: $("#email").value,
+      options: { emailRedirectTo: window.location.origin },
+    });
+    setText("#auth-message", error ? error.message : "Check your email for a sign-in link.");
+  });
+  $("#sign-out").addEventListener("click", async () => {
+    await state.client.auth.signOut();
+    window.location.reload();
+  });
+  $("#add-asset").addEventListener("click", openQuickAdd);
+  $("#close-dialog").addEventListener("click", () => $("#asset-dialog").close());
+  $("#cancel-dialog").addEventListener("click", () => $("#asset-dialog").close());
+  $("#asset-dialog").addEventListener("close", () => { $("#asset-dialog").hidden = true; });
+  $("#asset-form").addEventListener("submit", saveQuickAsset);
+  $("#asset-valuation-basis").addEventListener("change", syncQuickValuationFields);
+  $("#asset-symbol").addEventListener("input", scheduleQuote);
+  $("#asset-shares").addEventListener("input", scheduleQuote);
+  $("#holding-search").addEventListener("input", render);
+  $("#account-filter").addEventListener("change", async (event) => {
+    const account = state.accounts.find((entry) => entry.id === event.target.value);
+    if (account && state.client) {
+      state.account = account;
+      await loadData();
+    }
+  });
+  $("#refresh-quotes").addEventListener("click", refreshPrices);
+  $("#refresh-history").addEventListener("click", refreshHistory);
+  $("#export-data").addEventListener("click", exportData);
+  $("#asset-back").addEventListener("click", navigateHome);
+  $("#asset-cancel").addEventListener("click", renderAsset);
+  $("#asset-detail-form").addEventListener("submit", saveAssetDetails);
+  $("#asset-detail-valuation-basis").addEventListener("change", syncDetailValuationFields);
+  $("#asset-refresh-price").addEventListener("click", refreshCurrentAssetPrice);
+  window.addEventListener("hashchange", render);
   initialise();
 })();
