@@ -62,6 +62,12 @@ test("large currency display values use the shared compact format", () => {
   assert.match(homeSource, /setText\("#asset-total-value", row \? displayCurrency/);
 });
 
+test("holding cards use whole-dollar unit prices without rounding up", () => {
+  assert.match(homeSource, /function displayCardPrice\(valueCents\)/);
+  assert.match(homeSource, /Math\.trunc\(valueCents \/ 100\)/);
+  assert.match(homeSource, /: displayCardPrice\(row\.asset\.unitPriceCents\)/);
+});
+
 test("the quick add dialog keeps manual recovery out of the initial path", () => {
   assert.match(indexHtml, /id="asset-symbol"/);
   assert.match(indexHtml, /id="asset-shares"/);

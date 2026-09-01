@@ -38,6 +38,9 @@
         : currency.format(value);
     return formatted.replace(/[KMBT]/g, (suffix) => suffix.toLowerCase());
   }
+  function displayCardPrice(valueCents) {
+    return currency.format(Math.trunc(valueCents / 100));
+  }
   function escapeHtml(value) {
     return String(value ?? "").replace(/[&<>"']/g, (character) => ({
       "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;",
@@ -203,7 +206,7 @@
         ? "Manual value"
         : row.asset.unitPriceCents === null
           ? "Needs price"
-          : preciseCurrency.format(row.asset.unitPriceCents / 100);
+          : displayCardPrice(row.asset.unitPriceCents);
       const shares = row.asset.shares === null ? "" : `${Number(row.asset.shares).toLocaleString()} shares`;
       const card = document.createElement("article");
       card.className = "acadia-card is-content is-interactive";
