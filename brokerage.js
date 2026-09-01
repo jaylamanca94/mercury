@@ -7,6 +7,9 @@
   const compactCurrency = new Intl.NumberFormat("en-US", {
     style: "currency", currency: "USD", notation: "compact", maximumFractionDigits: 0,
   });
+  const thousandCurrency = new Intl.NumberFormat("en-US", {
+    style: "currency", currency: "USD", notation: "compact", maximumFractionDigits: 1,
+  });
   const millionCurrency = new Intl.NumberFormat("en-US", {
     style: "currency", currency: "USD", notation: "compact", maximumFractionDigits: 1,
   });
@@ -28,8 +31,10 @@
     if (!Number.isFinite(value)) return "—";
     const formatted = Math.abs(value) >= 1000000
       ? millionCurrency.format(value)
-      : Math.abs(value) >= 100000
+      : Math.abs(value) >= 10000
         ? compactCurrency.format(value)
+        : Math.abs(value) >= 1000
+          ? thousandCurrency.format(value)
         : currency.format(value);
     return formatted.replace(/[KMBT]/g, (suffix) => suffix.toLowerCase());
   }

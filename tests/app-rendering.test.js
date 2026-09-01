@@ -51,8 +51,10 @@ test("Home uses genuine performance history, dynamic investment controls, and Ac
 
 test("large currency display values use the shared compact format", () => {
   assert.match(homeSource, /function displayCurrency\(value\)/);
-  assert.match(homeSource, /Math\.abs\(value\) >= 100000/);
+  assert.match(homeSource, /Math\.abs\(value\) >= 10000/);
+  assert.match(homeSource, /Math\.abs\(value\) >= 1000/);
   assert.match(homeSource, /compactCurrency\.format\(value\)/);
+  assert.match(homeSource, /thousandCurrency\.format\(value\)/);
   assert.match(homeSource, /millionCurrency\.format\(value\)/);
   assert.match(homeSource, /\[KMBT\]/);
   assert.match(homeSource, /setText\("#metric-value", displayCurrency/);
