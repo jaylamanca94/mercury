@@ -13,7 +13,7 @@ Mercury is a private personal finance workspace. Its first shipped product surfa
 - Forms support mutual funds, ETFs, stocks, crypto, cash, and other assets.
 - Automatic Twelve Data quotes for eligible symbols, with quote source, as-of time, prior close, short server-side caching, retained last successful quote, and an explicit manual price or total-value fallback.
 - Calculated market value, allocation, target/weekly split, expected annual return, distribution yield, annual income, policy fields, and day movement.
-- Owner-only JSON export and daily America/New_York snapshots after market close. A history line appears only after two stored snapshots.
+- Daily America/New_York snapshots run after market close. A history line appears only after two stored snapshots. The owner-only export boundary remains private and is not exposed on Home.
 
 ## Boundaries
 

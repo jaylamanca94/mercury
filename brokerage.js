@@ -81,9 +81,7 @@
     return value ? value.replaceAll("-", " ").replace(/\b\w/g, (letter) => letter.toUpperCase()) : "Not set";
   }
   function setControlsDisabled(disabled) {
-    ["#add-asset", "#refresh-quotes", "#refresh-history", "#export-data"].forEach((selector) => {
-      $(selector).disabled = disabled;
-    });
+    $("#add-asset").disabled = disabled;
   }
 
   function renderHistory() {
@@ -480,28 +478,6 @@
     if (created.error) throw created.error;
     return created.data;
   }
-  async function refreshPrices() {
-    const holdings = state.holdings.filter((holding) => holding.valuation_basis === VALUATION_BASES.SHARES_AND_PRICE && holding.symbol);
-    if (!holdings.length) return setText("#data-status", "No price-based holdings are available to refresh.");
-    setText("#data-status", `Refreshing ${holdings.length} price${holdings.length === 1 ? "" : "s"}…`);
-    for (const holding of holdings) {
-      try {
-        const quote = await requestQuote(holding.symbol, holding.instrument_type);
-        const { error } = await state.client.from("holding_quotes").upsert({
-          holding_id: holding.id,
-          price_cents: quote.priceCents,
-          previous_close_cents: quote.priorCloseCents,
-          source: quote.source,
-          as_of: quote.asOf,
-        }, { onConflict: "holding_id,as_of" });
-        if (error) throw error;
-      } catch (error) {
-        setText("#data-status", `${error.message} Last successful quotes remain in place.`);
-      }
-    }
-    await loadData();
-    setText("#data-status", "Prices refreshed. Last successful provider values are retained if a lookup fails.");
-  }
   async function refreshCurrentAssetPrice() {
     const holding = state.holdings.find((entry) => entry.id === routeAssetId());
     if (!holding || holding.valuation_basis !== VALUATION_BASES.SHARES_AND_PRICE || !holding.symbol) {
@@ -523,30 +499,6 @@
     } catch (error) {
       setText("#asset-detail-status", `${error.message} Last successful quote remains in place.`);
     }
-  }
-  async function refreshHistory() {
-    const token = await sessionToken();
-    const response = await fetch("/api/portfolio/snapshot", { method: "POST", headers: { Authorization: `Bearer ${token}` } });
-    const data = await response.json();
-    if (!response.ok) return setText("#data-status", data.error || "History refresh failed.");
-    await loadData();
-    setText("#data-status", `History refreshed for ${data.snapshotDate}.`);
-  }
-  function exportData() {
-    const payload = {
-      exportedAt: new Date().toISOString(),
-      account: { name: state.account?.name || "Brokerage", currency: "USD" },
-      holdings: state.holdings,
-      quotes: state.quotes,
-      snapshots: state.snapshots,
-    };
-    const url = URL.createObjectURL(new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" }));
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = `mercury-brokerage-${new Date().toISOString().slice(0, 10)}.json`;
-    link.click();
-    URL.revokeObjectURL(url);
-    setText("#data-status", "Your private Brokerage export downloaded.");
   }
   function showUnconfigured(message) {
     state.configured = false;
@@ -608,9 +560,6 @@
   $("#asset-symbol").addEventListener("input", scheduleQuote);
   $("#asset-shares").addEventListener("input", scheduleQuote);
   $("#holding-search").addEventListener("input", render);
-  $("#refresh-quotes").addEventListener("click", refreshPrices);
-  $("#refresh-history").addEventListener("click", refreshHistory);
-  $("#export-data").addEventListener("click", exportData);
   $("#asset-back").addEventListener("click", navigateHome);
   $("#asset-cancel").addEventListener("click", renderAsset);
   $("#asset-detail-form").addEventListener("submit", saveAssetDetails);

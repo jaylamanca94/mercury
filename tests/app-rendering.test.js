@@ -19,12 +19,13 @@ test("Home consumes Acadia without a Mercury presentation layer", () => {
   assert.doesNotMatch(homeSource, /new window\.Chart|Chart\.js/);
 });
 
-test("Home retains the Acadia navigation, dashboard, and private brokerage boundary", () => {
+test("Home retains the Acadia navigation and a focused Brokerage dashboard", () => {
   assert.match(indexHtml, /class="acadia-responsive-navbar"/);
-  assert.match(indexHtml, /class="acadia-dashboard-layout"/);
+  assert.match(indexHtml, /<section class="acadia-dashboard-main" aria-label="Brokerage dashboard">/);
   assert.match(indexHtml, /Portfolio value/);
   assert.match(indexHtml, /Annual distributions/);
   assert.doesNotMatch(indexHtml, /id="account-filter"/);
+  assert.doesNotMatch(indexHtml, /Brokerage actions|Private workspace|refresh-quotes|refresh-history|export-data/);
   assert.match(indexHtml, /aria-disabled="true"[^>]*>Plan/);
   assert.match(indexHtml, /assets\/mercury-mark\.svg/);
 });
@@ -34,7 +35,7 @@ test("Home uses genuine snapshots, four holdings, and Acadia card actions", () =
   assert.match(homeSource, /slice\(0, 4\)/);
   assert.match(homeSource, /acadia-card-trend-chart/);
   assert.match(homeSource, /acadia-action-menu/);
-  assert.match(homeSource, /Last successful provider values are retained/);
+  assert.match(homeSource, /Last successful quote remains in place/);
 });
 
 test("the quick add dialog keeps manual recovery out of the initial path", () => {
