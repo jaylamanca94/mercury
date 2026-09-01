@@ -23,11 +23,12 @@ test("Home follows the Figma composition with a focused Brokerage dashboard", ()
   assert.match(indexHtml, /class="acadia-responsive-navbar"/);
   assert.match(indexHtml, /<section class="acadia-dashboard-main" aria-label="Brokerage dashboard">/);
   assert.match(indexHtml, /Portfolio value/);
-  assert.match(indexHtml, /Annual distributions/);
+  assert.match(indexHtml, /Annual dividends/);
   assert.match(indexHtml, />Performance</);
   assert.match(indexHtml, />Investments</);
   assert.match(indexHtml, /id="holding-sort"/);
   assert.match(indexHtml, /id="holding-filters"/);
+  assert.match(indexHtml, /id="performance-periods"/);
   assert.match(indexHtml, /id="holdings-count"/);
   assert.doesNotMatch(indexHtml, /id="account-filter"/);
   assert.doesNotMatch(indexHtml, /Brokerage actions|Private workspace|refresh-quotes|refresh-history|export-data/);
@@ -45,6 +46,10 @@ test("Home uses genuine performance history, dynamic investment controls, and Ac
   assert.match(homeSource, /holdingSort/);
   assert.match(homeSource, /matchingHoldingRows/);
   assert.match(homeSource, /renderHoldingFilters/);
+  assert.match(homeSource, /summarizePerformance/);
+  assert.match(homeSource, /data-performance-period/);
+  assert.match(homeSource, /control\.disabled = !hasHistory/);
+  assert.doesNotMatch(homeSource, /S&P 500/);
   assert.match(homeSource, /Recently updated/);
   assert.match(homeSource, /Last successful quote remains in place/);
 });

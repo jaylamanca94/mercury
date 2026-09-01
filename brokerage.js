@@ -1,7 +1,7 @@
 (() => {
   "use strict";
 
-  const { VALUATION_BASES, summarizePortfolio } = window.MercuryPortfolio;
+  const { PERFORMANCE_PERIODS, VALUATION_BASES, summarizePerformance, summarizePortfolio } = window.MercuryPortfolio;
   const $ = (selector) => document.querySelector(selector);
   const currency = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 });
   const compactCurrency = new Intl.NumberFormat("en-US", {
@@ -17,7 +17,7 @@
   const percentage = new Intl.NumberFormat("en-US", { style: "percent", maximumFractionDigits: 2 });
   const state = {
     client: null, user: null, account: null, accounts: [], holdings: [], quotes: [], snapshots: [],
-    configured: false, pendingQuote: null, quoteTimer: null, holdingFilter: "all", holdingSort: "value",
+    configured: false, pendingQuote: null, quoteTimer: null, holdingFilter: "all", holdingSort: "value", performancePeriod: "all",
   };
 
   function cents(value) {
@@ -41,13 +41,32 @@
   function displayCardPrice(valueCents) {
     return currency.format(Math.trunc(valueCents / 100));
   }
+  function displaySignedPercentage(value) {
+    const formatted = percentage.format(value);
+    return value > 0 ? `+${formatted}` : formatted;
+  }
+  function displaySignedCurrency(valueCents) {
+    const value = valueCents / 100;
+    const formatted = displayCurrency(value);
+    return value > 0 ? `+${formatted}` : formatted;
+  }
+  function setDelta(selector, value, formatter) {
+    const element = $(selector);
+    const isAvailable = Number.isFinite(value);
+    element.hidden = !isAvailable;
+    if (!isAvailable) return;
+    element.textContent = formatter(value);
+    element.classList.toggle("is-danger", value < 0);
+    element.classList.remove("is-warning");
+  }
   function escapeHtml(value) {
     return String(value ?? "").replace(/[&<>"']/g, (character) => ({
       "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;",
     })[character]);
   }
   function dateLabel(value) {
-    return new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric", timeZone: "America/New_York" }).format(new Date(value));
+    const date = /^\d{4}-\d{2}-\d{2}$/.test(value) ? new Date(`${value}T12:00:00.000Z`) : new Date(value);
+    return new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric", timeZone: "America/New_York" }).format(date);
   }
   function routeAssetId() {
     const match = window.location.hash.match(/^#asset\/([^/]+)$/);
@@ -107,25 +126,39 @@
     $("#add-asset").disabled = disabled;
   }
 
+  function renderPerformancePeriods() {
+    document.querySelectorAll("[data-performance-period]").forEach((control) => {
+      const period = control.dataset.performancePeriod;
+      const hasHistory = summarizePerformance(state.snapshots, period).snapshots.length >= 2;
+      control.disabled = !hasHistory;
+      control.classList.toggle("is-active", state.performancePeriod === period);
+      control.setAttribute("aria-selected", String(state.performancePeriod === period));
+    });
+  }
   function renderHistory() {
     const trend = $("#history-trend");
-    const snapshots = [...state.snapshots].sort((left, right) => left.snapshot_date.localeCompare(right.snapshot_date));
+    const performance = summarizePerformance(state.snapshots, state.performancePeriod);
+    const snapshots = performance.snapshots;
+    renderPerformancePeriods();
+    setDelta("#performance-rate", performance.changeRate, displaySignedPercentage);
+    setDelta("#performance-amount", performance.changeCents, displaySignedCurrency);
     if (snapshots.length < 2) {
       trend.innerHTML = '<span class="acadia-card-trend-empty">History appears after two New York daily snapshots.</span>';
       trend.setAttribute("aria-label", "Portfolio performance unavailable until two daily snapshots exist");
       setText("#history-summary", "A performance trend appears after two New York daily snapshots.");
-      return;
+      return performance;
     }
-    const values = snapshots.map((snapshot) => snapshot.total_value_cents / 100);
+    const values = snapshots.map((snapshot) => snapshot.totalValueCents / 100);
     const minimum = Math.min(...values);
     const maximum = Math.max(...values);
     const range = maximum - minimum || 1;
     const points = values.map((value, index) => `${(index / (values.length - 1)) * 100},${96 - ((value - minimum) / range) * 84}`);
     const area = `0,100 ${points.join(" ")} 100,100`;
     trend.innerHTML = `<svg class="acadia-card-trend-chart is-primary" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><polygon class="acadia-card-trend-area" points="${area}"></polygon><polyline class="acadia-card-trend-line" points="${points.join(" ")}"></polyline></svg>`;
-    const summary = `${dateLabel(snapshots[0].snapshot_date)} ${currency.format(values[0])} to ${dateLabel(snapshots.at(-1).snapshot_date)} ${currency.format(values.at(-1))}`;
+    const summary = `${dateLabel(snapshots[0].snapshotDate)} ${currency.format(values[0])} to ${dateLabel(snapshots.at(-1).snapshotDate)} ${currency.format(values.at(-1))}`;
     trend.setAttribute("aria-label", `Portfolio performance: ${summary}.`);
     setText("#history-summary", summary);
+    return performance;
   }
 
   function instrumentLabel(value) {
@@ -237,8 +270,13 @@
     $("#asset-workspace").hidden = true;
     setText("#metric-value", displayCurrency(summary.totalMarketValueCents / 100));
     setText("#metric-income", displayCurrency(summary.totalEstimatedAnnualIncomeCents / 100));
+    const performance = renderHistory();
+    setDelta("#metric-return", performance.changeRate, displaySignedPercentage);
+    const dividendYield = summary.totalMarketValueCents === 0
+      ? null
+      : summary.totalEstimatedAnnualIncomeCents / summary.totalMarketValueCents;
+    setDelta("#metric-income-yield", dividendYield, percentage.format.bind(percentage));
     setText("#portfolio-warnings", state.holdings.length ? summary.warnings.join(" ") : "");
-    renderHistory();
     renderHoldings(summary);
   }
 
@@ -649,6 +687,13 @@
     control.addEventListener("click", () => {
       state.holdingSort = control.dataset.holdingSort;
       $("#holding-sort").open = false;
+      render();
+    });
+  });
+  document.querySelectorAll("[data-performance-period]").forEach((control) => {
+    control.addEventListener("click", () => {
+      if (control.disabled) return;
+      state.performancePeriod = control.dataset.performancePeriod;
       render();
     });
   });

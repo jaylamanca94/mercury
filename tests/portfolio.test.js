@@ -6,10 +6,13 @@ const {
   ALLOCATION_CATEGORIES,
   CONTRIBUTION_FREQUENCIES,
   INSTRUMENT_TYPES,
+  PERFORMANCE_PERIODS,
   VALUATION_BASES,
   calculateAsset,
   normalizeAsset,
+  performanceSnapshots,
   summarizePortfolio,
+  summarizePerformance,
 } = require("../portfolio");
 
 const baseAsset = {
@@ -167,4 +170,29 @@ test("an empty portfolio has no invented allocations or day baseline", () => {
     "Some assets do not have a target allocation.",
     "Some assets do not have a weekly contribution allocation.",
   ]);
+});
+
+test("performance periods use only persisted daily snapshots and calculate an authentic range return", () => {
+  const snapshots = [
+    { snapshot_date: "2025-01-01", total_value_cents: 100_000 },
+    { snapshot_date: "2026-03-01", total_value_cents: 120_000 },
+    { snapshot_date: "2026-06-01", total_value_cents: 135_000 },
+    { snapshot_date: "2026-09-01", total_value_cents: 150_000 },
+  ];
+  const all = summarizePerformance(snapshots);
+  const threeMonths = summarizePerformance(snapshots, "3m");
+
+  assert.deepEqual(Object.keys(PERFORMANCE_PERIODS), ["all", "1y", "6m", "3m"]);
+  assert.equal(all.changeCents, 50_000);
+  assert.equal(all.changeRate, 0.5);
+  assert.deepEqual(performanceSnapshots(snapshots, "3m").map((snapshot) => snapshot.snapshotDate), ["2026-06-01", "2026-09-01"]);
+  assert.equal(threeMonths.changeCents, 15_000);
+  assert.ok(Math.abs(threeMonths.changeRate - (150_000 / 135_000 - 1)) < Number.EPSILON);
+});
+
+test("performance returns stay unavailable until a range has two authentic snapshots", () => {
+  const performance = summarizePerformance([{ snapshot_date: "2026-09-01", total_value_cents: 150_000 }], "all");
+
+  assert.equal(performance.changeCents, null);
+  assert.equal(performance.changeRate, null);
 });

@@ -32,6 +32,12 @@ const ALLOCATION_CATEGORIES = Object.freeze([
 ]);
 
 const CONTRIBUTION_FREQUENCIES = Object.freeze(["weekly", "monthly"]);
+const PERFORMANCE_PERIODS = Object.freeze({
+  all: null,
+  "1y": { years: 1 },
+  "6m": { months: 6 },
+  "3m": { months: 3 },
+});
 
 class PortfolioValidationError extends Error {
   constructor(message) {
@@ -253,6 +259,52 @@ function isCompleteAllocation(assets, field) {
   return assets.every((asset) => asset[field] !== null);
 }
 
+function normalizeSnapshot(snapshot) {
+  if (!snapshot || typeof snapshot !== "object" || Array.isArray(snapshot)) {
+    throw new PortfolioValidationError("snapshot must be an object");
+  }
+  const snapshotDate = requiredText(snapshot.snapshot_date, "snapshot_date");
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(snapshotDate) || Number.isNaN(Date.parse(`${snapshotDate}T12:00:00.000Z`))) {
+    validationError("snapshot_date", "must be a calendar date");
+  }
+  const totalValueCents = Number(snapshot.total_value_cents);
+  if (!Number.isSafeInteger(totalValueCents) || totalValueCents < 0) {
+    validationError("total_value_cents", "must be a non-negative whole number of cents");
+  }
+  return { snapshotDate, totalValueCents };
+}
+
+function performanceSnapshots(snapshots, period = "all") {
+  if (!Array.isArray(snapshots)) throw new PortfolioValidationError("snapshots must be an array");
+  if (!Object.hasOwn(PERFORMANCE_PERIODS, period)) {
+    validationError("period", `must be one of: ${Object.keys(PERFORMANCE_PERIODS).join(", ")}`);
+  }
+  const normalized = snapshots.map(normalizeSnapshot).sort((left, right) => left.snapshotDate.localeCompare(right.snapshotDate));
+  const duration = PERFORMANCE_PERIODS[period];
+  if (!duration || normalized.length === 0) return normalized;
+
+  const end = new Date(`${normalized.at(-1).snapshotDate}T12:00:00.000Z`);
+  if (duration.years) end.setUTCFullYear(end.getUTCFullYear() - duration.years);
+  if (duration.months) end.setUTCMonth(end.getUTCMonth() - duration.months);
+  const startDate = end.toISOString().slice(0, 10);
+  return normalized.filter((snapshot) => snapshot.snapshotDate >= startDate);
+}
+
+function summarizePerformance(snapshots, period = "all") {
+  const range = performanceSnapshots(snapshots, period);
+  if (range.length < 2) {
+    return { snapshots: range, changeCents: null, changeRate: null };
+  }
+  const start = range[0].totalValueCents;
+  const end = range.at(-1).totalValueCents;
+  const changeCents = end - start;
+  return {
+    snapshots: range,
+    changeCents,
+    changeRate: start === 0 ? null : changeCents / start,
+  };
+}
+
 function summarizePortfolio(assets, { weeklyContributionCents = 0 } = {}) {
   if (!Array.isArray(assets)) throw new PortfolioValidationError("assets must be an array");
   const weeklyContribution = requiredMoney(weeklyContributionCents, "weeklyContributionCents");
@@ -317,12 +369,15 @@ const portfolioContract = {
   CONTRIBUTION_FREQUENCIES,
   DISTRIBUTION_POLICIES,
   INSTRUMENT_TYPES,
+  PERFORMANCE_PERIODS,
   PortfolioValidationError,
   VALUATION_BASES,
   calculateAsset,
   marketValueCents,
   normalizeAsset,
+  performanceSnapshots,
   summarizePortfolio,
+  summarizePerformance,
 };
 
 if (typeof module !== "undefined") module.exports = portfolioContract;
