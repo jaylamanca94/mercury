@@ -4,6 +4,9 @@
   const { VALUATION_BASES, summarizePortfolio } = window.MercuryPortfolio;
   const $ = (selector) => document.querySelector(selector);
   const currency = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 });
+  const compactCurrency = new Intl.NumberFormat("en-US", {
+    style: "currency", currency: "USD", notation: "compact", maximumFractionDigits: 0,
+  });
   const preciseCurrency = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", minimumFractionDigits: 2, maximumFractionDigits: 2 });
   const percentage = new Intl.NumberFormat("en-US", { style: "percent", maximumFractionDigits: 2 });
   const state = {
@@ -18,6 +21,11 @@
     return value === null || value === undefined || value === "" ? null : Number(value) / 100;
   }
   function setText(selector, value) { $(selector).textContent = value; }
+  function displayCurrency(value) {
+    if (!Number.isFinite(value)) return "—";
+    const formatted = Math.abs(value) >= 100000 ? compactCurrency.format(value) : currency.format(value);
+    return formatted.replace(/[KMBT]/g, (suffix) => suffix.toLowerCase());
+  }
   function escapeHtml(value) {
     return String(value ?? "").replace(/[&<>"']/g, (character) => ({
       "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;",
@@ -75,7 +83,7 @@
     );
   }
   function valueBadge(valueCents) {
-    return `<span class="acadia-badge acadia-badge-grey acadia-badge-round">${currency.format(valueCents / 100)}</span>`;
+    return `<span class="acadia-badge acadia-badge-grey acadia-badge-round">${displayCurrency(valueCents / 100)}</span>`;
   }
   function displayPolicy(value) {
     return value ? value.replaceAll("-", " ").replace(/\b\w/g, (letter) => letter.toUpperCase()) : "Not set";
@@ -212,8 +220,8 @@
   function renderHome(summary) {
     $("#home-workspace").hidden = false;
     $("#asset-workspace").hidden = true;
-    setText("#metric-value", currency.format(summary.totalMarketValueCents / 100));
-    setText("#metric-income", currency.format(summary.totalEstimatedAnnualIncomeCents / 100));
+    setText("#metric-value", displayCurrency(summary.totalMarketValueCents / 100));
+    setText("#metric-income", displayCurrency(summary.totalEstimatedAnnualIncomeCents / 100));
     setText("#portfolio-warnings", state.holdings.length ? summary.warnings.join(" ") : "");
     renderHistory();
     renderHoldings(summary);
@@ -261,8 +269,8 @@
     setText("#asset-subtitle", holding.name || holding.instrument_type.replaceAll("-", " "));
     setText("#asset-price", price);
     setText("#asset-status", quote ? `${quote.source} quote as of ${dateLabel(quote.as_of)}.` : hasManualValuation ? "Manual valuation is authoritative." : "No price has been recorded for this asset.");
-    setText("#asset-total-value", row ? currency.format(row.marketValueCents / 100) : "Unavailable");
-    setText("#asset-income", row?.estimatedAnnualIncomeCents === null || !row ? "Not set" : currency.format(row.estimatedAnnualIncomeCents / 100));
+    setText("#asset-total-value", row ? displayCurrency(row.marketValueCents / 100) : "Unavailable");
+    setText("#asset-income", row?.estimatedAnnualIncomeCents === null || !row ? "Not set" : displayCurrency(row.estimatedAnnualIncomeCents / 100));
     setText("#asset-return-stat", asset.expectedAnnualReturnRate === null ? "Not set" : percentage.format(asset.expectedAnnualReturnRate));
     setText("#asset-yield-stat", asset.distributionYieldRate === null ? "Not set" : percentage.format(asset.distributionYieldRate));
     setText("#asset-quote-source", quote?.source || (holding.manual_price_cents !== null ? "Manual price" : "No quote recorded."));

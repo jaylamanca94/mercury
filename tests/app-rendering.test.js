@@ -49,6 +49,16 @@ test("Home uses genuine performance history, dynamic investment controls, and Ac
   assert.match(homeSource, /Last successful quote remains in place/);
 });
 
+test("large currency display values use the shared compact format", () => {
+  assert.match(homeSource, /function displayCurrency\(value\)/);
+  assert.match(homeSource, /Math\.abs\(value\) >= 100000/);
+  assert.match(homeSource, /compactCurrency\.format\(value\)/);
+  assert.match(homeSource, /\[KMBT\]/);
+  assert.match(homeSource, /setText\("#metric-value", displayCurrency/);
+  assert.match(homeSource, /valueBadge\(valueCents\)[\s\S]*displayCurrency/);
+  assert.match(homeSource, /setText\("#asset-total-value", row \? displayCurrency/);
+});
+
 test("the quick add dialog keeps manual recovery out of the initial path", () => {
   assert.match(indexHtml, /id="asset-symbol"/);
   assert.match(indexHtml, /id="asset-shares"/);
