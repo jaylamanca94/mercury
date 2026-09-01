@@ -1,15 +1,15 @@
 # Mercury Flow Registry
 
-> **Canonical active flow: sign in privately, add or update a Brokerage holding, then understand its calculated place in the portfolio.**
+> **Canonical active flow: sign in privately, add or update a Brokerage holding, then understand it from Home.**
 
-**Last reviewed:** 2026-08-30
+**Last reviewed:** 2026-09-01
 
 | Flow | Product status | Meaningful entry → successful outcome | Major states | QA coverage |
 | --- | --- | --- | --- | --- |
 | Sign in to the private workspace | Implemented; requires Supabase configuration to operate. | Brokerage → email magic link → authenticated owner account. | Configuration missing/sample; signed out; magic link sent; signed in; sign out. | DOM and server contract coverage; credential-backed auth remains an environment acceptance gate. |
-| Add a holding | Implemented. | Add asset → choose instrument, category and valuation basis → save the owner-scoped holding. | Valid; invalid; custom-policy note required; manual price/value fallback; saving; saved; error. | Portfolio validation tests and browser-ready form contract. |
+| Add a holding | Implemented. | Home → Add asset → symbol + shares → automatic quote → save; use manual valuation only after an unavailable quote. | Valid; invalid; automatic quote; manual price/value fallback; saving; saved; error. | Portfolio validation, quote-adapter and browser form checks. |
 | Retrieve or refresh an automatic quote | Implemented; requires Twelve Data configuration. | Symbol and shares → look up quote → price, prior close, value and freshness update. | Fresh; provider unavailable; unsupported; retained last quote; manual fallback. | Quote-adapter tests for mutual-fund/ETF/crypto symbol mapping and failed provider data. |
-| Understand current Brokerage position | Implemented. | Brokerage → scan summary, holdings, allocation, income and table. | Empty; sample; private loaded; incomplete prior close; complete day movement; allocation warning. | Calculation tests cover totals, allocation, targets, yields, income, weekly split and day change. |
+| Understand current Brokerage position | Implemented. | Home → scan value, annual distributions, authentic history, then the four largest holdings; search or open an asset's Edit details action when needed. | Empty; sample; private loaded; fewer than two snapshots; search no-match; allocation warning. | Home structure, Acadia boundary and calculation tests. |
 | Build daily value history | Implemented; requires configured snapshot service. | Refresh history or scheduled close → one daily account snapshot → history line after the second day. | No snapshots; one snapshot; two or more; schedule before close; idempotent daily upsert; failure. | New York date, market-close gate and latest-quote valuation tests. |
 | Export private Brokerage data | Implemented. | Export → owner downloads a JSON copy of their Brokerage holdings, quotes and snapshots. | Sample export; signed-in owner export. | Client export contract; RLS database acceptance required after migration. |
 

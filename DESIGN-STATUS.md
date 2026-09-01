@@ -1,18 +1,18 @@
 # Mercury — Design Status
 
-> **Active-flow headline:** Brokerage now has a form-first private workspace with value, allocation, income, and history visualisation. The visual contract is implemented; live authentication and quotes require the configured Supabase and Twelve Data environment.
+> **Active-flow headline:** Home now presents the private Brokerage account through Acadia-native metrics, authentic history, and the four largest holdings. Live authentication and quotes still require configured Supabase and Twelve Data environments.
 
-**Last reviewed:** 2026-08-30
+**Last reviewed:** 2026-09-01
 
 ## Verified signals
 
 | Signal | Current status |
 | --- | --- |
-| Active surface | One Brokerage workspace; legacy public-market navigation is removed from the entry point. |
-| Data states | Honest sample, signed-out, quote unavailable/manual fallback, incomplete day baseline, and two-snapshot history threshold are present. |
-| Visual language | Dense spreadsheet-derived table, warm paper canvas, dark utility chrome, restrained teal charts, and Acadia control/focus anatomy. |
-| Responsive behaviour | Desktop uses four metrics/two chart columns; tablet reduces summary density; phone uses a single chart column and scrollable data table. |
-| Accessibility | Semantic table, labelled form controls, visible focus, dialog labels, live status copy, and textual chart summaries are present. |
+| Active surface | One Home dashboard backed by the Brokerage account; legacy public-market navigation is removed from the entry point. |
+| Data states | Honest sample, signed-out, automatic quote, unavailable/manual fallback, and the two-snapshot history threshold are present. |
+| Visual language | Canonical Acadia only: responsive navigation, content cards, metrics, forms, dialogs, badges, status rows, and trend treatment. |
+| Responsive behaviour | Acadia collapses the dashboard and card grids to one clear reading order on phone widths. |
+| Accessibility | Semantic landmarks, labelled controls, visible Acadia focus, native dialog semantics, live status copy, and textual history summaries are present. |
 
 ## Next design opportunities
 

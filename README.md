@@ -1,6 +1,6 @@
 # Mercury
 
-Mercury is a private personal-finance workspace. Brokerage is the only active product surface: forms create owner-scoped holdings and drive the value, allocation, income, and history dashboard.
+Mercury is a private personal-finance workspace. Home is the only active product surface: it presents the owner's Brokerage account with value, income, authentic daily history, and the four largest holdings.
 
 ## Setup
 
@@ -32,7 +32,8 @@ No package installation is needed for the dependency-free checks.
 
 ## Key files
 
-- `index.html`, `brokerage.js`, `styles.css` — the private Brokerage workspace.
+- `index.html`, `brokerage.js` — the private Home dashboard and simplified asset-entry flow.
+- `acadia.css`, `fonts/` — the canonical Acadia stylesheet and font assets, vendored unchanged; `styles.css` only imports this system asset.
 - `portfolio.js` — cent-based calculation and validation contract, also exposed to the browser.
 - `api/portfolio/` — protected quote and snapshot endpoints.
 - `supabase/migrations/20260830_brokerage_mvp.sql` — account, holding, quote, snapshot and RLS schema.

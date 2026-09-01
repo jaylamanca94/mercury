@@ -2,7 +2,16 @@
 
 Use this file as the visual and interaction source of truth for Mercury. Keep this document updated as Mercury evolves.
 
-> **Brokerage MVP update — 2026-08-30:** Brokerage is the only active product workspace. The legacy economy-dashboard guidance below remains historical reference only and must not guide new product work.
+> **Home update — 2026-09-01:** Home is the only active product workspace. It uses Acadia exclusively; the legacy economy-dashboard guidance below is historical reference only and must not guide new product work.
+
+## Home design contract
+
+- Figma establishes Home's content hierarchy: navigation, dashboard header, authentic history, two summary cards, and four largest-holding cards. Acadia establishes every rendered visual treatment and responsive rule.
+- Consume canonical `acadia.css` and its font assets unchanged. Do not create local visual tokens, component rules, chart styles, layout rules, or responsive overrides in Mercury.
+- Use Acadia Responsive Navbar, Page Header, Form/Search, Dashboard, Content Card, Card Trend, Status Row, Badge, Action Menu, Dialog, and Button contracts directly.
+- Home keeps only Brokerage in the Account filter until another real owner account exists. Do not show pretend account data or call Brokerage-only value "net worth".
+- The trend renders only persisted daily snapshots. It uses the Acadia Card Trend presentation with a textual alternative; absent history uses Acadia's explicit empty state.
+- The quick Add asset dialog is limited to Symbol and Shares. Advanced details and manual valuation recovery remain hidden until genuinely required.
 
 ## Brokerage MVP visual contract
 
@@ -62,14 +71,14 @@ informational, source-backed, and explicitly not a trading or investment-advice 
 
 Use this file as the visual source of truth for `Mercury`. Update it whenever spacing, color, typography, icon sizing, chart treatments, interaction feel, accessibility, or reusable utilities change.
 
-### Acadia Adapter
+### Acadia foundation
 
-Mercury now treats `../Acadia` as the shared coded design-system baseline. Before adding a local UI style, check Acadia's live docs, operating model, foundations, templates, patterns, and CSS primitives for the needed layout, control, surface, state, icon, chart, or responsive behavior.
+Mercury treats `../Acadia` as its complete coded design-system boundary. Before adding a UI surface, use Acadia's live docs, operating model, foundations, templates, patterns, and CSS primitives.
 
 - Use Acadia primitives for shared product language: control anatomy, select arrows, search inputs, focus rings, raised rows, table/form behavior, dashboard status rows, command search, sheets, dialogs, and responsive spacing.
-- Map Mercury variables onto Acadia-style adapter variables in `styles.css` before creating a new one-off component rule.
-- Mercury's implemented adapter uses Acadia tokens for the app chrome, no-capsule desktop header navigation, floating glass mobile dock navigation, page shell, translucent surfaces, metric cards, native selects, icon actions, badges, focus rings, status rows, shadows, radius, system-first theme toggle behavior, and responsive page margins.
-- Mercury's dashboard polish layer may add subtle economic-weather atmosphere, trust/source chips, chart wells, and state-tinted icons as long as the underlying Acadia surface, card, control, focus, and responsive contracts remain intact.
+- Do not map, adapt, or override Acadia tokens in Mercury. `styles.css` only imports the canonical Acadia stylesheet.
+- Mercury consumes Acadia directly for chrome, responsive navigation, page shell, content cards, metrics, controls, badges, focus, status, dialog, typography, and spacing.
+- If a neutral primitive is missing, extend Acadia before using it in Mercury; do not create a Mercury equivalent.
 - Static pages with the floating mobile dock must opt into `viewport-fit=cover` and keep the
   browser `theme-color` synchronized with the effective Light or Dark theme, so iOS safe-area
   spacing and mobile browser chrome match the visible app canvas.

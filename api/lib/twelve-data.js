@@ -35,14 +35,27 @@ async function getQuote({ symbol, instrumentType }) {
   if (cached && Date.now() - cached.savedAt < QUOTE_CACHE_TTL_MS) return cached.value;
   if (!process.env.TWELVE_DATA_API_KEY) throw new Error("Quotes are not configured yet.");
 
-  const url = new URL("https://api.twelvedata.com/quote");
-  url.searchParams.set("symbol", normalisedSymbol);
-  url.searchParams.set("apikey", process.env.TWELVE_DATA_API_KEY);
-  const response = await fetch(url, { headers: { Accept: "application/json" } });
-  if (!response.ok) throw new Error("The quote provider is unavailable. Your last successful quote is retained.");
-  const value = mapQuote(await response.json(), normalisedSymbol);
-  quoteCache.set(cacheKey, { value, savedAt: Date.now() });
-  return value;
+  async function fetchQuote(providerSymbol) {
+    const url = new URL("https://api.twelvedata.com/quote");
+    url.searchParams.set("symbol", providerSymbol);
+    url.searchParams.set("apikey", process.env.TWELVE_DATA_API_KEY);
+    const response = await fetch(url, { headers: { Accept: "application/json" } });
+    if (!response.ok) throw new Error("The quote provider is unavailable. Your last successful quote is retained.");
+    return mapQuote(await response.json(), providerSymbol);
+  }
+
+  try {
+    const value = { ...await fetchQuote(normalisedSymbol), instrumentType: instrumentType || "other" };
+    quoteCache.set(cacheKey, { value, savedAt: Date.now() });
+    return value;
+  } catch (error) {
+    const canTryUsdPair = (!instrumentType || instrumentType === "other") && !normalisedSymbol.includes("/");
+    if (!canTryUsdPair) throw error;
+    const cryptoSymbol = `${normalisedSymbol}/USD`;
+    const value = { ...await fetchQuote(cryptoSymbol), instrumentType: "crypto" };
+    quoteCache.set(cacheKey, { value, savedAt: Date.now() });
+    return value;
+  }
 }
 
 module.exports = { QUOTE_CACHE_TTL_MS, _internals: { dollarsToCents, mapQuote, normaliseSymbol }, getQuote };
