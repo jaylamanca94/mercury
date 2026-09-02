@@ -19,6 +19,9 @@ test("Home consumes Acadia without a Mercury presentation layer", () => {
   assert.match(indexHtml, /data-acadia-layout="wide"/);
   assert.match(indexHtml, /data-acadia-page-frame="spacious"/);
   assert.match(indexHtml, /id="main-content" class="acadia-shell acadia-mobile-dock-safe-area"/);
+  assert.match(indexHtml, /id="home-workspace" class="acadia-stack" hidden/);
+  assert.match(indexHtml, /id="portfolio-workspace" class="acadia-stack" hidden aria-live="polite"/);
+  assert.match(indexHtml, /id="asset-workspace" class="acadia-stack" hidden aria-live="polite"/);
   assert.match(acadiaStyles, /\[data-acadia-page-frame="spacious"\]/);
   assert.match(acadiaStyles, /\.acadia-card\.is-dashboard-trend/);
   assert.doesNotMatch(indexHtml, /brokerage-/);
@@ -149,7 +152,7 @@ test("Home never falls back to fabricated assets and Portfolio is a functional r
   assert.match(homeSource, /routePortfolio/);
   assert.match(homeSource, /renderPortfolio/);
   assert.match(homeSource, /setActiveNavigation\("portfolio"\)/);
-  assert.match(indexHtml, /id="portfolio-workspace" hidden/);
+  assert.match(indexHtml, /id="portfolio-workspace" class="acadia-stack" hidden/);
   assert.match(indexHtml, /id="portfolio-search"/);
   assert.match(indexHtml, /id="portfolio-add-asset"/);
   assert.match(indexHtml, /id="portfolio-holding-sort"/);
@@ -163,7 +166,7 @@ test("Home never falls back to fabricated assets and Portfolio is a functional r
   assert.match(homeSource, /matchingPortfolioHoldingRows/);
   assert.match(homeSource, /renderPortfolioHoldings/);
   assert.doesNotMatch(portfolioWorkspace, /Holdings remain on Home for now|Portfolio workspace is on its way|acadia-card-trend|<svg/);
-  assert.match(indexHtml, /id="asset-workspace" hidden/);
+  assert.match(indexHtml, /id="asset-workspace" class="acadia-stack" hidden/);
   assert.match(indexHtml, /id="asset-back"/);
   assert.match(indexHtml, /id="asset-detail-form"/);
 });
