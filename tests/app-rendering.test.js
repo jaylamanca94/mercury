@@ -162,7 +162,7 @@ test("Portfolio cards show the Figma return and dividend-yield metrics without c
   assert.match(homeSource, /annualizedReturnRate/);
   assert.match(homeSource, /Trailing 12-month dividend yield/);
   assert.match(homeSource, /\["crypto", "cash"\]/);
-  assert.match(homeSource, /Number\.isFinite\(value\) \? percentage\.format\(value\) : "Not set"/);
+  assert.match(homeSource, /isLoading \? "Loading…" : "Not set"/);
   assert.match(homeSource, /fa-chart-line/);
   assert.match(homeSource, /fa-coins/);
   assert.match(homeSource, /aria-label="\$\{label\}: \$\{displayValue\}"/);
@@ -170,6 +170,7 @@ test("Portfolio cards show the Figma return and dividend-yield metrics without c
   assert.match(portfolioRenderer, /renderHoldingCards\(grid, rows, \{ showMetrics: true \}\)/);
   assert.match(homeSource, /function hydrateProviderMetrics\(\)/);
   assert.match(homeSource, /includeMetrics: true/);
+  assert.match(homeSource, /providerMetricsPending/);
 });
 
 test("the quick add dialog keeps manual recovery out of the initial path", () => {

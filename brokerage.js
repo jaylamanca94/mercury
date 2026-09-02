@@ -24,7 +24,7 @@
   const TARGET_ALLOCATION_TOLERANCE = 0.02;
   const state = {
     client: null, user: null, account: null, accounts: [], holdings: [], quotes: [], snapshots: [],
-    providerMetrics: {}, configured: false, pendingQuote: null, quoteTimer: null, holdingFilter: "all", holdingSort: "value", portfolioFilter: "all", portfolioSort: "value", performancePeriod: "all",
+    providerMetrics: {}, providerMetricsPending: new Set(), configured: false, pendingQuote: null, quoteTimer: null, holdingFilter: "all", holdingSort: "value", portfolioFilter: "all", portfolioSort: "value", performancePeriod: "all",
   };
 
   function cents(value) {
@@ -296,6 +296,7 @@
   }
   function holdingCardMetrics(row) {
     const live = state.providerMetrics[row.asset.id] || {};
+    const isLoading = state.providerMetricsPending.has(row.asset.id);
     const years = live.annualizedReturnYears;
     const returnLabel = Number.isFinite(years)
       ? `${years >= 4.75 ? "Five-year" : `${years}-year`} annualised return`
@@ -315,7 +316,7 @@
       });
     }
     return `<div class="acadia-icon-with-text-row" aria-label="Investment metrics">${metrics.map(({ icon, label, value }) => {
-      const displayValue = Number.isFinite(value) ? percentage.format(value) : "Not set";
+      const displayValue = Number.isFinite(value) ? percentage.format(value) : isLoading ? "Loading…" : "Not set";
       return `<span class="acadia-icon-with-text acadia-icon-with-text-brand" aria-label="${label}: ${displayValue}"><span class="acadia-icon-with-text-icon"><i class="fa-solid ${icon} acadia-icon" aria-hidden="true"></i></span><span>${displayValue}</span></span>`;
     }).join("")}</div>`;
   }
@@ -839,20 +840,12 @@
       holding.symbol &&
       holding.instrument_type !== "cash"
     ));
-    const results = [];
-    for (const holding of candidates) {
-      try {
-        results.push({
-          status: "fulfilled",
-          value: {
-            holdingId: holding.id,
-            quote: await requestQuote(holding.symbol, holding.instrument_type, { includeMetrics: true }),
-          },
-        });
-      } catch (reason) {
-        results.push({ status: "rejected", reason });
-      }
-    }
+    state.providerMetricsPending = new Set(candidates.map((holding) => holding.id));
+    render();
+    const results = await Promise.allSettled(candidates.map(async (holding) => ({
+      holdingId: holding.id,
+      quote: await requestQuote(holding.symbol, holding.instrument_type, { includeMetrics: true }),
+    })));
     const metrics = results.reduce((next, result) => {
       if (result.status !== "fulfilled") return next;
       const { holdingId, quote } = result.value;
@@ -863,10 +856,9 @@
       };
       return next;
     }, {});
-    if (Object.keys(metrics).length) {
-      state.providerMetrics = { ...state.providerMetrics, ...metrics };
-      render();
-    }
+    state.providerMetrics = { ...state.providerMetrics, ...metrics };
+    state.providerMetricsPending = new Set();
+    render();
   }
   function showUnconfigured(message) {
     state.configured = false;

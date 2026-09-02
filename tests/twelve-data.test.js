@@ -81,6 +81,25 @@ test("calculates annualised return from Yahoo adjusted-close history as a covera
   assert.ok(Math.abs(performance.annualizedReturnRate - 0.1) < 0.0002);
 });
 
+test("calculates both portfolio card metrics from one Yahoo market-history response", () => {
+  const metrics = _internals.mapYahooPortfolioMetrics({
+    chart: {
+      result: [{
+        timestamp: [1630454400, 1788220800],
+        indicators: {
+          quote: [{ close: [100, 120] }],
+          adjclose: [{ adjclose: [100, 161.05] }],
+        },
+        events: { dividends: { distribution: { date: 1780000000, amount: 1.2 } } },
+      }],
+    },
+  }, "mutual-fund");
+
+  assert.equal(metrics.annualizedReturnYears, 5);
+  assert.equal(metrics.annualDividendCents, 120);
+  assert.equal(metrics.distributionYieldRate, 0.01);
+});
+
 test("rejects provider responses that would create a fabricated price", () => {
   assert.throws(() => _internals.mapQuote({ status: "error", message: "Unknown symbol" }, "NOPE"), /Unknown symbol/);
 });

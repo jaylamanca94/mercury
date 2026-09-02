@@ -4,6 +4,7 @@ const PERFORMANCE_CACHE_TTL_MS = 24 * 60 * 60 * 1000;
 const quoteCache = new Map();
 const distributionCache = new Map();
 const performanceCache = new Map();
+const portfolioMetricsCache = new Map();
 const CRYPTO_TICKERS = new Set(["BTC", "ETH", "SOL", "LINK", "AVAX", "SHIB", "ETC"]);
 
 function isCryptoSymbol(value, instrumentType) {
@@ -120,6 +121,57 @@ function mapYahooPerformance(payload) {
     datetime: new Date(timestamp * 1000).toISOString(),
     close: adjustedCloses[index],
   })));
+}
+
+function mapYahooPortfolioMetrics(payload, resolvedType) {
+  const result = payload?.chart?.result?.[0];
+  const performance = mapYahooPerformance(payload);
+  if (!result || resolvedType === "crypto" || resolvedType === "cash") {
+    return { ...performance, annualDividendCents: null, distributionYieldRate: null };
+  }
+
+  const closes = result.indicators?.quote?.[0]?.close || [];
+  const latestPrice = [...closes].reverse().find((value) => Number.isFinite(value) && value > 0);
+  if (!Number.isFinite(latestPrice)) {
+    return { ...performance, annualDividendCents: null, distributionYieldRate: null };
+  }
+  const cutoff = Date.now() - 365.25 * 24 * 60 * 60 * 1000;
+  const dividends = Object.values(result.events?.dividends || {}).filter((dividend) => (
+    Number.isFinite(Number(dividend?.date) * 1000) && Number(dividend.date) * 1000 >= cutoff
+  ));
+  const amounts = dividends.map((dividend) => Number(dividend?.amount));
+  if (amounts.some((amount) => !Number.isFinite(amount) || amount < 0)) {
+    return { ...performance, annualDividendCents: null, distributionYieldRate: null };
+  }
+  const annualDividendCents = Math.round(amounts.reduce((total, amount) => total + amount, 0) * 100);
+  return {
+    ...performance,
+    annualDividendCents,
+    distributionYieldRate: annualDividendCents / Math.round(latestPrice * 100),
+  };
+}
+
+async function getPortfolioMetrics({ symbol, instrumentType }) {
+  const normalisedSymbol = normaliseSymbol(symbol, instrumentType);
+  const resolvedInstrumentType = isCryptoSymbol(normalisedSymbol, instrumentType) ? "crypto" : instrumentType || "other";
+  const cacheKey = `${resolvedInstrumentType}:${normalisedSymbol}`;
+  const cached = portfolioMetricsCache.get(cacheKey);
+  if (cached && Date.now() - cached.savedAt < PERFORMANCE_CACHE_TTL_MS) return cached.value;
+
+  const yahooSymbol = normalisedSymbol.replace("/USD", "-USD");
+  const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(yahooSymbol)}?range=5y&interval=1mo&events=div`;
+  const response = await fetch(url, {
+    headers: { Accept: "application/json", "User-Agent": "Mercury portfolio source bridge" },
+  });
+  if (!response.ok) throw new Error("Historical market data is unavailable for this asset.");
+  const value = {
+    symbol: normalisedSymbol,
+    instrumentType: resolvedInstrumentType,
+    source: "Yahoo Finance",
+    ...mapYahooPortfolioMetrics(await response.json(), resolvedInstrumentType),
+  };
+  portfolioMetricsCache.set(cacheKey, { value, savedAt: Date.now() });
+  return value;
 }
 
 async function getQuote({ symbol, instrumentType, includeMetrics = false }) {
@@ -247,6 +299,7 @@ module.exports = {
   QUOTE_CACHE_TTL_MS,
   DISTRIBUTION_CACHE_TTL_MS,
   PERFORMANCE_CACHE_TTL_MS,
-  _internals: { annualizedReturn, dollarsToCents, isCryptoSymbol, mapDistribution, mapQuote, mapYahooDistribution, mapYahooPerformance, normaliseRate, normaliseSymbol },
+  _internals: { annualizedReturn, dollarsToCents, isCryptoSymbol, mapDistribution, mapQuote, mapYahooDistribution, mapYahooPerformance, mapYahooPortfolioMetrics, normaliseRate, normaliseSymbol },
   getQuote,
+  getPortfolioMetrics,
 };
