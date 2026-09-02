@@ -66,6 +66,19 @@ test("Portfolio follows the Figma navigation order without reviving unavailable 
   assert.doesNotMatch(desktopNav, /Explore|History/);
 });
 
+test("Mercury composes the complete Acadia responsive Navbar", () => {
+  assert.match(indexHtml, /<div class="acadia-responsive-navbar">/);
+  assert.match(indexHtml, /<nav class="acadia-navbar" aria-label="Primary desktop navigation">/);
+  assert.match(indexHtml, /<nav class="acadia-tablet-navigation" aria-label="Primary tablet navigation">/);
+  assert.match(indexHtml, /<nav class="acadia-mobile-tabbar is-fixed" aria-label="Primary phone navigation" style="--acadia-mobile-tab-count: 5">/);
+  assert.match(indexHtml, /class="acadia-mobile-tab is-active" href="index\.html" data-nav-page="home" aria-current="page" aria-label="Home"/);
+  assert.match(indexHtml, /class="acadia-mobile-tab" href="#portfolio" data-nav-page="portfolio" aria-label="Portfolio"/);
+  assert.match(indexHtml, /class="[^"]*acadia-mobile-dock-safe-area/);
+  assert.match(homeSource, /document\.querySelectorAll\("\[data-nav-page\]"\)/);
+  assert.match(homeSource, /control\.classList\.toggle\("is-active", active\)/);
+  assert.match(homeSource, /control\.setAttribute\("aria-current", "page"\)/);
+});
+
 test("Home uses genuine performance history, dynamic investment controls, and Acadia card actions", () => {
   assert.match(homeSource, /snapshots\.length < 2/);
   assert.match(homeSource, /slice\(0, 4\)/);
