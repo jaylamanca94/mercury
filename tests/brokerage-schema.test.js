@@ -11,6 +11,10 @@ const contributionMigration = fs.readFileSync(
   path.join(__dirname, "..", "supabase", "migrations", "20260901_asset_contribution.sql"),
   "utf8",
 );
+const dividendMigration = fs.readFileSync(
+  path.join(__dirname, "..", "supabase", "migrations", "20260901_quote_dividend_data.sql"),
+  "utf8",
+);
 
 test("the Brokerage schema keeps valuation bases explicit and supports the requested instruments", () => {
   assert.match(migration, /instrument_type in \('mutual-fund', 'etf', 'stock', 'crypto', 'cash', 'other'\)/);
@@ -33,4 +37,11 @@ test("the Asset page contribution migration is idempotent and remains on owner-s
   assert.match(contributionMigration, /contribution_frequency text check \(contribution_frequency in \('weekly', 'monthly'\)\)/);
   assert.match(contributionMigration, /holdings_contribution_requires_frequency/);
   assert.match(migration, /Owners manage their brokerage holdings/);
+});
+
+test("provider dividend quote fields are idempotent and keep the existing quote RLS boundary", () => {
+  assert.match(dividendMigration, /alter table public\.holding_quotes/);
+  assert.match(dividendMigration, /add column if not exists annual_dividend_cents bigint/);
+  assert.match(dividendMigration, /add column if not exists distribution_yield_rate numeric\(8, 6\)/);
+  assert.match(migration, /Owners read and write their holding quotes/);
 });

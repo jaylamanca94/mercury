@@ -1,5 +1,7 @@
 const QUOTE_CACHE_TTL_MS = 5 * 60 * 1000;
+const DISTRIBUTION_CACHE_TTL_MS = 24 * 60 * 60 * 1000;
 const quoteCache = new Map();
+const distributionCache = new Map();
 const CRYPTO_TICKERS = new Set(["BTC", "ETH", "SOL", "LINK", "AVAX", "SHIB", "ETC"]);
 
 function isCryptoSymbol(value, instrumentType) {
@@ -33,6 +35,42 @@ function mapQuote(payload, symbol) {
   };
 }
 
+function optionalDollarsToCents(value) {
+  if (value === undefined || value === null || value === "") return null;
+  const amount = Number(value);
+  return Number.isFinite(amount) && amount >= 0 ? Math.round(amount * 100) : null;
+}
+
+function normaliseRate(value) {
+  if (value === undefined || value === null || value === "") return null;
+  const rate = Number(value);
+  if (!Number.isFinite(rate) || rate < 0) return null;
+  if (rate <= 1) return rate;
+  return rate <= 100 ? rate / 100 : null;
+}
+
+function mapDistribution(payload, priceCents) {
+  if (!payload || payload.code || payload.status === "error") {
+    return { annualDividendCents: null, distributionYieldRate: null };
+  }
+
+  const dividends = payload.meta?.dividends_and_splits || payload.dividends_and_splits || {};
+  const annualDividendCents = optionalDollarsToCents(
+    dividends.trailing_annual_dividend_rate ?? dividends.forward_annual_dividend_rate,
+  );
+  const providerDistributionYieldRate = normaliseRate(
+    dividends.trailing_annual_dividend_yield ?? dividends.forward_annual_dividend_yield,
+  );
+
+  return {
+    annualDividendCents,
+    distributionYieldRate:
+      annualDividendCents !== null && priceCents > 0
+        ? annualDividendCents / priceCents
+        : providerDistributionYieldRate,
+  };
+}
+
 async function getQuote({ symbol, instrumentType }) {
   const normalisedSymbol = normaliseSymbol(symbol, instrumentType);
   const resolvedInstrumentType = isCryptoSymbol(normalisedSymbol, instrumentType) ? "crypto" : instrumentType || "other";
@@ -50,18 +88,55 @@ async function getQuote({ symbol, instrumentType }) {
     return mapQuote(await response.json(), providerSymbol);
   }
 
+  async function fetchDistribution(providerSymbol, priceCents, resolvedType) {
+    if (resolvedType === "crypto" || resolvedType === "cash") {
+      return { annualDividendCents: null, distributionYieldRate: null };
+    }
+
+    const cachedDistribution = distributionCache.get(providerSymbol);
+    if (cachedDistribution && Date.now() - cachedDistribution.savedAt < DISTRIBUTION_CACHE_TTL_MS) {
+      return cachedDistribution.value;
+    }
+
+    try {
+      const url = new URL("https://api.twelvedata.com/statistics");
+      url.searchParams.set("symbol", providerSymbol);
+      url.searchParams.set("apikey", process.env.TWELVE_DATA_API_KEY);
+      const response = await fetch(url, { headers: { Accept: "application/json" } });
+      if (!response.ok) return { annualDividendCents: null, distributionYieldRate: null };
+      const value = mapDistribution(await response.json(), priceCents);
+      if (value.annualDividendCents !== null || value.distributionYieldRate !== null) {
+        distributionCache.set(providerSymbol, { value, savedAt: Date.now() });
+      }
+      return value;
+    } catch {
+      return { annualDividendCents: null, distributionYieldRate: null };
+    }
+  }
+
+  async function enrichQuote(providerSymbol, resolvedType) {
+    const quote = await fetchQuote(providerSymbol);
+    const distribution = await fetchDistribution(providerSymbol, quote.priceCents, resolvedType);
+    return { ...quote, ...distribution, instrumentType: resolvedType };
+  }
+
   try {
-    const value = { ...await fetchQuote(normalisedSymbol), instrumentType: resolvedInstrumentType };
+    const value = await enrichQuote(normalisedSymbol, resolvedInstrumentType);
     quoteCache.set(cacheKey, { value, savedAt: Date.now() });
     return value;
   } catch (error) {
     const canTryUsdPair = (!instrumentType || instrumentType === "other") && !normalisedSymbol.includes("/");
     if (!canTryUsdPair) throw error;
     const cryptoSymbol = `${normalisedSymbol}/USD`;
-    const value = { ...await fetchQuote(cryptoSymbol), instrumentType: "crypto" };
+    const value = await enrichQuote(cryptoSymbol, "crypto");
     quoteCache.set(cacheKey, { value, savedAt: Date.now() });
     return value;
   }
 }
 
-module.exports = { QUOTE_CACHE_TTL_MS, _internals: { dollarsToCents, isCryptoSymbol, mapQuote, normaliseSymbol }, getQuote };
+module.exports = {
+  QUOTE_CACHE_TTL_MS,
+  DISTRIBUTION_CACHE_TTL_MS,
+  _internals: { dollarsToCents, isCryptoSymbol, mapDistribution, mapQuote, normaliseRate, normaliseSymbol },
+  getQuote,
+};

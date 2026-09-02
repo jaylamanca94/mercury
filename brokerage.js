@@ -97,6 +97,13 @@
         : memo
     ), {});
   }
+  function quoteDividendFields(holdingId, quote) {
+    const previous = latestQuotes()[holdingId];
+    return {
+      annual_dividend_cents: quote.annualDividendCents ?? previous?.annual_dividend_cents ?? null,
+      distribution_yield_rate: quote.distributionYieldRate ?? previous?.distribution_yield_rate ?? null,
+    };
+  }
   function holdingAsset(holding) {
     const quote = latestQuotes()[holding.id];
     return {
@@ -113,6 +120,10 @@
       quoteSource: quote?.source || (holding.manual_price_cents !== null ? "Manual price" : null),
       quoteAsOf: quote?.as_of || null,
       priorCloseCents: quote?.previous_close_cents ?? null,
+      annualDividendCents: quote?.annual_dividend_cents ?? null,
+      providerDistributionYieldRate: quote?.distribution_yield_rate === null || quote?.distribution_yield_rate === undefined
+        ? null
+        : Number(quote.distribution_yield_rate),
       expectedAnnualReturnRate: holding.expected_annual_return_rate === null ? null : Number(holding.expected_annual_return_rate),
       distributionYieldRate: holding.distribution_yield_rate === null ? null : Number(holding.distribution_yield_rate),
       targetAllocationRate: holding.target_allocation_rate === null ? null : Number(holding.target_allocation_rate),
@@ -363,7 +374,12 @@
     $("#asset-workspace").hidden = true;
     setActiveNavigation("home");
     setText("#metric-value", displayCurrency(summary.totalMarketValueCents / 100));
-    setText("#metric-income", displayCurrency(summary.totalEstimatedAnnualIncomeCents / 100));
+    setText(
+      "#metric-income",
+      summary.totalEstimatedAnnualIncomeCents === null
+        ? "Not set"
+        : displayCurrency(summary.totalEstimatedAnnualIncomeCents / 100),
+    );
     const performance = renderHistory();
     setText(
       "#metric-change-value",
@@ -376,10 +392,7 @@
         ? percentage.format(summary.expectedAnnualReturnRate)
         : "Not set",
     );
-    const dividendYield = summary.totalMarketValueCents === 0
-      ? null
-      : summary.totalEstimatedAnnualIncomeCents / summary.totalMarketValueCents;
-    setDelta("#metric-income-yield", dividendYield, percentage.format.bind(percentage));
+    setDelta("#metric-income-yield", summary.distributionYieldRate, percentage.format.bind(percentage));
     setText("#portfolio-warnings", state.holdings.length ? summary.warnings.join(" ") : "");
     renderTargetStatus(summary);
     renderHoldings(summary);
@@ -440,7 +453,7 @@
     setText("#asset-total-value", row ? displayCurrency(row.marketValueCents / 100) : "Unavailable");
     setText("#asset-income", row?.estimatedAnnualIncomeCents === null || !row ? "Not set" : displayCurrency(row.estimatedAnnualIncomeCents / 100));
     setText("#asset-return-stat", asset.expectedAnnualReturnRate === null ? "Not set" : percentage.format(asset.expectedAnnualReturnRate));
-    setText("#asset-yield-stat", asset.distributionYieldRate === null ? "Not set" : percentage.format(asset.distributionYieldRate));
+    setText("#asset-yield-stat", row?.distributionYieldRate === null || !row ? "Not set" : percentage.format(row.distributionYieldRate));
     setText("#asset-quote-source", quote?.source || (holding.manual_price_cents !== null ? "Manual price" : "No quote recorded."));
     setText("#asset-quote-asof", quote?.as_of ? `As of ${dateLabel(quote.as_of)}` : "No as-of time");
 
@@ -596,6 +609,7 @@
           holding_id: holding.id,
           price_cents: state.pendingQuote.priceCents,
           previous_close_cents: state.pendingQuote.priorCloseCents,
+          ...quoteDividendFields(holding.id, state.pendingQuote),
           source: state.pendingQuote.source,
           as_of: state.pendingQuote.asOf,
         });
@@ -774,6 +788,7 @@
         holding_id: holding.id,
         price_cents: quote.priceCents,
         previous_close_cents: quote.priorCloseCents,
+        ...quoteDividendFields(holding.id, quote),
         source: quote.source,
         as_of: quote.asOf,
       }, { onConflict: "holding_id,as_of" });
@@ -783,6 +798,36 @@
     } catch (error) {
       setText("#asset-detail-status", `${error.message} Last successful quote remains in place.`);
     }
+  }
+  async function hydrateProviderDividendData() {
+    const latest = latestQuotes();
+    const candidates = state.holdings.filter((holding) => (
+      holding.valuation_basis === VALUATION_BASES.SHARES_AND_PRICE &&
+      holding.symbol &&
+      holding.instrument_type !== "crypto" &&
+      holding.instrument_type !== "cash" &&
+      holding.distribution_yield_rate === null &&
+      (latest[holding.id]?.annual_dividend_cents ?? null) === null &&
+      (latest[holding.id]?.distribution_yield_rate ?? null) === null
+    ));
+    let refreshed = false;
+    for (const holding of candidates) {
+      try {
+        const quote = await requestQuote(holding.symbol, holding.instrument_type);
+        const { error } = await state.client.from("holding_quotes").upsert({
+          holding_id: holding.id,
+          price_cents: quote.priceCents,
+          previous_close_cents: quote.priorCloseCents,
+          ...quoteDividendFields(holding.id, quote),
+          source: quote.source,
+          as_of: quote.asOf,
+        }, { onConflict: "holding_id,as_of" });
+        if (!error) refreshed = true;
+      } catch {
+        // The existing quote remains authoritative when provider enrichment is unavailable.
+      }
+    }
+    if (refreshed) await loadData();
   }
   function showUnconfigured(message) {
     state.configured = false;
@@ -816,6 +861,7 @@
       $("#sign-out").hidden = false;
       $("#home-workspace").hidden = false;
       await loadData();
+      void hydrateProviderDividendData();
       setText("#data-status", "Private Brokerage account loaded.");
     } catch (error) {
       showUnconfigured(`Private sync is unavailable: ${error.message}`);

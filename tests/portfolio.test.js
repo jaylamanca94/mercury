@@ -141,6 +141,49 @@ test("portfolio summaries calculate allocation, income, contribution, and comple
   assert.deepEqual(summary.warnings, []);
 });
 
+test("provider dividend data calculates asset and portfolio distribution yields", () => {
+  const summary = summarizePortfolio([
+    {
+      ...baseAsset,
+      distributionYieldRate: null,
+      annualDividendCents: 120,
+      providerDistributionYieldRate: 0.0095,
+    },
+    {
+      id: "provider-income-fund",
+      symbol: "BND",
+      assetType: "Bonds",
+      valuationBasis: VALUATION_BASES.SHARES_AND_PRICE,
+      shares: 10,
+      unitPriceCents: 10_000,
+      annualDividendCents: 50,
+      dividendPolicy: "reinvest",
+    },
+  ]);
+
+  assert.equal(summary.rows[0].estimatedAnnualIncomeCents, 1_260);
+  assert.equal(summary.rows[0].distributionYieldRate, 1_260 / 287_123);
+  assert.equal(summary.rows[1].estimatedAnnualIncomeCents, 500);
+  assert.equal(summary.totalEstimatedAnnualIncomeCents, 1_760);
+  assert.equal(summary.distributionYieldRate, 1_760 / 387_123);
+});
+
+test("portfolio income stays unavailable when a valued holding has neither provider nor manual data", () => {
+  const summary = summarizePortfolio([
+    { ...baseAsset, distributionYieldRate: null, annualDividendCents: 100 },
+    {
+      id: "unknown-income",
+      name: "Unknown income",
+      assetType: "Other",
+      valuationBasis: VALUATION_BASES.MANUAL_VALUE,
+      manualValueCents: 100_000,
+    },
+  ]);
+
+  assert.equal(summary.totalEstimatedAnnualIncomeCents, null);
+  assert.equal(summary.distributionYieldRate, null);
+});
+
 test("expected annual return stays unavailable until every valued holding has an assumption", () => {
   const summary = summarizePortfolio([
     baseAsset,

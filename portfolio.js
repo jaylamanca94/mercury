@@ -146,6 +146,11 @@ function normalizeAsset(input) {
     quoteSource: optionalText(input.quoteSource, "quoteSource"),
     quoteAsOf: optionalDate(input.quoteAsOf, "quoteAsOf"),
     priorCloseCents: optionalMoney(input.priorCloseCents, "priorCloseCents"),
+    annualDividendCents: optionalMoney(input.annualDividendCents, "annualDividendCents"),
+    providerDistributionYieldRate: optionalRate(
+      input.providerDistributionYieldRate,
+      "providerDistributionYieldRate",
+    ),
     expectedAnnualReturnRate: optionalRate(input.expectedAnnualReturnRate, "expectedAnnualReturnRate", {
       minimum: -1,
       maximum: 1,
@@ -220,6 +225,18 @@ function calculateAsset(asset, totalPortfolioValueCents, weeklyContributionCents
       ? null
       : Math.round(normalized.shares * normalized.priorCloseCents));
   const dayChangeCents = previousValueCents === null ? null : valueCents - previousValueCents;
+  const manualEstimatedAnnualIncomeCents =
+    normalized.distributionYieldRate === null
+      ? null
+      : Math.round(valueCents * normalized.distributionYieldRate);
+  const providerEstimatedAnnualIncomeCents =
+    normalized.annualDividendCents !== null && normalized.shares !== null
+      ? Math.round(normalized.shares * normalized.annualDividendCents)
+      : normalized.providerDistributionYieldRate === null
+        ? null
+        : Math.round(valueCents * normalized.providerDistributionYieldRate);
+  const estimatedAnnualIncomeCents =
+    manualEstimatedAnnualIncomeCents ?? providerEstimatedAnnualIncomeCents;
 
   return {
     asset: normalized,
@@ -229,10 +246,11 @@ function calculateAsset(asset, totalPortfolioValueCents, weeklyContributionCents
       normalized.expectedAnnualReturnRate === null
         ? null
         : Math.round(valueCents * normalized.expectedAnnualReturnRate),
-    estimatedAnnualIncomeCents:
-      normalized.distributionYieldRate === null
+    estimatedAnnualIncomeCents,
+    distributionYieldRate:
+      estimatedAnnualIncomeCents === null || valueCents === 0
         ? null
-        : Math.round(valueCents * normalized.distributionYieldRate),
+        : estimatedAnnualIncomeCents / valueCents,
     weeklyContributionCents:
       normalized.weeklyContributionRate === null
         ? null
@@ -330,10 +348,15 @@ function summarizePortfolio(assets, { weeklyContributionCents = 0 } = {}) {
     hasAssets &&
     totalMarketValueCents > 0 &&
     normalizedAssets.every((asset) => asset.expectedAnnualReturnRate !== null);
+  const annualIncomeComplete =
+    !hasAssets || rows.every((row) => row.estimatedAnnualIncomeCents !== null);
   const targetAllocationRate = allocationTotal(normalizedAssets, "targetAllocationRate");
   const weeklyContributionRate = allocationTotal(normalizedAssets, "weeklyContributionRate");
   const totalExpectedAnnualGrowthCents = expectedAnnualReturnComplete
     ? rows.reduce((total, row) => total + row.expectedAnnualGrowthCents, 0)
+    : null;
+  const totalEstimatedAnnualIncomeCents = annualIncomeComplete
+    ? rows.reduce((total, row) => total + row.estimatedAnnualIncomeCents, 0)
     : null;
   const warnings = [];
 
@@ -350,10 +373,10 @@ function summarizePortfolio(assets, { weeklyContributionCents = 0 } = {}) {
     expectedAnnualReturnRate: totalExpectedAnnualGrowthCents === null
       ? null
       : totalExpectedAnnualGrowthCents / totalMarketValueCents,
-    totalEstimatedAnnualIncomeCents: rows.reduce(
-      (total, row) => total + (row.estimatedAnnualIncomeCents ?? 0),
-      0,
-    ),
+    totalEstimatedAnnualIncomeCents,
+    distributionYieldRate: totalEstimatedAnnualIncomeCents === null || totalMarketValueCents === 0
+      ? null
+      : totalEstimatedAnnualIncomeCents / totalMarketValueCents,
     totalWeeklyContributionCents: rows.reduce(
       (total, row) => total + (row.weeklyContributionCents ?? 0),
       0,

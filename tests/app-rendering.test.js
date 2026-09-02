@@ -91,6 +91,8 @@ test("large currency display values use the shared compact format", () => {
   assert.match(homeSource, /setDelta\("#metric-change-rate", performance\.changeRate/);
   assert.match(homeSource, /"#metric-expected-return"/);
   assert.match(homeSource, /summary\.expectedAnnualReturnRate/);
+  assert.match(homeSource, /summary\.distributionYieldRate/);
+  assert.match(homeSource, /annual_dividend_cents/);
   assert.match(homeSource, /valueBadge\(valueCents\)[\s\S]*displayCurrency/);
   assert.match(homeSource, /setText\("#asset-total-value", row \? displayCurrency/);
 });

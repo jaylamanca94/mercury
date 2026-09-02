@@ -5,7 +5,7 @@ Mercury is a private personal-finance workspace. Home is the active daily briefi
 ## Setup
 
 1. Create a Supabase project and enable email magic-link authentication.
-2. Apply [`supabase/migrations/20260830_brokerage_mvp.sql`](supabase/migrations/20260830_brokerage_mvp.sql) and [`supabase/migrations/20260901_asset_contribution.sql`](supabase/migrations/20260901_asset_contribution.sql).
+2. Apply [`supabase/migrations/20260830_brokerage_mvp.sql`](supabase/migrations/20260830_brokerage_mvp.sql), [`supabase/migrations/20260901_asset_contribution.sql`](supabase/migrations/20260901_asset_contribution.sql), and [`supabase/migrations/20260901_quote_dividend_data.sql`](supabase/migrations/20260901_quote_dividend_data.sql).
 3. Configure these Vercel environment variables:
    - `SUPABASE_URL`
    - `SUPABASE_ANON_KEY`
@@ -19,7 +19,7 @@ Without those values, Mercury shows an empty, disabled Brokerage workspace. It n
 ## Runtime model
 
 - `/api/config` exposes only Supabase's public URL and anonymous key.
-- `/api/portfolio/quotes` requires a signed-in user and calls Twelve Data server-side. It caches successful quotes for five minutes.
+- `/api/portfolio/quotes` requires a signed-in user and calls Twelve Data server-side. It caches successful prices for five minutes and provider distribution data for one day; unavailable distribution data never invalidates a price quote.
 - `/api/portfolio/snapshot` accepts the Vercel cron secret or a signed-in owner. It upserts one daily account snapshot after the America/New_York market close.
 - Browser writes are limited by Supabase RLS. Provider and service-role credentials never reach the browser.
 

@@ -12,8 +12,8 @@ Mercury is a private personal finance workspace. Its first shipped product surfa
 - Portfolio is the full authenticated holdings workspace: it has independent search and sorting, every matching holding, quick add, and Asset-detail navigation. Its filters are All, Brokerage, Crypto, and an unavailable Retirement placeholder. Primary navigation is Home, Portfolio, Income, Plan, and Profile; Income, Plan, and Profile remain unavailable until their underlying workflows exist.
 - The Add asset dialog asks only for symbol and shares. Automatic lookup runs once both are valid; unavailable quotes reveal a manual price or authoritative total-value fallback. A saved asset opens its dedicated detail page, where shares, dollar contribution/cadence, policies, classification, planning, allocation, and yield fields can be maintained or the asset can be deleted after explicit confirmation. Deletion cascades to its quotes while historical account snapshots remain intact.
 - Forms support mutual funds, ETFs, stocks, crypto, cash, and other assets.
-- Automatic Twelve Data quotes for eligible symbols, with quote source, as-of time, prior close, short server-side caching, retained last successful quote, and an explicit manual price or total-value fallback.
-- Calculated market value, allocation, target/weekly split, expected annual return, distribution yield, annual income, policy fields, and day movement.
+- Automatic Twelve Data quotes for eligible symbols, with quote source, as-of time, prior close, provider annual-distribution data where available, short server-side caching, retained last successful quote, and an explicit manual price or total-value fallback.
+- Calculated market value, allocation, target/weekly split, expected annual return, per-asset distribution yield, portfolio annual income/yield, policy fields, and day movement. A manual distribution yield remains an explicit owner override.
 - Daily America/New_York snapshots run after market close. A history line appears only after two stored snapshots. The owner-only export boundary remains private and is not exposed on Home.
 
 ## Boundaries
@@ -37,4 +37,4 @@ Mercury is a private personal finance workspace. Its first shipped product surfa
 
 ## Operational setup
 
-Apply [`supabase/migrations/20260830_brokerage_mvp.sql`](supabase/migrations/20260830_brokerage_mvp.sql) and [`supabase/migrations/20260901_asset_contribution.sql`](supabase/migrations/20260901_asset_contribution.sql), configure the environment variables described in [`supabase/README.md`](supabase/README.md), and then use the private authentication flow. Until that configuration is present, Mercury presents an empty disabled workspace rather than storing or fabricating personal financial data.
+Apply [`supabase/migrations/20260830_brokerage_mvp.sql`](supabase/migrations/20260830_brokerage_mvp.sql), [`supabase/migrations/20260901_asset_contribution.sql`](supabase/migrations/20260901_asset_contribution.sql), and [`supabase/migrations/20260901_quote_dividend_data.sql`](supabase/migrations/20260901_quote_dividend_data.sql), configure the environment variables described in [`supabase/README.md`](supabase/README.md), and then use the private authentication flow. Until that configuration is present, Mercury presents an empty disabled workspace rather than storing or fabricating personal financial data.
