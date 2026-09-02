@@ -683,6 +683,51 @@
     }
   }
 
+  function openDeleteAssetDialog() {
+    const holding = state.holdings.find((entry) => entry.id === routeAssetId());
+    if (!holding) return;
+    const label = holding.symbol || holding.name || "this asset";
+    setText("#delete-asset-title", `Delete ${label}?`);
+    setText("#delete-asset-description", `This permanently removes ${label} and its saved quotes from your Brokerage account. Historical portfolio snapshots stay unchanged.`);
+    setText("#delete-asset-status", "");
+    $("#delete-asset-dialog").hidden = false;
+    $("#delete-asset-dialog").showModal();
+  }
+  function closeDeleteAssetDialog() {
+    $("#delete-asset-dialog").close();
+  }
+  async function deleteCurrentAsset(event) {
+    event.preventDefault();
+    const holding = state.holdings.find((entry) => entry.id === routeAssetId());
+    if (!holding || !state.account) return;
+    const confirm = $("#confirm-delete-asset");
+    try {
+      confirm.disabled = true;
+      confirm.textContent = "Deleting…";
+      setText("#delete-asset-status", "Deleting asset…");
+      const { data, error } = await state.client
+        .from("holdings")
+        .delete()
+        .eq("id", holding.id)
+        .eq("account_id", state.account.id)
+        .select("id")
+        .maybeSingle();
+      if (error) throw error;
+      if (!data) throw new Error("This asset could not be deleted.");
+      state.holdings = state.holdings.filter((entry) => entry.id !== holding.id);
+      state.quotes = state.quotes.filter((quote) => quote.holding_id !== holding.id);
+      closeDeleteAssetDialog();
+      window.location.hash = "portfolio";
+      await loadData();
+      setText("#data-status", `${holding.symbol || holding.name || "Asset"} deleted from your private Brokerage account.`);
+    } catch (error) {
+      setText("#delete-asset-status", error.message || "This asset could not be deleted.");
+    } finally {
+      confirm.disabled = false;
+      confirm.textContent = "Delete asset";
+    }
+  }
+
   async function loadData() {
     const [accounts, holdings, quotes, snapshots] = await Promise.all([
       state.client.from("accounts").select("*").order("created_at"),
@@ -824,6 +869,10 @@
   $("#asset-detail-form").addEventListener("submit", saveAssetDetails);
   $("#asset-detail-valuation-basis").addEventListener("change", syncDetailValuationFields);
   $("#asset-refresh-price").addEventListener("click", refreshCurrentAssetPrice);
+  $("#asset-delete").addEventListener("click", openDeleteAssetDialog);
+  $("#cancel-delete-asset").addEventListener("click", closeDeleteAssetDialog);
+  $("#delete-asset-dialog").addEventListener("close", () => { $("#delete-asset-dialog").hidden = true; });
+  $("#delete-asset-form").addEventListener("submit", deleteCurrentAsset);
   window.addEventListener("hashchange", render);
   initialise();
 })();

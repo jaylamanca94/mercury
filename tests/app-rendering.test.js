@@ -140,3 +140,15 @@ test("the Asset page uses Acadia primary details and an advanced disclosure", ()
   assert.match(homeSource, /contribution_cents/);
   assert.match(homeSource, /contribution_frequency/);
 });
+
+test("an owner can delete an asset only after an explicit Acadia confirmation", () => {
+  assert.match(indexHtml, /id="asset-delete" class="acadia-action-menu-item is-danger"/);
+  assert.match(indexHtml, /id="delete-asset-dialog" class="acadia-dialog is-form-modal"/);
+  assert.match(indexHtml, /id="confirm-delete-asset" class="acadia-button acadia-button-danger"/);
+  assert.match(indexHtml, /Historical portfolio snapshots stay unchanged/);
+  assert.match(homeSource, /function openDeleteAssetDialog/);
+  assert.match(homeSource, /async function deleteCurrentAsset/);
+  assert.match(homeSource, /\.from\("holdings"\)\s*\.delete\(\)/);
+  assert.match(homeSource, /\.eq\("id", holding\.id\)\s*\.eq\("account_id", state\.account\.id\)/);
+  assert.match(homeSource, /window\.location\.hash = "portfolio"/);
+});
