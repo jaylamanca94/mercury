@@ -1,46 +1,35 @@
-**Comparison Target**
+**Comparison target**
 
-- Source visual truth: [Mercury Figma Home, node 47:379](https://www.figma.com/design/CSCV8qZu9ryspC07K36vTg/Mercury?node-id=47-379&m=dev).
-- Implementation evidence: `/tmp/mercury-figma-home-47-379.png`.
-- State: light theme, Global, Week, source-backed public snapshot.
-- Viewport: 1024 × 662 CSS pixels. The Figma frame and implementation capture use the same desktop viewport; no density normalization was required.
+- Source visual truth: Figma `CSCV8qZu9ryspC07K36vTg`, node `110:7662` (Portfolio desktop workspace).
+- Intended implementation route: `http://localhost:4173/#portfolio`.
+- Intended state: authenticated Brokerage account with holdings, desktop dark theme.
+
+**Evidence status**
+
+- Figma design context was retrieved for node `110:7662`; it establishes the navigation order, Portfolio heading, search control, sort/filter controls, and three-column holdings composition.
+- A browser-rendered implementation capture could not be obtained: the local preview endpoints on ports 4173 and 4174 returned an empty response to the in-app browser despite listeners already occupying both ports.
+- No visual comparison was made from source code alone. Automated syntax and rendering-contract checks passed, but they do not substitute for visual evidence.
 
 **Findings**
 
-- No actionable P0/P1/P2 differences remain for the requested Home frame.
-- Intentional data difference: Figma supplies illustrative card values and a static chart image. Mercury keeps the exact layout treatment but renders the live comparison chart and current source-backed values.
+- [P1] Visual comparison is blocked.
+  Location: Portfolio route, desktop and responsive breakpoints.
+  Evidence: no browser-rendered implementation screenshot is available to compare with the Figma source at a matched viewport.
+  Impact: typography, spacing, responsive grid behaviour, theme tokens, icon alignment, and visual density remain unverified.
+  Fix: start a healthy Mercury preview reachable by the in-app browser, capture `#portfolio` in the same desktop state as Figma, then compare the header, controls, full grid, and no-match state before marking this review passed.
 
-**Fidelity Review**
+**Required fidelity surfaces**
 
-- Fonts and typography: preserved the project’s existing system-font adapter while matching the compact hierarchy, weight, and uppercase-style ticker treatment in the Figma frame.
-- Spacing and layout rhythm: matched the Figma sequence of controls, wide chart, four compact market cards, and four compact economic signals. The 1024px layout holds four cards per row; it only collapses below 900px.
-- Colours and visual tokens: mapped Figma’s neutral grey gradient, white elevated surfaces, charcoal active pills, teal underline, green positive values, and red negative values to Mercury’s existing Acadia tokens.
-- Image and asset fidelity: the Figma chart is a screenshot reference. It is implemented as Mercury’s existing live SVG comparison chart so it remains accurate for the selected period rather than becoming a stale image. Existing Font Awesome glyphs visibly match the supplied Figma icon roles.
-- Copy and content: Home now follows Figma’s VOO, VB, VXUS, VGT primary row plus Bonds, Interest Rates, Inflation, and Unemployment signal row. The new International control shows VXUS, VGK, VPL, and EWJ.
+- Fonts and typography: blocked pending rendered capture.
+- Spacing and layout rhythm: blocked pending rendered capture.
+- Colors and visual tokens: blocked pending rendered capture.
+- Image quality and asset fidelity: the supplied Mercury mark remains the only product image; visual sharpness and placement are blocked pending capture.
+- Copy and content: source contracts now use Portfolio, Investments, All, Brokerage, Crypto, Retirement, and the unavailable primary labels as specified; rendered comparison remains blocked.
 
-**Validation Performed**
+**Implementation checklist**
 
-- Browser capture at 1024 × 662 confirmed four chart lines, four primary cards, four economic signal cards, and three scope controls.
-- Browser interaction confirmed International selects correctly and updates the cards to VXUS, VGK, VPL, and EWJ.
-- Browser console contained no errors or framework overlay.
-- Responsive browser checks at 1728, 1440, 1280, 834, 744, and 390 CSS pixels confirmed the appropriate desktop, tablet, and phone compositions without horizontal page overflow.
-- A disposable unavailable-data response confirmed that Home keeps the failure explanation, direct Retry refresh, and Data Coverage link immediately beneath the chart, before unavailable cards; the selected scope and period remain preserved and disabled until a usable response arrives.
-- `npm run check` passed: JavaScript syntax validation and 87 regression tests.
+1. Make a local Mercury preview reachable from the in-app browser.
+2. Capture desktop Portfolio in a populated and an empty/no-match state.
+3. Compare both captures with Figma node `110:7662` and resolve any P0–P2 discrepancies.
 
-**Comparison History**
-
-1. The initial 1024px capture used two card columns, diverging from Figma’s four-card rows.
-2. Moved the compact-grid breakpoint from 1100px to 900px.
-3. The final capture preserves both four-card rows at the Figma reference width.
-
-**Implementation Checklist**
-
-1. Map the Figma Home hierarchy onto existing live Mercury surfaces. Complete.
-2. Add the compact economic signal row and International scope behaviour. Complete.
-3. Verify desktop fidelity and scope interaction in a browser. Complete.
-
-**Follow-up Polish**
-
-- The Figma healthy-state frame remains matched. The only additional Home refinement is failure-state hierarchy: recovery now appears beside the unavailable chart rather than after eight unavailable cards.
-
-final result: passed
+final result: blocked

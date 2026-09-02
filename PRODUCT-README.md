@@ -8,8 +8,8 @@ Mercury is a private personal finance workspace. Its first shipped product surfa
 
 - Email magic-link sign-in for one private owner, backed by Supabase Postgres and row-level security.
 - One reusable `Brokerage` account, in USD, ready for future account aggregation without exposing other modules yet.
-- Home follows the Figma dashboard composition with portfolio value, annual distributions, authentic performance history, target coverage/attention, and the first four matching holdings. Investments can be searched, sorted by value/name/recent update, and filtered by instrument types that actually exist in the Brokerage account.
-- Primary navigation is Home, Portfolio, Plan, and Income. Portfolio is currently a transparent transition route; Plan and Income are unavailable until their underlying workflows exist.
+- Home follows the Figma dashboard composition with portfolio value, annual distributions, authentic performance history, target coverage/attention, and the first four matching holdings. Its Investments preview can be searched, sorted by value/name/recent update, and filtered by instrument types that actually exist in the Brokerage account.
+- Portfolio is the full authenticated holdings workspace: it has independent search and sorting, every matching holding, quick add, and Asset-detail navigation. Its filters are All, Brokerage, Crypto, and an unavailable Retirement placeholder. Primary navigation is Home, Portfolio, Income, Plan, and Profile; Income, Plan, and Profile remain unavailable until their underlying workflows exist.
 - The Add asset dialog asks only for symbol and shares. Automatic lookup runs once both are valid; unavailable quotes reveal a manual price or authoritative total-value fallback. A saved asset opens its dedicated detail page, where shares, dollar contribution/cadence, policies, classification, planning, allocation, and yield fields can be maintained.
 - Forms support mutual funds, ETFs, stocks, crypto, cash, and other assets.
 - Automatic Twelve Data quotes for eligible symbols, with quote source, as-of time, prior close, short server-side caching, retained last successful quote, and an explicit manual price or total-value fallback.
@@ -29,7 +29,7 @@ Mercury is a private personal finance workspace. Its first shipped product surfa
 ## Roadmap
 
 1. Brokerage account and daily snapshot reliability. **Current MVP.**
-2. Dedicated Portfolio workspace and Preferences/data safeguards.
+2. Preferences/data safeguards.
 3. Income.
 4. Plan.
 5. Net Worth aggregation, retirement accounts, Property, and Records.

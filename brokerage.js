@@ -24,7 +24,7 @@
   const TARGET_ALLOCATION_TOLERANCE = 0.02;
   const state = {
     client: null, user: null, account: null, accounts: [], holdings: [], quotes: [], snapshots: [],
-    configured: false, pendingQuote: null, quoteTimer: null, holdingFilter: "all", holdingSort: "value", performancePeriod: "all",
+    configured: false, pendingQuote: null, quoteTimer: null, holdingFilter: "all", holdingSort: "value", portfolioFilter: "all", portfolioSort: "value", performancePeriod: "all",
   };
 
   function cents(value) {
@@ -140,6 +140,7 @@
   }
   function setControlsDisabled(disabled) {
     $("#add-asset").disabled = disabled;
+    $("#portfolio-add-asset").disabled = disabled;
   }
 
   function renderPerformancePeriods() {
@@ -241,14 +242,14 @@
       return matchesFilter && matchesSearch;
     });
   }
-  function sortHoldingRows(rows) {
+  function sortHoldingRows(rows, sort = state.holdingSort) {
     return [...rows].sort((left, right) => {
-      if (state.holdingSort === "name") {
+      if (sort === "name") {
         const leftName = left.asset.symbol || left.asset.name || left.asset.instrumentType;
         const rightName = right.asset.symbol || right.asset.name || right.asset.instrumentType;
         return leftName.localeCompare(rightName);
       }
-      if (state.holdingSort === "updated") {
+      if (sort === "updated") {
         const leftHolding = state.holdings.find((holding) => holding.id === left.asset.id);
         const rightHolding = state.holdings.find((holding) => holding.id === right.asset.id);
         return new Date(rightHolding?.updated_at || rightHolding?.created_at || 0) - new Date(leftHolding?.updated_at || leftHolding?.created_at || 0);
@@ -274,12 +275,7 @@
       navigateToAsset(event.currentTarget.dataset.holdingId);
     }
   }
-  function renderHoldings(summary) {
-    renderHoldingFilters();
-    renderHoldingSort();
-    const matchingRows = matchingHoldingRows(summary);
-    const rows = sortHoldingRows(matchingRows).slice(0, 4);
-    const grid = $("#holdings-grid");
+  function renderHoldingCards(grid, rows) {
     grid.replaceChildren(...rows.map((row) => {
       const holding = state.holdings.find((entry) => entry.id === row.asset.id);
       const price = row.asset.valuationBasis === VALUATION_BASES.MANUAL_VALUE
@@ -298,6 +294,17 @@
       card.addEventListener("keydown", keyOpenHolding);
       return card;
     }));
+    grid.querySelectorAll("[data-edit-id]").forEach((button) => {
+      button.addEventListener("click", () => navigateToAsset(button.dataset.editId));
+    });
+  }
+  function renderHoldings(summary) {
+    renderHoldingFilters();
+    renderHoldingSort();
+    const matchingRows = matchingHoldingRows(summary);
+    const rows = sortHoldingRows(matchingRows).slice(0, 4);
+    const grid = $("#holdings-grid");
+    renderHoldingCards(grid, rows);
     setText("#holdings-count", `${matchingRows.length} ${matchingRows.length === 1 ? "asset" : "assets"}`);
     $("#holdings-empty").hidden = rows.length > 0;
     if (!rows.length) {
@@ -307,9 +314,47 @@
         ? "Adjust your search or filter to see a different investment."
         : "Add an asset to begin your private Brokerage workspace.");
     }
-    document.querySelectorAll("[data-edit-id]").forEach((button) => {
-      button.addEventListener("click", () => navigateToAsset(button.dataset.editId));
+  }
+
+  function matchingPortfolioHoldingRows(summary) {
+    const search = $("#portfolio-search").value.trim().toLowerCase();
+    return summary.rows.filter((row) => {
+      const matchesFilter = state.portfolioFilter === "all"
+        || state.portfolioFilter === "brokerage"
+        || (state.portfolioFilter === "crypto" && row.asset.instrumentType === "crypto");
+      const matchesSearch = `${row.asset.symbol || ""} ${row.asset.name || ""} ${row.asset.instrumentType}`.toLowerCase().includes(search);
+      return matchesFilter && matchesSearch;
     });
+  }
+  function renderPortfolioHoldingSort() {
+    const labels = { value: "Value", name: "Name", updated: "Recently updated" };
+    setText("#portfolio-holding-sort-label", labels[state.portfolioSort]);
+    document.querySelectorAll("[data-portfolio-holding-sort]").forEach((control) => {
+      control.setAttribute("aria-checked", String(control.dataset.portfolioHoldingSort === state.portfolioSort));
+    });
+  }
+  function renderPortfolioFilters() {
+    document.querySelectorAll("[data-portfolio-filter]").forEach((control) => {
+      const isCurrent = control.dataset.portfolioFilter === state.portfolioFilter;
+      control.setAttribute("aria-pressed", String(isCurrent));
+    });
+  }
+  function renderPortfolioHoldings(summary) {
+    renderPortfolioHoldingSort();
+    renderPortfolioFilters();
+    const matchingRows = matchingPortfolioHoldingRows(summary);
+    const rows = sortHoldingRows(matchingRows, state.portfolioSort);
+    const grid = $("#portfolio-holdings-grid");
+    renderHoldingCards(grid, rows);
+    setText("#portfolio-holdings-count", `${matchingRows.length} ${matchingRows.length === 1 ? "asset" : "assets"}`);
+    $("#portfolio-holdings-empty").hidden = rows.length > 0;
+    if (!rows.length) {
+      const hasAssets = state.holdings.length > 0;
+      setText("#portfolio-holdings-empty-title", hasAssets ? "No matching assets" : "No assets yet");
+      setText("#portfolio-holdings-empty-copy", hasAssets
+        ? "Adjust your search or filter to see a different investment."
+        : "Add an asset to begin your private Brokerage workspace.");
+    }
   }
 
   function renderHome(summary) {
@@ -330,11 +375,12 @@
     renderHoldings(summary);
   }
 
-  function renderPortfolio() {
+  function renderPortfolio(summary) {
     $("#home-workspace").hidden = true;
     $("#portfolio-workspace").hidden = false;
     $("#asset-workspace").hidden = true;
     setActiveNavigation("portfolio");
+    renderPortfolioHoldings(summary);
   }
 
   function setDetailFormDisabled(disabled) {
@@ -416,7 +462,7 @@
     setControlsDisabled(!state.configured);
     const summary = portfolio();
     if (routeAssetId()) renderAsset();
-    else if (routePortfolio()) renderPortfolio();
+    else if (routePortfolio()) renderPortfolio(summary);
     else renderHome(summary);
     $("#main-content").setAttribute("aria-busy", "false");
   }
@@ -735,6 +781,7 @@
     window.location.reload();
   });
   $("#add-asset").addEventListener("click", openQuickAdd);
+  $("#portfolio-add-asset").addEventListener("click", openQuickAdd);
   $("#close-dialog").addEventListener("click", () => $("#asset-dialog").close());
   $("#cancel-dialog").addEventListener("click", () => $("#asset-dialog").close());
   $("#asset-dialog").addEventListener("close", () => { $("#asset-dialog").hidden = true; });
@@ -743,10 +790,25 @@
   $("#asset-symbol").addEventListener("input", scheduleQuote);
   $("#asset-shares").addEventListener("input", scheduleQuote);
   $("#holding-search").addEventListener("input", render);
+  $("#portfolio-search").addEventListener("input", render);
   document.querySelectorAll("[data-holding-sort]").forEach((control) => {
     control.addEventListener("click", () => {
       state.holdingSort = control.dataset.holdingSort;
       $("#holding-sort").open = false;
+      render();
+    });
+  });
+  document.querySelectorAll("[data-portfolio-holding-sort]").forEach((control) => {
+    control.addEventListener("click", () => {
+      state.portfolioSort = control.dataset.portfolioHoldingSort;
+      $("#portfolio-holding-sort").open = false;
+      render();
+    });
+  });
+  document.querySelectorAll("[data-portfolio-filter]").forEach((control) => {
+    control.addEventListener("click", () => {
+      if (control.disabled) return;
+      state.portfolioFilter = control.dataset.portfolioFilter;
       render();
     });
   });
@@ -758,7 +820,6 @@
     });
   });
   $("#asset-back").addEventListener("click", navigateHome);
-  $("#portfolio-return-home").addEventListener("click", navigateHome);
   $("#asset-cancel").addEventListener("click", renderAsset);
   $("#asset-detail-form").addEventListener("submit", saveAssetDetails);
   $("#asset-detail-valuation-basis").addEventListener("change", syncDetailValuationFields);

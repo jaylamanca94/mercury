@@ -34,12 +34,25 @@ test("Home follows the Figma composition with a focused Brokerage dashboard", ()
   assert.match(indexHtml, /Portfolio targets/);
   assert.doesNotMatch(indexHtml, /id="account-filter"/);
   assert.doesNotMatch(indexHtml, /Brokerage actions|Private workspace|refresh-quotes|refresh-history|export-data/);
-  assert.doesNotMatch(indexHtml, /Net worth|Section Header|data-holding-filter="brokerage"|data-holding-filter="retirement"|>Explore<|>History<|>Profile</);
+  assert.doesNotMatch(indexHtml, /Net worth|Section Header|data-holding-filter="brokerage"|data-holding-filter="retirement"|>Explore<|>History</);
   assert.match(indexHtml, /aria-disabled="true"[^>]*>Plan/);
   assert.match(indexHtml, /aria-disabled="true"[^>]*>Income/);
+  assert.match(indexHtml, /aria-disabled="true"[^>]*>Profile/);
   assert.match(indexHtml, /data-nav-page="portfolio"/);
-  assert.match(indexHtml, /--acadia-mobile-tab-count: 4/);
+  assert.match(indexHtml, /--acadia-mobile-tab-count: 5/);
   assert.match(indexHtml, /assets\/mercury-mark\.svg/);
+});
+
+test("Portfolio follows the Figma navigation order without reviving unavailable routes", () => {
+  const desktopNav = indexHtml.match(/<div class="acadia-navbar-links">([\s\S]*?)<\/div>/)?.[1] || "";
+  const labels = ["Home", "Portfolio", "Income", "Plan", "Profile"];
+  let previous = -1;
+  labels.forEach((label) => {
+    const position = desktopNav.indexOf(`>${label}<`);
+    assert.ok(position > previous, `${label} should follow the prior primary navigation item`);
+    previous = position;
+  });
+  assert.doesNotMatch(desktopNav, /Explore|History/);
 });
 
 test("Home uses genuine performance history, dynamic investment controls, and Acadia card actions", () => {
@@ -90,7 +103,8 @@ test("the quick add dialog keeps manual recovery out of the initial path", () =>
   assert.match(homeSource, /Edit details/);
 });
 
-test("Home never falls back to fabricated assets and the Asset page is route-based", () => {
+test("Home never falls back to fabricated assets and Portfolio is a functional route", () => {
+  const portfolioWorkspace = indexHtml.slice(indexHtml.indexOf('<section id="portfolio-workspace"'), indexHtml.indexOf('<section id="asset-workspace"'));
   assert.doesNotMatch(homeSource, /sampleHoldings|sampleQuotes|sampleSnapshots|showPreview|Sample workspace/);
   assert.match(homeSource, /routeAssetId/);
   assert.match(homeSource, /navigateToAsset/);
@@ -98,7 +112,19 @@ test("Home never falls back to fabricated assets and the Asset page is route-bas
   assert.match(homeSource, /renderPortfolio/);
   assert.match(homeSource, /setActiveNavigation\("portfolio"\)/);
   assert.match(indexHtml, /id="portfolio-workspace" hidden/);
-  assert.match(indexHtml, /Holdings remain on Home for now/);
+  assert.match(indexHtml, /id="portfolio-search"/);
+  assert.match(indexHtml, /id="portfolio-add-asset"/);
+  assert.match(indexHtml, /id="portfolio-holding-sort"/);
+  assert.match(indexHtml, /data-portfolio-filter="all"/);
+  assert.match(indexHtml, /data-portfolio-filter="brokerage"/);
+  assert.match(indexHtml, /data-portfolio-filter="crypto"/);
+  assert.match(indexHtml, /data-portfolio-filter="retirement"[^>]*disabled/);
+  assert.match(indexHtml, /id="portfolio-holdings-grid"/);
+  assert.match(homeSource, /portfolioFilter/);
+  assert.match(homeSource, /portfolioSort/);
+  assert.match(homeSource, /matchingPortfolioHoldingRows/);
+  assert.match(homeSource, /renderPortfolioHoldings/);
+  assert.doesNotMatch(portfolioWorkspace, /Holdings remain on Home for now|Portfolio workspace is on its way|acadia-card-trend|<svg/);
   assert.match(indexHtml, /id="asset-workspace" hidden/);
   assert.match(indexHtml, /id="asset-back"/);
   assert.match(indexHtml, /id="asset-detail-form"/);

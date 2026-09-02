@@ -1,6 +1,6 @@
 # Mercury
 
-Mercury is a private personal-finance workspace. Home is the active daily briefing: it presents the owner's Brokerage account with value, income, authentic daily history, allocation-target status, and the four largest holdings. Portfolio is a truthful transition route while the dedicated source-of-truth workspace is built.
+Mercury is a private personal-finance workspace. Home is the active daily briefing: it presents the owner's Brokerage account with value, income, authentic daily history, allocation-target status, and the four largest holdings. Portfolio is the source-of-truth holdings workspace, with its own search, filters, sorting, quick add, and full matching grid.
 
 ## Setup
 
@@ -32,7 +32,7 @@ No package installation is needed for the dependency-free checks.
 
 ## Key files
 
-- `index.html`, `brokerage.js` — the private Home dashboard, hash-routed Portfolio transition and Asset pages, and simplified asset-entry flow.
+- `index.html`, `brokerage.js` — the private Home dashboard, hash-routed Portfolio holdings workspace and Asset pages, and simplified asset-entry flow.
 - `acadia.css`, `fonts/` — the canonical Acadia stylesheet and font assets, vendored unchanged; `styles.css` only imports this system asset.
 - `portfolio.js` — cent-based calculation and validation contract, also exposed to the browser.
 - `api/portfolio/` — protected quote and snapshot endpoints.
