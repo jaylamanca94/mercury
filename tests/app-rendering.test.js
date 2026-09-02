@@ -10,12 +10,19 @@ const acadiaStyles = fs.readFileSync(path.join(root, "acadia.css"), "utf8");
 const homeSource = fs.readFileSync(path.join(root, "brokerage.js"), "utf8");
 
 test("Home consumes Acadia without a Mercury presentation layer", () => {
-  assert.equal(styles, '@import url("acadia.css?v=20260902-home-frame-v2");\n');
+  assert.equal(styles, '@import url("acadia.css?v=20260902-profile-syncopate-v1");\n');
   assert.match(acadiaStyles, /\.acadia-responsive-navbar/);
   assert.match(acadiaStyles, /\.acadia-card\.is-content/);
   assert.match(acadiaStyles, /\.acadia-dialog\.is-form-modal/);
   assert.match(acadiaStyles, /\.acadia-app[\s\S]*margin: 0/);
   assert.equal(fs.existsSync(path.join(root, "fonts", "Geist-Variable.woff2")), true);
+  assert.equal(fs.existsSync(path.join(root, "fonts", "Syncopate-Regular.ttf")), true);
+  assert.equal(fs.existsSync(path.join(root, "fonts", "Syncopate-Bold.ttf")), true);
+  assert.match(acadiaStyles, /url\("\.\/fonts\/Syncopate-Regular\.ttf"\)/);
+  assert.match(acadiaStyles, /url\("\.\/fonts\/Syncopate-Bold\.ttf"\)/);
+  assert.doesNotMatch(acadiaStyles, /fonts\.gstatic\.com\/s\/syncopate/);
+  assert.match(indexHtml, /rel="preload" href="fonts\/Syncopate-Regular\.ttf" as="font"/);
+  assert.match(indexHtml, /rel="preload" href="fonts\/Syncopate-Bold\.ttf" as="font"/);
   assert.match(indexHtml, /data-acadia-layout="wide"/);
   assert.match(indexHtml, /data-acadia-page-frame="spacious"/);
   assert.match(indexHtml, /id="main-content" class="acadia-shell acadia-mobile-dock-safe-area"/);
@@ -51,7 +58,7 @@ test("Home follows the Figma composition with a focused Brokerage dashboard", ()
   assert.doesNotMatch(indexHtml, /Net worth|Section Header|data-holding-filter="brokerage"|data-holding-filter="retirement"|>Explore<|>History</);
   assert.match(indexHtml, /aria-disabled="true"[^>]*>Plan/);
   assert.match(indexHtml, /aria-disabled="true"[^>]*>Income/);
-  assert.match(indexHtml, /aria-disabled="true"[^>]*>Profile/);
+  assert.match(indexHtml, /acadia-action-menu-trigger acadia-navbar-link" aria-label="Profile account actions">Profile/);
   assert.match(indexHtml, /data-nav-page="portfolio"/);
   assert.match(indexHtml, /--acadia-mobile-tab-count: 5/);
   assert.match(indexHtml, /assets\/mercury-mark\.svg/);
@@ -76,10 +83,15 @@ test("Mercury composes the complete Acadia responsive Navbar", () => {
   assert.match(indexHtml, /<nav class="acadia-mobile-tabbar is-fixed" aria-label="Primary phone navigation" style="--acadia-mobile-tab-count: 5">/);
   assert.match(indexHtml, /class="acadia-mobile-tab is-active" href="index\.html" data-nav-page="home" aria-current="page" aria-label="Home"/);
   assert.match(indexHtml, /class="acadia-mobile-tab" href="#portfolio" data-nav-page="portfolio" aria-label="Portfolio"/);
+  assert.equal((indexHtml.match(/data-account-label/g) || []).length, 3);
+  assert.equal((indexHtml.match(/data-sign-out/g) || []).length, 3);
+  assert.doesNotMatch(indexHtml, /fa-circle-user[^>]*acadia-icon[^>]*><\/i><\/summary><div id="account-menu"/);
   assert.match(indexHtml, /class="[^"]*acadia-mobile-dock-safe-area/);
   assert.match(homeSource, /document\.querySelectorAll\("\[data-nav-page\]"\)/);
   assert.match(homeSource, /control\.classList\.toggle\("is-active", active\)/);
   assert.match(homeSource, /control\.setAttribute\("aria-current", "page"\)/);
+  assert.match(homeSource, /function setAccountMenuState\(label, isSignedIn\)/);
+  assert.match(homeSource, /document\.querySelectorAll\("\[data-sign-out\]"\)/);
 });
 
 test("Home uses genuine performance history, dynamic investment controls, and Acadia card actions", () => {

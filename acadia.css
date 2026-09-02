@@ -32,7 +32,7 @@
 
 @font-face {
   font-family: "Syncopate";
-  src: url("https://fonts.gstatic.com/s/syncopate/v24/pe0sMIuPIYBCpEV5eFdyAg.ttf") format("truetype");
+  src: url("./fonts/Syncopate-Regular.ttf") format("truetype");
   font-style: normal;
   font-weight: 400;
   font-display: swap;
@@ -40,7 +40,7 @@
 
 @font-face {
   font-family: "Syncopate";
-  src: url("https://fonts.gstatic.com/s/syncopate/v24/pe0pMIuPIYBCpEV5eFdKvtKaAw.ttf") format("truetype");
+  src: url("./fonts/Syncopate-Bold.ttf") format("truetype");
   font-style: normal;
   font-weight: 700;
   font-display: swap;

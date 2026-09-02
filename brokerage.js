@@ -34,6 +34,14 @@
     return value === null || value === undefined || value === "" ? null : Number(value) / 100;
   }
   function setText(selector, value) { $(selector).textContent = value; }
+  function setAccountMenuState(label, isSignedIn) {
+    document.querySelectorAll("[data-account-label]").forEach((element) => {
+      element.textContent = label;
+    });
+    document.querySelectorAll("[data-sign-out]").forEach((control) => {
+      control.hidden = !isSignedIn;
+    });
+  }
   function displayCurrency(value) {
     if (!Number.isFinite(value)) return "—";
     const formatted = Math.abs(value) >= 1000000
@@ -838,7 +846,7 @@
     state.snapshots = [];
     $("#auth-panel").hidden = true;
     $("#home-workspace").hidden = false;
-    setText("#account-label", "Private sync unavailable");
+    setAccountMenuState("Private sync unavailable", false);
     setText("#data-status", message);
     render();
   }
@@ -857,8 +865,7 @@
       }
       state.user = session.user;
       state.account = await ensureAccount();
-      $("#account-label").textContent = state.user.email;
-      $("#sign-out").hidden = false;
+      setAccountMenuState(state.user.email, true);
       $("#home-workspace").hidden = false;
       await loadData();
       void hydrateProviderDividendData();
@@ -877,9 +884,11 @@
     });
     setText("#auth-message", error ? error.message : "Check your email for a sign-in link.");
   });
-  $("#sign-out").addEventListener("click", async () => {
-    await state.client.auth.signOut();
-    window.location.reload();
+  document.querySelectorAll("[data-sign-out]").forEach((control) => {
+    control.addEventListener("click", async () => {
+      await state.client.auth.signOut();
+      window.location.reload();
+    });
   });
   $("#add-asset").addEventListener("click", openQuickAdd);
   $("#portfolio-add-asset").addEventListener("click", openQuickAdd);
