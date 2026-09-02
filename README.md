@@ -1,6 +1,6 @@
 # Mercury
 
-Mercury is a private personal-finance workspace. Home is the active daily briefing: it presents the owner's Brokerage account with value, income, authentic daily history, allocation-target status, and the four largest holdings. Portfolio is the source-of-truth holdings workspace, with its own search, filters, sorting, quick add, and full matching grid.
+Mercury is a private personal-finance workspace. Home is the active daily briefing: it presents the owner's Brokerage account with current value, selected-period change, expected return when every valued holding has a recorded assumption, annual dividends, authentic daily history, a four-holding preview, and allocation-target status. Portfolio is the source-of-truth holdings workspace, with its own search, filters, sorting, quick add, and full matching grid.
 
 ## Setup
 

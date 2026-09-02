@@ -365,7 +365,17 @@
     setText("#metric-value", displayCurrency(summary.totalMarketValueCents / 100));
     setText("#metric-income", displayCurrency(summary.totalEstimatedAnnualIncomeCents / 100));
     const performance = renderHistory();
-    setDelta("#metric-return", performance.changeRate, displaySignedPercentage);
+    setText(
+      "#metric-change-value",
+      Number.isSafeInteger(performance.changeCents) ? displaySignedCurrency(performance.changeCents) : "—",
+    );
+    setDelta("#metric-change-rate", performance.changeRate, displaySignedPercentage);
+    setText(
+      "#metric-expected-return",
+      Number.isFinite(summary.expectedAnnualReturnRate)
+        ? percentage.format(summary.expectedAnnualReturnRate)
+        : "Not set",
+    );
     const dividendYield = summary.totalMarketValueCents === 0
       ? null
       : summary.totalEstimatedAnnualIncomeCents / summary.totalMarketValueCents;

@@ -326,8 +326,15 @@ function summarizePortfolio(assets, { weeklyContributionCents = 0 } = {}) {
     hasAssets && isCompleteAllocation(normalizedAssets, "targetAllocationRate");
   const weeklyAllocationComplete =
     hasAssets && isCompleteAllocation(normalizedAssets, "weeklyContributionRate");
+  const expectedAnnualReturnComplete =
+    hasAssets &&
+    totalMarketValueCents > 0 &&
+    normalizedAssets.every((asset) => asset.expectedAnnualReturnRate !== null);
   const targetAllocationRate = allocationTotal(normalizedAssets, "targetAllocationRate");
   const weeklyContributionRate = allocationTotal(normalizedAssets, "weeklyContributionRate");
+  const totalExpectedAnnualGrowthCents = expectedAnnualReturnComplete
+    ? rows.reduce((total, row) => total + row.expectedAnnualGrowthCents, 0)
+    : null;
   const warnings = [];
 
   if (!targetAllocationComplete) warnings.push("Some assets do not have a target allocation.");
@@ -339,10 +346,10 @@ function summarizePortfolio(assets, { weeklyContributionCents = 0 } = {}) {
   return {
     rows,
     totalMarketValueCents,
-    totalExpectedAnnualGrowthCents: rows.reduce(
-      (total, row) => total + (row.expectedAnnualGrowthCents ?? 0),
-      0,
-    ),
+    totalExpectedAnnualGrowthCents,
+    expectedAnnualReturnRate: totalExpectedAnnualGrowthCents === null
+      ? null
+      : totalExpectedAnnualGrowthCents / totalMarketValueCents,
     totalEstimatedAnnualIncomeCents: rows.reduce(
       (total, row) => total + (row.estimatedAnnualIncomeCents ?? 0),
       0,

@@ -23,6 +23,8 @@ test("Home follows the Figma composition with a focused Brokerage dashboard", ()
   assert.match(indexHtml, /class="acadia-responsive-navbar"/);
   assert.match(indexHtml, /<section class="acadia-dashboard-main" aria-label="Brokerage dashboard">/);
   assert.match(indexHtml, /Portfolio value/);
+  assert.match(indexHtml, /Selected-period change/);
+  assert.match(indexHtml, /Expected annual return/);
   assert.match(indexHtml, /Annual dividends/);
   assert.match(indexHtml, />Performance</);
   assert.match(indexHtml, />Investments</);
@@ -32,6 +34,7 @@ test("Home follows the Figma composition with a focused Brokerage dashboard", ()
   assert.match(indexHtml, /id="holdings-count"/);
   assert.match(indexHtml, /id="target-status"/);
   assert.match(indexHtml, /Portfolio targets/);
+  assert.match(indexHtml, /--acadia-grid-columns: 4/);
   assert.doesNotMatch(indexHtml, /id="account-filter"/);
   assert.doesNotMatch(indexHtml, /Brokerage actions|Private workspace|refresh-quotes|refresh-history|export-data/);
   assert.doesNotMatch(indexHtml, /Net worth|Section Header|data-holding-filter="brokerage"|data-holding-filter="retirement"|>Explore<|>History</);
@@ -84,8 +87,20 @@ test("large currency display values use the shared compact format", () => {
   assert.match(homeSource, /millionCurrency\.format\(value\)/);
   assert.match(homeSource, /\[KMBT\]/);
   assert.match(homeSource, /setText\("#metric-value", displayCurrency/);
+  assert.match(homeSource, /setText\(\s*"#metric-change-value"/);
+  assert.match(homeSource, /setDelta\("#metric-change-rate", performance\.changeRate/);
+  assert.match(homeSource, /"#metric-expected-return"/);
+  assert.match(homeSource, /summary\.expectedAnnualReturnRate/);
   assert.match(homeSource, /valueBadge\(valueCents\)[\s\S]*displayCurrency/);
   assert.match(homeSource, /setText\("#asset-total-value", row \? displayCurrency/);
+});
+
+test("Home places target status after its four-card Investments preview", () => {
+  const homeWorkspace = indexHtml.slice(
+    indexHtml.indexOf('<section id="home-workspace"'),
+    indexHtml.indexOf('<section id="portfolio-workspace"'),
+  );
+  assert.ok(homeWorkspace.indexOf('id="holdings-grid"') < homeWorkspace.indexOf('id="target-status"'));
 });
 
 test("holding cards use whole-dollar unit prices without rounding up", () => {

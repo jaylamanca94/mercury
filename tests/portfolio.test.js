@@ -132,11 +132,29 @@ test("portfolio summaries calculate allocation, income, contribution, and comple
   assert.equal(summary.totalMarketValueCents, 487_123);
   assert.equal(summary.rows[0].allocationRate, 287_123 / 487_123);
   assert.equal(summary.totalEstimatedAnnualIncomeCents, 11_733);
+  assert.equal(summary.totalExpectedAnnualGrowthCents, 30_970);
+  assert.ok(Math.abs(summary.expectedAnnualReturnRate - (30_970 / 487_123)) < Number.EPSILON);
   assert.equal(summary.totalWeeklyContributionCents, 50_000);
   assert.equal(summary.dayChangeCoverage, "complete");
   assert.equal(summary.totalDayChangeCents, 5_123);
   assert.equal(summary.targetAllocationRate, 1);
   assert.deepEqual(summary.warnings, []);
+});
+
+test("expected annual return stays unavailable until every valued holding has an assumption", () => {
+  const summary = summarizePortfolio([
+    baseAsset,
+    {
+      id: "unmodelled-cash",
+      name: "Cash reserve",
+      assetType: "Cash",
+      valuationBasis: VALUATION_BASES.MANUAL_VALUE,
+      manualValueCents: 100_000,
+    },
+  ]);
+
+  assert.equal(summary.totalExpectedAnnualGrowthCents, null);
+  assert.equal(summary.expectedAnnualReturnRate, null);
 });
 
 test("portfolio summaries with incomplete baseline values do not invent a day change", () => {
