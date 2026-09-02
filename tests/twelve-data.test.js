@@ -45,6 +45,28 @@ test("does not invent a distribution estimate when provider statistics are unava
   );
 });
 
+test("calculates annualised return from dividend-adjusted historical closes", () => {
+  const performance = _internals.annualizedReturn([
+    { datetime: "2021-09-01", close: "100" },
+    { datetime: "2026-09-01", close: "161.05" },
+  ]);
+
+  assert.equal(performance.annualizedReturnYears, 5);
+  assert.ok(Math.abs(performance.annualizedReturnRate - 0.1) < 0.0002);
+});
+
+test("calculates trailing distribution yield from provider cash-distribution history", () => {
+  const distribution = _internals.mapYahooDistribution({
+    chart: {
+      result: [{
+        events: { dividends: { first: { amount: 0.6 }, second: { amount: 0.6 } } },
+      }],
+    },
+  }, 12_000);
+
+  assert.deepEqual(distribution, { annualDividendCents: 120, distributionYieldRate: 0.01 });
+});
+
 test("rejects provider responses that would create a fabricated price", () => {
   assert.throws(() => _internals.mapQuote({ status: "error", message: "Unknown symbol" }, "NOPE"), /Unknown symbol/);
 });
@@ -90,6 +112,61 @@ test("retains a successful quote when provider dividend statistics fail", async 
     assert.equal(quote.priceCents, 10_000);
     assert.equal(quote.annualDividendCents, null);
     assert.equal(quote.distributionYieldRate, null);
+  } finally {
+    global.fetch = originalFetch;
+    if (originalKey === undefined) delete process.env.TWELVE_DATA_API_KEY;
+    else process.env.TWELVE_DATA_API_KEY = originalKey;
+  }
+});
+
+test("uses provider cash-distribution history when dividend statistics are unavailable", async () => {
+  const originalFetch = global.fetch;
+  const originalKey = process.env.TWELVE_DATA_API_KEY;
+  process.env.TWELVE_DATA_API_KEY = "test-key";
+  global.fetch = async (url) => {
+    const request = new URL(url);
+    if (request.pathname === "/quote") {
+      return { ok: true, json: async () => ({ close: "100", previous_close: "99", datetime: "2026-09-01T20:00:00Z" }) };
+    }
+    if (request.hostname === "query1.finance.yahoo.com") {
+      return { ok: true, json: async () => ({ chart: { result: [{ events: { dividends: { dividend: { amount: 2 } } } }] } }) };
+    }
+    return { ok: false, json: async () => ({}) };
+  };
+
+  try {
+    const quote = await getQuote({ symbol: "HISTORYYIELD", instrumentType: "stock" });
+    assert.equal(quote.annualDividendCents, 200);
+    assert.equal(quote.distributionYieldRate, 0.02);
+  } finally {
+    global.fetch = originalFetch;
+    if (originalKey === undefined) delete process.env.TWELVE_DATA_API_KEY;
+    else process.env.TWELVE_DATA_API_KEY = originalKey;
+  }
+});
+
+test("includes source-backed annualised performance only when requested", async () => {
+  const originalFetch = global.fetch;
+  const originalKey = process.env.TWELVE_DATA_API_KEY;
+  process.env.TWELVE_DATA_API_KEY = "test-key";
+  global.fetch = async (url) => {
+    const request = new URL(url);
+    if (request.pathname === "/quote") {
+      return { ok: true, json: async () => ({ close: "100", previous_close: "99", datetime: "2026-09-01T20:00:00Z" }) };
+    }
+    if (request.pathname === "/time_series") {
+      return { ok: true, json: async () => ({ values: [
+        { datetime: "2021-09-01", close: "100" },
+        { datetime: "2026-09-01", close: "161.05" },
+      ] }) };
+    }
+    return { ok: false, json: async () => ({}) };
+  };
+
+  try {
+    const quote = await getQuote({ symbol: "WITHPERFORMANCE", instrumentType: "stock", includeMetrics: true });
+    assert.equal(quote.annualizedReturnYears, 5);
+    assert.ok(Math.abs(quote.annualizedReturnRate - 0.1) < 0.0002);
   } finally {
     global.fetch = originalFetch;
     if (originalKey === undefined) delete process.env.TWELVE_DATA_API_KEY;

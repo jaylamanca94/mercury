@@ -24,7 +24,7 @@
   const TARGET_ALLOCATION_TOLERANCE = 0.02;
   const state = {
     client: null, user: null, account: null, accounts: [], holdings: [], quotes: [], snapshots: [],
-    configured: false, pendingQuote: null, quoteTimer: null, holdingFilter: "all", holdingSort: "value", portfolioFilter: "all", portfolioSort: "value", performancePeriod: "all",
+    providerMetrics: {}, configured: false, pendingQuote: null, quoteTimer: null, holdingFilter: "all", holdingSort: "value", portfolioFilter: "all", portfolioSort: "value", performancePeriod: "all",
   };
 
   function cents(value) {
@@ -295,18 +295,25 @@
     }
   }
   function holdingCardMetrics(row) {
+    const live = state.providerMetrics[row.asset.id] || {};
+    const years = live.annualizedReturnYears;
+    const returnLabel = Number.isFinite(years)
+      ? `${years >= 4.75 ? "Five-year" : `${years}-year`} annualised return`
+      : "Annualised return";
     const metrics = [
       {
         icon: "fa-chart-line",
-        label: "Expected annual return",
-        value: row.asset.expectedAnnualReturnRate,
-      },
-      {
-        icon: "fa-coins",
-        label: "Dividend yield",
-        value: row.distributionYieldRate,
+        label: returnLabel,
+        value: live.annualizedReturnRate,
       },
     ];
+    if (!["crypto", "cash"].includes(row.asset.instrumentType)) {
+      metrics.push({
+        icon: "fa-coins",
+        label: "Trailing 12-month dividend yield",
+        value: row.asset.distributionYieldRate ?? live.distributionYieldRate,
+      });
+    }
     return `<div class="acadia-icon-with-text-row" aria-label="Investment metrics">${metrics.map(({ icon, label, value }) => {
       const displayValue = Number.isFinite(value) ? percentage.format(value) : "Not set";
       return `<span class="acadia-icon-with-text acadia-icon-with-text-brand" aria-label="${label}: ${displayValue}"><span class="acadia-icon-with-text-icon"><i class="fa-solid ${icon} acadia-icon" aria-hidden="true"></i></span><span>${displayValue}</span></span>`;
@@ -554,9 +561,10 @@
     const { data } = await state.client.auth.getSession();
     return data.session?.access_token;
   }
-  async function requestQuote(symbol, instrumentType = "other") {
+  async function requestQuote(symbol, instrumentType = "other", { includeMetrics = false } = {}) {
     const token = await sessionToken();
-    const response = await fetch(`/api/portfolio/quotes?symbol=${encodeURIComponent(symbol)}&instrumentType=${encodeURIComponent(instrumentType)}`, {
+    const metricsQuery = includeMetrics ? "&includeMetrics=1" : "";
+    const response = await fetch(`/api/portfolio/quotes?symbol=${encodeURIComponent(symbol)}&instrumentType=${encodeURIComponent(instrumentType)}${metricsQuery}`, {
       headers: { Authorization: `Bearer ${token}` },
     });
     const data = await response.json();
@@ -825,35 +833,30 @@
       setText("#asset-detail-status", `${error.message} Last successful quote remains in place.`);
     }
   }
-  async function hydrateProviderDividendData() {
-    const latest = latestQuotes();
+  async function hydrateProviderMetrics() {
     const candidates = state.holdings.filter((holding) => (
       holding.valuation_basis === VALUATION_BASES.SHARES_AND_PRICE &&
       holding.symbol &&
-      holding.instrument_type !== "crypto" &&
-      holding.instrument_type !== "cash" &&
-      holding.distribution_yield_rate === null &&
-      (latest[holding.id]?.annual_dividend_cents ?? null) === null &&
-      (latest[holding.id]?.distribution_yield_rate ?? null) === null
+      holding.instrument_type !== "cash"
     ));
-    let refreshed = false;
-    for (const holding of candidates) {
-      try {
-        const quote = await requestQuote(holding.symbol, holding.instrument_type);
-        const { error } = await state.client.from("holding_quotes").upsert({
-          holding_id: holding.id,
-          price_cents: quote.priceCents,
-          previous_close_cents: quote.priorCloseCents,
-          ...quoteDividendFields(holding.id, quote),
-          source: quote.source,
-          as_of: quote.asOf,
-        }, { onConflict: "holding_id,as_of" });
-        if (!error) refreshed = true;
-      } catch {
-        // The existing quote remains authoritative when provider enrichment is unavailable.
-      }
+    const results = await Promise.allSettled(candidates.map(async (holding) => ({
+      holdingId: holding.id,
+      quote: await requestQuote(holding.symbol, holding.instrument_type, { includeMetrics: true }),
+    })));
+    const metrics = results.reduce((next, result) => {
+      if (result.status !== "fulfilled") return next;
+      const { holdingId, quote } = result.value;
+      next[holdingId] = {
+        annualizedReturnRate: quote.annualizedReturnRate,
+        annualizedReturnYears: quote.annualizedReturnYears,
+        distributionYieldRate: quote.distributionYieldRate,
+      };
+      return next;
+    }, {});
+    if (Object.keys(metrics).length) {
+      state.providerMetrics = { ...state.providerMetrics, ...metrics };
+      render();
     }
-    if (refreshed) await loadData();
   }
   function showUnconfigured(message) {
     state.configured = false;
@@ -886,7 +889,7 @@
       setAccountMenuState(state.user.email, true);
       $("#home-workspace").hidden = false;
       await loadData();
-      void hydrateProviderDividendData();
+      void hydrateProviderMetrics();
       setText("#data-status", "Private Brokerage account loaded.");
     } catch (error) {
       showUnconfigured(`Private sync is unavailable: ${error.message}`);

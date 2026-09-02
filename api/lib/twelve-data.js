@@ -1,7 +1,9 @@
 const QUOTE_CACHE_TTL_MS = 5 * 60 * 1000;
 const DISTRIBUTION_CACHE_TTL_MS = 24 * 60 * 60 * 1000;
+const PERFORMANCE_CACHE_TTL_MS = 24 * 60 * 60 * 1000;
 const quoteCache = new Map();
 const distributionCache = new Map();
+const performanceCache = new Map();
 const CRYPTO_TICKERS = new Set(["BTC", "ETH", "SOL", "LINK", "AVAX", "SHIB", "ETC"]);
 
 function isCryptoSymbol(value, instrumentType) {
@@ -75,12 +77,43 @@ function mapDistribution(payload, priceCents) {
   };
 }
 
-async function getQuote({ symbol, instrumentType }) {
+function annualizedReturn(values) {
+  const observations = (Array.isArray(values) ? values : [])
+    .map((value) => ({ date: new Date(value?.datetime || value?.date), close: Number(value?.close) }))
+    .filter(({ date, close }) => Number.isFinite(date.getTime()) && Number.isFinite(close) && close > 0)
+    .sort((left, right) => left.date - right.date);
+  if (observations.length < 2) return { annualizedReturnRate: null, annualizedReturnYears: null };
+
+  const first = observations[0];
+  const last = observations.at(-1);
+  const years = (last.date - first.date) / (365.25 * 24 * 60 * 60 * 1000);
+  if (!Number.isFinite(years) || years < 1) return { annualizedReturnRate: null, annualizedReturnYears: null };
+  const rate = (last.close / first.close) ** (1 / years) - 1;
+  return {
+    annualizedReturnRate: Number.isFinite(rate) && rate >= -1 ? rate : null,
+    annualizedReturnYears: Number.isFinite(rate) && rate >= -1 ? Math.round(years * 10) / 10 : null,
+  };
+}
+
+function mapYahooDistribution(payload, priceCents) {
+  const result = payload?.chart?.result?.[0];
+  if (!result || !Number.isFinite(priceCents) || priceCents <= 0) {
+    return { annualDividendCents: null, distributionYieldRate: null };
+  }
+  const dividends = Object.values(result.events?.dividends || {});
+  const amounts = dividends.map((dividend) => Number(dividend?.amount));
+  if (amounts.some((amount) => !Number.isFinite(amount) || amount < 0)) {
+    return { annualDividendCents: null, distributionYieldRate: null };
+  }
+  const annualDividendCents = Math.round(amounts.reduce((total, amount) => total + amount, 0) * 100);
+  return { annualDividendCents, distributionYieldRate: annualDividendCents / priceCents };
+}
+
+async function getQuote({ symbol, instrumentType, includeMetrics = false }) {
   const normalisedSymbol = normaliseSymbol(symbol, instrumentType);
   const resolvedInstrumentType = isCryptoSymbol(normalisedSymbol, instrumentType) ? "crypto" : instrumentType || "other";
   const cacheKey = `${resolvedInstrumentType}:${normalisedSymbol}`;
   const cached = quoteCache.get(cacheKey);
-  if (cached && Date.now() - cached.savedAt < QUOTE_CACHE_TTL_MS) return cached.value;
   if (!process.env.TWELVE_DATA_API_KEY) throw new Error("Quotes are not configured yet.");
 
   async function fetchQuote(providerSymbol) {
@@ -107,8 +140,25 @@ async function getQuote({ symbol, instrumentType }) {
       url.searchParams.set("symbol", providerSymbol);
       url.searchParams.set("apikey", process.env.TWELVE_DATA_API_KEY);
       const response = await fetch(url, { headers: { Accept: "application/json" } });
+      if (response.ok) {
+        const value = mapDistribution(await response.json(), priceCents);
+        if (value.annualDividendCents !== null || value.distributionYieldRate !== null) {
+          distributionCache.set(providerSymbol, { value, savedAt: Date.now() });
+          return value;
+        }
+      }
+    } catch {
+      // Statistics are optional; the cash-distribution history below is the live fallback.
+    }
+
+    try {
+      const yahooSymbol = providerSymbol.replace("/USD", "-USD");
+      const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(yahooSymbol)}?range=1y&interval=1d&events=div`;
+      const response = await fetch(url, {
+        headers: { Accept: "application/json", "User-Agent": "Mercury portfolio source bridge" },
+      });
       if (!response.ok) return { annualDividendCents: null, distributionYieldRate: null };
-      const value = mapDistribution(await response.json(), priceCents);
+      const value = mapYahooDistribution(await response.json(), priceCents);
       if (value.annualDividendCents !== null || value.distributionYieldRate !== null) {
         distributionCache.set(providerSymbol, { value, savedAt: Date.now() });
       }
@@ -118,15 +168,40 @@ async function getQuote({ symbol, instrumentType }) {
     }
   }
 
-  async function enrichQuote(providerSymbol, resolvedType) {
-    const quote = await fetchQuote(providerSymbol);
+  async function fetchPerformance(providerSymbol) {
+    const cachedPerformance = performanceCache.get(providerSymbol);
+    if (cachedPerformance && Date.now() - cachedPerformance.savedAt < PERFORMANCE_CACHE_TTL_MS) {
+      return cachedPerformance.value;
+    }
+    try {
+      const url = new URL("https://api.twelvedata.com/time_series");
+      url.searchParams.set("symbol", providerSymbol);
+      url.searchParams.set("interval", "1month");
+      url.searchParams.set("outputsize", "61");
+      url.searchParams.set("order", "asc");
+      url.searchParams.set("adjust", "dividends");
+      url.searchParams.set("apikey", process.env.TWELVE_DATA_API_KEY);
+      const response = await fetch(url, { headers: { Accept: "application/json" } });
+      if (!response.ok) return { annualizedReturnRate: null, annualizedReturnYears: null };
+      const value = annualizedReturn((await response.json())?.values);
+      if (value.annualizedReturnRate !== null) performanceCache.set(providerSymbol, { value, savedAt: Date.now() });
+      return value;
+    } catch {
+      return { annualizedReturnRate: null, annualizedReturnYears: null };
+    }
+  }
+
+  async function enrichQuote(providerSymbol, resolvedType, baseQuote) {
+    const quote = baseQuote || await fetchQuote(providerSymbol);
     const distribution = await fetchDistribution(providerSymbol, quote.priceCents, resolvedType);
-    return { ...quote, ...distribution, instrumentType: resolvedType };
+    const performance = includeMetrics ? await fetchPerformance(providerSymbol) : {};
+    return { ...quote, ...distribution, ...performance, instrumentType: resolvedType };
   }
 
   try {
-    const value = await enrichQuote(normalisedSymbol, resolvedInstrumentType);
-    quoteCache.set(cacheKey, { value, savedAt: Date.now() });
+    const cachedQuote = cached && Date.now() - cached.savedAt < QUOTE_CACHE_TTL_MS ? cached.value : null;
+    const value = await enrichQuote(normalisedSymbol, resolvedInstrumentType, cachedQuote);
+    if (!cachedQuote) quoteCache.set(cacheKey, { value, savedAt: Date.now() });
     return value;
   } catch (error) {
     const canTryUsdPair = (!instrumentType || instrumentType === "other") && !normalisedSymbol.includes("/");
@@ -141,6 +216,7 @@ async function getQuote({ symbol, instrumentType }) {
 module.exports = {
   QUOTE_CACHE_TTL_MS,
   DISTRIBUTION_CACHE_TTL_MS,
-  _internals: { dollarsToCents, isCryptoSymbol, mapDistribution, mapQuote, normaliseRate, normaliseSymbol },
+  PERFORMANCE_CACHE_TTL_MS,
+  _internals: { annualizedReturn, dollarsToCents, isCryptoSymbol, mapDistribution, mapQuote, mapYahooDistribution, normaliseRate, normaliseSymbol },
   getQuote,
 };
