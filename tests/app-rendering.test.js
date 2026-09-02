@@ -28,6 +28,7 @@ test("Home consumes Acadia without a Mercury presentation layer", () => {
   assert.match(indexHtml, /id="main-content" class="acadia-shell acadia-mobile-dock-safe-area"/);
   assert.match(indexHtml, /id="home-workspace" class="acadia-stack" hidden/);
   assert.match(indexHtml, /id="portfolio-workspace" class="acadia-stack" hidden aria-live="polite"/);
+  assert.match(indexHtml, /id="income-workspace" class="acadia-stack" hidden aria-live="polite"/);
   assert.match(indexHtml, /id="asset-workspace" class="acadia-stack" hidden aria-live="polite"/);
   assert.match(acadiaStyles, /\[data-acadia-page-frame="spacious"\]/);
   assert.match(acadiaStyles, /\.acadia-card\.is-dashboard-trend/);
@@ -57,7 +58,7 @@ test("Home follows the Figma composition with a focused Brokerage dashboard", ()
   assert.doesNotMatch(indexHtml, /Brokerage actions|Private workspace|refresh-quotes|refresh-history|export-data/);
   assert.doesNotMatch(indexHtml, /Net worth|Section Header|data-holding-filter="brokerage"|data-holding-filter="retirement"|>Explore<|>History</);
   assert.match(indexHtml, /aria-disabled="true"[^>]*>Plan/);
-  assert.match(indexHtml, /aria-disabled="true"[^>]*>Income/);
+  assert.match(indexHtml, /href="#income" data-nav-page="income">Income/);
   assert.match(indexHtml, /acadia-action-menu-trigger acadia-navbar-link" aria-label="Profile account actions">Profile/);
   assert.match(indexHtml, /data-nav-page="portfolio"/);
   assert.match(indexHtml, /--acadia-mobile-tab-count: 5/);
@@ -83,6 +84,7 @@ test("Mercury composes the complete Acadia responsive Navbar", () => {
   assert.match(indexHtml, /<nav class="acadia-mobile-tabbar is-fixed" aria-label="Primary phone navigation" style="--acadia-mobile-tab-count: 5">/);
   assert.match(indexHtml, /class="acadia-mobile-tab is-active" href="index\.html" data-nav-page="home" aria-current="page" aria-label="Home"/);
   assert.match(indexHtml, /class="acadia-mobile-tab" href="#portfolio" data-nav-page="portfolio" aria-label="Portfolio"/);
+  assert.match(indexHtml, /class="acadia-mobile-tab" href="#income" data-nav-page="income" aria-label="Income"/);
   assert.equal((indexHtml.match(/data-account-label/g) || []).length, 3);
   assert.equal((indexHtml.match(/data-sign-out/g) || []).length, 3);
   assert.doesNotMatch(indexHtml, /fa-circle-user[^>]*acadia-icon[^>]*><\/i><\/summary><div id="account-menu"/);
@@ -173,6 +175,30 @@ test("Portfolio cards show the Figma return and dividend-yield metrics without c
   assert.match(homeSource, /function hydrateProviderMetrics\(\)/);
   assert.match(homeSource, /includeMetrics: true/);
   assert.match(homeSource, /providerMetricsPending/);
+});
+
+test("Income is a functional planning workspace with live dividend coverage and saved recurring sources", () => {
+  const incomeWorkspace = indexHtml.slice(indexHtml.indexOf('<section id="income-workspace"'), indexHtml.indexOf('<section id="asset-workspace"'));
+  assert.match(incomeWorkspace, /Planning view · Expected income, not bank-confirmed deposits/);
+  assert.match(incomeWorkspace, /id="income-periods"/);
+  assert.match(incomeWorkspace, /data-income-period="year"/);
+  assert.match(incomeWorkspace, /data-income-period="month"/);
+  assert.match(incomeWorkspace, /Total income/);
+  assert.match(incomeWorkspace, /Earned income/);
+  assert.match(incomeWorkspace, /Passive income/);
+  assert.match(incomeWorkspace, /id="income-dividend-sort"/);
+  assert.match(incomeWorkspace, /id="income-dividends-grid"/);
+  assert.match(incomeWorkspace, /id="income-sources-grid"/);
+  assert.match(indexHtml, /id="income-source-dialog"/);
+  assert.match(indexHtml, /id="delete-income-source-dialog"/);
+  assert.match(indexHtml, /<script src="income\.js\?v=20260902-income-v2"><\/script>/);
+  assert.match(homeSource, /function routeIncome\(\)/);
+  assert.match(homeSource, /function renderIncome\(summary\)/);
+  assert.match(homeSource, /summary\.totalEstimatedAnnualIncomeCents/);
+  assert.match(homeSource, /state\.providerMetricsPending/);
+  assert.match(homeSource, /state\.client\.from\("income_sources"\)/);
+  assert.match(homeSource, /openDeleteIncomeSourceDialog/);
+  assert.match(homeSource, /data-income-dividend-sort/);
 });
 
 test("the quick add dialog keeps manual recovery out of the initial path", () => {

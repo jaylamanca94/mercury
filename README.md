@@ -1,11 +1,11 @@
 # Mercury
 
-Mercury is a private personal-finance workspace. Home is the active daily briefing: it presents the owner's Brokerage account with current value, selected-period change, expected return when every valued holding has a recorded assumption, annual dividends, authentic daily history, a four-holding preview, and allocation-target status. Portfolio is the source-of-truth holdings workspace, with its own search, filters, sorting, quick add, and full matching grid.
+Mercury is a private personal-finance workspace. Home is the active daily briefing: it presents the owner's Brokerage account with current value, selected-period change, expected return when every valued holding has a recorded assumption, annual dividends, authentic daily history, a four-holding preview, and allocation-target status. Portfolio is the source-of-truth holdings workspace, with its own search, filters, sorting, quick add, and full matching grid. Income is a planning view for expected recurring gross income plus live portfolio dividend estimates; it is not bank-confirmed activity.
 
 ## Setup
 
 1. Create a Supabase project and enable email magic-link authentication.
-2. Apply [`supabase/migrations/20260830_brokerage_mvp.sql`](supabase/migrations/20260830_brokerage_mvp.sql), [`supabase/migrations/20260901_asset_contribution.sql`](supabase/migrations/20260901_asset_contribution.sql), and [`supabase/migrations/20260901_quote_dividend_data.sql`](supabase/migrations/20260901_quote_dividend_data.sql).
+2. Apply [`supabase/migrations/20260830_brokerage_mvp.sql`](supabase/migrations/20260830_brokerage_mvp.sql), [`supabase/migrations/20260901_asset_contribution.sql`](supabase/migrations/20260901_asset_contribution.sql), [`supabase/migrations/20260901_quote_dividend_data.sql`](supabase/migrations/20260901_quote_dividend_data.sql), and [`supabase/migrations/20260902_income_sources.sql`](supabase/migrations/20260902_income_sources.sql).
 3. Configure these Vercel environment variables:
    - `SUPABASE_URL`
    - `SUPABASE_ANON_KEY`
@@ -32,9 +32,9 @@ No package installation is needed for the dependency-free checks.
 
 ## Key files
 
-- `index.html`, `brokerage.js` — the private Home dashboard, hash-routed Portfolio holdings workspace and Asset pages, and simplified asset-entry flow.
+- `index.html`, `brokerage.js` — the private Home dashboard, hash-routed Portfolio and Income workspaces, Asset pages, and simplified entry flows.
 - `acadia.css`, `fonts/` — the canonical Acadia stylesheet and font assets, vendored unchanged; `styles.css` only imports this system asset. The shared `wide` plus `spacious` frame aligns Home, Portfolio and Asset desktop rails at 148px while retaining Acadia's smaller-device gutters.
-- `portfolio.js` — cent-based calculation and validation contract, also exposed to the browser.
+- `portfolio.js`, `income.js` — cent-based portfolio and recurring-income calculation contracts, also exposed to the browser.
 - `api/portfolio/` — protected quote and snapshot endpoints.
 - `supabase/migrations/` — account, holding, quote, snapshot, RLS, and per-asset contribution schema.
 - `supabase/README.md` — Supabase and environment setup.

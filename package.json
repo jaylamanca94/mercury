@@ -2,7 +2,7 @@
   "private": true,
   "scripts": {
     "check": "npm run check:syntax && npm test",
-    "check:syntax": "node --check brokerage.js && node --check portfolio.js && node --check theme.js && node --check api/config.js && node --check api/lib/portfolio-auth.js && node --check api/lib/twelve-data.js && node --check api/portfolio/quotes.js && node --check api/portfolio/snapshot.js && node --check api/live-snapshot.js && node --check api/fred-snapshot.js",
+    "check:syntax": "node --check brokerage.js && node --check portfolio.js && node --check income.js && node --check theme.js && node --check api/config.js && node --check api/lib/portfolio-auth.js && node --check api/lib/twelve-data.js && node --check api/portfolio/quotes.js && node --check api/portfolio/snapshot.js && node --check api/live-snapshot.js && node --check api/fred-snapshot.js",
     "test": "node --test"
   }
 }

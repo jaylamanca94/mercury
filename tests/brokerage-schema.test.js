@@ -15,6 +15,10 @@ const dividendMigration = fs.readFileSync(
   path.join(__dirname, "..", "supabase", "migrations", "20260901_quote_dividend_data.sql"),
   "utf8",
 );
+const incomeMigration = fs.readFileSync(
+  path.join(__dirname, "..", "supabase", "migrations", "20260902_income_sources.sql"),
+  "utf8",
+);
 
 test("the Brokerage schema keeps valuation bases explicit and supports the requested instruments", () => {
   assert.match(migration, /instrument_type in \('mutual-fund', 'etf', 'stock', 'crypto', 'cash', 'other'\)/);
@@ -44,4 +48,15 @@ test("provider dividend quote fields are idempotent and keep the existing quote 
   assert.match(dividendMigration, /add column if not exists annual_dividend_cents bigint/);
   assert.match(dividendMigration, /add column if not exists distribution_yield_rate numeric\(8, 6\)/);
   assert.match(migration, /Owners read and write their holding quotes/);
+});
+
+test("Income sources are private account-scoped recurring planning data", () => {
+  assert.match(incomeMigration, /create table if not exists public\.income_sources/);
+  assert.match(incomeMigration, /account_id uuid not null references public\.accounts\(id\) on delete cascade/);
+  assert.match(incomeMigration, /income_type in \('employment', 'contract', 'benefits', 'other'\)/);
+  assert.match(incomeMigration, /frequency in \('weekly', 'biweekly', 'twiceMonthly', 'monthly'\)/);
+  assert.match(incomeMigration, /amount_cents bigint not null check \(amount_cents > 0\)/);
+  assert.match(incomeMigration, /alter table public\.income_sources enable row level security/);
+  assert.match(incomeMigration, /Owners manage their income sources/);
+  assert.match(incomeMigration, /revoke all on public\.income_sources from anon/);
 });

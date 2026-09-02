@@ -1,6 +1,6 @@
 # Mercury Supabase setup
 
-Apply `migrations/20260830_brokerage_mvp.sql` in the Supabase SQL editor (or through the Supabase CLI). It creates the one-owner Brokerage data model and row-level security policies.
+Apply every migration in `migrations/`, including `20260902_income_sources.sql`, in the Supabase SQL editor (or through the Supabase CLI). They create the one-owner Brokerage and expected-income planning data models with row-level security policies.
 
 Enable **Email** authentication with magic links, then set these Vercel environment variables:
 

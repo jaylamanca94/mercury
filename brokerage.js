@@ -8,6 +8,11 @@
     summarizePerformance,
     summarizePortfolio,
   } = window.MercuryPortfolio;
+  const {
+    INCOME_FREQUENCIES,
+    normalizeIncomeSource,
+    summarizeIncomeSources,
+  } = window.MercuryIncome;
   const $ = (selector) => document.querySelector(selector);
   const currency = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 });
   const compactCurrency = new Intl.NumberFormat("en-US", {
@@ -23,8 +28,8 @@
   const percentage = new Intl.NumberFormat("en-US", { style: "percent", maximumFractionDigits: 2 });
   const TARGET_ALLOCATION_TOLERANCE = 0.02;
   const state = {
-    client: null, user: null, account: null, accounts: [], holdings: [], quotes: [], snapshots: [],
-    providerMetrics: {}, providerMetricsPending: new Set(), configured: false, pendingQuote: null, quoteTimer: null, holdingFilter: "all", holdingSort: "value", portfolioFilter: "all", portfolioSort: "value", performancePeriod: "all",
+    client: null, user: null, account: null, accounts: [], holdings: [], quotes: [], snapshots: [], incomeSources: [], incomeSourcesAvailable: true,
+    providerMetrics: {}, providerMetricsPending: new Set(), configured: false, pendingQuote: null, quoteTimer: null, holdingFilter: "all", holdingSort: "value", portfolioFilter: "all", portfolioSort: "value", performancePeriod: "all", incomePeriod: "year", incomeDividendSort: "value", incomeSourceDialogId: null, incomeSourceDeleteId: null,
   };
 
   function cents(value) {
@@ -88,6 +93,7 @@
     return match ? decodeURIComponent(match[1]) : null;
   }
   function routePortfolio() { return window.location.hash === "#portfolio"; }
+  function routeIncome() { return window.location.hash === "#income"; }
   function navigateToAsset(id) { window.location.hash = `asset/${encodeURIComponent(id)}`; }
   function navigateHome() { window.location.hash = ""; }
   function setActiveNavigation(page) {
@@ -161,6 +167,7 @@
   function setControlsDisabled(disabled) {
     $("#add-asset").disabled = disabled;
     $("#portfolio-add-asset").disabled = disabled;
+    $("#add-income").disabled = disabled || !state.incomeSourcesAvailable;
   }
 
   function renderPerformancePeriods() {
@@ -406,6 +413,7 @@
   function renderHome(summary) {
     $("#home-workspace").hidden = false;
     $("#portfolio-workspace").hidden = true;
+    $("#income-workspace").hidden = true;
     $("#asset-workspace").hidden = true;
     setActiveNavigation("home");
     setText("#metric-value", displayCurrency(summary.totalMarketValueCents / 100));
@@ -436,9 +444,139 @@
   function renderPortfolio(summary) {
     $("#home-workspace").hidden = true;
     $("#portfolio-workspace").hidden = false;
+    $("#income-workspace").hidden = true;
     $("#asset-workspace").hidden = true;
     setActiveNavigation("portfolio");
     renderPortfolioHoldings(summary);
+  }
+
+  function incomeSourceModel(source) {
+    return {
+      id: source.id,
+      name: source.name,
+      incomeType: source.income_type,
+      amountCents: Number(source.amount_cents),
+      frequency: source.frequency,
+    };
+  }
+  function incomeTypeLabel(type) {
+    return `${type.replace(/\b\w/g, (letter) => letter.toUpperCase())} income`;
+  }
+  function incomePeriodLabel() { return state.incomePeriod === "year" ? "year" : "month"; }
+  function incomePeriodCents(annualCents) {
+    return state.incomePeriod === "year" ? annualCents : Math.round(annualCents / 12);
+  }
+  function matchingIncomeDividendRows(summary) {
+    const search = $("#income-search").value.trim().toLowerCase();
+    return summary.rows.filter((row) => {
+      if (row.asset.instrumentType === "crypto") return false;
+      const searchable = `${row.asset.symbol || ""} ${row.asset.name || ""} ${row.asset.instrumentType}`.toLowerCase();
+      return !search || searchable.includes(search);
+    });
+  }
+  function sortedIncomeDividendRows(rows) {
+    return [...rows].sort((left, right) => {
+      if (state.incomeDividendSort === "name") {
+        return `${left.asset.symbol || left.asset.name}`.localeCompare(`${right.asset.symbol || right.asset.name}`);
+      }
+      if (state.incomeDividendSort === "yield") {
+        return (right.distributionYieldRate ?? -Infinity) - (left.distributionYieldRate ?? -Infinity);
+      }
+      return (right.estimatedAnnualIncomeCents ?? -Infinity) - (left.estimatedAnnualIncomeCents ?? -Infinity);
+    });
+  }
+  function renderIncomeDividendSort() {
+    const labels = { value: "Value", name: "Name", yield: "Yield" };
+    setText("#income-dividend-sort-label", labels[state.incomeDividendSort]);
+    document.querySelectorAll("[data-income-dividend-sort]").forEach((control) => {
+      control.setAttribute("aria-checked", String(control.dataset.incomeDividendSort === state.incomeDividendSort));
+    });
+  }
+  function renderIncomeDividends(summary) {
+    renderIncomeDividendSort();
+    const matchingRows = matchingIncomeDividendRows(summary);
+    const rows = sortedIncomeDividendRows(matchingRows);
+    const grid = $("#income-dividends-grid");
+    grid.replaceChildren(...rows.map((row) => {
+      const isLoading = state.providerMetricsPending.has(row.asset.id);
+      const annualCents = row.estimatedAnnualIncomeCents;
+      const amount = Number.isSafeInteger(annualCents)
+        ? displayCurrency(incomePeriodCents(annualCents) / 100)
+        : isLoading ? "Loading…" : "Not set";
+      const yieldRate = row.distributionYieldRate;
+      const yieldDisplay = Number.isFinite(yieldRate) ? percentage.format(yieldRate) : isLoading ? "Loading…" : "Not set";
+      const card = document.createElement("article");
+      card.className = "acadia-card is-content";
+      card.setAttribute("aria-label", `${row.asset.symbol || row.asset.name} dividend estimate`);
+      card.innerHTML = `<div class="acadia-card-header"><div class="acadia-card-content-title-row"><h3>${escapeHtml(row.asset.symbol || row.asset.name)}</h3><span class="acadia-card-content-caption">${escapeHtml(row.asset.name || row.asset.instrumentType.replaceAll("-", " "))}</span></div></div><div class="acadia-card-content"><div class="acadia-card-content-title-row"><strong class="is-accent" aria-label="Trailing dividend yield: ${yieldDisplay}">${yieldDisplay}</strong><span aria-label="Expected dividends per ${incomePeriodLabel()}: ${amount}">${amount}</span></div><p class="acadia-sr-only">Expected dividends per ${incomePeriodLabel()}. Rates are trailing annual yields.</p></div>`;
+      return card;
+    }));
+    setText("#income-dividends-count", `${matchingRows.length} ${matchingRows.length === 1 ? "source" : "sources"}`);
+    $("#income-dividends-empty").hidden = rows.length > 0;
+    if (!rows.length) {
+      const hasEligible = summary.rows.some((row) => row.asset.instrumentType !== "crypto");
+      $("#income-dividends-empty").querySelector("strong").textContent = hasEligible ? "No matching dividend sources" : "No dividend sources";
+    }
+  }
+  function matchingIncomeSources(rows) {
+    const search = $("#income-search").value.trim().toLowerCase();
+    return rows.filter((row) => !search || `${row.source.name} ${row.source.incomeType}`.toLowerCase().includes(search));
+  }
+  function renderIncomeSources(incomeSummary) {
+    const matchingRows = matchingIncomeSources(incomeSummary.rows);
+    const grid = $("#income-sources-grid");
+    grid.replaceChildren(...matchingRows.map((row) => {
+      const source = row.source;
+      const card = document.createElement("article");
+      card.className = "acadia-card is-content";
+      card.innerHTML = `<div class="acadia-card-actions"><details class="acadia-action-menu"><summary class="acadia-action-menu-trigger acadia-icon-action" aria-label="Actions for ${escapeHtml(source.name)}"><i class="fa-solid fa-ellipsis acadia-icon" aria-hidden="true"></i></summary><div class="acadia-action-menu-panel"><button class="acadia-action-menu-item" type="button" data-edit-income-source="${escapeHtml(source.id)}">Edit source</button><button class="acadia-action-menu-item is-danger" type="button" data-delete-income-source="${escapeHtml(source.id)}">Delete source</button></div></details></div><div class="acadia-card-header"><h3>${escapeHtml(source.name)}</h3><p>${escapeHtml(incomeTypeLabel(source.incomeType))}</p></div><div class="acadia-card-body"><div class="acadia-dialog-field-grid"><div class="acadia-form-control" data-acadia-form-variant="input"><label class="acadia-label" for="income-amount-${source.id}">Amount</label><input class="acadia-control" id="income-amount-${source.id}" type="number" step="0.01" min="0.01" value="${(source.amountCents / 100).toFixed(2)}"></div><div class="acadia-form-control" data-acadia-form-variant="select"><label class="acadia-label" for="income-frequency-${source.id}">Frequency</label><select class="acadia-control" id="income-frequency-${source.id}">${Object.entries(INCOME_FREQUENCIES).map(([value, detail]) => `<option value="${value}"${source.frequency === value ? " selected" : ""}>${detail.label}</option>`).join("")}</select></div></div><div class="acadia-card-content"><span class="acadia-card-content-subtitle">Planned income</span><div class="acadia-card-content-title-row"><strong>${displayCurrency(row.periodIncomeCents / 100)}</strong><span>per ${incomePeriodLabel()}</span></div><p id="income-source-status-${source.id}" class="acadia-field-hint" role="status" aria-live="polite"></p></div></div>`;
+      const saveInline = async () => {
+        const amount = cents(card.querySelector(`#income-amount-${CSS.escape(source.id)}`).value);
+        const frequency = card.querySelector(`#income-frequency-${CSS.escape(source.id)}`).value;
+        await saveIncomeSourceInline(source.id, amount, frequency);
+      };
+      card.querySelector(`#income-amount-${CSS.escape(source.id)}`).addEventListener("change", saveInline);
+      card.querySelector(`#income-frequency-${CSS.escape(source.id)}`).addEventListener("change", saveInline);
+      return card;
+    }));
+    grid.querySelectorAll("[data-edit-income-source]").forEach((control) => control.addEventListener("click", () => openIncomeSourceDialog(control.dataset.editIncomeSource)));
+    grid.querySelectorAll("[data-delete-income-source]").forEach((control) => control.addEventListener("click", () => openDeleteIncomeSourceDialog(control.dataset.deleteIncomeSource)));
+    setText("#income-sources-count", `${matchingRows.length} ${matchingRows.length === 1 ? "source" : "sources"}`);
+    $("#income-sources-empty").hidden = matchingRows.length > 0;
+    if (!matchingRows.length) {
+      const title = $("#income-sources-empty").querySelector("strong");
+      const copy = $("#income-sources-empty").querySelector("p");
+      title.textContent = !state.incomeSourcesAvailable
+        ? "Income sources are unavailable"
+        : state.incomeSources.length ? "No matching income sources" : "No income sources yet";
+      copy.textContent = !state.incomeSourcesAvailable
+        ? "Apply the latest private Income schema migration to save recurring sources."
+        : "Add expected recurring income to include it in your planning totals.";
+    }
+  }
+  function renderIncome(summary) {
+    $("#home-workspace").hidden = true;
+    $("#portfolio-workspace").hidden = true;
+    $("#income-workspace").hidden = false;
+    $("#asset-workspace").hidden = true;
+    setActiveNavigation("income");
+    document.querySelectorAll("[data-income-period]").forEach((control) => {
+      const active = control.dataset.incomePeriod === state.incomePeriod;
+      control.classList.toggle("is-active", active);
+      control.setAttribute("aria-selected", String(active));
+    });
+    const incomeSummary = summarizeIncomeSources(state.incomeSources.map(incomeSourceModel), state.incomePeriod);
+    const metricsLoading = state.providerMetricsPending.size > 0;
+    const passiveAnnualCents = summary.totalEstimatedAnnualIncomeCents;
+    const passiveAvailable = Number.isSafeInteger(passiveAnnualCents);
+    const passiveDisplay = metricsLoading ? "Loading…" : passiveAvailable ? displayCurrency(incomePeriodCents(passiveAnnualCents) / 100) : "Not set";
+    const totalDisplay = metricsLoading ? "Loading…" : passiveAvailable ? displayCurrency((incomeSummary.totalPeriodIncomeCents + incomePeriodCents(passiveAnnualCents)) / 100) : "Not set";
+    setText("#income-earned", displayCurrency(incomeSummary.totalPeriodIncomeCents / 100));
+    setText("#income-passive", passiveDisplay);
+    setText("#income-total", totalDisplay);
+    setDelta("#income-passive-yield", metricsLoading ? null : summary.distributionYieldRate, percentage.format.bind(percentage));
+    renderIncomeDividends(summary);
+    renderIncomeSources(incomeSummary);
   }
 
   function setDetailFormDisabled(disabled) {
@@ -459,6 +597,7 @@
     const summary = portfolio();
     $("#home-workspace").hidden = true;
     $("#portfolio-workspace").hidden = true;
+    $("#income-workspace").hidden = true;
     $("#asset-workspace").hidden = false;
     setActiveNavigation("portfolio");
     $("#asset-not-found").hidden = Boolean(holding);
@@ -521,6 +660,7 @@
     const summary = portfolio();
     if (routeAssetId()) renderAsset();
     else if (routePortfolio()) renderPortfolio(summary);
+    else if (routeIncome()) renderIncome(summary);
     else renderHome(summary);
     $("#main-content").setAttribute("aria-busy", "false");
   }
@@ -788,12 +928,120 @@
     }
   }
 
+  function incomeSourcePayload(form, id) {
+    const source = normalizeIncomeSource({
+      id,
+      name: getFormValue(form, "name"),
+      incomeType: getFormValue(form, "incomeType"),
+      amountCents: cents(getFormValue(form, "amount")),
+      frequency: getFormValue(form, "frequency"),
+    });
+    return {
+      id: source.id,
+      account_id: state.account.id,
+      name: source.name,
+      income_type: source.incomeType,
+      amount_cents: source.amountCents,
+      frequency: source.frequency,
+    };
+  }
+  function openIncomeSourceDialog(id = null) {
+    const form = $("#income-source-form");
+    const existing = id ? state.incomeSources.find((source) => source.id === id) : null;
+    state.incomeSourceDialogId = existing?.id || null;
+    form.reset();
+    setText("#income-source-dialog-title", existing ? "Edit income source" : "Add income");
+    setText("#save-income-source", existing ? "Save" : "Add");
+    setText("#income-source-form-status", "");
+    if (existing) {
+      $("#income-source-name").value = existing.name;
+      $("#income-source-type").value = existing.income_type;
+      $("#income-source-amount").value = (Number(existing.amount_cents) / 100).toFixed(2);
+      $("#income-source-frequency").value = existing.frequency;
+    }
+    $("#income-source-dialog").hidden = false;
+    $("#income-source-dialog").showModal();
+  }
+  function closeIncomeSourceDialog() { $("#income-source-dialog").close(); }
+  async function saveIncomeSource(event) {
+    event.preventDefault();
+    const save = $("#save-income-source");
+    try {
+      save.disabled = true;
+      save.textContent = state.incomeSourceDialogId ? "Saving…" : "Adding…";
+      const id = state.incomeSourceDialogId || crypto.randomUUID();
+      const payload = incomeSourcePayload($("#income-source-form"), id);
+      const request = state.incomeSourceDialogId
+        ? state.client.from("income_sources").update(payload).eq("id", id).eq("account_id", state.account.id)
+        : state.client.from("income_sources").insert(payload);
+      const { error } = await request;
+      if (error) throw error;
+      closeIncomeSourceDialog();
+      await loadData();
+    } catch (error) {
+      setText("#income-source-form-status", error.message || "This income source could not be saved.");
+    } finally {
+      save.disabled = false;
+      save.textContent = state.incomeSourceDialogId ? "Save" : "Add";
+    }
+  }
+  async function saveIncomeSourceInline(id, amountCents, frequency) {
+    const raw = state.incomeSources.find((source) => source.id === id);
+    const status = $("#income-source-status-" + id);
+    if (!raw || !state.account) return;
+    try {
+      const source = normalizeIncomeSource({ ...incomeSourceModel(raw), amountCents, frequency });
+      status.textContent = "Saving…";
+      const { error } = await state.client.from("income_sources").update({
+        amount_cents: source.amountCents,
+        frequency: source.frequency,
+      }).eq("id", id).eq("account_id", state.account.id);
+      if (error) throw error;
+      await loadData();
+    } catch (error) {
+      status.textContent = error.message || "This income source could not be saved.";
+    }
+  }
+  function openDeleteIncomeSourceDialog(id) {
+    const source = state.incomeSources.find((entry) => entry.id === id);
+    if (!source) return;
+    state.incomeSourceDeleteId = id;
+    setText("#delete-income-source-title", `Delete ${source.name}?`);
+    setText("#delete-income-source-description", `This permanently removes ${source.name} from your expected income plan.`);
+    setText("#delete-income-source-status", "");
+    $("#delete-income-source-dialog").hidden = false;
+    $("#delete-income-source-dialog").showModal();
+  }
+  function closeDeleteIncomeSourceDialog() { $("#delete-income-source-dialog").close(); }
+  async function deleteIncomeSource(event) {
+    event.preventDefault();
+    const id = state.incomeSourceDeleteId;
+    if (!id || !state.account) return;
+    const confirm = $("#confirm-delete-income-source");
+    try {
+      confirm.disabled = true;
+      confirm.textContent = "Deleting…";
+      const { data, error } = await state.client.from("income_sources")
+        .delete().eq("id", id).eq("account_id", state.account.id).select("id").maybeSingle();
+      if (error) throw error;
+      if (!data) throw new Error("This income source could not be deleted.");
+      closeDeleteIncomeSourceDialog();
+      await loadData();
+    } catch (error) {
+      setText("#delete-income-source-status", error.message || "This income source could not be deleted.");
+    } finally {
+      confirm.disabled = false;
+      confirm.textContent = "Delete source";
+    }
+  }
+
   async function loadData() {
-    const [accounts, holdings, quotes, snapshots] = await Promise.all([
+    const [accounts, holdings, quotes, snapshots, incomeSources] = await Promise.all([
       state.client.from("accounts").select("*").order("created_at"),
       state.client.from("holdings").select("*").eq("account_id", state.account.id).order("created_at"),
       state.client.from("holding_quotes").select("*").order("as_of", { ascending: false }),
       state.client.from("portfolio_snapshots").select("*").eq("account_id", state.account.id).order("snapshot_date"),
+      state.client.from("income_sources").select("*").eq("account_id", state.account.id).order("created_at"),
     ]);
     if (accounts.error || holdings.error || quotes.error || snapshots.error) {
       throw accounts.error || holdings.error || quotes.error || snapshots.error;
@@ -802,6 +1050,8 @@
     state.holdings = holdings.data || [];
     state.quotes = quotes.data || [];
     state.snapshots = snapshots.data || [];
+    state.incomeSourcesAvailable = !incomeSources.error;
+    state.incomeSources = incomeSources.data || [];
     render();
   }
   async function ensureAccount() {
@@ -869,6 +1119,7 @@
     state.holdings = [];
     state.quotes = [];
     state.snapshots = [];
+    state.incomeSources = [];
     $("#auth-panel").hidden = true;
     $("#home-workspace").hidden = false;
     setAccountMenuState("Private sync unavailable", false);
@@ -926,6 +1177,15 @@
   $("#asset-shares").addEventListener("input", scheduleQuote);
   $("#holding-search").addEventListener("input", render);
   $("#portfolio-search").addEventListener("input", render);
+  $("#income-search").addEventListener("input", render);
+  $("#add-income").addEventListener("click", () => openIncomeSourceDialog());
+  $("#close-income-source-dialog").addEventListener("click", closeIncomeSourceDialog);
+  $("#cancel-income-source-dialog").addEventListener("click", closeIncomeSourceDialog);
+  $("#income-source-dialog").addEventListener("close", () => { $("#income-source-dialog").hidden = true; });
+  $("#income-source-form").addEventListener("submit", saveIncomeSource);
+  $("#cancel-delete-income-source").addEventListener("click", closeDeleteIncomeSourceDialog);
+  $("#delete-income-source-dialog").addEventListener("close", () => { $("#delete-income-source-dialog").hidden = true; });
+  $("#delete-income-source-form").addEventListener("submit", deleteIncomeSource);
   document.querySelectorAll("[data-holding-sort]").forEach((control) => {
     control.addEventListener("click", () => {
       state.holdingSort = control.dataset.holdingSort;
@@ -951,6 +1211,19 @@
     control.addEventListener("click", () => {
       if (control.disabled) return;
       state.performancePeriod = control.dataset.performancePeriod;
+      render();
+    });
+  });
+  document.querySelectorAll("[data-income-period]").forEach((control) => {
+    control.addEventListener("click", () => {
+      state.incomePeriod = control.dataset.incomePeriod;
+      render();
+    });
+  });
+  document.querySelectorAll("[data-income-dividend-sort]").forEach((control) => {
+    control.addEventListener("click", () => {
+      state.incomeDividendSort = control.dataset.incomeDividendSort;
+      $("#income-dividend-sort").open = false;
       render();
     });
   });
