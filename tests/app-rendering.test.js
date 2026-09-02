@@ -10,7 +10,7 @@ const acadiaStyles = fs.readFileSync(path.join(root, "acadia.css"), "utf8");
 const homeSource = fs.readFileSync(path.join(root, "brokerage.js"), "utf8");
 
 test("Home consumes Acadia without a Mercury presentation layer", () => {
-  assert.equal(styles, '@import url("acadia.css?v=20260902-profile-syncopate-v1");\n');
+  assert.match(styles, /^@import url\("acadia\.css\?v=20260902-profile-syncopate-v1"\);/);
   assert.match(acadiaStyles, /\.acadia-responsive-navbar/);
   assert.match(acadiaStyles, /\.acadia-card\.is-content/);
   assert.match(acadiaStyles, /\.acadia-dialog\.is-form-modal/);
@@ -26,14 +26,19 @@ test("Home consumes Acadia without a Mercury presentation layer", () => {
   assert.match(indexHtml, /data-acadia-layout="wide"/);
   assert.match(indexHtml, /data-acadia-page-frame="spacious"/);
   assert.match(indexHtml, /id="main-content" class="acadia-shell acadia-mobile-dock-safe-area"/);
-  assert.match(indexHtml, /id="home-workspace" class="acadia-stack" hidden/);
-  assert.match(indexHtml, /id="portfolio-workspace" class="acadia-stack" hidden aria-live="polite"/);
-  assert.match(indexHtml, /id="income-workspace" class="acadia-stack" hidden aria-live="polite"/);
-  assert.match(indexHtml, /id="asset-workspace" class="acadia-stack" hidden aria-live="polite"/);
+  assert.match(indexHtml, /id="home-workspace" class="acadia-stack mercury-workspace" hidden/);
+  assert.match(indexHtml, /id="portfolio-workspace" class="acadia-stack mercury-workspace" hidden aria-live="polite"/);
+  assert.match(indexHtml, /id="income-workspace" class="acadia-stack mercury-workspace" hidden aria-live="polite"/);
+  assert.match(indexHtml, /id="asset-workspace" class="acadia-stack mercury-workspace" hidden aria-live="polite"/);
   assert.match(acadiaStyles, /\[data-acadia-page-frame="spacious"\]/);
   assert.match(acadiaStyles, /\.acadia-card\.is-dashboard-trend/);
   assert.doesNotMatch(indexHtml, /brokerage-/);
   assert.doesNotMatch(homeSource, /new window\.Chart|Chart\.js/);
+});
+
+test("Mercury tightens only the page header gap before each workspace's first section", () => {
+  assert.match(styles, /\.mercury-workspace > \.acadia-page-header \{\s*margin-block-end: calc\(var\(--acadia-space-2\) - var\(--acadia-space-3\)\);/);
+  assert.doesNotMatch(acadiaStyles, /\.mercury-workspace/);
 });
 
 test("Home follows the Figma composition with a focused Brokerage dashboard", () => {
@@ -225,7 +230,7 @@ test("Home never falls back to fabricated assets and Portfolio is a functional r
   assert.match(homeSource, /routePortfolio/);
   assert.match(homeSource, /renderPortfolio/);
   assert.match(homeSource, /setActiveNavigation\("portfolio"\)/);
-  assert.match(indexHtml, /id="portfolio-workspace" class="acadia-stack" hidden/);
+  assert.match(indexHtml, /id="portfolio-workspace" class="acadia-stack mercury-workspace" hidden/);
   assert.match(indexHtml, /id="portfolio-search"/);
   assert.match(indexHtml, /id="portfolio-add-asset"/);
   assert.match(indexHtml, /id="portfolio-holding-sort"/);
@@ -239,7 +244,7 @@ test("Home never falls back to fabricated assets and Portfolio is a functional r
   assert.match(homeSource, /matchingPortfolioHoldingRows/);
   assert.match(homeSource, /renderPortfolioHoldings/);
   assert.doesNotMatch(portfolioWorkspace, /Holdings remain on Home for now|Portfolio workspace is on its way|acadia-card-trend|<svg/);
-  assert.match(indexHtml, /id="asset-workspace" class="acadia-stack" hidden/);
+  assert.match(indexHtml, /id="asset-workspace" class="acadia-stack mercury-workspace" hidden/);
   assert.match(indexHtml, /id="asset-back"/);
   assert.match(indexHtml, /id="asset-detail-form"/);
 });

@@ -1,1 +1,7 @@
 @import url("acadia.css?v=20260902-profile-syncopate-v1");
+
+/* Keep Mercury's page title close to the first workspace section without
+   changing Acadia's shared Page Header or the shell's 48px top offset. */
+.mercury-workspace > .acadia-page-header {
+  margin-block-end: calc(var(--acadia-space-2) - var(--acadia-space-3));
+}
