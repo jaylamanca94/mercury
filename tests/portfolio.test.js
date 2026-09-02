@@ -161,11 +161,86 @@ test("provider dividend data calculates asset and portfolio distribution yields"
     },
   ]);
 
-  assert.equal(summary.rows[0].estimatedAnnualIncomeCents, 1_260);
-  assert.equal(summary.rows[0].distributionYieldRate, 1_260 / 287_123);
+  assert.equal(summary.rows[0].estimatedAnnualIncomeCents, 2_728);
+  assert.equal(summary.rows[0].distributionYieldRate, 2_728 / 287_123);
   assert.equal(summary.rows[1].estimatedAnnualIncomeCents, 500);
-  assert.equal(summary.totalEstimatedAnnualIncomeCents, 1_760);
-  assert.equal(summary.distributionYieldRate, 1_760 / 387_123);
+  assert.equal(summary.totalEstimatedAnnualIncomeCents, 3_228);
+  assert.equal(summary.distributionYieldRate, 3_228 / 387_123);
+});
+
+test("live annualised return and trailing yield use market-value weights and calculate dollar estimates", () => {
+  const summary = summarizePortfolio([
+    {
+      ...baseAsset,
+      shares: 10,
+      unitPriceCents: 10_000,
+      historicalAnnualizedReturnRate: 0.1,
+      distributionYieldRate: null,
+      providerDistributionYieldRate: 0.02,
+    },
+    {
+      id: "income-fund",
+      symbol: "BND",
+      assetType: "Bonds",
+      valuationBasis: VALUATION_BASES.SHARES_AND_PRICE,
+      shares: 30,
+      unitPriceCents: 10_000,
+      historicalAnnualizedReturnRate: -0.05,
+      providerDistributionYieldRate: 0.04,
+      dividendPolicy: "reinvest",
+    },
+    {
+      id: "bitcoin",
+      symbol: "BTC",
+      assetType: "Crypto",
+      instrumentType: "crypto",
+      valuationBasis: VALUATION_BASES.SHARES_AND_PRICE,
+      shares: 60,
+      unitPriceCents: 10_000,
+      historicalAnnualizedReturnRate: 0.2,
+      dividendPolicy: "hold-cash",
+    },
+  ]);
+
+  assert.equal(summary.totalMarketValueCents, 1_000_000);
+  assert.equal(summary.totalEstimatedAnnualGrowthCents, 115_000);
+  assert.equal(summary.estimatedAnnualGrowthRate, 0.115);
+  assert.equal(summary.totalEstimatedAnnualIncomeCents, 14_000);
+  assert.equal(summary.distributionYieldRate, 0.014);
+});
+
+test("manual distribution yield overrides live provider yield", () => {
+  const summary = summarizePortfolio([{
+    ...baseAsset,
+    shares: 10,
+    unitPriceCents: 10_000,
+    distributionYieldRate: 0.01,
+    providerDistributionYieldRate: 0.04,
+    historicalAnnualizedReturnRate: 0.08,
+  }]);
+
+  assert.equal(summary.totalEstimatedAnnualIncomeCents, 1_000);
+  assert.equal(summary.distributionYieldRate, 0.01);
+});
+
+test("live annual metric summaries stay unavailable until every valued holding has coverage", () => {
+  const summary = summarizePortfolio([
+    { ...baseAsset, historicalAnnualizedReturnRate: 0.08, distributionYieldRate: null, providerDistributionYieldRate: 0.01 },
+    {
+      id: "uncovered",
+      symbol: "MISSING",
+      assetType: "Other",
+      valuationBasis: VALUATION_BASES.SHARES_AND_PRICE,
+      shares: 10,
+      unitPriceCents: 10_000,
+      dividendPolicy: "reinvest",
+    },
+  ]);
+
+  assert.equal(summary.totalEstimatedAnnualGrowthCents, null);
+  assert.equal(summary.estimatedAnnualGrowthRate, null);
+  assert.equal(summary.totalEstimatedAnnualIncomeCents, null);
+  assert.equal(summary.distributionYieldRate, null);
 });
 
 test("portfolio income stays unavailable when a valued holding has neither provider nor manual data", () => {

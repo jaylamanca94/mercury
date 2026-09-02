@@ -125,8 +125,10 @@ test("large currency display values use the shared compact format", () => {
   assert.match(homeSource, /setText\("#metric-value", displayCurrency/);
   assert.match(homeSource, /setText\(\s*"#metric-change-value"/);
   assert.match(homeSource, /setDelta\("#metric-change-rate", performance\.changeRate/);
-  assert.match(homeSource, /"#metric-expected-return"/);
-  assert.match(homeSource, /summary\.expectedAnnualReturnRate/);
+  assert.match(homeSource, /"#metric-estimated-growth"/);
+  assert.match(homeSource, /summary\.totalEstimatedAnnualGrowthCents/);
+  assert.match(homeSource, /summary\.estimatedAnnualGrowthRate/);
+  assert.match(indexHtml, /Estimated annual growth/);
   assert.match(homeSource, /summary\.distributionYieldRate/);
   assert.match(homeSource, /annual_dividend_cents/);
   assert.match(homeSource, /valueBadge\(valueCents\)[\s\S]*displayCurrency/);

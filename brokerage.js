@@ -114,6 +114,8 @@
   }
   function holdingAsset(holding) {
     const quote = latestQuotes()[holding.id];
+    const live = state.providerMetrics[holding.id];
+    const hasLiveMetrics = Object.hasOwn(state.providerMetrics, holding.id);
     return {
       id: holding.id,
       symbol: holding.symbol,
@@ -128,11 +130,10 @@
       quoteSource: quote?.source || (holding.manual_price_cents !== null ? "Manual price" : null),
       quoteAsOf: quote?.as_of || null,
       priorCloseCents: quote?.previous_close_cents ?? null,
-      annualDividendCents: quote?.annual_dividend_cents ?? null,
-      providerDistributionYieldRate: quote?.distribution_yield_rate === null || quote?.distribution_yield_rate === undefined
-        ? null
-        : Number(quote.distribution_yield_rate),
+      annualDividendCents: hasLiveMetrics ? live.annualDividendCents : null,
+      providerDistributionYieldRate: hasLiveMetrics ? live.distributionYieldRate : null,
       expectedAnnualReturnRate: holding.expected_annual_return_rate === null ? null : Number(holding.expected_annual_return_rate),
+      historicalAnnualizedReturnRate: hasLiveMetrics ? live.annualizedReturnRate : null,
       distributionYieldRate: holding.distribution_yield_rate === null ? null : Number(holding.distribution_yield_rate),
       targetAllocationRate: holding.target_allocation_rate === null ? null : Number(holding.target_allocation_rate),
       weeklyContributionRate: holding.weekly_contribution_rate === null ? null : Number(holding.weekly_contribution_rate),
@@ -408,25 +409,25 @@
     $("#asset-workspace").hidden = true;
     setActiveNavigation("home");
     setText("#metric-value", displayCurrency(summary.totalMarketValueCents / 100));
-    setText(
-      "#metric-income",
-      summary.totalEstimatedAnnualIncomeCents === null
+    const metricsLoading = state.providerMetricsPending.size > 0;
+    setText("#metric-income", metricsLoading
+      ? "Loading…"
+      : summary.totalEstimatedAnnualIncomeCents === null
         ? "Not set"
-        : displayCurrency(summary.totalEstimatedAnnualIncomeCents / 100),
-    );
+        : displayCurrency(summary.totalEstimatedAnnualIncomeCents / 100));
     const performance = renderHistory();
     setText(
       "#metric-change-value",
       Number.isSafeInteger(performance.changeCents) ? displaySignedCurrency(performance.changeCents) : "—",
     );
     setDelta("#metric-change-rate", performance.changeRate, displaySignedPercentage);
-    setText(
-      "#metric-expected-return",
-      Number.isFinite(summary.expectedAnnualReturnRate)
-        ? percentage.format(summary.expectedAnnualReturnRate)
-        : "Not set",
-    );
-    setDelta("#metric-income-yield", summary.distributionYieldRate, percentage.format.bind(percentage));
+    setText("#metric-estimated-growth", metricsLoading
+      ? "Loading…"
+      : summary.totalEstimatedAnnualGrowthCents === null
+        ? "Not set"
+        : displayCurrency(summary.totalEstimatedAnnualGrowthCents / 100));
+    setDelta("#metric-estimated-growth-rate", metricsLoading ? null : summary.estimatedAnnualGrowthRate, percentage.format.bind(percentage));
+    setDelta("#metric-income-yield", metricsLoading ? null : summary.distributionYieldRate, percentage.format.bind(percentage));
     setText("#portfolio-warnings", state.holdings.length ? summary.warnings.join(" ") : "");
     renderTargetStatus(summary);
     renderHoldings(summary);
@@ -852,6 +853,7 @@
       next[holdingId] = {
         annualizedReturnRate: quote.annualizedReturnRate,
         annualizedReturnYears: quote.annualizedReturnYears,
+        annualDividendCents: quote.annualDividendCents,
         distributionYieldRate: quote.distributionYieldRate,
       };
       return next;

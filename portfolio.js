@@ -69,6 +69,14 @@ function optionalRate(value, field, { minimum = 0, maximum = 1 } = {}) {
   return value;
 }
 
+function optionalHistoricalReturnRate(value, field) {
+  if (value === undefined || value === null || value === "") return null;
+  if (!Number.isFinite(value) || value < -1) {
+    validationError(field, "must be a finite decimal greater than or equal to -1");
+  }
+  return value;
+}
+
 function optionalMoney(value, field) {
   if (value === undefined || value === null || value === "") return null;
   if (!Number.isSafeInteger(value) || value < 0) {
@@ -155,6 +163,10 @@ function normalizeAsset(input) {
       minimum: -1,
       maximum: 1,
     }),
+    historicalAnnualizedReturnRate: optionalHistoricalReturnRate(
+      input.historicalAnnualizedReturnRate,
+      "historicalAnnualizedReturnRate",
+    ),
     distributionYieldRate: optionalRate(input.distributionYieldRate, "distributionYieldRate"),
     targetAllocationRate: optionalRate(input.targetAllocationRate, "targetAllocationRate"),
     weeklyContributionRate: optionalRate(input.weeklyContributionRate, "weeklyContributionRate"),
@@ -230,11 +242,13 @@ function calculateAsset(asset, totalPortfolioValueCents, weeklyContributionCents
       ? null
       : Math.round(valueCents * normalized.distributionYieldRate);
   const providerEstimatedAnnualIncomeCents =
-    normalized.annualDividendCents !== null && normalized.shares !== null
-      ? Math.round(normalized.shares * normalized.annualDividendCents)
-      : normalized.providerDistributionYieldRate === null
-        ? null
-        : Math.round(valueCents * normalized.providerDistributionYieldRate);
+    normalized.providerDistributionYieldRate !== null
+      ? Math.round(valueCents * normalized.providerDistributionYieldRate)
+      : normalized.annualDividendCents !== null && normalized.shares !== null
+        ? Math.round(normalized.shares * normalized.annualDividendCents)
+        : normalized.instrumentType === "crypto"
+          ? 0
+          : null;
   const estimatedAnnualIncomeCents =
     manualEstimatedAnnualIncomeCents ?? providerEstimatedAnnualIncomeCents;
 
@@ -246,6 +260,10 @@ function calculateAsset(asset, totalPortfolioValueCents, weeklyContributionCents
       normalized.expectedAnnualReturnRate === null
         ? null
         : Math.round(valueCents * normalized.expectedAnnualReturnRate),
+    estimatedAnnualGrowthCents:
+      normalized.historicalAnnualizedReturnRate === null
+        ? null
+        : Math.round(valueCents * normalized.historicalAnnualizedReturnRate),
     estimatedAnnualIncomeCents,
     distributionYieldRate:
       estimatedAnnualIncomeCents === null || valueCents === 0
@@ -348,12 +366,19 @@ function summarizePortfolio(assets, { weeklyContributionCents = 0 } = {}) {
     hasAssets &&
     totalMarketValueCents > 0 &&
     normalizedAssets.every((asset) => asset.expectedAnnualReturnRate !== null);
+  const estimatedAnnualGrowthComplete =
+    hasAssets &&
+    totalMarketValueCents > 0 &&
+    rows.every((row) => row.estimatedAnnualGrowthCents !== null);
   const annualIncomeComplete =
     !hasAssets || rows.every((row) => row.estimatedAnnualIncomeCents !== null);
   const targetAllocationRate = allocationTotal(normalizedAssets, "targetAllocationRate");
   const weeklyContributionRate = allocationTotal(normalizedAssets, "weeklyContributionRate");
   const totalExpectedAnnualGrowthCents = expectedAnnualReturnComplete
     ? rows.reduce((total, row) => total + row.expectedAnnualGrowthCents, 0)
+    : null;
+  const totalEstimatedAnnualGrowthCents = estimatedAnnualGrowthComplete
+    ? rows.reduce((total, row) => total + row.estimatedAnnualGrowthCents, 0)
     : null;
   const totalEstimatedAnnualIncomeCents = annualIncomeComplete
     ? rows.reduce((total, row) => total + row.estimatedAnnualIncomeCents, 0)
@@ -373,6 +398,10 @@ function summarizePortfolio(assets, { weeklyContributionCents = 0 } = {}) {
     expectedAnnualReturnRate: totalExpectedAnnualGrowthCents === null
       ? null
       : totalExpectedAnnualGrowthCents / totalMarketValueCents,
+    totalEstimatedAnnualGrowthCents,
+    estimatedAnnualGrowthRate: totalEstimatedAnnualGrowthCents === null
+      ? null
+      : totalEstimatedAnnualGrowthCents / totalMarketValueCents,
     totalEstimatedAnnualIncomeCents,
     distributionYieldRate: totalEstimatedAnnualIncomeCents === null || totalMarketValueCents === 0
       ? null
