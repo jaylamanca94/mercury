@@ -412,6 +412,7 @@
   --acadia-page-max-width: 90rem;
   --acadia-page-max-width-wide: 112rem;
   --acadia-shell-max-width: var(--acadia-page-max-width);
+  --acadia-shell-padding-block: clamp(1.5rem, 3vw, 2.5rem);
   --acadia-chrome-max-width: calc(
     var(--acadia-shell-max-width) + (var(--acadia-page-margin) * 2)
   );
@@ -528,6 +529,7 @@
   --acadia-motion-standard: var(--acadia-motion-duration-standard)
     var(--acadia-motion-ease-standard);
   --acadia-card-trend-height: 4.25rem;
+  --acadia-dashboard-trend-card-height: 20rem;
   --acadia-card-trend-color: var(--acadia-color-primary);
   --acadia-card-trend-baseline-color: color-mix(
     in srgb,
@@ -838,6 +840,7 @@
   color: var(--acadia-color-text);
   font-family: var(--acadia-font-body);
   font-synthesis-weight: none;
+  margin: 0;
   min-height: 100vh;
   text-rendering: optimizeLegibility;
   -webkit-tap-highlight-color: transparent;
@@ -893,7 +896,7 @@ details > summary:focus-visible {
   box-sizing: border-box;
   margin-inline: auto;
   max-width: var(--acadia-shell-max-width);
-  padding-block: clamp(1.5rem, 3vw, 2.5rem);
+  padding-block: var(--acadia-shell-padding-block);
   width: calc(100% - (var(--acadia-page-margin) * 2));
 }
 
@@ -903,6 +906,16 @@ details > summary:focus-visible {
 
 .acadia-shell-fluid {
   --acadia-shell-max-width: none;
+}
+
+/* An opt-in frame for calm, wide desktop workspaces that need a more generous
+   visual rail than Acadia's default 128px page margin. It intentionally leaves
+   the small-desktop, tablet, and phone frame untouched. */
+@media (min-width: 90rem) {
+  :root[data-acadia-page-frame="spacious"] {
+    --acadia-page-margin: 9.25rem;
+    --acadia-shell-padding-block: var(--acadia-section-padding-spacious);
+  }
 }
 
 .acadia-page-header {
@@ -6522,6 +6535,26 @@ select.acadia-control {
   font-weight: 700;
   justify-content: center;
   line-height: 1rem;
+}
+
+/* A dashboard can promote one trend into the primary reading surface without
+   introducing a second chart component. The product remains responsible for
+   its series, labels, and data provenance. */
+.acadia-card.is-dashboard-trend {
+  block-size: var(--acadia-dashboard-trend-card-height);
+  box-sizing: border-box;
+  grid-template-rows: auto minmax(0, 1fr);
+}
+
+.acadia-card.is-dashboard-trend > .acadia-card-body {
+  min-block-size: 0;
+}
+
+.acadia-card.is-dashboard-trend .acadia-card-trend {
+  block-size: 100%;
+  margin-block: 0;
+  min-block-size: 0;
+  padding-block-start: 0;
 }
 
 .acadia-dashboard-layout {

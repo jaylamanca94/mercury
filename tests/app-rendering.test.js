@@ -10,11 +10,17 @@ const acadiaStyles = fs.readFileSync(path.join(root, "acadia.css"), "utf8");
 const homeSource = fs.readFileSync(path.join(root, "brokerage.js"), "utf8");
 
 test("Home consumes Acadia without a Mercury presentation layer", () => {
-  assert.equal(styles, '@import url("acadia.css");\n');
+  assert.equal(styles, '@import url("acadia.css?v=20260902-home-frame-v2");\n');
   assert.match(acadiaStyles, /\.acadia-responsive-navbar/);
   assert.match(acadiaStyles, /\.acadia-card\.is-content/);
   assert.match(acadiaStyles, /\.acadia-dialog\.is-form-modal/);
+  assert.match(acadiaStyles, /\.acadia-app[\s\S]*margin: 0/);
   assert.equal(fs.existsSync(path.join(root, "fonts", "Geist-Variable.woff2")), true);
+  assert.match(indexHtml, /data-acadia-layout="wide"/);
+  assert.match(indexHtml, /data-acadia-page-frame="spacious"/);
+  assert.match(indexHtml, /id="main-content" class="acadia-shell acadia-mobile-dock-safe-area"/);
+  assert.match(acadiaStyles, /\[data-acadia-page-frame="spacious"\]/);
+  assert.match(acadiaStyles, /\.acadia-card\.is-dashboard-trend/);
   assert.doesNotMatch(indexHtml, /brokerage-/);
   assert.doesNotMatch(homeSource, /new window\.Chart|Chart\.js/);
 });
@@ -31,6 +37,8 @@ test("Home follows the Figma composition with a focused Brokerage dashboard", ()
   assert.match(indexHtml, /id="holding-sort"/);
   assert.match(indexHtml, /id="holding-filters"/);
   assert.match(indexHtml, /id="performance-periods"/);
+  assert.match(indexHtml, /class="acadia-card is-content is-dashboard-trend"/);
+  assert.doesNotMatch(indexHtml, /--acadia-card-trend-height: 16rem/);
   assert.match(indexHtml, /id="holdings-count"/);
   assert.match(indexHtml, /id="target-status"/);
   assert.match(indexHtml, /Portfolio targets/);

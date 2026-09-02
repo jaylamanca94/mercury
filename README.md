@@ -33,7 +33,7 @@ No package installation is needed for the dependency-free checks.
 ## Key files
 
 - `index.html`, `brokerage.js` — the private Home dashboard, hash-routed Portfolio holdings workspace and Asset pages, and simplified asset-entry flow.
-- `acadia.css`, `fonts/` — the canonical Acadia stylesheet and font assets, vendored unchanged; `styles.css` only imports this system asset.
+- `acadia.css`, `fonts/` — the canonical Acadia stylesheet and font assets, vendored unchanged; `styles.css` only imports this system asset. The shared `wide` plus `spacious` frame aligns Home, Portfolio and Asset desktop rails at 148px while retaining Acadia's smaller-device gutters.
 - `portfolio.js` — cent-based calculation and validation contract, also exposed to the browser.
 - `api/portfolio/` — protected quote and snapshot endpoints.
 - `supabase/migrations/` — account, holding, quote, snapshot, RLS, and per-asset contribution schema.
