@@ -61,6 +61,21 @@
   function displayCardPrice(valueCents) {
     return currency.format(Math.trunc(valueCents / 100));
   }
+  function displayCardShares(value) {
+    const shares = Number(value);
+    if (!Number.isFinite(shares)) return "—";
+    const absolute = Math.abs(shares);
+    if (absolute < 1000) {
+      return shares.toLocaleString("en-US", { maximumFractionDigits: 8 });
+    }
+    const [divisor, suffix] = absolute >= 1_000_000_000
+      ? [1_000_000_000, "b"]
+      : absolute >= 1_000_000
+        ? [1_000_000, "m"]
+        : [1_000, "k"];
+    const compact = Math.trunc((shares / divisor) * 10) / 10;
+    return `${compact.toLocaleString("en-US", { maximumFractionDigits: 1 })}${suffix}`;
+  }
   function displaySignedPercentage(value) {
     const formatted = percentage.format(value);
     return value > 0 ? `+${formatted}` : formatted;
@@ -336,7 +351,7 @@
         : row.asset.unitPriceCents === null
           ? "Needs price"
           : displayCardPrice(row.asset.unitPriceCents);
-      const shares = row.asset.shares === null ? "" : `${Number(row.asset.shares).toLocaleString()} shares`;
+      const shares = row.asset.shares === null ? "" : `${displayCardShares(row.asset.shares)} shares`;
       const card = document.createElement("article");
       card.className = "acadia-card is-content is-interactive";
       card.dataset.holdingId = holding.id;

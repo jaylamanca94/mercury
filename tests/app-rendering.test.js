@@ -151,6 +151,13 @@ test("holding cards use whole-dollar unit prices without rounding up", () => {
   assert.match(homeSource, /: displayCardPrice\(row\.asset\.unitPriceCents\)/);
 });
 
+test("holding cards compact large share counts while preserving fractional shares", () => {
+  assert.match(homeSource, /function displayCardShares\(value\)/);
+  assert.match(homeSource, /if \(absolute < 1000\)/);
+  assert.match(homeSource, /Math\.trunc\(\(shares \/ divisor\) \* 10\) \/ 10/);
+  assert.match(homeSource, /`\$\{displayCardShares\(row\.asset\.shares\)\} shares`/);
+});
+
 test("Portfolio cards show the Figma return and dividend-yield metrics without changing Home cards", () => {
   const homeRenderer = homeSource.slice(
     homeSource.indexOf("function renderHoldings(summary)"),
