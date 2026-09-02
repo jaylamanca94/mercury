@@ -294,7 +294,25 @@
       navigateToAsset(event.currentTarget.dataset.holdingId);
     }
   }
-  function renderHoldingCards(grid, rows) {
+  function holdingCardMetrics(row) {
+    const metrics = [
+      {
+        icon: "fa-chart-line",
+        label: "Expected annual return",
+        value: row.asset.expectedAnnualReturnRate,
+      },
+      {
+        icon: "fa-coins",
+        label: "Dividend yield",
+        value: row.distributionYieldRate,
+      },
+    ];
+    return `<div class="acadia-icon-with-text-row" aria-label="Investment metrics">${metrics.map(({ icon, label, value }) => {
+      const displayValue = Number.isFinite(value) ? percentage.format(value) : "Not set";
+      return `<span class="acadia-icon-with-text acadia-icon-with-text-brand" aria-label="${label}: ${displayValue}"><span class="acadia-icon-with-text-icon"><i class="fa-solid ${icon} acadia-icon" aria-hidden="true"></i></span><span>${displayValue}</span></span>`;
+    }).join("")}</div>`;
+  }
+  function renderHoldingCards(grid, rows, { showMetrics = false } = {}) {
     grid.replaceChildren(...rows.map((row) => {
       const holding = state.holdings.find((entry) => entry.id === row.asset.id);
       const price = row.asset.valuationBasis === VALUATION_BASES.MANUAL_VALUE
@@ -308,7 +326,7 @@
       card.dataset.holdingId = holding.id;
       card.tabIndex = 0;
       card.setAttribute("aria-label", `Open ${row.asset.symbol || row.asset.name}`);
-      card.innerHTML = `<div class="acadia-card-actions" role="group" aria-label="Actions for ${escapeHtml(row.asset.symbol || row.asset.name)}"><details class="acadia-action-menu"><summary class="acadia-action-menu-trigger acadia-icon-action" aria-label="Actions for ${escapeHtml(row.asset.symbol || row.asset.name)}"><i class="fa-solid fa-ellipsis acadia-icon" aria-hidden="true"></i></summary><div class="acadia-action-menu-panel"><button class="acadia-action-menu-item" type="button" data-edit-id="${escapeHtml(holding.id)}">Edit details</button></div></details></div><div class="acadia-card-header"><div class="acadia-card-content-title-row"><h3>${escapeHtml(row.asset.symbol || row.asset.name)}</h3><span class="acadia-card-content-caption">${escapeHtml(row.asset.name || row.asset.instrumentType.replaceAll("-", " "))}</span></div></div><div class="acadia-card-content"><div class="acadia-card-content-blurbs"><strong>${price}</strong><span>${shares}</span></div><div class="acadia-card-content-badges">${valueBadge(row.marketValueCents)}</div></div>`;
+      card.innerHTML = `<div class="acadia-card-actions" role="group" aria-label="Actions for ${escapeHtml(row.asset.symbol || row.asset.name)}"><details class="acadia-action-menu"><summary class="acadia-action-menu-trigger acadia-icon-action" aria-label="Actions for ${escapeHtml(row.asset.symbol || row.asset.name)}"><i class="fa-solid fa-ellipsis acadia-icon" aria-hidden="true"></i></summary><div class="acadia-action-menu-panel"><button class="acadia-action-menu-item" type="button" data-edit-id="${escapeHtml(holding.id)}">Edit details</button></div></details></div><div class="acadia-card-header"><div class="acadia-card-content-title-row"><h3>${escapeHtml(row.asset.symbol || row.asset.name)}</h3><span class="acadia-card-content-caption">${escapeHtml(row.asset.name || row.asset.instrumentType.replaceAll("-", " "))}</span></div></div><div class="acadia-card-content"><div class="acadia-card-content-blurbs"><strong>${price}</strong><span>${shares}</span></div>${showMetrics ? holdingCardMetrics(row) : ""}<div class="acadia-card-content-badges">${valueBadge(row.marketValueCents)}</div></div>`;
       card.addEventListener("click", openHoldingFromEvent);
       card.addEventListener("keydown", keyOpenHolding);
       return card;
@@ -364,7 +382,7 @@
     const matchingRows = matchingPortfolioHoldingRows(summary);
     const rows = sortHoldingRows(matchingRows, state.portfolioSort);
     const grid = $("#portfolio-holdings-grid");
-    renderHoldingCards(grid, rows);
+    renderHoldingCards(grid, rows, { showMetrics: true });
     setText("#portfolio-holdings-count", `${matchingRows.length} ${matchingRows.length === 1 ? "asset" : "assets"}`);
     $("#portfolio-holdings-empty").hidden = rows.length > 0;
     if (!rows.length) {

@@ -147,6 +147,27 @@ test("holding cards use whole-dollar unit prices without rounding up", () => {
   assert.match(homeSource, /: displayCardPrice\(row\.asset\.unitPriceCents\)/);
 });
 
+test("Portfolio cards show the Figma return and dividend-yield metrics without changing Home cards", () => {
+  const homeRenderer = homeSource.slice(
+    homeSource.indexOf("function renderHoldings(summary)"),
+    homeSource.indexOf("function matchingPortfolioHoldingRows(summary)"),
+  );
+  const portfolioRenderer = homeSource.slice(
+    homeSource.indexOf("function renderPortfolioHoldings(summary)"),
+    homeSource.indexOf("function renderHome(summary)"),
+  );
+
+  assert.match(homeSource, /function holdingCardMetrics\(row\)/);
+  assert.match(homeSource, /row\.asset\.expectedAnnualReturnRate/);
+  assert.match(homeSource, /row\.distributionYieldRate/);
+  assert.match(homeSource, /Number\.isFinite\(value\) \? percentage\.format\(value\) : "Not set"/);
+  assert.match(homeSource, /fa-chart-line/);
+  assert.match(homeSource, /fa-coins/);
+  assert.match(homeSource, /aria-label="\$\{label\}: \$\{displayValue\}"/);
+  assert.doesNotMatch(homeRenderer, /showMetrics: true/);
+  assert.match(portfolioRenderer, /renderHoldingCards\(grid, rows, \{ showMetrics: true \}\)/);
+});
+
 test("the quick add dialog keeps manual recovery out of the initial path", () => {
   assert.match(indexHtml, /id="asset-symbol"/);
   assert.match(indexHtml, /id="asset-shares"/);
