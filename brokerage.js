@@ -839,10 +839,20 @@
       holding.symbol &&
       holding.instrument_type !== "cash"
     ));
-    const results = await Promise.allSettled(candidates.map(async (holding) => ({
-      holdingId: holding.id,
-      quote: await requestQuote(holding.symbol, holding.instrument_type, { includeMetrics: true }),
-    })));
+    const results = [];
+    for (const holding of candidates) {
+      try {
+        results.push({
+          status: "fulfilled",
+          value: {
+            holdingId: holding.id,
+            quote: await requestQuote(holding.symbol, holding.instrument_type, { includeMetrics: true }),
+          },
+        });
+      } catch (reason) {
+        results.push({ status: "rejected", reason });
+      }
+    }
     const metrics = results.reduce((next, result) => {
       if (result.status !== "fulfilled") return next;
       const { holdingId, quote } = result.value;

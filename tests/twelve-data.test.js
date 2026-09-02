@@ -67,6 +67,20 @@ test("calculates trailing distribution yield from provider cash-distribution his
   assert.deepEqual(distribution, { annualDividendCents: 120, distributionYieldRate: 0.01 });
 });
 
+test("calculates annualised return from Yahoo adjusted-close history as a coverage fallback", () => {
+  const performance = _internals.mapYahooPerformance({
+    chart: {
+      result: [{
+        timestamp: [1630454400, 1788220800],
+        indicators: { adjclose: [{ adjclose: [100, 161.05] }] },
+      }],
+    },
+  });
+
+  assert.equal(performance.annualizedReturnYears, 5);
+  assert.ok(Math.abs(performance.annualizedReturnRate - 0.1) < 0.0002);
+});
+
 test("rejects provider responses that would create a fabricated price", () => {
   assert.throws(() => _internals.mapQuote({ status: "error", message: "Unknown symbol" }, "NOPE"), /Unknown symbol/);
 });

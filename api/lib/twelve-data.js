@@ -109,6 +109,19 @@ function mapYahooDistribution(payload, priceCents) {
   return { annualDividendCents, distributionYieldRate: annualDividendCents / priceCents };
 }
 
+function mapYahooPerformance(payload) {
+  const result = payload?.chart?.result?.[0];
+  const timestamps = result?.timestamp;
+  const adjustedCloses = result?.indicators?.adjclose?.[0]?.adjclose;
+  if (!Array.isArray(timestamps) || !Array.isArray(adjustedCloses)) {
+    return { annualizedReturnRate: null, annualizedReturnYears: null };
+  }
+  return annualizedReturn(timestamps.map((timestamp, index) => ({
+    datetime: new Date(timestamp * 1000).toISOString(),
+    close: adjustedCloses[index],
+  })));
+}
+
 async function getQuote({ symbol, instrumentType, includeMetrics = false }) {
   const normalisedSymbol = normaliseSymbol(symbol, instrumentType);
   const resolvedInstrumentType = isCryptoSymbol(normalisedSymbol, instrumentType) ? "crypto" : instrumentType || "other";
@@ -182,8 +195,25 @@ async function getQuote({ symbol, instrumentType, includeMetrics = false }) {
       url.searchParams.set("adjust", "dividends");
       url.searchParams.set("apikey", process.env.TWELVE_DATA_API_KEY);
       const response = await fetch(url, { headers: { Accept: "application/json" } });
+      if (response.ok) {
+        const value = annualizedReturn((await response.json())?.values);
+        if (value.annualizedReturnRate !== null) {
+          performanceCache.set(providerSymbol, { value, savedAt: Date.now() });
+          return value;
+        }
+      }
+    } catch {
+      // Mutual-fund history is not available for every Twelve Data plan or symbol.
+    }
+
+    try {
+      const yahooSymbol = providerSymbol.replace("/USD", "-USD");
+      const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(yahooSymbol)}?range=5y&interval=1mo`;
+      const response = await fetch(url, {
+        headers: { Accept: "application/json", "User-Agent": "Mercury portfolio source bridge" },
+      });
       if (!response.ok) return { annualizedReturnRate: null, annualizedReturnYears: null };
-      const value = annualizedReturn((await response.json())?.values);
+      const value = mapYahooPerformance(await response.json());
       if (value.annualizedReturnRate !== null) performanceCache.set(providerSymbol, { value, savedAt: Date.now() });
       return value;
     } catch {
@@ -217,6 +247,6 @@ module.exports = {
   QUOTE_CACHE_TTL_MS,
   DISTRIBUTION_CACHE_TTL_MS,
   PERFORMANCE_CACHE_TTL_MS,
-  _internals: { annualizedReturn, dollarsToCents, isCryptoSymbol, mapDistribution, mapQuote, mapYahooDistribution, normaliseRate, normaliseSymbol },
+  _internals: { annualizedReturn, dollarsToCents, isCryptoSymbol, mapDistribution, mapQuote, mapYahooDistribution, mapYahooPerformance, normaliseRate, normaliseSymbol },
   getQuote,
 };
