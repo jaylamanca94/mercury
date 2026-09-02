@@ -16,7 +16,7 @@ test("maps a Twelve Data quote into Mercury's cent-based quote contract", () => 
 
 test("calculates a distribution yield from a provider annual dividend and the current quote", () => {
   const distribution = _internals.mapDistribution({
-    meta: {
+    statistics: {
       dividends_and_splits: {
         trailing_annual_dividend_rate: "1.20",
         trailing_annual_dividend_yield: "0.95",
@@ -26,6 +26,16 @@ test("calculates a distribution yield from a provider annual dividend and the cu
 
   assert.equal(distribution.annualDividendCents, 120);
   assert.equal(distribution.distributionYieldRate, 120 / 12_625);
+});
+
+test("uses the provider decimal yield when no annual distribution amount is present", () => {
+  const distribution = _internals.mapDistribution({
+    statistics: {
+      dividends_and_splits: { trailing_annual_dividend_yield: "0.0057" },
+    },
+  }, 12_625);
+
+  assert.deepEqual(distribution, { annualDividendCents: null, distributionYieldRate: 0.0057 });
 });
 
 test("does not invent a distribution estimate when provider statistics are unavailable", () => {

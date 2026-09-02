@@ -54,7 +54,11 @@ function mapDistribution(payload, priceCents) {
     return { annualDividendCents: null, distributionYieldRate: null };
   }
 
-  const dividends = payload.meta?.dividends_and_splits || payload.dividends_and_splits || {};
+  const dividends =
+    payload.statistics?.dividends_and_splits ||
+    payload.meta?.dividends_and_splits ||
+    payload.dividends_and_splits ||
+    {};
   const annualDividendCents = optionalDollarsToCents(
     dividends.trailing_annual_dividend_rate ?? dividends.forward_annual_dividend_rate,
   );
