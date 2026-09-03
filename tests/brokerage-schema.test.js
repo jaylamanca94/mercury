@@ -23,6 +23,10 @@ const planMigration = fs.readFileSync(
   path.join(__dirname, "..", "supabase", "migrations", "20260902_base_plan.sql"),
   "utf8",
 );
+const propertyMigration = fs.readFileSync(
+  path.join(__dirname, "..", "supabase", "migrations", "20260903_property_portfolio.sql"),
+  "utf8",
+);
 
 test("the Brokerage schema keeps valuation bases explicit and supports the requested instruments", () => {
   assert.match(migration, /instrument_type in \('mutual-fund', 'etf', 'stock', 'crypto', 'cash', 'other'\)/);
@@ -81,4 +85,14 @@ test("Base Plan settings and optional home property remain private account-scope
   assert.match(planMigration, /Owners manage their plan settings/);
   assert.match(planMigration, /Owners manage their home properties/);
   assert.match(planMigration, /revoke all on public\.plan_settings, public\.home_properties from anon/);
+});
+
+test("property portfolio migration preserves the private property table while allowing multiple records", () => {
+  assert.match(propertyMigration, /drop constraint if exists home_properties_account_id_key/);
+  assert.match(propertyMigration, /add column if not exists name text/);
+  assert.match(propertyMigration, /add column if not exists location text/);
+  assert.match(propertyMigration, /set name = 'Home'/);
+  assert.match(propertyMigration, /alter column name set not null/);
+  assert.match(propertyMigration, /home_properties_name_not_blank/);
+  assert.match(propertyMigration, /home_properties_location_not_blank/);
 });

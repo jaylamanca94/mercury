@@ -14,8 +14,9 @@
   } = window.MercuryIncome;
   const {
     annualRecurringContributionCents,
-    homeEquityCents,
-    normalizeHomeProperty,
+    normalizeProperty,
+    propertyEquityCents,
+    totalPropertyEquityCents,
     normalizePlanSettings,
     projectPortfolio,
     resolvePlanAssumptions,
@@ -34,8 +35,8 @@
   const preciseCurrency = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", minimumFractionDigits: 2, maximumFractionDigits: 2 });
   const percentage = new Intl.NumberFormat("en-US", { style: "percent", maximumFractionDigits: 2 });
   const state = {
-    client: null, user: null, account: null, accounts: [], holdings: [], quotes: [], snapshots: [], incomeSources: [], incomeSourcesAvailable: true, planSettings: null, homeProperty: null, planDataAvailable: true,
-    providerMetrics: {}, providerMetricsPending: new Set(), configured: false, pendingQuote: null, quoteTimer: null, holdingFilter: "all", holdingSort: "value", portfolioFilter: "all", portfolioSort: "value", performancePeriod: "all", incomePeriod: "year", incomeDividendSort: "value", planHorizon: 10, incomeSourceDialogId: null, incomeSourceDeleteId: null,
+    client: null, user: null, account: null, accounts: [], holdings: [], quotes: [], snapshots: [], incomeSources: [], incomeSourcesAvailable: true, planSettings: null, properties: [], propertiesAvailable: true, planDataAvailable: true,
+    providerMetrics: {}, providerMetricsPending: new Set(), configured: false, pendingQuote: null, quoteTimer: null, holdingFilter: "all", holdingSort: "value", portfolioFilter: "all", portfolioSort: "value", propertySort: "value", performancePeriod: "all", incomePeriod: "year", incomeDividendSort: "value", planHorizon: 10, incomeSourceDialogId: null, incomeSourceDeleteId: null, propertyDialogId: null, propertyDeleteId: null,
   };
 
   function cents(value) {
@@ -189,6 +190,7 @@
   function setControlsDisabled(disabled) {
     $("#add-asset").disabled = disabled;
     $("#portfolio-add-asset").disabled = disabled;
+    $("#portfolio-add-property").disabled = disabled || !state.propertiesAvailable;
     $("#add-income").disabled = disabled || !state.incomeSourcesAvailable;
   }
 
@@ -401,6 +403,77 @@
     }
   }
 
+  function propertyModel(property) {
+    return {
+      id: property.id,
+      accountId: property.account_id,
+      name: property.name || "Home",
+      location: property.location || null,
+      currentValueCents: Number(property.current_value_cents),
+      mortgageBalanceCents: Number(property.mortgage_balance_cents),
+      annualAppreciationRate: property.annual_appreciation_rate === null ? null : Number(property.annual_appreciation_rate),
+    };
+  }
+  function totalPropertyEquity() {
+    return totalPropertyEquityCents(state.properties.map(propertyModel));
+  }
+  function matchingProperties() {
+    const search = $("#portfolio-search").value.trim().toLowerCase();
+    return state.properties.filter((property) => `${property.name || ""} ${property.location || ""}`.toLowerCase().includes(search));
+  }
+  function sortProperties(properties) {
+    return [...properties].sort((left, right) => {
+      if (state.propertySort === "name") return (left.name || "Home").localeCompare(right.name || "Home");
+      return propertyEquityCents(propertyModel(right)) - propertyEquityCents(propertyModel(left));
+    });
+  }
+  function renderPropertySort() {
+    const labels = { value: "Value", name: "Name" };
+    setText("#portfolio-property-sort-label", labels[state.propertySort]);
+    document.querySelectorAll("[data-property-sort]").forEach((control) => {
+      control.setAttribute("aria-checked", String(control.dataset.propertySort === state.propertySort));
+    });
+  }
+  function renderPropertyCards(properties) {
+    const grid = $("#portfolio-properties-grid");
+    grid.replaceChildren(...properties.map((property) => {
+      const model = propertyModel(property);
+      const equityCents = propertyEquityCents(model);
+      const card = document.createElement("article");
+      card.className = "acadia-card is-content";
+      card.setAttribute("aria-label", `${model.name}${model.location ? `, ${model.location}` : ""}, equity ${displayCurrency(equityCents / 100)}`);
+      card.innerHTML = `<div class="acadia-card-actions" role="group" aria-label="Actions for ${escapeHtml(model.name)}"><details class="acadia-action-menu"><summary class="acadia-action-menu-trigger acadia-icon-action" aria-label="Actions for ${escapeHtml(model.name)}"><i class="fa-solid fa-ellipsis acadia-icon" aria-hidden="true"></i></summary><div class="acadia-action-menu-panel"><button class="acadia-action-menu-item" type="button" data-edit-property-id="${escapeHtml(model.id)}">Edit property</button><div class="acadia-action-menu-divider"></div><button class="acadia-action-menu-item is-danger" type="button" data-delete-property-id="${escapeHtml(model.id)}">Delete property</button></div></details></div><div class="acadia-card-header"><h3>${escapeHtml(model.name)}</h3>${model.location ? `<p>${escapeHtml(model.location)}</p>` : ""}</div><div class="acadia-card-content"><div class="acadia-card-content-badges"><span class="acadia-badge acadia-badge-grey acadia-badge-round" aria-label="Equity ${displayCurrency(equityCents / 100)}">Equity ${displayCurrency(equityCents / 100)}</span></div></div>`;
+      return card;
+    }));
+    grid.querySelectorAll("[data-edit-property-id]").forEach((button) => {
+      button.addEventListener("click", () => openPropertyDialog(button.dataset.editPropertyId));
+    });
+    grid.querySelectorAll("[data-delete-property-id]").forEach((button) => {
+      button.addEventListener("click", () => openDeletePropertyDialog(button.dataset.deletePropertyId));
+    });
+  }
+  function renderProperties() {
+    const hasProperties = state.properties.length > 0;
+    const properties = sortProperties(matchingProperties());
+    renderPropertySort();
+    setText("#portfolio-properties-count", `${properties.length} ${properties.length === 1 ? "property" : "properties"}`);
+    $("#portfolio-properties-grid").hidden = !state.propertiesAvailable;
+    $("#portfolio-properties-empty").hidden = !state.propertiesAvailable || properties.length > 0;
+    if (!state.propertiesAvailable) {
+      setText("#portfolio-properties-empty-title", "Property unavailable");
+      setText("#portfolio-properties-empty-copy", "Apply the latest private property migration to add and view properties.");
+      $("#portfolio-properties-empty").hidden = false;
+      return;
+    }
+    renderPropertyCards(properties);
+    if (!properties.length) {
+      setText("#portfolio-properties-empty-title", hasProperties ? "No matching properties" : "No properties yet");
+      setText("#portfolio-properties-empty-copy", hasProperties
+        ? "Adjust your search to see a different property."
+        : "Add a property to include its equity in your net worth.");
+    }
+  }
+
   function renderHome(summary) {
     $("#home-workspace").hidden = false;
     $("#portfolio-workspace").hidden = true;
@@ -408,7 +481,9 @@
     $("#plan-workspace").hidden = true;
     $("#asset-workspace").hidden = true;
     setActiveNavigation("home");
-    setText("#metric-value", displayCurrency(summary.totalMarketValueCents / 100));
+    setText("#metric-value", state.propertiesAvailable
+      ? displayCurrency((summary.totalMarketValueCents + totalPropertyEquity()) / 100)
+      : "Not set");
     const metricsLoading = state.providerMetricsPending.size > 0;
     setText("#metric-income", metricsLoading
       ? "Loading…"
@@ -440,6 +515,7 @@
     $("#asset-workspace").hidden = true;
     setActiveNavigation("portfolio");
     renderPortfolioHoldings(summary);
+    renderProperties();
   }
 
   function incomeSourceModel(source) {
@@ -581,16 +657,6 @@
       distributionPolicy: settings.distribution_policy,
     } : null;
   }
-  function homePropertyModel(property) {
-    return property ? {
-      id: property.id,
-      accountId: property.account_id,
-      currentValueCents: Number(property.current_value_cents),
-      mortgageBalanceCents: Number(property.mortgage_balance_cents),
-      annualAppreciationRate: property.annual_appreciation_rate === null ? null : Number(property.annual_appreciation_rate),
-      includeInNetWorth: property.include_in_net_worth,
-    } : null;
-  }
   function planProjection(summary) {
     const settings = planSettingsModel(state.planSettings);
     const assumptions = resolvePlanAssumptions(settings || {} , summary);
@@ -698,12 +764,11 @@
               : "Set a Base plan yield assumption to create a projection.");
     $("#edit-plan-assumptions").disabled = !state.planDataAvailable;
     document.querySelectorAll("[data-open-plan-assumptions]").forEach((button) => { button.disabled = !state.planDataAvailable; });
-    const property = homePropertyModel(state.homeProperty);
-    $("#plan-home-add").hidden = Boolean(property) || !state.planDataAvailable;
-    $("#plan-home-equity").hidden = !property;
-    if (property) {
-      setText("#plan-home-equity-value", displayCurrency(homeEquityCents(property) / 100));
-      $("#include-home-net-worth").checked = property.includeInNetWorth;
+    const propertyCount = state.properties.length;
+    $("#plan-property-equity").hidden = !state.propertiesAvailable || propertyCount === 0;
+    if (propertyCount > 0) {
+      setText("#plan-property-equity-value", displayCurrency(totalPropertyEquity() / 100));
+      setText("#plan-property-equity-count", `${propertyCount} ${propertyCount === 1 ? "property" : "properties"}`);
     }
   }
 
@@ -1213,80 +1278,104 @@
     }
   }
 
-  function openHomePropertyDialog() {
-    if (!state.planDataAvailable) return;
-    const form = $("#home-property-form");
-    const property = homePropertyModel(state.homeProperty);
+  function openPropertyDialog(id = null) {
+    if (!state.propertiesAvailable) return;
+    const form = $("#property-form");
+    const property = state.properties.find((entry) => entry.id === id);
+    state.propertyDialogId = property?.id || null;
     form.reset();
-    setText("#home-property-dialog-title", property ? "Edit home" : "Add home");
-    setText("#save-home-property", property ? "Save" : "Add");
-    setText("#home-property-form-status", "");
+    setText("#property-dialog-title", property ? "Edit property" : "Add property");
+    setText("#save-property", property ? "Save property" : "Add property");
+    setText("#property-form-status", "");
     if (property) {
-      $("#home-current-value").value = (property.currentValueCents / 100).toFixed(2);
-      $("#home-mortgage-balance").value = (property.mortgageBalanceCents / 100).toFixed(2);
-      $("#home-appreciation-rate").value = property.annualAppreciationRate === null
-        ? ""
-        : property.annualAppreciationRate * 100;
+      const model = propertyModel(property);
+      $("#property-name").value = model.name;
+      $("#property-location").value = model.location || "";
+      $("#property-current-value").value = (model.currentValueCents / 100).toFixed(2);
+      $("#property-debt-balance").value = (model.mortgageBalanceCents / 100).toFixed(2);
     }
-    $("#home-property-dialog").hidden = false;
-    $("#home-property-dialog").showModal();
+    $("#property-dialog").hidden = false;
+    $("#property-dialog").showModal();
   }
-  function closeHomePropertyDialog() { $("#home-property-dialog").close(); }
-  async function saveHomeProperty(event) {
+  function closePropertyDialog() { $("#property-dialog").close(); }
+  async function saveProperty(event) {
     event.preventDefault();
     if (!state.account) return;
-    const save = $("#save-home-property");
+    const save = $("#save-property");
     try {
       save.disabled = true;
       save.textContent = "Saving…";
-      const property = normalizeHomeProperty({
+      const property = normalizeProperty({
         accountId: state.account.id,
-        currentValueCents: cents(getFormValue($("#home-property-form"), "currentValue")),
-        mortgageBalanceCents: cents(getFormValue($("#home-property-form"), "mortgageBalance")) ?? 0,
-        annualAppreciationRate: rate(getFormValue($("#home-property-form"), "annualAppreciationRate")),
+        name: getFormValue($("#property-form"), "name"),
+        location: getFormValue($("#property-form"), "location"),
+        currentValueCents: cents(getFormValue($("#property-form"), "currentValue")),
+        mortgageBalanceCents: cents(getFormValue($("#property-form"), "mortgageBalance")) ?? 0,
       });
-      const { data, error } = await state.client.from("home_properties").upsert({
+      const payload = {
         account_id: state.account.id,
+        name: property.name,
+        location: property.location,
         current_value_cents: property.currentValueCents,
         mortgage_balance_cents: property.mortgageBalanceCents,
-        annual_appreciation_rate: property.annualAppreciationRate,
-        include_in_net_worth: homePropertyModel(state.homeProperty)?.includeInNetWorth || false,
-      }, { onConflict: "account_id" }).select().single();
+      };
+      const query = state.propertyDialogId
+        ? state.client.from("home_properties").update(payload).eq("id", state.propertyDialogId)
+        : state.client.from("home_properties").insert(payload);
+      const { data, error } = await query.select().single();
       if (error) throw error;
-      state.homeProperty = data;
-      closeHomePropertyDialog();
+      state.properties = state.propertyDialogId
+        ? state.properties.map((entry) => entry.id === data.id ? data : entry)
+        : [...state.properties, data];
+      closePropertyDialog();
       render();
     } catch (error) {
-      setText("#home-property-form-status", error.message || "The home property could not be saved.");
+      setText("#property-form-status", error.message || "The property could not be saved.");
     } finally {
       save.disabled = false;
-      save.textContent = state.homeProperty ? "Save" : "Add";
+      save.textContent = state.propertyDialogId ? "Save property" : "Add property";
     }
   }
-  async function saveHomeNetWorthPreference() {
-    if (!state.account || !state.homeProperty) return;
+  function openDeletePropertyDialog(id) {
+    const property = state.properties.find((entry) => entry.id === id);
+    if (!property) return;
+    state.propertyDeleteId = id;
+    setText("#delete-property-description", `This removes ${property.name || "this property"} and its equity from your net worth.`);
+    setText("#delete-property-status", "");
+    $("#delete-property-dialog").hidden = false;
+    $("#delete-property-dialog").showModal();
+  }
+  function closeDeletePropertyDialog() { $("#delete-property-dialog").close(); }
+  async function deleteProperty(event) {
+    event.preventDefault();
+    if (!state.propertyDeleteId) return;
+    const button = $("#confirm-delete-property");
     try {
-      const { data, error } = await state.client.from("home_properties").update({
-        include_in_net_worth: $("#include-home-net-worth").checked,
-      }).eq("account_id", state.account.id).select().single();
+      button.disabled = true;
+      button.textContent = "Deleting…";
+      const { error } = await state.client.from("home_properties").delete().eq("id", state.propertyDeleteId);
       if (error) throw error;
-      state.homeProperty = data;
+      state.properties = state.properties.filter((property) => property.id !== state.propertyDeleteId);
+      state.propertyDeleteId = null;
+      closeDeletePropertyDialog();
       render();
     } catch (error) {
-      setText("#plan-assumptions-status", error.message || "The home preference could not be saved.");
-      render();
+      setText("#delete-property-status", error.message || "The property could not be deleted.");
+    } finally {
+      button.disabled = false;
+      button.textContent = "Delete property";
     }
   }
 
   async function loadData() {
-    const [accounts, holdings, quotes, snapshots, incomeSources, planSettings, homeProperty] = await Promise.all([
+    const [accounts, holdings, quotes, snapshots, incomeSources, planSettings, properties] = await Promise.all([
       state.client.from("accounts").select("*").order("created_at"),
       state.client.from("holdings").select("*").eq("account_id", state.account.id).order("created_at"),
       state.client.from("holding_quotes").select("*").order("as_of", { ascending: false }),
       state.client.from("portfolio_snapshots").select("*").eq("account_id", state.account.id).order("snapshot_date"),
       state.client.from("income_sources").select("*").eq("account_id", state.account.id).order("created_at"),
       state.client.from("plan_settings").select("*").eq("account_id", state.account.id).maybeSingle(),
-      state.client.from("home_properties").select("*").eq("account_id", state.account.id).maybeSingle(),
+      state.client.from("home_properties").select("id, account_id, name, location, current_value_cents, mortgage_balance_cents, annual_appreciation_rate, created_at").eq("account_id", state.account.id).order("created_at"),
     ]);
     if (accounts.error || holdings.error || quotes.error || snapshots.error) {
       throw accounts.error || holdings.error || quotes.error || snapshots.error;
@@ -1297,9 +1386,10 @@
     state.snapshots = snapshots.data || [];
     state.incomeSourcesAvailable = !incomeSources.error;
     state.incomeSources = incomeSources.data || [];
-    state.planDataAvailable = !planSettings.error && !homeProperty.error;
+    state.planDataAvailable = !planSettings.error;
     state.planSettings = planSettings.data || null;
-    state.homeProperty = homeProperty.data || null;
+    state.propertiesAvailable = !properties.error;
+    state.properties = properties.data || [];
     render();
   }
   async function ensurePlanSettings() {
@@ -1384,7 +1474,8 @@
     state.snapshots = [];
     state.incomeSources = [];
     state.planSettings = null;
-    state.homeProperty = null;
+    state.properties = [];
+    state.propertiesAvailable = false;
     state.planDataAvailable = false;
     $("#auth-panel").hidden = true;
     $("#home-workspace").hidden = false;
@@ -1508,13 +1599,21 @@
   $("#cancel-plan-assumptions").addEventListener("click", closePlanAssumptionsDialog);
   $("#plan-assumptions-dialog").addEventListener("close", () => { $("#plan-assumptions-dialog").hidden = true; });
   $("#plan-assumptions-form").addEventListener("submit", savePlanAssumptions);
-  $("#add-home-property").addEventListener("click", openHomePropertyDialog);
-  $("#edit-home-property").addEventListener("click", openHomePropertyDialog);
-  $("#close-home-property-dialog").addEventListener("click", closeHomePropertyDialog);
-  $("#cancel-home-property").addEventListener("click", closeHomePropertyDialog);
-  $("#home-property-dialog").addEventListener("close", () => { $("#home-property-dialog").hidden = true; });
-  $("#home-property-form").addEventListener("submit", saveHomeProperty);
-  $("#include-home-net-worth").addEventListener("change", saveHomeNetWorthPreference);
+  $("#portfolio-add-property").addEventListener("click", () => openPropertyDialog());
+  $("#close-property-dialog").addEventListener("click", closePropertyDialog);
+  $("#cancel-property-dialog").addEventListener("click", closePropertyDialog);
+  $("#property-dialog").addEventListener("close", () => { $("#property-dialog").hidden = true; });
+  $("#property-form").addEventListener("submit", saveProperty);
+  $("#cancel-delete-property").addEventListener("click", closeDeletePropertyDialog);
+  $("#delete-property-dialog").addEventListener("close", () => { $("#delete-property-dialog").hidden = true; });
+  $("#delete-property-form").addEventListener("submit", deleteProperty);
+  document.querySelectorAll("[data-property-sort]").forEach((control) => {
+    control.addEventListener("click", () => {
+      state.propertySort = control.dataset.propertySort;
+      $("#portfolio-property-sort").open = false;
+      render();
+    });
+  });
   $("#asset-back").addEventListener("click", navigateHome);
   $("#asset-cancel").addEventListener("click", renderAsset);
   $("#asset-detail-form").addEventListener("submit", saveAssetDetails);

@@ -46,8 +46,8 @@ test("Mercury tightens only the page header gap before each workspace's first se
 test("Home follows the Figma composition with a focused Brokerage dashboard", () => {
   assert.match(indexHtml, /class="acadia-responsive-navbar"/);
   assert.match(indexHtml, /<section class="acadia-dashboard-main" aria-label="Brokerage dashboard">/);
-  assert.match(indexHtml, /Portfolio value/);
-  assert.match(indexHtml, /Selected-period change/);
+  assert.match(indexHtml, /Net worth/);
+  assert.match(indexHtml, /Investment change/);
   assert.match(indexHtml, /Estimated annual growth/);
   assert.match(indexHtml, /Annual dividends/);
   assert.match(indexHtml, />Performance</);
@@ -62,7 +62,7 @@ test("Home follows the Figma composition with a focused Brokerage dashboard", ()
   assert.match(indexHtml, /--acadia-grid-columns: 4/);
   assert.doesNotMatch(indexHtml, /id="account-filter"/);
   assert.doesNotMatch(indexHtml, /Brokerage actions|Private workspace|refresh-quotes|refresh-history|export-data/);
-  assert.doesNotMatch(indexHtml, /Net worth|Section Header|data-holding-filter="brokerage"|data-holding-filter="retirement"|>Explore<|>History</);
+  assert.doesNotMatch(indexHtml, /Section Header|data-holding-filter="brokerage"|data-holding-filter="retirement"|>Explore<|>History</);
   assert.match(indexHtml, /href="#plan" data-nav-page="plan">Plan/);
   assert.match(indexHtml, /href="#income" data-nav-page="income">Income/);
   assert.match(indexHtml, /acadia-action-menu-trigger acadia-navbar-link" aria-label="Profile account actions">Profile/);
@@ -128,7 +128,7 @@ test("large currency display values use the shared compact format", () => {
   assert.match(homeSource, /thousandCurrency\.format\(value\)/);
   assert.match(homeSource, /millionCurrency\.format\(value\)/);
   assert.match(homeSource, /\[KMBT\]/);
-  assert.match(homeSource, /setText\("#metric-value", displayCurrency/);
+  assert.match(homeSource, /summary\.totalMarketValueCents \+ totalPropertyEquity\(\)/);
   assert.match(homeSource, /setText\(\s*"#metric-change-value"/);
   assert.match(homeSource, /setDelta\("#metric-change-rate", performance\.changeRate/);
   assert.match(homeSource, /"#metric-estimated-growth"/);
@@ -227,10 +227,10 @@ test("Plan is a separate Base-plan projection workspace with aligned portfolio c
   assert.match(planWorkspace, /id="plan-value-endpoints"/);
   assert.match(planWorkspace, /id="plan-income-chart"/);
   assert.match(planWorkspace, /id="plan-income-endpoints"/);
-  assert.match(planWorkspace, /id="plan-home-equity"/);
-  assert.match(planWorkspace, /Not included in portfolio-income projection/);
+  assert.match(planWorkspace, /id="plan-property-equity"/);
+  assert.match(planWorkspace, /Included in net worth, not in investment or portfolio-income projections/);
   assert.match(indexHtml, /id="plan-assumptions-dialog"/);
-  assert.match(indexHtml, /id="home-property-dialog"/);
+  assert.match(indexHtml, /id="property-dialog"/);
   assert.match(indexHtml, /<script src="plan\.js\?v=20260902-base-plan-v1"><\/script>/);
   assert.match(homeSource, /function routePlan\(\)/);
   assert.match(homeSource, /function renderPlan\(summary\)/);
@@ -269,10 +269,19 @@ test("Home never falls back to fabricated assets and Portfolio is a functional r
   assert.match(indexHtml, /data-portfolio-filter="crypto"/);
   assert.match(indexHtml, /data-portfolio-filter="retirement"[^>]*disabled/);
   assert.match(indexHtml, /id="portfolio-holdings-grid"/);
+  assert.match(indexHtml, /id="portfolio-add-property"/);
+  assert.match(indexHtml, /id="portfolio-property-sort"/);
+  assert.match(indexHtml, /id="portfolio-properties-grid"/);
+  assert.match(indexHtml, /id="property-dialog"/);
+  assert.match(indexHtml, /id="delete-property-dialog"/);
   assert.match(homeSource, /portfolioFilter/);
   assert.match(homeSource, /portfolioSort/);
   assert.match(homeSource, /matchingPortfolioHoldingRows/);
   assert.match(homeSource, /renderPortfolioHoldings/);
+  assert.match(homeSource, /function renderProperties\(\)/);
+  assert.match(homeSource, /function saveProperty\(event\)/);
+  assert.match(homeSource, /function deleteProperty\(event\)/);
+  assert.match(homeSource, /totalPropertyEquity\(\)/);
   assert.doesNotMatch(portfolioWorkspace, /Holdings remain on Home for now|Portfolio workspace is on its way|acadia-card-trend|<svg/);
   assert.match(indexHtml, /id="asset-workspace" class="acadia-stack mercury-workspace" hidden/);
   assert.match(indexHtml, /id="asset-back"/);

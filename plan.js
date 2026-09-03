@@ -48,13 +48,30 @@ function normalizePlanSettings(input = {}) {
   });
 }
 
-function normalizeHomeProperty(input) {
+function requiredText(value, field) {
+  if (typeof value !== "string" || !value.trim()) {
+    throw new PlanValidationError(`${field} is required`);
+  }
+  return value.trim();
+}
+
+function optionalText(value, field) {
+  if (value === undefined || value === null || value === "") return null;
+  if (typeof value !== "string" || !value.trim()) {
+    throw new PlanValidationError(`${field} must be text when supplied`);
+  }
+  return value.trim();
+}
+
+function normalizeProperty(input) {
   if (!input || typeof input !== "object" || Array.isArray(input)) {
-    throw new PlanValidationError("home property must be an object");
+    throw new PlanValidationError("property must be an object");
   }
   return Object.freeze({
     id: input.id ?? null,
     accountId: input.accountId ?? null,
+    name: requiredText(input.name ?? "Home", "name"),
+    location: optionalText(input.location, "location"),
     currentValueCents: nonNegativeCents(input.currentValueCents, "currentValueCents"),
     mortgageBalanceCents: nonNegativeCents(input.mortgageBalanceCents, "mortgageBalanceCents"),
     annualAppreciationRate: optionalRate(input.annualAppreciationRate, "annualAppreciationRate"),
@@ -62,10 +79,18 @@ function normalizeHomeProperty(input) {
   });
 }
 
-function homeEquityCents(property) {
-  const normalized = normalizeHomeProperty(property);
+function propertyEquityCents(property) {
+  const normalized = normalizeProperty(property);
   return normalized.currentValueCents - normalized.mortgageBalanceCents;
 }
+
+function totalPropertyEquityCents(properties) {
+  if (!Array.isArray(properties)) throw new PlanValidationError("properties must be an array");
+  return properties.reduce((total, property) => total + propertyEquityCents(property), 0);
+}
+
+const normalizeHomeProperty = normalizeProperty;
+const homeEquityCents = propertyEquityCents;
 
 function annualRecurringContributionCents(holdings, {
   legacyWeeklyContributionCents = 0,
@@ -151,9 +176,12 @@ const planContract = {
   annualRecurringContributionCents,
   homeEquityCents,
   normalizeHomeProperty,
+  normalizeProperty,
   normalizePlanSettings,
+  propertyEquityCents,
   projectPortfolio,
   resolvePlanAssumptions,
+  totalPropertyEquityCents,
 };
 
 if (typeof module !== "undefined") module.exports = planContract;

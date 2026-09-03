@@ -6,9 +6,12 @@ const {
   annualRecurringContributionCents,
   homeEquityCents,
   normalizeHomeProperty,
+  normalizeProperty,
   normalizePlanSettings,
+  propertyEquityCents,
   projectPortfolio,
   resolvePlanAssumptions,
+  totalPropertyEquityCents,
 } = require("../plan");
 
 test("Plan annualises direct holding contributions before using a complete legacy allocation", () => {
@@ -127,4 +130,26 @@ test("home equity remains a separately normalised stored value", () => {
   assert.equal(homeEquityCents(property), 215_000_00);
   assert.equal(property.includeInNetWorth, true);
   assert.throws(() => normalizeHomeProperty({ currentValueCents: -1, mortgageBalanceCents: 0 }), PlanValidationError);
+});
+
+test("properties retain identity and aggregate equity for net worth", () => {
+  const house = normalizeProperty({
+    name: "House",
+    location: "Roanoke, VA",
+    currentValueCents: 447_000_00,
+    mortgageBalanceCents: 232_000_00,
+  });
+  const cabin = normalizeProperty({
+    name: "Cabin",
+    location: "Floyd, VA",
+    currentValueCents: 180_000_00,
+    mortgageBalanceCents: 195_000_00,
+  });
+  assert.equal(propertyEquityCents(house), 215_000_00);
+  assert.equal(totalPropertyEquityCents([house, cabin]), 200_000_00);
+  assert.throws(() => normalizeProperty({
+    name: "",
+    currentValueCents: 1,
+    mortgageBalanceCents: 0,
+  }), PlanValidationError);
 });
