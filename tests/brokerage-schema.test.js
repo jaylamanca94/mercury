@@ -95,4 +95,5 @@ test("property portfolio migration preserves the private property table while al
   assert.match(propertyMigration, /alter column name set not null/);
   assert.match(propertyMigration, /home_properties_name_not_blank/);
   assert.match(propertyMigration, /home_properties_location_not_blank/);
+  assert.match(propertyMigration, /notify pgrst, 'reload schema'/);
 });

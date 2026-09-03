@@ -19,3 +19,6 @@ alter table public.home_properties
   add constraint home_properties_name_not_blank check (length(btrim(name)) > 0),
   drop constraint if exists home_properties_location_not_blank,
   add constraint home_properties_location_not_blank check (location is null or length(btrim(location)) > 0);
+
+-- Make the newly added columns available to the PostgREST API immediately.
+notify pgrst, 'reload schema';
