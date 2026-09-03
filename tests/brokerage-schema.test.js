@@ -19,6 +19,10 @@ const incomeMigration = fs.readFileSync(
   path.join(__dirname, "..", "supabase", "migrations", "20260902_income_sources.sql"),
   "utf8",
 );
+const planMigration = fs.readFileSync(
+  path.join(__dirname, "..", "supabase", "migrations", "20260902_base_plan.sql"),
+  "utf8",
+);
 
 test("the Brokerage schema keeps valuation bases explicit and supports the requested instruments", () => {
   assert.match(migration, /instrument_type in \('mutual-fund', 'etf', 'stock', 'crypto', 'cash', 'other'\)/);
@@ -59,4 +63,22 @@ test("Income sources are private account-scoped recurring planning data", () => 
   assert.match(incomeMigration, /alter table public\.income_sources enable row level security/);
   assert.match(incomeMigration, /Owners manage their income sources/);
   assert.match(incomeMigration, /revoke all on public\.income_sources from anon/);
+});
+
+test("Base Plan settings and optional home property remain private account-scoped data", () => {
+  assert.match(planMigration, /create table if not exists public\.plan_settings/);
+  assert.match(planMigration, /account_id uuid not null unique references public\.accounts\(id\) on delete cascade/);
+  assert.match(planMigration, /expected_annual_return_rate numeric\(8, 6\) check \(expected_annual_return_rate between -1 and 1\)/);
+  assert.match(planMigration, /distribution_yield_rate numeric\(8, 6\) check \(distribution_yield_rate between 0 and 1\)/);
+  assert.match(planMigration, /distribution_policy text not null default 'reinvest'/);
+  assert.match(planMigration, /create table if not exists public\.home_properties/);
+  assert.match(planMigration, /current_value_cents bigint not null check \(current_value_cents >= 0\)/);
+  assert.match(planMigration, /mortgage_balance_cents bigint not null default 0 check \(mortgage_balance_cents >= 0\)/);
+  assert.match(planMigration, /annual_appreciation_rate numeric\(8, 6\) check \(annual_appreciation_rate between -1 and 1\)/);
+  ["plan_settings", "home_properties"].forEach((table) => {
+    assert.match(planMigration, new RegExp(`alter table public\\.${table} enable row level security`));
+  });
+  assert.match(planMigration, /Owners manage their plan settings/);
+  assert.match(planMigration, /Owners manage their home properties/);
+  assert.match(planMigration, /revoke all on public\.plan_settings, public\.home_properties from anon/);
 });

@@ -1,6 +1,6 @@
 # Mercury Supabase setup
 
-Apply every migration in `migrations/`, including `20260902_income_sources.sql`, in the Supabase SQL editor (or through the Supabase CLI). They create the one-owner Brokerage and expected-income planning data models with row-level security policies.
+Apply every migration in `migrations/`, including `20260902_income_sources.sql` and `20260902_base_plan.sql`, in the Supabase SQL editor (or through the Supabase CLI). They create the one-owner Brokerage, expected-income, Base-plan, and optional home-equity planning data models with row-level security policies.
 
 Enable **Email** authentication with magic links, then set these Vercel environment variables:
 

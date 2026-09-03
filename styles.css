@@ -5,3 +5,46 @@
 .mercury-workspace > .acadia-page-header {
   margin-block-end: calc(var(--acadia-space-2) - var(--acadia-space-3));
 }
+
+.mercury-plan-chart-card .acadia-card-body {
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto auto;
+}
+
+.mercury-plan-chart-axis {
+  color: var(--acadia-color-text-muted);
+  display: flex;
+  font-size: 0.75rem;
+  justify-content: space-between;
+  line-height: 1rem;
+  padding-top: var(--acadia-space-1);
+}
+
+.mercury-plan-chart-endpoints {
+  display: flex;
+  justify-content: space-between;
+  padding-top: var(--acadia-space-2);
+}
+
+.mercury-plan-chart-endpoints span {
+  display: grid;
+  gap: 0.125rem;
+}
+
+.mercury-plan-chart-endpoints span:last-child {
+  justify-items: end;
+  text-align: end;
+}
+
+.mercury-plan-chart-endpoints small {
+  color: var(--acadia-color-text-muted);
+}
+
+.mercury-plan-assumptions-grid > div {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.mercury-plan-assumptions-grid .acadia-button {
+  justify-self: start;
+}

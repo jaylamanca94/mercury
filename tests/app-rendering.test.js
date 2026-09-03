@@ -29,6 +29,7 @@ test("Home consumes Acadia without a Mercury presentation layer", () => {
   assert.match(indexHtml, /id="home-workspace" class="acadia-stack mercury-workspace" hidden/);
   assert.match(indexHtml, /id="portfolio-workspace" class="acadia-stack mercury-workspace" hidden aria-live="polite"/);
   assert.match(indexHtml, /id="income-workspace" class="acadia-stack mercury-workspace" hidden aria-live="polite"/);
+  assert.match(indexHtml, /id="plan-workspace" class="acadia-stack mercury-workspace" hidden aria-live="polite"/);
   assert.match(indexHtml, /id="asset-workspace" class="acadia-stack mercury-workspace" hidden aria-live="polite"/);
   assert.match(acadiaStyles, /\[data-acadia-page-frame="spacious"\]/);
   assert.match(acadiaStyles, /\.acadia-card\.is-dashboard-trend/);
@@ -46,7 +47,7 @@ test("Home follows the Figma composition with a focused Brokerage dashboard", ()
   assert.match(indexHtml, /<section class="acadia-dashboard-main" aria-label="Brokerage dashboard">/);
   assert.match(indexHtml, /Portfolio value/);
   assert.match(indexHtml, /Selected-period change/);
-  assert.match(indexHtml, /Expected annual return/);
+  assert.match(indexHtml, /Estimated annual growth/);
   assert.match(indexHtml, /Annual dividends/);
   assert.match(indexHtml, />Performance</);
   assert.match(indexHtml, />Investments</);
@@ -62,7 +63,7 @@ test("Home follows the Figma composition with a focused Brokerage dashboard", ()
   assert.doesNotMatch(indexHtml, /id="account-filter"/);
   assert.doesNotMatch(indexHtml, /Brokerage actions|Private workspace|refresh-quotes|refresh-history|export-data/);
   assert.doesNotMatch(indexHtml, /Net worth|Section Header|data-holding-filter="brokerage"|data-holding-filter="retirement"|>Explore<|>History</);
-  assert.match(indexHtml, /aria-disabled="true"[^>]*>Plan/);
+  assert.match(indexHtml, /href="#plan" data-nav-page="plan">Plan/);
   assert.match(indexHtml, /href="#income" data-nav-page="income">Income/);
   assert.match(indexHtml, /acadia-action-menu-trigger acadia-navbar-link" aria-label="Profile account actions">Profile/);
   assert.match(indexHtml, /data-nav-page="portfolio"/);
@@ -70,7 +71,7 @@ test("Home follows the Figma composition with a focused Brokerage dashboard", ()
   assert.match(indexHtml, /assets\/mercury-mark\.svg/);
 });
 
-test("Portfolio follows the Figma navigation order without reviving unavailable routes", () => {
+test("Mercury follows the Figma navigation order with the active Plan workspace", () => {
   const desktopNav = indexHtml.match(/<div class="acadia-navbar-links">([\s\S]*?)<\/div>/)?.[1] || "";
   const labels = ["Home", "Portfolio", "Income", "Plan", "Profile"];
   let previous = -1;
@@ -90,6 +91,7 @@ test("Mercury composes the complete Acadia responsive Navbar", () => {
   assert.match(indexHtml, /class="acadia-mobile-tab is-active" href="index\.html" data-nav-page="home" aria-current="page" aria-label="Home"/);
   assert.match(indexHtml, /class="acadia-mobile-tab" href="#portfolio" data-nav-page="portfolio" aria-label="Portfolio"/);
   assert.match(indexHtml, /class="acadia-mobile-tab" href="#income" data-nav-page="income" aria-label="Income"/);
+  assert.match(indexHtml, /class="acadia-mobile-tab" href="#plan" data-nav-page="plan" aria-label="Plan"/);
   assert.equal((indexHtml.match(/data-account-label/g) || []).length, 3);
   assert.equal((indexHtml.match(/data-sign-out/g) || []).length, 3);
   assert.doesNotMatch(indexHtml, /fa-circle-user[^>]*acadia-icon[^>]*><\/i><\/summary><div id="account-menu"/);
@@ -190,7 +192,7 @@ test("Portfolio cards show the Figma return and dividend-yield metrics without c
 });
 
 test("Income is a functional planning workspace with live dividend coverage and saved recurring sources", () => {
-  const incomeWorkspace = indexHtml.slice(indexHtml.indexOf('<section id="income-workspace"'), indexHtml.indexOf('<section id="asset-workspace"'));
+  const incomeWorkspace = indexHtml.slice(indexHtml.indexOf('<section id="income-workspace"'), indexHtml.indexOf('<section id="plan-workspace"'));
   assert.match(incomeWorkspace, /Planning view · Expected income, not bank-confirmed deposits/);
   assert.match(incomeWorkspace, /id="income-periods"/);
   assert.match(incomeWorkspace, /data-income-period="year"/);
@@ -213,6 +215,35 @@ test("Income is a functional planning workspace with live dividend coverage and 
   assert.match(homeSource, /data-income-dividend-sort/);
 });
 
+test("Plan is a separate Base-plan projection workspace with aligned portfolio charts", () => {
+  const planWorkspace = indexHtml.slice(indexHtml.indexOf('<section id="plan-workspace"'), indexHtml.indexOf('<section id="asset-workspace"'));
+  assert.match(planWorkspace, /Base plan/);
+  assert.match(planWorkspace, /id="edit-plan-assumptions"/);
+  assert.match(planWorkspace, /Illustrative—not a forecast/);
+  assert.match(planWorkspace, /id="plan-current-value"/);
+  assert.match(planWorkspace, /id="plan-projected-value"/);
+  assert.match(planWorkspace, /Projected portfolio income/);
+  assert.match(planWorkspace, /data-plan-horizon="5"/);
+  assert.match(planWorkspace, /data-plan-horizon="10"/);
+  assert.match(planWorkspace, /data-plan-horizon="20"/);
+  assert.match(planWorkspace, /id="plan-value-chart"/);
+  assert.match(planWorkspace, /id="plan-value-endpoints"/);
+  assert.match(planWorkspace, /id="plan-income-chart"/);
+  assert.match(planWorkspace, /id="plan-income-endpoints"/);
+  assert.match(planWorkspace, /id="plan-home-equity"/);
+  assert.match(planWorkspace, /Not included in portfolio-income projection/);
+  assert.match(indexHtml, /id="plan-assumptions-dialog"/);
+  assert.match(indexHtml, /id="home-property-dialog"/);
+  assert.match(indexHtml, /<script src="plan\.js\?v=20260902-base-plan-v1"><\/script>/);
+  assert.match(homeSource, /function routePlan\(\)/);
+  assert.match(homeSource, /function renderPlan\(summary\)/);
+  assert.match(homeSource, /function renderPlanChart/);
+  assert.match(homeSource, /state\.client\.from\("plan_settings"\)/);
+  assert.match(homeSource, /state\.client\.from\("home_properties"\)/);
+  assert.match(homeSource, /annualRecurringContributionCents/);
+  assert.match(homeSource, /resolvePlanAssumptions/);
+});
+
 test("the quick add dialog keeps manual recovery out of the initial path", () => {
   assert.match(indexHtml, /id="asset-symbol"/);
   assert.match(indexHtml, /id="asset-shares"/);
@@ -223,7 +254,7 @@ test("the quick add dialog keeps manual recovery out of the initial path", () =>
 });
 
 test("Home never falls back to fabricated assets and Portfolio is a functional route", () => {
-  const portfolioWorkspace = indexHtml.slice(indexHtml.indexOf('<section id="portfolio-workspace"'), indexHtml.indexOf('<section id="asset-workspace"'));
+  const portfolioWorkspace = indexHtml.slice(indexHtml.indexOf('<section id="portfolio-workspace"'), indexHtml.indexOf('<section id="income-workspace"'));
   assert.doesNotMatch(homeSource, /sampleHoldings|sampleQuotes|sampleSnapshots|showPreview|Sample workspace/);
   assert.match(homeSource, /routeAssetId/);
   assert.match(homeSource, /navigateToAsset/);

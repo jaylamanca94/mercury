@@ -13,6 +13,14 @@
     normalizeIncomeSource,
     summarizeIncomeSources,
   } = window.MercuryIncome;
+  const {
+    annualRecurringContributionCents,
+    homeEquityCents,
+    normalizeHomeProperty,
+    normalizePlanSettings,
+    projectPortfolio,
+    resolvePlanAssumptions,
+  } = window.MercuryPlan;
   const $ = (selector) => document.querySelector(selector);
   const currency = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 });
   const compactCurrency = new Intl.NumberFormat("en-US", {
@@ -28,8 +36,8 @@
   const percentage = new Intl.NumberFormat("en-US", { style: "percent", maximumFractionDigits: 2 });
   const TARGET_ALLOCATION_TOLERANCE = 0.02;
   const state = {
-    client: null, user: null, account: null, accounts: [], holdings: [], quotes: [], snapshots: [], incomeSources: [], incomeSourcesAvailable: true,
-    providerMetrics: {}, providerMetricsPending: new Set(), configured: false, pendingQuote: null, quoteTimer: null, holdingFilter: "all", holdingSort: "value", portfolioFilter: "all", portfolioSort: "value", performancePeriod: "all", incomePeriod: "year", incomeDividendSort: "value", incomeSourceDialogId: null, incomeSourceDeleteId: null,
+    client: null, user: null, account: null, accounts: [], holdings: [], quotes: [], snapshots: [], incomeSources: [], incomeSourcesAvailable: true, planSettings: null, homeProperty: null, planDataAvailable: true,
+    providerMetrics: {}, providerMetricsPending: new Set(), configured: false, pendingQuote: null, quoteTimer: null, holdingFilter: "all", holdingSort: "value", portfolioFilter: "all", portfolioSort: "value", performancePeriod: "all", incomePeriod: "year", incomeDividendSort: "value", planHorizon: 10, incomeSourceDialogId: null, incomeSourceDeleteId: null,
   };
 
   function cents(value) {
@@ -109,6 +117,7 @@
   }
   function routePortfolio() { return window.location.hash === "#portfolio"; }
   function routeIncome() { return window.location.hash === "#income"; }
+  function routePlan() { return window.location.hash === "#plan"; }
   function navigateToAsset(id) { window.location.hash = `asset/${encodeURIComponent(id)}`; }
   function navigateHome() { window.location.hash = ""; }
   function setActiveNavigation(page) {
@@ -429,6 +438,7 @@
     $("#home-workspace").hidden = false;
     $("#portfolio-workspace").hidden = true;
     $("#income-workspace").hidden = true;
+    $("#plan-workspace").hidden = true;
     $("#asset-workspace").hidden = true;
     setActiveNavigation("home");
     setText("#metric-value", displayCurrency(summary.totalMarketValueCents / 100));
@@ -460,6 +470,7 @@
     $("#home-workspace").hidden = true;
     $("#portfolio-workspace").hidden = false;
     $("#income-workspace").hidden = true;
+    $("#plan-workspace").hidden = true;
     $("#asset-workspace").hidden = true;
     setActiveNavigation("portfolio");
     renderPortfolioHoldings(summary);
@@ -573,6 +584,7 @@
     $("#home-workspace").hidden = true;
     $("#portfolio-workspace").hidden = true;
     $("#income-workspace").hidden = false;
+    $("#plan-workspace").hidden = true;
     $("#asset-workspace").hidden = true;
     setActiveNavigation("income");
     document.querySelectorAll("[data-income-period]").forEach((control) => {
@@ -594,6 +606,141 @@
     renderIncomeSources(incomeSummary);
   }
 
+  function planSettingsModel(settings) {
+    return settings ? {
+      id: settings.id,
+      accountId: settings.account_id,
+      expectedAnnualReturnRate: settings.expected_annual_return_rate === null ? null : Number(settings.expected_annual_return_rate),
+      distributionYieldRate: settings.distribution_yield_rate === null ? null : Number(settings.distribution_yield_rate),
+      distributionPolicy: settings.distribution_policy,
+    } : null;
+  }
+  function homePropertyModel(property) {
+    return property ? {
+      id: property.id,
+      accountId: property.account_id,
+      currentValueCents: Number(property.current_value_cents),
+      mortgageBalanceCents: Number(property.mortgage_balance_cents),
+      annualAppreciationRate: property.annual_appreciation_rate === null ? null : Number(property.annual_appreciation_rate),
+      includeInNetWorth: property.include_in_net_worth,
+    } : null;
+  }
+  function planProjection(summary) {
+    const settings = planSettingsModel(state.planSettings);
+    const assumptions = resolvePlanAssumptions(settings || {} , summary);
+    const annualContributionCents = annualRecurringContributionCents(
+      state.holdings.map((holding) => ({
+        contributionCents: holding.contribution_cents === null ? null : Number(holding.contribution_cents),
+        contributionFrequency: holding.contribution_frequency,
+      })),
+      {
+        legacyWeeklyContributionCents: Number(state.account?.weekly_contribution_cents || 0),
+        legacyWeeklyAllocationRate: summary.weeklyContributionRate,
+      },
+    );
+    return {
+      assumptions,
+      annualContributionCents,
+      projection: projectPortfolio({
+        currentValueCents: summary.totalMarketValueCents,
+        annualContributionCents,
+        expectedAnnualReturnRate: assumptions.expectedAnnualReturnRate,
+        distributionYieldRate: assumptions.distributionYieldRate,
+        distributionPolicy: assumptions.distributionPolicy,
+        horizonYears: state.planHorizon,
+      }),
+    };
+  }
+  function policyLabel(value) {
+    return ({
+      reinvest: "Reinvest",
+      "transfer-to-bank": "Transfer to bank",
+      "transfer-to-fund": "Transfer to fund",
+      "hold-cash": "Hold cash",
+    })[value] || "Reinvest";
+  }
+  function renderPlanChart({ chartSelector, axisSelector, endpointsSelector, summarySelector, points, key, label, unavailableText }) {
+    const chart = $(chartSelector);
+    const axis = $(axisSelector);
+    const endpoints = $(endpointsSelector);
+    const summary = $(summarySelector);
+    if (!points.length) {
+      chart.innerHTML = `<span class="acadia-card-trend-empty">${unavailableText}</span>`;
+      chart.setAttribute("aria-label", `${label} unavailable until return and yield assumptions are set`);
+      axis.replaceChildren();
+      endpoints.textContent = "Not set";
+      summary.textContent = `${label}: ${unavailableText}`;
+      return;
+    }
+    const values = points.map((point) => point[key] / 100);
+    const minimum = Math.min(...values);
+    const maximum = Math.max(...values);
+    const range = maximum - minimum || 1;
+    const pointsString = values.map((value, index) => `${(index / (values.length - 1)) * 100},${96 - ((value - minimum) / range) * 84}`).join(" ");
+    const area = `0,100 ${pointsString} 100,100`;
+    chart.innerHTML = `<svg class="acadia-card-trend-chart is-primary" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><polygon class="acadia-card-trend-area" points="${area}"></polygon><polyline class="acadia-card-trend-line" points="${pointsString}"></polyline></svg>`;
+    const first = points[0];
+    const last = points.at(-1);
+    const firstValue = displayCurrency(first[key] / 100);
+    const lastValue = displayCurrency(last[key] / 100);
+    chart.setAttribute("aria-label", `${label}: ${firstValue} now to ${lastValue} in year ${last.year}.`);
+    axis.innerHTML = `<span>Now</span><span>Year ${Math.round(last.year / 2)}</span><span>Year ${last.year}</span>`;
+    endpoints.innerHTML = `<span><small>Now</small><strong>${firstValue}</strong></span><span><small>Year ${last.year}</small><strong>${lastValue}</strong></span>`;
+    summary.textContent = `${label}: ${firstValue} now and ${lastValue} in year ${last.year}.`;
+  }
+  function renderPlan(summary) {
+    $("#home-workspace").hidden = true;
+    $("#portfolio-workspace").hidden = true;
+    $("#income-workspace").hidden = true;
+    $("#plan-workspace").hidden = false;
+    $("#asset-workspace").hidden = true;
+    setActiveNavigation("plan");
+    const plan = planProjection(summary);
+    const { assumptions, projection } = plan;
+    const points = state.planDataAvailable ? projection.points : [];
+    const finalPoint = points.at(-1);
+    const metricsLoading = state.providerMetricsPending.size > 0;
+    const unavailableText = !state.planDataAvailable
+      ? "Apply the latest private Plan schema migration to view this workspace."
+      : metricsLoading
+        ? "Loading current portfolio metrics…"
+        : "Set return and yield assumptions to view this projection.";
+    setText("#plan-current-value", displayCurrency(summary.totalMarketValueCents / 100));
+    setText("#plan-projected-value-label", `Projected in ${state.planHorizon} years`);
+    setText("#plan-projected-value", state.planDataAvailable && projection.available ? displayCurrency(finalPoint.investmentValueCents / 100) : metricsLoading ? "Loading…" : "Not set");
+    setText("#plan-projected-income", state.planDataAvailable && projection.available ? displayCurrency(finalPoint.projectedIncomeCents / 100) : metricsLoading ? "Loading…" : "Not set");
+    document.querySelectorAll("[data-plan-horizon]").forEach((control) => {
+      const active = Number(control.dataset.planHorizon) === state.planHorizon;
+      control.classList.toggle("is-active", active);
+      control.setAttribute("aria-selected", String(active));
+    });
+    renderPlanChart({ chartSelector: "#plan-value-chart", axisSelector: "#plan-value-axis", endpointsSelector: "#plan-value-endpoints", summarySelector: "#plan-value-summary", points, key: "investmentValueCents", label: "Projected investment value", unavailableText });
+    renderPlanChart({ chartSelector: "#plan-income-chart", axisSelector: "#plan-income-axis", endpointsSelector: "#plan-income-endpoints", summarySelector: "#plan-income-summary", points, key: "projectedIncomeCents", label: "Projected portfolio income", unavailableText });
+    setText("#plan-assumption-current-value", displayCurrency(summary.totalMarketValueCents / 100));
+    setText("#plan-assumption-contributions", `${displayCurrency(plan.annualContributionCents / 100)} / year`);
+    setText("#plan-assumption-return", Number.isFinite(assumptions.expectedAnnualReturnRate) ? percentage.format(assumptions.expectedAnnualReturnRate) : "Not set");
+    setText("#plan-assumption-yield", Number.isFinite(assumptions.distributionYieldRate) ? percentage.format(assumptions.distributionYieldRate) : metricsLoading ? "Loading…" : "Not set");
+    setText("#plan-assumption-policy", policyLabel(assumptions.distributionPolicy));
+    const missingReturn = !Number.isFinite(assumptions.expectedAnnualReturnRate);
+    const missingYield = !Number.isFinite(assumptions.distributionYieldRate);
+    setText("#plan-assumptions-status", !state.planDataAvailable
+      ? "Apply the latest private Plan schema migration to save assumptions and home details."
+      : projection.available ? "Plan-only overrides take precedence over Portfolio values."
+        : metricsLoading ? "Loading current Portfolio yield coverage."
+          : missingReturn && missingYield ? "Set a return and yield assumption to create a projection."
+            : missingReturn ? "Set a Base plan return assumption to create a projection."
+              : "Set a Base plan yield assumption to create a projection.");
+    $("#edit-plan-assumptions").disabled = !state.planDataAvailable;
+    document.querySelectorAll("[data-open-plan-assumptions]").forEach((button) => { button.disabled = !state.planDataAvailable; });
+    const property = homePropertyModel(state.homeProperty);
+    $("#plan-home-add").hidden = Boolean(property) || !state.planDataAvailable;
+    $("#plan-home-equity").hidden = !property;
+    if (property) {
+      setText("#plan-home-equity-value", displayCurrency(homeEquityCents(property) / 100));
+      $("#include-home-net-worth").checked = property.includeInNetWorth;
+    }
+  }
+
   function setDetailFormDisabled(disabled) {
     Array.from($("#asset-detail-form").elements).forEach((element) => { element.disabled = disabled; });
   }
@@ -613,6 +760,7 @@
     $("#home-workspace").hidden = true;
     $("#portfolio-workspace").hidden = true;
     $("#income-workspace").hidden = true;
+    $("#plan-workspace").hidden = true;
     $("#asset-workspace").hidden = false;
     setActiveNavigation("portfolio");
     $("#asset-not-found").hidden = Boolean(holding);
@@ -676,6 +824,7 @@
     if (routeAssetId()) renderAsset();
     else if (routePortfolio()) renderPortfolio(summary);
     else if (routeIncome()) renderIncome(summary);
+    else if (routePlan()) renderPlan(summary);
     else renderHome(summary);
     $("#main-content").setAttribute("aria-busy", "false");
   }
@@ -1050,13 +1199,128 @@
     }
   }
 
+  function openPlanAssumptionsDialog() {
+    if (!state.planDataAvailable) return;
+    const settings = planSettingsModel(state.planSettings);
+    const form = $("#plan-assumptions-form");
+    form.reset();
+    $("#plan-expected-return").value = settings?.expectedAnnualReturnRate === null || !settings
+      ? ""
+      : settings.expectedAnnualReturnRate * 100;
+    $("#plan-distribution-yield").value = settings?.distributionYieldRate === null || !settings
+      ? ""
+      : settings.distributionYieldRate * 100;
+    $("#plan-distribution-policy").value = settings?.distributionPolicy || "reinvest";
+    setText("#plan-assumptions-form-status", "");
+    $("#plan-assumptions-dialog").hidden = false;
+    $("#plan-assumptions-dialog").showModal();
+  }
+  function closePlanAssumptionsDialog() { $("#plan-assumptions-dialog").close(); }
+  async function savePlanAssumptions(event) {
+    event.preventDefault();
+    if (!state.account) return;
+    const save = $("#save-plan-assumptions");
+    try {
+      save.disabled = true;
+      save.textContent = "Saving…";
+      const settings = normalizePlanSettings({
+        accountId: state.account.id,
+        expectedAnnualReturnRate: rate(getFormValue($("#plan-assumptions-form"), "expectedAnnualReturn")),
+        distributionYieldRate: rate(getFormValue($("#plan-assumptions-form"), "distributionYield")),
+        distributionPolicy: getFormValue($("#plan-assumptions-form"), "distributionPolicy"),
+      });
+      const { data, error } = await state.client.from("plan_settings").upsert({
+        account_id: state.account.id,
+        expected_annual_return_rate: settings.expectedAnnualReturnRate,
+        distribution_yield_rate: settings.distributionYieldRate,
+        distribution_policy: settings.distributionPolicy,
+      }, { onConflict: "account_id" }).select().single();
+      if (error) throw error;
+      state.planSettings = data;
+      closePlanAssumptionsDialog();
+      render();
+    } catch (error) {
+      setText("#plan-assumptions-form-status", error.message || "The Base plan assumptions could not be saved.");
+    } finally {
+      save.disabled = false;
+      save.textContent = "Save";
+    }
+  }
+
+  function openHomePropertyDialog() {
+    if (!state.planDataAvailable) return;
+    const form = $("#home-property-form");
+    const property = homePropertyModel(state.homeProperty);
+    form.reset();
+    setText("#home-property-dialog-title", property ? "Edit home" : "Add home");
+    setText("#save-home-property", property ? "Save" : "Add");
+    setText("#home-property-form-status", "");
+    if (property) {
+      $("#home-current-value").value = (property.currentValueCents / 100).toFixed(2);
+      $("#home-mortgage-balance").value = (property.mortgageBalanceCents / 100).toFixed(2);
+      $("#home-appreciation-rate").value = property.annualAppreciationRate === null
+        ? ""
+        : property.annualAppreciationRate * 100;
+    }
+    $("#home-property-dialog").hidden = false;
+    $("#home-property-dialog").showModal();
+  }
+  function closeHomePropertyDialog() { $("#home-property-dialog").close(); }
+  async function saveHomeProperty(event) {
+    event.preventDefault();
+    if (!state.account) return;
+    const save = $("#save-home-property");
+    try {
+      save.disabled = true;
+      save.textContent = "Saving…";
+      const property = normalizeHomeProperty({
+        accountId: state.account.id,
+        currentValueCents: cents(getFormValue($("#home-property-form"), "currentValue")),
+        mortgageBalanceCents: cents(getFormValue($("#home-property-form"), "mortgageBalance")) ?? 0,
+        annualAppreciationRate: rate(getFormValue($("#home-property-form"), "annualAppreciationRate")),
+      });
+      const { data, error } = await state.client.from("home_properties").upsert({
+        account_id: state.account.id,
+        current_value_cents: property.currentValueCents,
+        mortgage_balance_cents: property.mortgageBalanceCents,
+        annual_appreciation_rate: property.annualAppreciationRate,
+        include_in_net_worth: homePropertyModel(state.homeProperty)?.includeInNetWorth || false,
+      }, { onConflict: "account_id" }).select().single();
+      if (error) throw error;
+      state.homeProperty = data;
+      closeHomePropertyDialog();
+      render();
+    } catch (error) {
+      setText("#home-property-form-status", error.message || "The home property could not be saved.");
+    } finally {
+      save.disabled = false;
+      save.textContent = state.homeProperty ? "Save" : "Add";
+    }
+  }
+  async function saveHomeNetWorthPreference() {
+    if (!state.account || !state.homeProperty) return;
+    try {
+      const { data, error } = await state.client.from("home_properties").update({
+        include_in_net_worth: $("#include-home-net-worth").checked,
+      }).eq("account_id", state.account.id).select().single();
+      if (error) throw error;
+      state.homeProperty = data;
+      render();
+    } catch (error) {
+      setText("#plan-assumptions-status", error.message || "The home preference could not be saved.");
+      render();
+    }
+  }
+
   async function loadData() {
-    const [accounts, holdings, quotes, snapshots, incomeSources] = await Promise.all([
+    const [accounts, holdings, quotes, snapshots, incomeSources, planSettings, homeProperty] = await Promise.all([
       state.client.from("accounts").select("*").order("created_at"),
       state.client.from("holdings").select("*").eq("account_id", state.account.id).order("created_at"),
       state.client.from("holding_quotes").select("*").order("as_of", { ascending: false }),
       state.client.from("portfolio_snapshots").select("*").eq("account_id", state.account.id).order("snapshot_date"),
       state.client.from("income_sources").select("*").eq("account_id", state.account.id).order("created_at"),
+      state.client.from("plan_settings").select("*").eq("account_id", state.account.id).maybeSingle(),
+      state.client.from("home_properties").select("*").eq("account_id", state.account.id).maybeSingle(),
     ]);
     if (accounts.error || holdings.error || quotes.error || snapshots.error) {
       throw accounts.error || holdings.error || quotes.error || snapshots.error;
@@ -1067,6 +1331,24 @@
     state.snapshots = snapshots.data || [];
     state.incomeSourcesAvailable = !incomeSources.error;
     state.incomeSources = incomeSources.data || [];
+    state.planDataAvailable = !planSettings.error && !homeProperty.error;
+    state.planSettings = planSettings.data || null;
+    state.homeProperty = homeProperty.data || null;
+    render();
+  }
+  async function ensurePlanSettings() {
+    if (!state.planDataAvailable || state.planSettings || !state.account) return;
+    const { data, error } = await state.client.from("plan_settings").upsert({
+      account_id: state.account.id,
+      distribution_policy: "reinvest",
+    }, { onConflict: "account_id" }).select().single();
+    if (error) {
+      state.planDataAvailable = false;
+      state.planSettings = null;
+      render();
+      return;
+    }
+    state.planSettings = data;
     render();
   }
   async function ensureAccount() {
@@ -1135,6 +1417,9 @@
     state.quotes = [];
     state.snapshots = [];
     state.incomeSources = [];
+    state.planSettings = null;
+    state.homeProperty = null;
+    state.planDataAvailable = false;
     $("#auth-panel").hidden = true;
     $("#home-workspace").hidden = false;
     setAccountMenuState("Private sync unavailable", false);
@@ -1159,6 +1444,7 @@
       setAccountMenuState(state.user.email, true);
       $("#home-workspace").hidden = false;
       await loadData();
+      await ensurePlanSettings();
       void hydrateProviderMetrics();
       setText("#data-status", "Private Brokerage account loaded.");
     } catch (error) {
@@ -1242,6 +1528,27 @@
       render();
     });
   });
+  document.querySelectorAll("[data-plan-horizon]").forEach((control) => {
+    control.addEventListener("click", () => {
+      state.planHorizon = Number(control.dataset.planHorizon);
+      render();
+    });
+  });
+  $("#edit-plan-assumptions").addEventListener("click", openPlanAssumptionsDialog);
+  document.querySelectorAll("[data-open-plan-assumptions]").forEach((control) => {
+    control.addEventListener("click", openPlanAssumptionsDialog);
+  });
+  $("#close-plan-assumptions-dialog").addEventListener("click", closePlanAssumptionsDialog);
+  $("#cancel-plan-assumptions").addEventListener("click", closePlanAssumptionsDialog);
+  $("#plan-assumptions-dialog").addEventListener("close", () => { $("#plan-assumptions-dialog").hidden = true; });
+  $("#plan-assumptions-form").addEventListener("submit", savePlanAssumptions);
+  $("#add-home-property").addEventListener("click", openHomePropertyDialog);
+  $("#edit-home-property").addEventListener("click", openHomePropertyDialog);
+  $("#close-home-property-dialog").addEventListener("click", closeHomePropertyDialog);
+  $("#cancel-home-property").addEventListener("click", closeHomePropertyDialog);
+  $("#home-property-dialog").addEventListener("close", () => { $("#home-property-dialog").hidden = true; });
+  $("#home-property-form").addEventListener("submit", saveHomeProperty);
+  $("#include-home-net-worth").addEventListener("change", saveHomeNetWorthPreference);
   $("#asset-back").addEventListener("click", navigateHome);
   $("#asset-cancel").addEventListener("click", renderAsset);
   $("#asset-detail-form").addEventListener("submit", saveAssetDetails);
