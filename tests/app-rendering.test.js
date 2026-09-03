@@ -58,8 +58,7 @@ test("Home follows the Figma composition with a focused Brokerage dashboard", ()
   assert.match(indexHtml, /class="acadia-card is-content is-dashboard-trend"/);
   assert.doesNotMatch(indexHtml, /--acadia-card-trend-height: 16rem/);
   assert.match(indexHtml, /id="holdings-count"/);
-  assert.match(indexHtml, /id="target-status"/);
-  assert.match(indexHtml, /Portfolio targets/);
+  assert.doesNotMatch(indexHtml, /id="target-status"|Portfolio targets/);
   assert.match(indexHtml, /--acadia-grid-columns: 4/);
   assert.doesNotMatch(indexHtml, /id="account-filter"/);
   assert.doesNotMatch(indexHtml, /Brokerage actions|Private workspace|refresh-quotes|refresh-history|export-data/);
@@ -116,9 +115,6 @@ test("Home uses genuine performance history, dynamic investment controls, and Ac
   assert.match(homeSource, /summarizePerformance/);
   assert.match(homeSource, /data-performance-period/);
   assert.match(homeSource, /control\.disabled = !hasHistory/);
-  assert.match(homeSource, /TARGET_ALLOCATION_TOLERANCE = 0\.02/);
-  assert.match(homeSource, /summarizeAllocationTargets/);
-  assert.match(homeSource, /renderTargetStatus/);
   assert.doesNotMatch(homeSource, /S&P 500/);
   assert.match(homeSource, /Recently updated/);
   assert.match(homeSource, /Last successful quote remains in place/);
@@ -145,12 +141,12 @@ test("large currency display values use the shared compact format", () => {
   assert.match(homeSource, /setText\("#asset-total-value", row \? displayCurrency/);
 });
 
-test("Home places target status after its four-card Investments preview", () => {
+test("Home leaves Portfolio target status to the Portfolio workspace", () => {
   const homeWorkspace = indexHtml.slice(
     indexHtml.indexOf('<section id="home-workspace"'),
     indexHtml.indexOf('<section id="portfolio-workspace"'),
   );
-  assert.ok(homeWorkspace.indexOf('id="holdings-grid"') < homeWorkspace.indexOf('id="target-status"'));
+  assert.doesNotMatch(homeWorkspace, /id="target-status"|Portfolio targets/);
 });
 
 test("holding cards use whole-dollar unit prices without rounding up", () => {
