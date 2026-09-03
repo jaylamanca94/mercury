@@ -8,6 +8,7 @@ const indexHtml = fs.readFileSync(path.join(root, "index.html"), "utf8");
 const styles = fs.readFileSync(path.join(root, "styles.css"), "utf8");
 const acadiaStyles = fs.readFileSync(path.join(root, "acadia.css"), "utf8");
 const homeSource = fs.readFileSync(path.join(root, "brokerage.js"), "utf8");
+const planSource = fs.readFileSync(path.join(root, "plan.js"), "utf8");
 
 test("Home consumes Acadia without a Mercury presentation layer", () => {
   assert.match(styles, /^@import url\("acadia\.css\?v=20260902-profile-syncopate-v1"\);/);
@@ -242,6 +243,8 @@ test("Plan is a separate Base-plan projection workspace with aligned portfolio c
   assert.match(homeSource, /state\.client\.from\("home_properties"\)/);
   assert.match(homeSource, /annualRecurringContributionCents/);
   assert.match(homeSource, /resolvePlanAssumptions/);
+  assert.match(planSource, /const planContract =/);
+  assert.doesNotMatch(planSource, /const exported =/);
 });
 
 test("the quick add dialog keeps manual recovery out of the initial path", () => {

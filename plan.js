@@ -143,7 +143,7 @@ function projectPortfolio({
   return Object.freeze({ available: true, effectiveGrowthRate, points: Object.freeze(points) });
 }
 
-const exported = {
+const planContract = {
   PLAN_CONTRIBUTION_FREQUENCIES,
   PLAN_DISTRIBUTION_POLICIES,
   PLAN_HORIZONS,
@@ -156,5 +156,5 @@ const exported = {
   resolvePlanAssumptions,
 };
 
-if (typeof module !== "undefined") module.exports = exported;
-if (typeof window !== "undefined") window.MercuryPlan = exported;
+if (typeof module !== "undefined") module.exports = planContract;
+if (typeof window !== "undefined") window.MercuryPlan = planContract;
