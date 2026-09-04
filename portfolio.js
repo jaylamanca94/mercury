@@ -97,6 +97,12 @@ function optionalShares(value) {
   return value;
 }
 
+function optionalBoolean(value, field, fallback = false) {
+  if (value === undefined || value === null) return fallback;
+  if (typeof value !== "boolean") validationError(field, "must be true or false");
+  return value;
+}
+
 function normalizePolicy(value, field) {
   if (value === undefined || value === null || value === "") return null;
   if (!DISTRIBUTION_POLICIES.includes(value)) {
@@ -116,6 +122,47 @@ function optionalDate(value, field) {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) validationError(field, "must be an ISO date or timestamp");
   return date.toISOString();
+}
+
+function normalizeContributionPlan(amount, frequency = "weekly") {
+  if (amount === undefined || amount === null || amount === "") {
+    return { contributionCents: null, contributionFrequency: null };
+  }
+  const numericAmount = Number(amount);
+  const unroundedCents = numericAmount * 100;
+  const contributionCents = Math.round(unroundedCents);
+  if (
+    !Number.isFinite(numericAmount)
+    || numericAmount < 0
+    || !Number.isSafeInteger(contributionCents)
+    || Math.abs(unroundedCents - contributionCents) > 0.000001
+  ) {
+    validationError("contribution", "must be a non-negative dollar amount in whole cents");
+  }
+  return {
+    contributionCents,
+    contributionFrequency: normalizeChoice(
+      frequency,
+      "contributionFrequency",
+      CONTRIBUTION_FREQUENCIES,
+      null,
+    ),
+  };
+}
+
+function calculateQuotePreviewValueCents(shares, priceCents) {
+  const numericShares = Number(shares);
+  if (
+    shares === undefined
+    || shares === null
+    || shares === ""
+    || !Number.isFinite(numericShares)
+    || numericShares < 0
+    || !Number.isSafeInteger(priceCents)
+    || priceCents < 0
+  ) return null;
+  const valueCents = Math.round(numericShares * priceCents);
+  return Number.isSafeInteger(valueCents) ? valueCents : null;
 }
 
 function normalizeAsset(input) {
@@ -170,6 +217,7 @@ function normalizeAsset(input) {
     distributionYieldRate: optionalRate(input.distributionYieldRate, "distributionYieldRate"),
     targetAllocationRate: optionalRate(input.targetAllocationRate, "targetAllocationRate"),
     weeklyContributionRate: optionalRate(input.weeklyContributionRate, "weeklyContributionRate"),
+    isRetirement: optionalBoolean(input.isRetirement, "isRetirement"),
     contributionCents: optionalMoney(input.contributionCents, "contributionCents"),
     contributionFrequency: input.contributionFrequency === undefined || input.contributionFrequency === null || input.contributionFrequency === ""
       ? null
@@ -456,9 +504,11 @@ const portfolioContract = {
   PERFORMANCE_PERIODS,
   PortfolioValidationError,
   VALUATION_BASES,
+  calculateQuotePreviewValueCents,
   calculateAsset,
   marketValueCents,
   normalizeAsset,
+  normalizeContributionPlan,
   performanceSnapshots,
   summarizeAllocationTargets,
   summarizePortfolio,

@@ -4,6 +4,8 @@
   const {
     PERFORMANCE_PERIODS,
     VALUATION_BASES,
+    calculateQuotePreviewValueCents,
+    normalizeContributionPlan,
     summarizePerformance,
     summarizePortfolio,
   } = window.MercuryPortfolio;
@@ -36,7 +38,7 @@
   const percentage = new Intl.NumberFormat("en-US", { style: "percent", maximumFractionDigits: 2 });
   const state = {
     client: null, user: null, account: null, accounts: [], holdings: [], quotes: [], snapshots: [], incomeSources: [], incomeSourcesAvailable: true, planSettings: null, properties: [], propertiesAvailable: true, planDataAvailable: true,
-    providerMetrics: {}, providerMetricsPending: new Set(), configured: false, pendingQuote: null, quoteTimer: null, holdingFilter: "all", holdingSort: "value", portfolioFilter: "all", portfolioSort: "value", propertySort: "value", performancePeriod: "all", incomePeriod: "year", incomeDividendSort: "value", planHorizon: 10, incomeSourceDialogId: null, incomeSourceDeleteId: null, propertyDialogId: null, propertyDeleteId: null,
+    providerMetrics: {}, providerMetricsPending: new Set(), configured: false, pendingQuote: null, quoteTimer: null, quoteRequestId: 0, holdingFilter: "all", holdingSort: "value", portfolioFilter: "all", portfolioSort: "value", propertySort: "value", performancePeriod: "all", incomePeriod: "year", incomeDividendSort: "value", planHorizon: 10, incomeSourceDialogId: null, incomeSourceDeleteId: null, propertyDialogId: null, propertyDeleteId: null,
   };
 
   function cents(value) {
@@ -166,6 +168,7 @@
       distributionYieldRate: holding.distribution_yield_rate === null ? null : Number(holding.distribution_yield_rate),
       targetAllocationRate: holding.target_allocation_rate === null ? null : Number(holding.target_allocation_rate),
       weeklyContributionRate: holding.weekly_contribution_rate === null ? null : Number(holding.weekly_contribution_rate),
+      isRetirement: holding.is_retirement === true,
       contributionCents: holding.contribution_cents,
       contributionFrequency: holding.contribution_frequency,
       dividendPolicy: holding.dividend_policy,
@@ -367,7 +370,8 @@
     return summary.rows.filter((row) => {
       const matchesFilter = state.portfolioFilter === "all"
         || state.portfolioFilter === "brokerage"
-        || (state.portfolioFilter === "crypto" && row.asset.instrumentType === "crypto");
+        || (state.portfolioFilter === "crypto" && row.asset.instrumentType === "crypto")
+        || (state.portfolioFilter === "retirement" && row.asset.isRetirement);
       const matchesSearch = `${row.asset.symbol || ""} ${row.asset.name || ""} ${row.asset.instrumentType}`.toLowerCase().includes(search);
       return matchesFilter && matchesSearch;
     });
@@ -831,6 +835,7 @@
     setValue("#asset-detail-shares", holding.shares);
     setValue("#asset-detail-contribution", holding.contribution_cents === null ? null : Number(holding.contribution_cents) / 100);
     setValue("#asset-detail-frequency", holding.contribution_frequency);
+    $("#asset-detail-retirement").checked = holding.is_retirement === true;
     setValue("#asset-detail-dividend-policy", holding.dividend_policy);
     setValue("#asset-detail-gains-policy", holding.capital_gains_policy);
     setValue("#asset-detail-name", holding.name);
@@ -872,11 +877,45 @@
     $("#manual-price-field").hidden = manual;
     $("#manual-value-field").hidden = !manual;
     $("#asset-shares").required = !manual;
+    renderQuickQuotePreview();
+  }
+  function setQuickAddStatus(message, { quiet = false } = {}) {
+    const status = $("#quote-form-status");
+    status.textContent = message || "";
+    status.hidden = !message;
+    status.classList.toggle("acadia-sr-only", Boolean(message) && quiet);
+  }
+  function quickPreviewPriceCents() {
+    if (state.pendingQuote) return state.pendingQuote.priceCents;
+    const manualPriceCents = cents(getFormValue($("#asset-form"), "manualPrice"));
+    return Number.isSafeInteger(manualPriceCents) && manualPriceCents >= 0 ? manualPriceCents : null;
+  }
+  function renderQuickQuotePreview() {
+    if (manualValuation()) {
+      const manualValueCents = cents(getFormValue($("#asset-form"), "manualValue"));
+      setText("#asset-price-preview", "—");
+      setText(
+        "#asset-value-preview",
+        Number.isSafeInteger(manualValueCents) && manualValueCents >= 0
+          ? displayCurrency(manualValueCents / 100)
+          : "—",
+      );
+      return;
+    }
+    const priceCents = quickPreviewPriceCents();
+    const valueCents = calculateQuotePreviewValueCents($("#asset-shares").value, priceCents);
+    setText("#asset-price-preview", priceCents === null ? "—" : displayCurrency(priceCents / 100));
+    setText("#asset-value-preview", valueCents === null ? "—" : displayCurrency(valueCents / 100));
+  }
+  function invalidateQuickQuote() {
+    state.quoteRequestId += 1;
+    state.pendingQuote = null;
+    renderQuickQuotePreview();
   }
   function showManualFallback(message) {
     $("#manual-fallback").hidden = false;
     syncQuickValuationFields();
-    if (message) setText("#quote-form-status", message);
+    if (message) setQuickAddStatus(message);
   }
   function clearManualFallback() {
     $("#manual-fallback").hidden = true;
@@ -886,12 +925,13 @@
   function openQuickAdd() {
     const form = $("#asset-form");
     form.reset();
-    state.pendingQuote = null;
+    clearTimeout(state.quoteTimer);
+    invalidateQuickQuote();
     clearManualFallback();
-    setText("#quote-form-status", "");
+    setQuickAddStatus("");
     syncQuickValuationFields();
-    $("#asset-dialog").hidden = false;
     $("#asset-dialog").showModal();
+    $("#asset-symbol").focus();
   }
 
   async function sessionToken() {
@@ -915,27 +955,52 @@
   }
   async function lookupQuote({ revealFallback = false } = {}) {
     if (!canQuote()) return null;
-    setText("#quote-form-status", "Looking up price…");
+    const requestId = ++state.quoteRequestId;
+    const requestedSymbol = $("#asset-symbol").value.trim().toUpperCase();
+    setQuickAddStatus("Looking up price…");
     try {
-      state.pendingQuote = await requestQuote($("#asset-symbol").value.trim());
-      setText("#quote-form-status", `${preciseCurrency.format(state.pendingQuote.priceCents / 100)} from ${state.pendingQuote.source}. As of ${dateLabel(state.pendingQuote.asOf)}.`);
-      return state.pendingQuote;
+      const quote = await requestQuote(requestedSymbol);
+      if (
+        requestId !== state.quoteRequestId
+        || requestedSymbol !== $("#asset-symbol").value.trim().toUpperCase()
+      ) return null;
+      state.pendingQuote = quote;
+      renderQuickQuotePreview();
+      setQuickAddStatus(
+        `${preciseCurrency.format(quote.priceCents / 100)} from ${quote.source}. As of ${dateLabel(quote.asOf)}.`,
+        { quiet: true },
+      );
+      return quote;
     } catch (error) {
+      if (requestId !== state.quoteRequestId) return null;
       state.pendingQuote = null;
+      renderQuickQuotePreview();
       const message = `${error.message} Enter a manual authoritative price or total value.`;
       if (revealFallback) showManualFallback(message);
-      else setText("#quote-form-status", message);
+      else setQuickAddStatus(message);
       return null;
     }
   }
-  function scheduleQuote() {
+  function scheduleQuote({ preserveQuote = false } = {}) {
     clearTimeout(state.quoteTimer);
+    if (!preserveQuote) {
+      invalidateQuickQuote();
+      clearManualFallback();
+      setQuickAddStatus("");
+    } else {
+      renderQuickQuotePreview();
+    }
+    if (state.pendingQuote) return;
     if (!canQuote()) return;
     state.quoteTimer = setTimeout(() => lookupQuote(), 450);
   }
   function quickHolding() {
     const form = $("#asset-form");
     const isManualValue = manualValuation();
+    const contributionPlan = normalizeContributionPlan(
+      getFormValue(form, "contribution"),
+      getFormValue(form, "contributionFrequency"),
+    );
     const holding = {
       id: crypto.randomUUID(),
       account_id: state.account.id,
@@ -951,8 +1016,9 @@
       distribution_yield_rate: null,
       target_allocation_rate: null,
       weekly_contribution_rate: null,
-      contribution_cents: null,
-      contribution_frequency: null,
+      is_retirement: $("#asset-retirement").checked,
+      contribution_cents: contributionPlan.contributionCents,
+      contribution_frequency: contributionPlan.contributionFrequency,
       dividend_policy: null,
       capital_gains_policy: null,
       custom_policy_note: null,
@@ -991,7 +1057,7 @@
       setText("#data-status", "Saved to your private Brokerage account.");
       navigateToAsset(holding.id);
     } catch (error) {
-      setText("#quote-form-status", error.message || "This asset could not be saved.");
+      setQuickAddStatus(error.message || "This asset could not be saved.");
     } finally {
       save.disabled = false;
       save.textContent = "Add";
@@ -1027,6 +1093,7 @@
       distribution_yield_rate: rate(getFormValue(form, "distributionYield")),
       target_allocation_rate: rate(getFormValue(form, "targetAllocation")),
       weekly_contribution_rate: rate(getFormValue(form, "weeklyAllocation")),
+      is_retirement: $("#asset-detail-retirement").checked,
       contribution_cents: contributionCents,
       contribution_frequency: contributionFrequency,
       dividend_policy: dividendPolicy,
@@ -1528,11 +1595,16 @@
   $("#portfolio-add-asset").addEventListener("click", openQuickAdd);
   $("#close-dialog").addEventListener("click", () => $("#asset-dialog").close());
   $("#cancel-dialog").addEventListener("click", () => $("#asset-dialog").close());
-  $("#asset-dialog").addEventListener("close", () => { $("#asset-dialog").hidden = true; });
+  $("#asset-dialog").addEventListener("close", () => {
+    clearTimeout(state.quoteTimer);
+    state.quoteRequestId += 1;
+  });
   $("#asset-form").addEventListener("submit", saveQuickAsset);
   $("#asset-valuation-basis").addEventListener("change", syncQuickValuationFields);
-  $("#asset-symbol").addEventListener("input", scheduleQuote);
-  $("#asset-shares").addEventListener("input", scheduleQuote);
+  $("#asset-symbol").addEventListener("input", () => scheduleQuote());
+  $("#asset-shares").addEventListener("input", () => scheduleQuote({ preserveQuote: true }));
+  $("#asset-manual-price").addEventListener("input", renderQuickQuotePreview);
+  $("#asset-manual-value").addEventListener("input", renderQuickQuotePreview);
   $("#holding-search").addEventListener("input", render);
   $("#portfolio-search").addEventListener("input", render);
   $("#income-search").addEventListener("input", render);

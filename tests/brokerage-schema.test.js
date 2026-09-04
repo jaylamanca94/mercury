@@ -27,6 +27,10 @@ const propertyMigration = fs.readFileSync(
   path.join(__dirname, "..", "supabase", "migrations", "20260903_property_portfolio.sql"),
   "utf8",
 );
+const retirementMigration = fs.readFileSync(
+  path.join(__dirname, "..", "supabase", "migrations", "20260903202800_retirement_holdings.sql"),
+  "utf8",
+);
 
 test("the Brokerage schema keeps valuation bases explicit and supports the requested instruments", () => {
   assert.match(migration, /instrument_type in \('mutual-fund', 'etf', 'stock', 'crypto', 'cash', 'other'\)/);
@@ -48,6 +52,12 @@ test("the Asset page contribution migration is idempotent and remains on owner-s
   assert.match(contributionMigration, /add column if not exists contribution_cents bigint/);
   assert.match(contributionMigration, /contribution_frequency text check \(contribution_frequency in \('weekly', 'monthly'\)\)/);
   assert.match(contributionMigration, /holdings_contribution_requires_frequency/);
+  assert.match(migration, /Owners manage their brokerage holdings/);
+});
+
+test("retirement classification is idempotent and defaults existing holdings to false", () => {
+  assert.match(retirementMigration, /alter table public\.holdings/);
+  assert.match(retirementMigration, /add column if not exists is_retirement boolean not null default false/);
   assert.match(migration, /Owners manage their brokerage holdings/);
 });
 

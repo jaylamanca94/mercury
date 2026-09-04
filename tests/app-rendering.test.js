@@ -11,7 +11,7 @@ const homeSource = fs.readFileSync(path.join(root, "brokerage.js"), "utf8");
 const planSource = fs.readFileSync(path.join(root, "plan.js"), "utf8");
 
 test("Home consumes Acadia without a Mercury presentation layer", () => {
-  assert.match(styles, /^@import url\("acadia\.css\?v=20260902-profile-syncopate-v1"\);/);
+  assert.match(styles, /^@import url\("acadia\.css\?v=20260903-add-asset-v4"\);/);
   assert.match(acadiaStyles, /\.acadia-responsive-navbar/);
   assert.match(acadiaStyles, /\.acadia-card\.is-content/);
   assert.match(acadiaStyles, /\.acadia-dialog\.is-form-modal/);
@@ -232,7 +232,7 @@ test("Plan is a separate Base-plan projection workspace with aligned portfolio c
   assert.match(indexHtml, /id="plan-assumptions-dialog"/);
   assert.match(indexHtml, /id="property-dialog"/);
   assert.match(indexHtml, /<script src="plan\.js\?v=20260903-property-v1"><\/script>/);
-  assert.match(indexHtml, /<script src="brokerage\.js\?v=20260903-property-v1"><\/script>/);
+  assert.match(indexHtml, /<script src="brokerage\.js\?v=20260903-add-asset-v4"><\/script>/);
   assert.match(homeSource, /function routePlan\(\)/);
   assert.match(homeSource, /function renderPlan\(summary\)/);
   assert.match(homeSource, /function renderPlanChart/);
@@ -244,12 +244,36 @@ test("Plan is a separate Base-plan projection workspace with aligned portfolio c
   assert.doesNotMatch(planSource, /const exported =/);
 });
 
-test("the quick add dialog keeps manual recovery out of the initial path", () => {
+test("the quick add dialog matches the compact Figma flow and keeps manual recovery secondary", () => {
+  assert.match(indexHtml, /id="asset-dialog" class="acadia-dialog is-form-modal is-compact"/);
+  assert.match(acadiaStyles, /\.acadia-dialog\.is-form-modal:not\(\[open\]\) \{\s*display: none;/);
   assert.match(indexHtml, /id="asset-symbol"/);
+  assert.match(indexHtml, /id="asset-symbol"[^>]*autofocus/);
   assert.match(indexHtml, /id="asset-shares"/);
-  assert.match(indexHtml, /id="manual-fallback" hidden/);
+  assert.match(indexHtml, /id="asset-quote-preview"/);
+  assert.match(indexHtml, /id="asset-price-preview"/);
+  assert.match(indexHtml, /id="asset-value-preview"/);
+  assert.match(indexHtml, /id="asset-recurring" name="contribution"/);
+  assert.match(indexHtml, /class="acadia-control-leading-affix"[^>]*>\$<\/span>/);
+  assert.match(indexHtml, /id="asset-frequency" name="contributionFrequency"/);
+  assert.match(indexHtml, /class="acadia-choice acadia-dialog-choice"/);
+  assert.match(indexHtml, /id="asset-retirement" name="isRetirement" type="checkbox"/);
+  assert.doesNotMatch(indexHtml, /id="asset-dialog-description"/);
+  assert.match(indexHtml, /id="manual-fallback"[^>]* hidden/);
+  assert.match(acadiaStyles, /\.acadia-dialog\.is-form-modal\.is-compact[\s\S]*padding: calc\(2rem - 1px\);[\s\S]*width: min\(35rem/);
+  assert.match(acadiaStyles, /\.acadia-read-only-grid[\s\S]*grid-template-columns: repeat\(2/);
+  assert.match(acadiaStyles, /\.acadia-dialog-field-grid,\s*\.acadia-read-only-grid \{\s*grid-template-columns: 1fr;/);
+  assert.match(acadiaStyles, /\.acadia-dialog-choice[\s\S]*width: calc\(\(100% - 1\.5rem\) \/ 2\)/);
+  assert.match(acadiaStyles, /@media[\s\S]*\.acadia-dialog-choice \{\s*width: 100%;/);
   assert.match(homeSource, /scheduleQuote/);
   assert.match(homeSource, /showManualFallback/);
+  assert.match(homeSource, /requestId !== state\.quoteRequestId/);
+  assert.match(homeSource, /setQuickAddStatus\(error\.message \|\| "This asset could not be saved\."\)/);
+  assert.match(homeSource, /normalizeContributionPlan/);
+  assert.match(homeSource, /calculateQuotePreviewValueCents/);
+  assert.match(indexHtml, /<script src="portfolio\.js\?v=20260903-add-asset-v4"><\/script>/);
+  assert.match(homeSource, /is_retirement: \$\("#asset-retirement"\)\.checked/);
+  assert.match(homeSource, /\$\("#asset-symbol"\)\.focus\(\)/);
   assert.match(homeSource, /Edit details/);
 });
 
@@ -268,7 +292,8 @@ test("Home never falls back to fabricated assets and Portfolio is a functional r
   assert.match(indexHtml, /data-portfolio-filter="all"/);
   assert.match(indexHtml, /data-portfolio-filter="brokerage"/);
   assert.match(indexHtml, /data-portfolio-filter="crypto"/);
-  assert.match(indexHtml, /data-portfolio-filter="retirement"[^>]*disabled/);
+  assert.match(indexHtml, /data-portfolio-filter="retirement" aria-pressed="false"/);
+  assert.doesNotMatch(indexHtml, /data-portfolio-filter="retirement"[^>]*(?:disabled|aria-disabled)/);
   assert.match(indexHtml, /id="portfolio-holdings-grid"/);
   assert.match(indexHtml, /id="portfolio-add-property"/);
   assert.match(indexHtml, /id="portfolio-property-sort"/);
@@ -278,6 +303,7 @@ test("Home never falls back to fabricated assets and Portfolio is a functional r
   assert.match(homeSource, /portfolioFilter/);
   assert.match(homeSource, /portfolioSort/);
   assert.match(homeSource, /matchingPortfolioHoldingRows/);
+  assert.match(homeSource, /state\.portfolioFilter === "retirement" && row\.asset\.isRetirement/);
   assert.match(homeSource, /renderPortfolioHoldings/);
   assert.match(homeSource, /function renderProperties\(\)/);
   assert.match(homeSource, /function saveProperty\(event\)/);
@@ -292,12 +318,15 @@ test("Home never falls back to fabricated assets and Portfolio is a functional r
 test("the Asset page uses Acadia primary details and an advanced disclosure", () => {
   assert.match(indexHtml, /id="asset-detail-contribution"/);
   assert.match(indexHtml, /id="asset-detail-frequency"/);
+  assert.match(indexHtml, /id="asset-detail-retirement" name="isRetirement" type="checkbox"/);
   assert.match(indexHtml, /id="asset-detail-dividend-policy"/);
   assert.match(indexHtml, /id="asset-detail-gains-policy"/);
   assert.match(indexHtml, /class="acadia-accordion-item"/);
   assert.match(indexHtml, />More details</);
   assert.match(homeSource, /contribution_cents/);
   assert.match(homeSource, /contribution_frequency/);
+  assert.match(homeSource, /\$\("#asset-detail-retirement"\)\.checked = holding\.is_retirement === true/);
+  assert.match(homeSource, /is_retirement: \$\("#asset-detail-retirement"\)\.checked/);
 });
 
 test("an owner can delete an asset only after an explicit Acadia confirmation", () => {

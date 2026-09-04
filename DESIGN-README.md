@@ -12,7 +12,8 @@ Use this file as the visual and interaction source of truth for Mercury. Keep th
 - Home presents the sole Brokerage account directly. Do not show pretend account data or call Brokerage-only value "net worth".
 - Performance renders only persisted daily snapshots. It uses the Acadia Card Trend presentation with a textual alternative; absent history uses Acadia's explicit empty state. Do not add Figma's decorative comparison line or performance percentage without a stored source.
 - Investments holds the Add asset action, Acadia sort menu, and dynamic instrument filters. Filter labels derive only from present Brokerage holdings; they never advertise future account modules.
-- The quick Add asset dialog is limited to Symbol and Shares. Advanced details and manual valuation recovery remain hidden until genuinely required.
+- Figma node `82:1593` defines the compact Add asset dialog: Symbol and Shares lead, live Price and Value are read-only, optional Recurring/Frequency fields save the holding's contribution plan, and the approved screenshot addendum places a Retirement choice directly beneath them. Advanced details remain on Asset detail, while manual valuation recovery stays hidden until automatic pricing fails.
+- Retirement is an editable per-holding classification inside the sole Brokerage account. Its Portfolio filter is active and may overlap instrument filters such as Crypto; it does not introduce a separate account or change calculations.
 - Asset detail uses the Figma hierarchy of Back, asset identity, summary metrics, investment profile, and a primary Details form. Its advanced fields live in Acadia Accordion disclosure; do not create a Mercury-specific details panel.
 - Home has no sample-data state. A missing private configuration presents an empty disabled workspace; any displayed holding, quote, or history point must be persisted owner data.
 

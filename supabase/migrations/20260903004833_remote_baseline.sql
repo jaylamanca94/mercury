@@ -1,0 +1,2 @@
+-- Matches the existing Mercury remote migration-history baseline.
+-- The schema it represents remains reproducible from the earlier repository migrations.

@@ -4985,6 +4985,25 @@ select.acadia-control {
   transform: translateY(-50%);
 }
 
+.acadia-control-affix-shell {
+  min-width: 0;
+  position: relative;
+}
+
+.acadia-control-leading-affix {
+  color: var(--acadia-color-control-placeholder);
+  inset-inline-start: 1rem;
+  pointer-events: none;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 1;
+}
+
+.acadia-control.has-leading-affix {
+  padding-inline-start: 1.625rem;
+}
+
 .acadia-lookup {
   align-content: start;
   display: grid;
@@ -8412,6 +8431,10 @@ select.acadia-control {
   background: rgba(15, 23, 42, 0.34);
 }
 
+.acadia-dialog.is-form-modal:not([open]) {
+  display: none;
+}
+
 .acadia-dialog-header,
 .acadia-dialog-body,
 .acadia-dialog-footer {
@@ -8493,6 +8516,84 @@ select.acadia-control {
   width: 100%;
 }
 
+/* Figma node 82:1593: compact form modal composition. The modifier keeps the
+   tighter 560px treatment opt-in so existing Acadia form dialogs do not move. */
+.acadia-dialog.is-form-modal.is-compact {
+  box-sizing: border-box;
+  height: fit-content;
+  padding: calc(2rem - 1px);
+  width: min(35rem, calc(100vw - 2rem));
+}
+
+.acadia-dialog.is-form-modal.is-compact .acadia-dialog-header {
+  min-height: 1.625rem;
+  position: relative;
+}
+
+.acadia-dialog.is-form-modal.is-compact .acadia-dialog-close {
+  --acadia-icon-action-size: var(--acadia-target-size-compact);
+  --acadia-icon-action-glyph-size: 1rem;
+  inset-block-start: -0.4375rem;
+  inset-inline-end: -0.75rem;
+  margin: 0;
+  position: absolute;
+}
+
+.acadia-dialog.is-form-modal.is-compact .acadia-control {
+  min-height: var(--acadia-target-size-compact);
+  padding-block: calc(0.5rem - 1px);
+}
+
+.acadia-dialog-content-stack,
+.acadia-dialog-recovery {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.acadia-dialog-choice {
+  align-items: center;
+  box-sizing: border-box;
+  min-height: 3rem;
+  padding-block: 0.625rem;
+  width: calc((100% - 1.5rem) / 2);
+}
+
+.acadia-dialog-choice input {
+  margin-top: 0;
+}
+
+.acadia-choice-copy.is-label-only span {
+  color: var(--acadia-color-text);
+  font-size: var(--acadia-type-size-body);
+  line-height: 1.25;
+}
+
+.acadia-read-only-grid {
+  align-items: start;
+  display: grid;
+  gap: 1.5rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.acadia-read-only {
+  display: grid;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+.acadia-read-only-label {
+  color: var(--acadia-field-label-color);
+  font-size: var(--acadia-type-size-body);
+  line-height: normal;
+}
+
+.acadia-read-only-value {
+  color: var(--acadia-color-text);
+  font-size: var(--acadia-type-size-lead);
+  font-weight: 700;
+  line-height: normal;
+}
+
 .acadia-dialog-field-grid {
   align-items: start;
   display: grid;
@@ -8510,6 +8611,18 @@ select.acadia-control {
 .acadia-dialog-actions > .acadia-button {
   flex: 1 1 0;
   min-width: 0;
+}
+
+.acadia-dialog.is-form-modal.is-compact .acadia-dialog-actions {
+  justify-content: space-between;
+}
+
+.acadia-dialog.is-form-modal.is-compact .acadia-dialog-actions > .acadia-button {
+  box-sizing: border-box;
+  flex: 0 0 auto;
+  height: var(--acadia-target-size-compact);
+  min-height: var(--acadia-target-size-compact);
+  padding-block: calc(0.5rem - 1px);
 }
 
 .acadia-sheet {
@@ -10354,13 +10467,28 @@ button.acadia-profile-row:focus-visible {
     padding: var(--acadia-section-padding-mobile);
   }
 
-  .acadia-dialog-field-grid {
+  .acadia-dialog.is-form-modal.is-compact {
+    padding: var(--acadia-section-padding-mobile);
+  }
+
+  .acadia-dialog-field-grid,
+  .acadia-read-only-grid {
     grid-template-columns: 1fr;
+  }
+
+  .acadia-dialog-choice {
+    width: 100%;
   }
 
   .acadia-dialog.is-form-modal .acadia-dialog-close {
     --acadia-icon-action-size: var(--acadia-target-size-touch);
     margin: 0;
+  }
+
+  .acadia-dialog.is-form-modal.is-compact .acadia-dialog-close {
+    --acadia-icon-action-size: var(--acadia-target-size-touch);
+    inset-block-start: -0.5625rem;
+    inset-inline-end: -0.625rem;
   }
 
   .acadia-field-grid {

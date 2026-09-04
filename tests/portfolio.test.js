@@ -8,8 +8,10 @@ const {
   INSTRUMENT_TYPES,
   PERFORMANCE_PERIODS,
   VALUATION_BASES,
+  calculateQuotePreviewValueCents,
   calculateAsset,
   normalizeAsset,
+  normalizeContributionPlan,
   performanceSnapshots,
   summarizeAllocationTargets,
   summarizePortfolio,
@@ -106,6 +108,42 @@ test("an asset keeps a dollar contribution distinct from weekly allocation", () 
     () => normalizeAsset({ ...baseAsset, contributionCents: 10_000 }),
     /contributionFrequency is required/,
   );
+});
+
+test("assets keep an explicit retirement classification with a safe default", () => {
+  assert.equal(normalizeAsset(baseAsset).isRetirement, false);
+  assert.equal(normalizeAsset({ ...baseAsset, isRetirement: true }).isRetirement, true);
+  assert.throws(
+    () => normalizeAsset({ ...baseAsset, isRetirement: "true" }),
+    /isRetirement must be true or false/,
+  );
+});
+
+test("quick add normalises an optional recurring contribution without saving an orphan cadence", () => {
+  assert.deepEqual(normalizeContributionPlan("", "weekly"), {
+    contributionCents: null,
+    contributionFrequency: null,
+  });
+  assert.deepEqual(normalizeContributionPlan("100.25", "monthly"), {
+    contributionCents: 10_025,
+    contributionFrequency: "monthly",
+  });
+  assert.throws(
+    () => normalizeContributionPlan("100.001", "weekly"),
+    /whole cents/,
+  );
+  assert.throws(
+    () => normalizeContributionPlan("100", ""),
+    /contributionFrequency/,
+  );
+});
+
+test("quick add calculates a cent-safe quote preview only from valid shares and price", () => {
+  assert.equal(calculateQuotePreviewValueCents("417", 71_300), 29_732_100);
+  assert.equal(calculateQuotePreviewValueCents("0.125", 6_500_000), 812_500);
+  assert.equal(calculateQuotePreviewValueCents("", 71_300), null);
+  assert.equal(calculateQuotePreviewValueCents("invalid", 71_300), null);
+  assert.equal(calculateQuotePreviewValueCents("417", null), null);
 });
 
 test("portfolio summaries calculate allocation, income, contribution, and complete day movement", () => {
