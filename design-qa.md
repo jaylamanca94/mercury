@@ -1,57 +1,31 @@
-# Portfolio Cards and Table Views — Design QA
+# Portfolio Header Spacing — Design QA
 
 ## Evidence
 
-- Source visual truth:
-  - `/var/folders/bw/21lzcjwj7rlfsqtjbtn56vbm0000gn/T/TemporaryItems/NSIRD_screencaptureui_NyxJtw/Screenshot 2026-09-04 at 12.54.26 PM.png` — Mercury Portfolio composition, 3024 × 1898 pixels.
-  - `/var/folders/bw/21lzcjwj7rlfsqtjbtn56vbm0000gn/T/TemporaryItems/NSIRD_screencaptureui_1Qwi2A/Screenshot 2026-09-04 at 12.54.36 PM.png` — Acadia Table pattern, 3024 × 1898 pixels.
-  - `/var/folders/bw/21lzcjwj7rlfsqtjbtn56vbm0000gn/T/TemporaryItems/NSIRD_screencaptureui_5EKboC/Screenshot 2026-09-04 at 12.54.45 PM.png` — Acadia Tabs component, 3024 × 1898 pixels.
-- Browser-rendered implementation:
-  - `http://127.0.0.1:4199/?portfolio-view=20260904-v2#portfolio` — actual local Mercury route, dark theme, desktop in-app Browser capture; local Supabase was unavailable, so this was the genuine empty state.
-  - `http://127.0.0.1:4200/` — temporary focused QA rendering of the production Table markup and CSS with representative holdings matching the supplied state.
-  - `http://127.0.0.1:4200/mobile-frame.html?v=2` — temporary focused rendering at an explicitly measured 390 CSS px inner viewport.
-- The in-app Browser exposes captures inline rather than as filesystem screenshot files. Desktop captures were reviewed at the Browser's 1280 × 720 canvas. The mobile frame measured `clientWidth: 390` and `scrollWidth: 390`; no horizontal overflow was present. Device pixel density was not exposed, so comparisons used CSS dimensions and component-level normalization rather than pixel-density assertions.
+- Figma source: Mercury node `110:7662` (`Mercury / Portfolio - Macbook 14'`). Design context defines the Header as a vertical stack with a 24px gap and the following content container with `padding-top: 24px`.
+- Annotated reference: `/var/folders/bw/21lzcjwj7rlfsqtjbtn56vbm0000gn/T/TemporaryItems/NSIRD_screencaptureui_SAw7wk/Screenshot 2026-09-04 at 2.25.14 PM.png`.
+- Browser-rendered implementation: `http://127.0.0.1:4317/?portfolio-spacing=20260904-v1#portfolio`, checked in the Codex in-app Browser in light and dark themes.
+- The local Supabase environment was unavailable, so the browser showed Mercury's genuine empty state. The corrected geometry applies to the shared Cards/Table panels and Property content surfaces and does not depend on populated data.
 
-## State and Interaction Checks
+## Runtime Measurements
 
-- Cards was selected on a fresh load.
-- Clicking Table selected its tab, hid the Cards sort badge and preserved the shared empty state.
-- Arrow Left returned focus and selection to Cards; roving `tabindex`, `aria-selected`, `aria-controls` and named tab panels were present.
-- The final empty-state accessibility tree exposed the selected Table panel rather than removing it.
-- The focused populated rendering showed Asset, Price, Shares, Return, Yield, Value, Updated and Actions in the Acadia compact native table.
-- The 390px rendering replaced the table with complete object rows, including Retirement classification and the crypto yield dash.
-- Browser console after the final interaction pass: no errors.
+- Portfolio page header bottom to Portfolio content top: `24px`.
+- Investments control row bottom to active Cards panel top: `24px`.
+- The active empty state begins at the same panel boundary, retaining the intended `24px` rhythm.
+- Stylesheet cache key resolved to `styles.css?v=20260904-portfolio-spacing-v1`.
+- Browser console after the final pass: no errors.
 
-## Full-view Comparison
+## Comparison
 
-- The Portfolio title, search, Investments hierarchy, Add asset action, filters and Property section retain the supplied Mercury composition.
-- Cards/Table uses the supplied Acadia compact glass rail and neutral active pill, positioned after the Investments filters as a peer-view switch.
-- Property remains visually and behaviourally outside the view switch.
-- The local route lacked authenticated holdings, so populated data density was checked in the focused production-markup rendering rather than represented as live persistence evidence.
-
-## Focused Comparison
-
-- Table typography, muted header treatment, row dividers, compact vertical density and selected sort-header treatment match the Acadia Table reference.
-- Asset identity uses a strong primary label, quieter instrument metadata and a compact Retirement badge without displacing financial columns.
-- Mobile rows retain the same content hierarchy with two-column metric pairs and no clipped controls or horizontal scroll.
-
-## Required Fidelity Surfaces
-
-- Fonts and typography: Mercury continues using the bundled Acadia Geist roles; table headers, values, metadata and tabs retain canonical weights and line heights.
-- Spacing and layout rhythm: the switch shares the existing header tool row; the compact table and mobile object rows use Acadia padding, gaps, borders and radii. No page-frame spacing changed.
-- Colours and tokens: all surfaces, text, borders, badges, focus and selected states use existing Acadia variables and classes; no new colour token was introduced.
-- Image quality and assets: no new raster, illustration, logo or custom-drawn icon was required. Existing Mercury and Font Awesome assets remain unchanged.
-- Copy and content: Cards, Table and the eight column labels match the approved plan. Existing loading, unavailable, manual-price and classification language is preserved by the shared renderer.
+- The obsolete Mercury `-8px` page-header margin correction was removed. The workspace now inherits Acadia's canonical `--acadia-space-3` (`1.5rem`, 24px) stack gap.
+- Portfolio content surfaces use the same Acadia spacing token, matching the annotated Figma boundary without changing card anatomy, filters, tabs, table behaviour, Property content, or responsive rules.
+- Both light and dark themes retain the expected surfaces, borders, typography, focusable controls and content hierarchy.
+- No new asset, icon, colour or layout primitive was introduced.
 
 ## Comparison History
 
-1. Initial empty-state pass found one P2 accessibility issue: selecting Table hid both tab panels when there were no rows.
-2. The renderer was corrected to keep the selected panel exposed while hiding only its empty content surfaces.
-3. The post-fix accessibility tree showed `portfolio-table-panel` as the selected panel with the existing empty-state message, and keyboard switching still worked.
-4. Focused populated desktop and 390px passes found no remaining P0, P1 or P2 visual or responsive issues.
-
-## Follow-up Polish
-
-- P3: repeat the populated interaction pass against an authenticated local or deployed Mercury session after delivery, because the local static server cannot prove live holding navigation or menu persistence.
+1. Before the correction, the page-header boundary measured `16px`; the Investments header met its content panel with no vertical separation.
+2. After removing the negative margin and applying the existing dense-section token to Portfolio content surfaces, both requested boundaries measured `24px`.
+3. No P0, P1 or P2 visual, accessibility or interaction issue remained in the focused pass.
 
 final result: passed

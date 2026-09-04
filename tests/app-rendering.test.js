@@ -42,8 +42,11 @@ test("Home consumes Acadia without a Mercury presentation layer", () => {
   assert.doesNotMatch(homeSource, /new window\.Chart|Chart\.js/);
 });
 
-test("Mercury tightens only the page header gap before each workspace's first section", () => {
-  assert.match(styles, /\.mercury-workspace > \.acadia-page-header \{\s*margin-block-end: calc\(var\(--acadia-space-2\) - var\(--acadia-space-3\)\);/);
+test("Mercury preserves the Acadia 24px page-header and Portfolio content rhythm", () => {
+  assert.match(acadiaStyles, /--acadia-space-3: 1\.5rem;/);
+  assert.match(acadiaStyles, /\.acadia-stack \{\s*display: flex;\s*flex-direction: column;\s*gap: var\(--acadia-space-3\);/);
+  assert.doesNotMatch(styles, /\.mercury-workspace > \.acadia-page-header/);
+  assert.match(styles, /#portfolio-workspace \.mercury-portfolio-view-panel,[\s\S]*margin-block-start: var\(--acadia-space-3\);/);
   assert.doesNotMatch(acadiaStyles, /\.mercury-workspace/);
 });
 
