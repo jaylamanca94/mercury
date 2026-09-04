@@ -6,10 +6,10 @@ Use this file as the visual and interaction source of truth for Mercury. Keep th
 
 ## Home design contract
 
-- Figma node `82:1863` establishes Home's chart-led hierarchy: navigation, a 320px portfolio-history card with current value and selected-period change, three supporting metric cards, and a four-card Top Assets preview. Acadia establishes every rendered visual treatment and responsive rule.
+- Figma node `82:1863` establishes Home's chart-led hierarchy: navigation, a 320px card led by current net worth alongside portfolio history and selected-period change, three supporting metric cards, and a four-card Top Assets preview. Acadia establishes every rendered visual treatment and responsive rule.
 - Consume canonical `acadia.css` and its font assets unchanged. Do not create local visual tokens, component rules, chart styles, layout rules, or responsive overrides in Mercury.
 - Use Acadia Responsive Navbar, Page Header, Form/Search, Dashboard, Content Card, Card Trend, Status Row, Badge, Action Menu, Dialog, and Button contracts directly.
-- Home presents the sole Brokerage account directly. Do not show pretend account data or call Brokerage-only value "net worth".
+- Home's headline net worth is the current value of every holding, including retirement and crypto classifications, plus current property equity. If property data is unavailable, show `Not set` rather than presenting an incomplete total.
 - Performance renders only persisted daily snapshots. It uses the Acadia Card Trend presentation with a textual alternative and a source-backed start-value reference; absent history uses Acadia's explicit empty state. The selected-period amount and percentage appear only when that range contains two stored points. Do not add Figma's illustrative S&P 500 series until Mercury stores or retrieves a date-aligned benchmark.
 - Top Assets ranks saved holdings and property by current value, shows the first four in the compact Content Card treatment, and retains direct navigation or editing. Search, sorting, metrics, and classification filters remain in the full Portfolio workspace rather than crowding Home.
 - Figma node `82:1593` defines the compact Add asset dialog: Symbol and Shares lead, live Price and Value are read-only, optional Recurring/Frequency fields save the holding's contribution plan, and the approved screenshot addendum places a Retirement choice directly beneath them. Advanced details remain on Asset detail, while manual valuation recovery stays hidden until automatic pricing fails.

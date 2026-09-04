@@ -11,6 +11,7 @@ const {
   propertyEquityCents,
   projectPortfolio,
   resolvePlanAssumptions,
+  totalNetWorthCents,
   totalPropertyEquityCents,
 } = require("../plan");
 
@@ -152,4 +153,24 @@ test("properties retain identity and aggregate equity for net worth", () => {
     currentValueCents: 1,
     mortgageBalanceCents: 0,
   }), PlanValidationError);
+});
+
+test("net worth combines investment value with all property equity", () => {
+  const properties = [
+    {
+      name: "House",
+      currentValueCents: 447_000_00,
+      mortgageBalanceCents: 232_000_00,
+    },
+    {
+      name: "Cabin",
+      currentValueCents: 180_000_00,
+      mortgageBalanceCents: 195_000_00,
+    },
+  ];
+
+  assert.equal(totalNetWorthCents(756_000_00, []), 756_000_00);
+  assert.equal(totalNetWorthCents(756_000_00, properties), 956_000_00);
+  assert.equal(totalNetWorthCents(0, [properties[1]]), -15_000_00);
+  assert.throws(() => totalNetWorthCents(-1, []), PlanValidationError);
 });

@@ -89,6 +89,11 @@ function totalPropertyEquityCents(properties) {
   return properties.reduce((total, property) => total + propertyEquityCents(property), 0);
 }
 
+function totalNetWorthCents(portfolioValueCents, properties) {
+  const investments = nonNegativeCents(portfolioValueCents, "portfolioValueCents");
+  return investments + totalPropertyEquityCents(properties);
+}
+
 const normalizeHomeProperty = normalizeProperty;
 const homeEquityCents = propertyEquityCents;
 
@@ -181,6 +186,7 @@ const planContract = {
   propertyEquityCents,
   projectPortfolio,
   resolvePlanAssumptions,
+  totalNetWorthCents,
   totalPropertyEquityCents,
 };
 

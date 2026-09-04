@@ -22,6 +22,7 @@
     normalizePlanSettings,
     projectPortfolio,
     resolvePlanAssumptions,
+    totalNetWorthCents,
   } = window.MercuryPlan;
   const $ = (selector) => document.querySelector(selector);
   const currency = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 });
@@ -417,6 +418,10 @@
   function totalPropertyEquity() {
     return totalPropertyEquityCents(state.properties.map(propertyModel));
   }
+  function currentNetWorthCents(summary) {
+    if (!state.propertiesAvailable) return null;
+    return totalNetWorthCents(summary.totalMarketValueCents, state.properties.map(propertyModel));
+  }
   function matchingProperties() {
     const search = $("#portfolio-search").value.trim().toLowerCase();
     return state.properties.filter((property) => `${property.name || ""} ${property.location || ""}`.toLowerCase().includes(search));
@@ -481,7 +486,8 @@
     $("#plan-workspace").hidden = true;
     $("#asset-workspace").hidden = true;
     setActiveNavigation("home");
-    setText("#metric-value", displayCurrency(summary.totalMarketValueCents / 100));
+    const netWorthCents = currentNetWorthCents(summary);
+    setText("#metric-value", netWorthCents === null ? "Not set" : displayCurrency(netWorthCents / 100));
     const metricsLoading = state.providerMetricsPending.size > 0;
     setText("#metric-income", metricsLoading
       ? "Loading…"

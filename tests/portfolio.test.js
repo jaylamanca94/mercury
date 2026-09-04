@@ -119,6 +119,28 @@ test("assets keep an explicit retirement classification with a safe default", ()
   );
 });
 
+test("portfolio value includes retirement and crypto holdings without classification filtering", () => {
+  const summary = summarizePortfolio([
+    {
+      ...baseAsset,
+      id: "retirement-fund",
+      shares: 2,
+      unitPriceCents: 10_000,
+      isRetirement: true,
+    },
+    {
+      ...baseAsset,
+      id: "bitcoin",
+      instrumentType: "crypto",
+      shares: 1,
+      unitPriceCents: 30_000,
+      isRetirement: false,
+    },
+  ]);
+
+  assert.equal(summary.totalMarketValueCents, 50_000);
+});
+
 test("quick add normalises an optional recurring contribution without saving an orphan cadence", () => {
   assert.deepEqual(normalizeContributionPlan("", "weekly"), {
     contributionCents: null,

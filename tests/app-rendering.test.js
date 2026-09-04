@@ -47,6 +47,7 @@ test("Home follows the Figma composition with a focused Brokerage dashboard", ()
   assert.match(indexHtml, /class="acadia-responsive-navbar"/);
   assert.match(indexHtml, /<section class="acadia-dashboard-main acadia-home-dashboard" aria-label="Brokerage dashboard">/);
   assert.match(indexHtml, /id="metric-value"/);
+  assert.match(indexHtml, /<span class="acadia-sr-only">Net worth <\/span><span id="metric-value">/);
   assert.match(indexHtml, /id="performance-amount"/);
   assert.match(indexHtml, /id="performance-rate"/);
   assert.match(indexHtml, /id="performance-period-label"[^>]*>All time</);
@@ -134,7 +135,10 @@ test("large currency display values use the shared compact format", () => {
   assert.match(homeSource, /thousandCurrency\.format\(value\)/);
   assert.match(homeSource, /millionCurrency\.format\(value\)/);
   assert.match(homeSource, /\[KMBT\]/);
-  assert.match(homeSource, /setText\("#metric-value", displayCurrency\(summary\.totalMarketValueCents \/ 100\)\)/);
+  assert.match(homeSource, /function currentNetWorthCents\(summary\)/);
+  assert.match(homeSource, /if \(!state\.propertiesAvailable\) return null/);
+  assert.match(homeSource, /totalNetWorthCents\(summary\.totalMarketValueCents, state\.properties\.map\(propertyModel\)\)/);
+  assert.match(homeSource, /netWorthCents === null \? "Not set" : displayCurrency\(netWorthCents \/ 100\)/);
   assert.match(homeSource, /setText\(\s*"#metric-change-value"/);
   assert.match(homeSource, /setDelta\("#metric-change-rate", summary\.totalDayChangeRate/);
   assert.match(homeSource, /"#metric-estimated-growth"/);
@@ -237,8 +241,8 @@ test("Plan is a separate Base-plan projection workspace with aligned portfolio c
   assert.match(planWorkspace, /Included in net worth, not in investment or portfolio-income projections/);
   assert.match(indexHtml, /id="plan-assumptions-dialog"/);
   assert.match(indexHtml, /id="property-dialog"/);
-  assert.match(indexHtml, /<script src="plan\.js\?v=20260903-property-v1"><\/script>/);
-  assert.match(indexHtml, /<script src="brokerage\.js\?v=20260903-home-overview-v1"><\/script>/);
+  assert.match(indexHtml, /<script src="plan\.js\?v=20260903-home-net-worth-v1"><\/script>/);
+  assert.match(indexHtml, /<script src="brokerage\.js\?v=20260903-home-net-worth-v1"><\/script>/);
   assert.match(homeSource, /function routePlan\(\)/);
   assert.match(homeSource, /function renderPlan\(summary\)/);
   assert.match(homeSource, /function renderPlanChart/);

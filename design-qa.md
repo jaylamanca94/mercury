@@ -133,3 +133,52 @@ final result: passed
 - Recheck the populated authenticated Home after deployment because deployment and local design acceptance are separate claims.
 
 final result: passed
+
+---
+
+## Home net-worth headline — 2026-09-03
+
+**Comparison target**
+
+- Source visual truth: `/var/folders/bw/21lzcjwj7rlfsqtjbtn56vbm0000gn/T/TemporaryItems/NSIRD_screencaptureui_q4pkJb/Screenshot 2026-09-03 at 9.59.42 PM.png`.
+- Browser-rendered implementation: `http://127.0.0.1:4199/` in the Codex in-app Browser; the capture was reviewed inline because the browser surface did not expose a filesystem screenshot path.
+- Desktop viewport: 1512 × 949 CSS pixels at device scale 1, matching the 3024 × 1898 source raster at 2× density.
+- Mobile viewport: 390 × 844 CSS pixels at device scale 1.
+- State: dark theme. The source is an authenticated populated state; the local route is truthfully unconfigured and therefore exercises the required `Not set` net-worth recovery state.
+
+**Full-view comparison evidence**
+
+- No layout rules changed. The headline remains in the same 32px Acadia display role, and both `Not set` and compact currency values fit the existing desktop and mobile header composition without clipping or displacement.
+- The Portfolio legend, period controls, history region, supporting metric cards, Top Assets hierarchy, and responsive stacking remain visually unchanged.
+
+**Focused region comparison evidence**
+
+- The top-left chart header was inspected against the source at the same normalised desktop width. The implementation now exposes `Net worth` to assistive technology while retaining the source's compact visible number-only treatment.
+- The populated calculation is covered separately from the unconfigured browser state: every holding contributes to portfolio value regardless of retirement or crypto classification, and property equity is then added to the headline total.
+
+**Required fidelity surfaces**
+
+- Fonts and typography: unchanged Acadia/Geist roles, weights, line heights, and compact currency formatting.
+- Spacing and layout rhythm: unchanged chart dimensions, 32px card padding, header alignment, period-control spacing, and responsive collapse.
+- Colors and visual tokens: unchanged Acadia surfaces, border, text, and Tiffany chart tokens.
+- Image quality and asset fidelity: the existing vector Mercury mark and Font Awesome glyphs remain unchanged; no new visual assets were introduced.
+- Copy and content: the headline now means net worth, while visible `Portfolio` labelling continues to identify the historical line and adjacent movement.
+
+**Interaction evidence**
+
+- Desktop and mobile period controls retain their selected and disabled-without-history states.
+- The local unavailable-property state renders `Not set`, preventing an incomplete holdings-only total from being mislabelled as net worth.
+- The in-app Browser reported no console warnings or errors.
+
+**Findings**
+
+- No actionable P0, P1, or P2 visual differences were introduced.
+- Authenticated populated persistence was not re-exercised locally; calculation, classification inclusion, property aggregation, unavailable recovery, and rendering contracts are covered by the automated suite.
+
+**Implementation checklist**
+
+- Keep the headline current-only until property-inclusive historical snapshots exist.
+- Keep the chart line and selected-period movement portfolio-only.
+- Recheck the authenticated populated headline after deployment; deployment remains a separate claim.
+
+final result: passed
