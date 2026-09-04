@@ -48,3 +48,61 @@
 .mercury-plan-assumptions-grid .acadia-button {
   justify-self: start;
 }
+
+.mercury-budget-card {
+  box-sizing: border-box;
+  max-width: 37.25rem;
+  width: 100%;
+}
+
+.mercury-budget-card > .acadia-button {
+  justify-self: start;
+}
+
+.mercury-budget-list {
+  display: grid;
+  gap: var(--acadia-space-2);
+}
+
+.mercury-budget-row {
+  align-items: center;
+  display: grid;
+  gap: var(--acadia-space-2);
+  grid-template-columns: repeat(2, minmax(0, 1fr)) minmax(3rem, 0.45fr) auto;
+  min-width: 0;
+}
+
+.mercury-budget-row .acadia-control {
+  height: var(--acadia-target-size-compact);
+  min-height: var(--acadia-target-size-compact);
+  padding-block: calc(0.5rem - 1px);
+}
+
+.mercury-budget-allocation {
+  font-size: var(--acadia-type-size-lead);
+  white-space: nowrap;
+}
+
+.mercury-budget-row-status {
+  grid-column: 1 / -1;
+  margin: 0;
+}
+
+.mercury-budget-row-status:empty,
+#income-budget-status:empty {
+  display: none;
+}
+
+@media (max-width: 47.98rem) {
+  .mercury-budget-row {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .mercury-budget-row > .acadia-form-control {
+    grid-column: 1 / -1;
+  }
+
+  .mercury-budget-row-status {
+    grid-column: 1 / -1;
+  }
+}

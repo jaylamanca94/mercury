@@ -1,6 +1,6 @@
 # Mercury Supabase setup
 
-Apply every schema migration in `migrations/`, including `20260902_income_sources.sql`, `20260902_base_plan.sql`, and `20260903202800_retirement_holdings.sql`, in the Supabase SQL editor (or through the Supabase CLI). They create the one-owner Brokerage, expected-income, Base-plan, optional home-equity, and per-holding retirement-classification data models with row-level security policies. The no-op `20260903004833_remote_baseline.sql` mirrors Mercury's existing consolidated remote migration record so future CLI checks remain aligned.
+Apply every schema migration in `migrations/`, including `20260902_income_sources.sql`, `20260904_budget_categories.sql`, `20260902_base_plan.sql`, and `20260903202800_retirement_holdings.sql`, in the Supabase SQL editor (or through the Supabase CLI). They create the one-owner Brokerage, expected-income, monthly category spending-plan, Base-plan, optional home-equity, and per-holding retirement-classification data models with row-level security policies. The no-op `20260903004833_remote_baseline.sql` mirrors Mercury's existing consolidated remote migration record so future CLI checks remain aligned.
 
 Enable **Email** authentication with magic links, then set these Vercel environment variables:
 

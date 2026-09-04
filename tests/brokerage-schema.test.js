@@ -19,6 +19,10 @@ const incomeMigration = fs.readFileSync(
   path.join(__dirname, "..", "supabase", "migrations", "20260902_income_sources.sql"),
   "utf8",
 );
+const budgetMigration = fs.readFileSync(
+  path.join(__dirname, "..", "supabase", "migrations", "20260904_budget_categories.sql"),
+  "utf8",
+);
 const planMigration = fs.readFileSync(
   path.join(__dirname, "..", "supabase", "migrations", "20260902_base_plan.sql"),
   "utf8",
@@ -77,6 +81,18 @@ test("Income sources are private account-scoped recurring planning data", () => 
   assert.match(incomeMigration, /alter table public\.income_sources enable row level security/);
   assert.match(incomeMigration, /Owners manage their income sources/);
   assert.match(incomeMigration, /revoke all on public\.income_sources from anon/);
+});
+
+test("Budget categories are private monthly account-scoped spending limits", () => {
+  assert.match(budgetMigration, /create table if not exists public\.budget_categories/);
+  assert.match(budgetMigration, /account_id uuid not null references public\.accounts\(id\) on delete cascade/);
+  assert.match(budgetMigration, /monthly_amount_cents bigint not null check \(monthly_amount_cents > 0\)/);
+  assert.match(budgetMigration, /budget_categories\(account_id, lower\(trim\(name\)\)\)/);
+  assert.match(budgetMigration, /alter table public\.budget_categories enable row level security/);
+  assert.match(budgetMigration, /Owners manage their budget categories/);
+  assert.match(budgetMigration, /revoke all on public\.budget_categories from anon/);
+  assert.match(budgetMigration, /grant select, insert, update, delete on public\.budget_categories to authenticated/);
+  assert.match(budgetMigration, /notify pgrst, 'reload schema'/);
 });
 
 test("Base Plan settings and optional home property remain private account-scoped data", () => {

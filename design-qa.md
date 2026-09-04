@@ -78,6 +78,49 @@ final result: passed
 
 ---
 
+## Income Budget categories — 2026-09-04
+
+**Comparison target**
+
+- Source visual truth: `/Users/jaylamanca/Desktop/Mercury/Income - Macbook 14_.png` and Figma `CSCV8qZu9ryspC07K36vTg`, node `115:3248`.
+- Browser-rendered implementation: a temporary populated QA fixture using the production `index.html` composition and `styles.css`, plus `http://127.0.0.1:4199/#income` for the truthful unavailable-schema state.
+- Desktop viewport: 1512px, matching the supplied 3024px-wide raster at 2x density. Responsive Budget inspection: 390px.
+- State: dark theme; the populated fixture uses the supplied illustrative categories only for layout comparison. The application itself continues to render private owner data.
+
+**Full-view comparison evidence**
+
+- The desktop implementation follows the target hierarchy: Income header and search, Year/Month control, four equal Summary cards with Expenses first, Dividends, Sources, then the inline Budget section.
+- The Budget card renders at a 596px outer maximum width with Acadia liquid-glass treatment, 32px padding, compact controls, and the target heading and add action.
+- At 390px, each category's name and amount stack to full width while its allocation and action menu remain on a compact final row. The card stays within the mobile viewport.
+
+**Focused region comparison evidence**
+
+- The Budget region was inspected separately at desktop and 390px widths. Its row rhythm, control heights, typography, surface, border, and action alignment remain legible without clipping.
+- Allocation values intentionally differ from the illustrative Figma values: the implementation displays the approved share of total planned spending (43%, 29%, 29% for the fixture's $750/$500/$500 values).
+- The discreet row action menu is an intentional addition required by the approved edit/delete behaviour.
+
+**Interaction and recovery evidence**
+
+- The clean local browser tab reports no console errors. In the unapplied-migration state, Expenses renders `Not set`, the Budget section explains that categories are unavailable, and mutations are disabled without affecting the rest of Income.
+- Creation, inline update, confirmed deletion, duplicate-name validation, period annualisation, zero totals, search matching, and persistence failure recovery are covered by the automated suite.
+- Applying the new private Supabase migration and exercising an authenticated save remain separate from this local implementation review.
+
+**Findings**
+
+- [P2 resolved] The first responsive pass exposed that the card's declared 596px width excluded its padding. Adding border-box sizing now makes 596px the true outer width and prevents mobile overflow.
+- No actionable P0, P1, or P2 visual differences remain.
+- P3: the existing truthful planning subtitle remains above Summary although the supplied frame omits it; removing it would weaken the established expected-versus-received income boundary.
+
+**Implementation checklist**
+
+- Apply `20260904_budget_categories.sql` before authenticated category mutations are expected to work.
+- Recheck one signed-in create, edit, delete, Year/Month total, and search flow after the migration is applied.
+- Keep transaction tracking, actual-spend progress, and bank activity outside this spending-plan surface.
+
+final result: passed
+
+---
+
 ## Refined Home overview — 2026-09-03
 
 **Comparison target**

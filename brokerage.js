@@ -11,7 +11,9 @@
   } = window.MercuryPortfolio;
   const {
     INCOME_FREQUENCIES,
+    normalizeBudgetCategory,
     normalizeIncomeSource,
+    summarizeBudgetCategories,
     summarizeIncomeSources,
   } = window.MercuryIncome;
   const {
@@ -37,9 +39,10 @@
   });
   const preciseCurrency = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", minimumFractionDigits: 2, maximumFractionDigits: 2 });
   const percentage = new Intl.NumberFormat("en-US", { style: "percent", maximumFractionDigits: 2 });
+  const wholePercentage = new Intl.NumberFormat("en-US", { style: "percent", maximumFractionDigits: 0 });
   const state = {
-    client: null, user: null, account: null, accounts: [], holdings: [], quotes: [], snapshots: [], incomeSources: [], incomeSourcesAvailable: true, planSettings: null, properties: [], propertiesAvailable: true, planDataAvailable: true,
-    providerMetrics: {}, providerMetricsPending: new Set(), configured: false, pendingQuote: null, quoteTimer: null, quoteRequestId: 0, portfolioFilter: "all", portfolioSort: "value", propertySort: "value", performancePeriod: "all", incomePeriod: "year", incomeDividendSort: "value", planHorizon: 10, incomeSourceDialogId: null, incomeSourceDeleteId: null, propertyDialogId: null, propertyDeleteId: null,
+    client: null, user: null, account: null, accounts: [], holdings: [], quotes: [], snapshots: [], incomeSources: [], incomeSourcesAvailable: true, budgetCategories: [], budgetCategoriesAvailable: true, planSettings: null, properties: [], propertiesAvailable: true, planDataAvailable: true,
+    providerMetrics: {}, providerMetricsPending: new Set(), configured: false, pendingQuote: null, quoteTimer: null, quoteRequestId: 0, portfolioFilter: "all", portfolioSort: "value", propertySort: "value", performancePeriod: "all", incomePeriod: "year", incomeDividendSort: "value", planHorizon: 10, incomeSourceDialogId: null, incomeSourceDeleteId: null, budgetCategoryDialogId: null, budgetCategoryDeleteId: null, propertyDialogId: null, propertyDeleteId: null,
   };
 
   function cents(value) {
@@ -196,6 +199,7 @@
     $("#portfolio-add-asset").disabled = disabled;
     $("#portfolio-add-property").disabled = disabled || !state.propertiesAvailable;
     $("#add-income").disabled = disabled || !state.incomeSourcesAvailable;
+    $("#add-budget-category").disabled = disabled || !state.budgetCategoriesAvailable;
   }
 
   function renderPerformancePeriods() {
@@ -626,6 +630,56 @@
         : "Add expected recurring income to include it in your planning totals.";
     }
   }
+  function budgetCategoryModel(category) {
+    return {
+      id: category.id,
+      name: category.name,
+      monthlyAmountCents: Number(category.monthly_amount_cents),
+    };
+  }
+  function assertBudgetCategoryNameAvailable(category, currentId = null) {
+    const key = category.name.toLocaleLowerCase("en-US");
+    const duplicate = state.budgetCategories.some((entry) => (
+      entry.id !== currentId && entry.name.trim().toLocaleLowerCase("en-US") === key
+    ));
+    if (duplicate) throw new Error("Category names must be unique.");
+  }
+  function matchingBudgetCategories(rows) {
+    const search = $("#income-search").value.trim().toLowerCase();
+    return rows.filter((row) => !search || row.category.name.toLowerCase().includes(search));
+  }
+  function renderBudgetCategories(budgetSummary) {
+    const matchingRows = matchingBudgetCategories(budgetSummary.rows);
+    const list = $("#income-budget-list");
+    list.replaceChildren(...matchingRows.map((row) => {
+      const category = row.category;
+      const item = document.createElement("div");
+      item.className = "mercury-budget-row";
+      item.innerHTML = `<div class="acadia-form-control" data-acadia-form-variant="input"><label class="acadia-sr-only" for="budget-category-name-${category.id}">Category name</label><input class="acadia-control" id="budget-category-name-${category.id}" type="text" required value="${escapeHtml(category.name)}"></div><div class="acadia-form-control" data-acadia-form-variant="input"><label class="acadia-sr-only" for="budget-category-amount-${category.id}">Monthly amount for ${escapeHtml(category.name)}</label><div class="acadia-control-affix-shell"><span class="acadia-control-leading-affix" aria-hidden="true">$</span><input class="acadia-control has-leading-affix" id="budget-category-amount-${category.id}" type="number" step="0.01" min="0.01" required value="${(category.monthlyAmountCents / 100).toFixed(2)}"></div></div><strong class="mercury-budget-allocation" aria-label="${wholePercentage.format(row.allocationRate)} of planned spending">${wholePercentage.format(row.allocationRate)}</strong><details class="acadia-action-menu"><summary class="acadia-action-menu-trigger acadia-icon-action" aria-label="Actions for ${escapeHtml(category.name)}"><i class="fa-solid fa-ellipsis acadia-icon" aria-hidden="true"></i></summary><div class="acadia-action-menu-panel"><button class="acadia-action-menu-item" type="button" data-edit-budget-category="${escapeHtml(category.id)}">Edit category</button><button class="acadia-action-menu-item is-danger" type="button" data-delete-budget-category="${escapeHtml(category.id)}">Delete category</button></div></details><p id="budget-category-status-${category.id}" class="acadia-field-hint mercury-budget-row-status" role="status" aria-live="polite"></p>`;
+      const saveInline = async () => {
+        const name = item.querySelector(`#budget-category-name-${CSS.escape(category.id)}`).value;
+        const amountCents = cents(item.querySelector(`#budget-category-amount-${CSS.escape(category.id)}`).value);
+        await saveBudgetCategoryInline(category.id, name, amountCents);
+      };
+      item.querySelector(`#budget-category-name-${CSS.escape(category.id)}`).addEventListener("change", saveInline);
+      item.querySelector(`#budget-category-amount-${CSS.escape(category.id)}`).addEventListener("change", saveInline);
+      return item;
+    }));
+    list.querySelectorAll("[data-edit-budget-category]").forEach((control) => control.addEventListener("click", () => openBudgetCategoryDialog(control.dataset.editBudgetCategory)));
+    list.querySelectorAll("[data-delete-budget-category]").forEach((control) => control.addEventListener("click", () => openDeleteBudgetCategoryDialog(control.dataset.deleteBudgetCategory)));
+    setText("#income-budget-count", `${matchingRows.length} ${matchingRows.length === 1 ? "category" : "categories"}`);
+    $("#income-budget-empty").hidden = matchingRows.length > 0;
+    if (!matchingRows.length) {
+      const title = $("#income-budget-empty").querySelector("strong");
+      const copy = $("#income-budget-empty").querySelector("p");
+      title.textContent = !state.budgetCategoriesAvailable
+        ? "Budget categories are unavailable"
+        : state.budgetCategories.length ? "No matching budget categories" : "No budget categories yet";
+      copy.textContent = !state.budgetCategoriesAvailable
+        ? "Apply the latest private Income schema migration to save a spending plan."
+        : "Add monthly category limits to build your spending plan.";
+    }
+  }
   function renderIncome(summary) {
     $("#home-workspace").hidden = true;
     $("#portfolio-workspace").hidden = true;
@@ -639,17 +693,23 @@
       control.setAttribute("aria-selected", String(active));
     });
     const incomeSummary = summarizeIncomeSources(state.incomeSources.map(incomeSourceModel), state.incomePeriod);
+    const budgetSummary = summarizeBudgetCategories(state.budgetCategories.map(budgetCategoryModel), state.incomePeriod);
     const metricsLoading = state.providerMetricsPending.size > 0;
     const passiveAnnualCents = summary.totalEstimatedAnnualIncomeCents;
     const passiveAvailable = Number.isSafeInteger(passiveAnnualCents);
     const passiveDisplay = metricsLoading ? "Loading…" : passiveAvailable ? displayCurrency(incomePeriodCents(passiveAnnualCents) / 100) : "Not set";
     const totalDisplay = metricsLoading ? "Loading…" : passiveAvailable ? displayCurrency((incomeSummary.totalPeriodIncomeCents + incomePeriodCents(passiveAnnualCents)) / 100) : "Not set";
     setText("#income-earned", displayCurrency(incomeSummary.totalPeriodIncomeCents / 100));
+    const expensesDisplay = budgetSummary.totalPeriodAmountCents
+      ? displayCurrency(-budgetSummary.totalPeriodAmountCents / 100)
+      : displayCurrency(0);
+    setText("#income-expenses", state.budgetCategoriesAvailable ? expensesDisplay : "Not set");
     setText("#income-passive", passiveDisplay);
     setText("#income-total", totalDisplay);
     setDelta("#income-passive-yield", metricsLoading ? null : summary.distributionYieldRate, percentage.format.bind(percentage));
     renderIncomeDividends(summary);
     renderIncomeSources(incomeSummary);
+    renderBudgetCategories(budgetSummary);
   }
 
   function planSettingsModel(settings) {
@@ -1297,6 +1357,111 @@
     }
   }
 
+  function budgetCategoryPayload(form, id) {
+    const category = normalizeBudgetCategory({
+      id,
+      name: getFormValue(form, "name"),
+      monthlyAmountCents: cents(getFormValue(form, "monthlyAmount")),
+    });
+    assertBudgetCategoryNameAvailable(category, state.budgetCategoryDialogId);
+    return {
+      id: category.id,
+      account_id: state.account.id,
+      name: category.name,
+      monthly_amount_cents: category.monthlyAmountCents,
+    };
+  }
+  function openBudgetCategoryDialog(id = null) {
+    if (!state.budgetCategoriesAvailable) return;
+    const form = $("#budget-category-form");
+    const existing = id ? state.budgetCategories.find((category) => category.id === id) : null;
+    state.budgetCategoryDialogId = existing?.id || null;
+    form.reset();
+    setText("#budget-category-dialog-title", existing ? "Edit category" : "Add category");
+    setText("#save-budget-category", existing ? "Save" : "Add");
+    setText("#budget-category-form-status", "");
+    if (existing) {
+      $("#budget-category-name").value = existing.name;
+      $("#budget-category-amount").value = (Number(existing.monthly_amount_cents) / 100).toFixed(2);
+    }
+    $("#budget-category-dialog").hidden = false;
+    $("#budget-category-dialog").showModal();
+  }
+  function closeBudgetCategoryDialog() { $("#budget-category-dialog").close(); }
+  async function saveBudgetCategory(event) {
+    event.preventDefault();
+    if (!state.account) return;
+    const save = $("#save-budget-category");
+    try {
+      save.disabled = true;
+      save.textContent = state.budgetCategoryDialogId ? "Saving…" : "Adding…";
+      const id = state.budgetCategoryDialogId || crypto.randomUUID();
+      const payload = budgetCategoryPayload($("#budget-category-form"), id);
+      const request = state.budgetCategoryDialogId
+        ? state.client.from("budget_categories").update(payload).eq("id", id).eq("account_id", state.account.id)
+        : state.client.from("budget_categories").insert(payload);
+      const { error } = await request;
+      if (error) throw error;
+      closeBudgetCategoryDialog();
+      await loadData();
+    } catch (error) {
+      setText("#budget-category-form-status", error.message || "This budget category could not be saved.");
+    } finally {
+      save.disabled = false;
+      save.textContent = state.budgetCategoryDialogId ? "Save" : "Add";
+    }
+  }
+  async function saveBudgetCategoryInline(id, name, monthlyAmountCents) {
+    const raw = state.budgetCategories.find((category) => category.id === id);
+    const status = $("#budget-category-status-" + id);
+    if (!raw || !state.account) return;
+    try {
+      const category = normalizeBudgetCategory({ id, name, monthlyAmountCents });
+      assertBudgetCategoryNameAvailable(category, id);
+      status.textContent = "Saving…";
+      const { error } = await state.client.from("budget_categories").update({
+        name: category.name,
+        monthly_amount_cents: category.monthlyAmountCents,
+      }).eq("id", id).eq("account_id", state.account.id);
+      if (error) throw error;
+      await loadData();
+    } catch (error) {
+      status.textContent = error.message || "This budget category could not be saved.";
+    }
+  }
+  function openDeleteBudgetCategoryDialog(id) {
+    const category = state.budgetCategories.find((entry) => entry.id === id);
+    if (!category) return;
+    state.budgetCategoryDeleteId = id;
+    setText("#delete-budget-category-title", `Delete ${category.name}?`);
+    setText("#delete-budget-category-description", `This permanently removes ${category.name} from your spending plan.`);
+    setText("#delete-budget-category-status", "");
+    $("#delete-budget-category-dialog").hidden = false;
+    $("#delete-budget-category-dialog").showModal();
+  }
+  function closeDeleteBudgetCategoryDialog() { $("#delete-budget-category-dialog").close(); }
+  async function deleteBudgetCategory(event) {
+    event.preventDefault();
+    const id = state.budgetCategoryDeleteId;
+    if (!id || !state.account) return;
+    const confirm = $("#confirm-delete-budget-category");
+    try {
+      confirm.disabled = true;
+      confirm.textContent = "Deleting…";
+      const { data, error } = await state.client.from("budget_categories")
+        .delete().eq("id", id).eq("account_id", state.account.id).select("id").maybeSingle();
+      if (error) throw error;
+      if (!data) throw new Error("This budget category could not be deleted.");
+      closeDeleteBudgetCategoryDialog();
+      await loadData();
+    } catch (error) {
+      setText("#delete-budget-category-status", error.message || "This budget category could not be deleted.");
+    } finally {
+      confirm.disabled = false;
+      confirm.textContent = "Delete category";
+    }
+  }
+
   function openPlanAssumptionsDialog() {
     if (!state.planDataAvailable) return;
     const settings = planSettingsModel(state.planSettings);
@@ -1435,12 +1600,13 @@
   }
 
   async function loadData() {
-    const [accounts, holdings, quotes, snapshots, incomeSources, planSettings, properties] = await Promise.all([
+    const [accounts, holdings, quotes, snapshots, incomeSources, budgetCategories, planSettings, properties] = await Promise.all([
       state.client.from("accounts").select("*").order("created_at"),
       state.client.from("holdings").select("*").eq("account_id", state.account.id).order("created_at"),
       state.client.from("holding_quotes").select("*").order("as_of", { ascending: false }),
       state.client.from("portfolio_snapshots").select("*").eq("account_id", state.account.id).order("snapshot_date"),
       state.client.from("income_sources").select("*").eq("account_id", state.account.id).order("created_at"),
+      state.client.from("budget_categories").select("*").eq("account_id", state.account.id).order("created_at"),
       state.client.from("plan_settings").select("*").eq("account_id", state.account.id).maybeSingle(),
       state.client.from("home_properties").select("id, account_id, name, location, current_value_cents, mortgage_balance_cents, annual_appreciation_rate, created_at").eq("account_id", state.account.id).order("created_at"),
     ]);
@@ -1453,6 +1619,8 @@
     state.snapshots = snapshots.data || [];
     state.incomeSourcesAvailable = !incomeSources.error;
     state.incomeSources = incomeSources.data || [];
+    state.budgetCategoriesAvailable = !budgetCategories.error;
+    state.budgetCategories = budgetCategories.data || [];
     state.planDataAvailable = !planSettings.error;
     state.planSettings = planSettings.data || null;
     state.propertiesAvailable = !properties.error;
@@ -1540,6 +1708,8 @@
     state.quotes = [];
     state.snapshots = [];
     state.incomeSources = [];
+    state.budgetCategories = [];
+    state.budgetCategoriesAvailable = false;
     state.planSettings = null;
     state.properties = [];
     state.propertiesAvailable = false;
@@ -1615,6 +1785,14 @@
   $("#cancel-delete-income-source").addEventListener("click", closeDeleteIncomeSourceDialog);
   $("#delete-income-source-dialog").addEventListener("close", () => { $("#delete-income-source-dialog").hidden = true; });
   $("#delete-income-source-form").addEventListener("submit", deleteIncomeSource);
+  $("#add-budget-category").addEventListener("click", () => openBudgetCategoryDialog());
+  $("#close-budget-category-dialog").addEventListener("click", closeBudgetCategoryDialog);
+  $("#cancel-budget-category-dialog").addEventListener("click", closeBudgetCategoryDialog);
+  $("#budget-category-dialog").addEventListener("close", () => { $("#budget-category-dialog").hidden = true; });
+  $("#budget-category-form").addEventListener("submit", saveBudgetCategory);
+  $("#cancel-delete-budget-category").addEventListener("click", closeDeleteBudgetCategoryDialog);
+  $("#delete-budget-category-dialog").addEventListener("close", () => { $("#delete-budget-category-dialog").hidden = true; });
+  $("#delete-budget-category-form").addEventListener("submit", deleteBudgetCategory);
   document.querySelectorAll("[data-portfolio-holding-sort]").forEach((control) => {
     control.addEventListener("click", () => {
       state.portfolioSort = control.dataset.portfolioHoldingSort;

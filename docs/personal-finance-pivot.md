@@ -54,6 +54,17 @@ must not display a partial total as if it covered the complete portfolio.
 Targets and weekly allocations can be incomplete while the portfolio is being set up. Once all
 assets have values, Mercury warns if either total is not 100%.
 
+## Income and spending-plan contract
+
+Income combines expected recurring gross income with covered portfolio dividend estimates. It is
+a planning view, not a record of bank-confirmed deposits. Budget categories store positive monthly
+limits in integer cents; the Year summary annualises their total by twelve. Each category's displayed
+allocation is its share of total planned spending.
+
+Budget is deliberately category-level only. Mercury does not store expense transactions, actual-spend
+values, progress against limits, imports, or bank activity in this release. Budget totals do not alter
+income, portfolio, or Plan calculations.
+
 ## Delivery stages
 
 1. **Foundation:** maintain the calculation module, regression tests, and this contract.

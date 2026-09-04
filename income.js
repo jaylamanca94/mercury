@@ -15,6 +15,13 @@ class IncomeValidationError extends Error {
   }
 }
 
+function requiredBudgetMoney(value, field) {
+  if (!Number.isSafeInteger(value) || value <= 0) {
+    throw new IncomeValidationError(`${field} must be a positive whole number of cents`);
+  }
+  return value;
+}
+
 function requiredIncomeText(value, field) {
   if (typeof value !== "string" || !value.trim()) throw new IncomeValidationError(`${field} is required`);
   return value.trim();
@@ -78,13 +85,50 @@ function summarizeIncomeSources(sources, period = "year") {
   });
 }
 
+function normalizeBudgetCategory(input) {
+  if (!input || typeof input !== "object" || Array.isArray(input)) {
+    throw new IncomeValidationError("budget category must be an object");
+  }
+  return Object.freeze({
+    id: requiredIncomeText(input.id, "id"),
+    name: requiredIncomeText(input.name, "name"),
+    monthlyAmountCents: requiredBudgetMoney(input.monthlyAmountCents, "monthlyAmountCents"),
+  });
+}
+
+function summarizeBudgetCategories(categories, period = "year") {
+  if (!Array.isArray(categories)) throw new IncomeValidationError("categories must be an array");
+  if (period !== "year" && period !== "month") {
+    throw new IncomeValidationError("period must be year or month");
+  }
+  const normalized = categories.map(normalizeBudgetCategory);
+  const names = new Set();
+  normalized.forEach((category) => {
+    const key = category.name.toLocaleLowerCase("en-US");
+    if (names.has(key)) throw new IncomeValidationError("category names must be unique");
+    names.add(key);
+  });
+  const totalMonthlyAmountCents = normalized.reduce((total, category) => total + category.monthlyAmountCents, 0);
+  const rows = normalized.map((category) => Object.freeze({
+    category,
+    allocationRate: totalMonthlyAmountCents ? category.monthlyAmountCents / totalMonthlyAmountCents : null,
+  }));
+  return Object.freeze({
+    rows: Object.freeze(rows),
+    totalMonthlyAmountCents,
+    totalPeriodAmountCents: period === "year" ? totalMonthlyAmountCents * 12 : totalMonthlyAmountCents,
+  });
+}
+
 const exported = {
   INCOME_FREQUENCIES,
   INCOME_SOURCE_TYPES,
   IncomeValidationError,
   annualizedIncomeCents,
   incomeForPeriodCents,
+  normalizeBudgetCategory,
   normalizeIncomeSource,
+  summarizeBudgetCategories,
   summarizeIncomeSources,
 };
 

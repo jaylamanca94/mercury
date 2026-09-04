@@ -9,6 +9,8 @@ const styles = fs.readFileSync(path.join(root, "styles.css"), "utf8");
 const acadiaStyles = fs.readFileSync(path.join(root, "acadia.css"), "utf8");
 const homeSource = fs.readFileSync(path.join(root, "brokerage.js"), "utf8");
 const planSource = fs.readFileSync(path.join(root, "plan.js"), "utf8");
+const readme = fs.readFileSync(path.join(root, "README.md"), "utf8");
+const personalFinancePivot = fs.readFileSync(path.join(root, "docs", "personal-finance-pivot.md"), "utf8");
 
 test("Home consumes Acadia without a Mercury presentation layer", () => {
   assert.match(styles, /^@import url\("acadia\.css\?v=20260903-home-overview-v1"\);/);
@@ -204,22 +206,39 @@ test("Income is a functional planning workspace with live dividend coverage and 
   assert.match(incomeWorkspace, /id="income-periods"/);
   assert.match(incomeWorkspace, /data-income-period="year"/);
   assert.match(incomeWorkspace, /data-income-period="month"/);
+  assert.match(incomeWorkspace, /id="income-expenses"/);
+  assert.match(incomeWorkspace, /Expenses/);
   assert.match(incomeWorkspace, /Total income/);
   assert.match(incomeWorkspace, /Earned income/);
   assert.match(incomeWorkspace, /Passive income/);
   assert.match(incomeWorkspace, /id="income-dividend-sort"/);
   assert.match(incomeWorkspace, /id="income-dividends-grid"/);
   assert.match(incomeWorkspace, /id="income-sources-grid"/);
+  assert.match(incomeWorkspace, /id="income-budget"/);
+  assert.match(incomeWorkspace, /id="income-budget-list"/);
+  assert.match(incomeWorkspace, /Monthly Expenses/);
+  assert.match(incomeWorkspace, /id="add-budget-category"/);
   assert.match(indexHtml, /id="income-source-dialog"/);
   assert.match(indexHtml, /id="delete-income-source-dialog"/);
-  assert.match(indexHtml, /<script src="income\.js\?v=20260902-income-v2"><\/script>/);
+  assert.match(indexHtml, /id="budget-category-dialog"/);
+  assert.match(indexHtml, /id="delete-budget-category-dialog"/);
+  assert.match(indexHtml, /<script src="income\.js\?v=20260904-budget-v1"><\/script>/);
   assert.match(homeSource, /function routeIncome\(\)/);
   assert.match(homeSource, /function renderIncome\(summary\)/);
   assert.match(homeSource, /summary\.totalEstimatedAnnualIncomeCents/);
   assert.match(homeSource, /state\.providerMetricsPending/);
   assert.match(homeSource, /state\.client\.from\("income_sources"\)/);
+  assert.match(homeSource, /state\.client\.from\("budget_categories"\)/);
+  assert.match(homeSource, /summarizeBudgetCategories/);
+  assert.match(homeSource, /saveBudgetCategoryInline/);
+  assert.match(homeSource, /openDeleteBudgetCategoryDialog/);
   assert.match(homeSource, /openDeleteIncomeSourceDialog/);
   assert.match(homeSource, /data-income-dividend-sort/);
+  assert.match(styles, /\.mercury-budget-card/);
+  assert.match(styles, /\.mercury-budget-row/);
+  assert.match(styles, /@media \(max-width: 47\.98rem\)/);
+  assert.match(readme, /monthly category-level spending limits/);
+  assert.match(personalFinancePivot, /category-level only/);
 });
 
 test("Plan is a separate Base-plan projection workspace with aligned portfolio charts", () => {
@@ -242,7 +261,7 @@ test("Plan is a separate Base-plan projection workspace with aligned portfolio c
   assert.match(indexHtml, /id="plan-assumptions-dialog"/);
   assert.match(indexHtml, /id="property-dialog"/);
   assert.match(indexHtml, /<script src="plan\.js\?v=20260903-home-net-worth-v1"><\/script>/);
-  assert.match(indexHtml, /<script src="brokerage\.js\?v=20260903-home-net-worth-v1"><\/script>/);
+  assert.match(indexHtml, /<script src="brokerage\.js\?v=20260904-budget-v1"><\/script>/);
   assert.match(homeSource, /function routePlan\(\)/);
   assert.match(homeSource, /function renderPlan\(summary\)/);
   assert.match(homeSource, /function renderPlanChart/);
