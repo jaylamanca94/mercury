@@ -6576,6 +6576,134 @@ select.acadia-control {
   padding-block-start: 0;
 }
 
+/* Figma node 82:1863: chart-led dashboard overview. These classes extend the
+   existing Card Trend and Content Card anatomy without supplying product data. */
+.acadia-home-dashboard {
+  --acadia-card-trend-color: var(--acadia-color-brand);
+  gap: var(--acadia-space-3);
+}
+
+.acadia-card.is-dashboard-trend {
+  gap: var(--acadia-space-4);
+}
+
+.acadia-dashboard-trend-header,
+.acadia-dashboard-trend-summary,
+.acadia-dashboard-trend-tools,
+.acadia-chart-legend,
+.acadia-chart-legend-item {
+  align-items: center;
+  display: flex;
+}
+
+.acadia-dashboard-trend-header {
+  gap: var(--acadia-space-3);
+  justify-content: space-between;
+  min-width: 0;
+}
+
+.acadia-dashboard-trend-summary {
+  flex-wrap: wrap;
+  gap: var(--acadia-space-2);
+  min-width: 0;
+}
+
+.acadia-dashboard-trend-value {
+  color: var(--acadia-color-text);
+  font-family: var(--acadia-font-expression);
+  font-size: var(--acadia-type-size-heading-large);
+  font-weight: var(--acadia-font-weight-strong);
+  line-height: 1.2;
+  margin: 0;
+}
+
+.acadia-dashboard-trend-change {
+  color: var(--acadia-color-brand);
+  font-family: var(--acadia-font-expression);
+  font-size: var(--acadia-type-size-lead);
+  font-weight: 500;
+  line-height: 1.2;
+}
+
+.acadia-dashboard-trend-change.is-danger {
+  color: var(--acadia-status-danger-text);
+}
+
+.acadia-dashboard-trend-period,
+.acadia-chart-legend-item {
+  color: var(--acadia-color-text);
+  font-size: var(--acadia-type-size-body);
+  font-weight: 500;
+  line-height: 1.25;
+}
+
+.acadia-dashboard-trend-tools {
+  flex: 0 0 auto;
+  gap: var(--acadia-space-3);
+}
+
+.acadia-chart-legend {
+  gap: var(--acadia-space-3);
+}
+
+.acadia-chart-legend-item {
+  gap: var(--acadia-space-1);
+  white-space: nowrap;
+}
+
+.acadia-chart-legend-item .acadia-icon {
+  color: var(--acadia-color-text-muted);
+  font-size: 1rem;
+  height: 1rem;
+  width: 1rem;
+}
+
+.acadia-chart-legend-item .acadia-icon.is-primary {
+  color: var(--acadia-card-trend-color);
+}
+
+.acadia-dashboard-metric-grid > .acadia-card {
+  align-content: center;
+  box-sizing: border-box;
+  min-block-size: 7.25rem;
+}
+
+.acadia-dashboard-metric-grid .acadia-card-content {
+  gap: 0.25rem;
+}
+
+.acadia-dashboard-metric-grid .acadia-card-metric-value {
+  font-size: var(--acadia-type-size-lead);
+}
+
+.acadia-dashboard-metric-grid .acadia-card-metric-delta,
+.acadia-dashboard-metric-grid .acadia-card-metric-delta.is-danger {
+  color: var(--acadia-color-brand);
+}
+
+.acadia-top-assets {
+  display: grid;
+  gap: var(--acadia-space-3);
+  padding-block-start: var(--acadia-space-3);
+}
+
+.acadia-asset-preview-card {
+  align-content: start;
+  box-sizing: border-box;
+  min-block-size: 10rem;
+}
+
+.acadia-asset-preview-card .acadia-card-header > p {
+  color: var(--acadia-color-text-muted);
+  font-size: var(--acadia-type-size-body);
+  margin: 0;
+}
+
+.acadia-asset-preview-card .acadia-card-content-blurbs > span {
+  color: var(--acadia-color-text-muted);
+  font-weight: 600;
+}
+
 .acadia-dashboard-layout {
   align-items: start;
   display: grid;
@@ -10113,6 +10241,39 @@ button.acadia-profile-row:focus-visible {
 
   .acadia-grid {
     grid-template-columns: 1fr;
+  }
+
+  .acadia-card.is-dashboard-trend {
+    block-size: auto;
+    min-block-size: 26rem;
+    grid-template-rows: auto minmax(12rem, 1fr);
+  }
+
+  .acadia-dashboard-trend-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .acadia-dashboard-trend-tools {
+    align-items: flex-start;
+    flex-wrap: wrap;
+    width: 100%;
+  }
+
+  .acadia-dashboard-trend-summary {
+    gap: 0.75rem;
+  }
+
+  .acadia-dashboard-trend-value {
+    font-size: var(--acadia-type-size-heading-medium);
+  }
+
+  .acadia-dashboard-trend-change {
+    font-size: var(--acadia-type-size-body);
+  }
+
+  .acadia-top-assets {
+    padding-block-start: 0;
   }
 
   .acadia-page-header,

@@ -38,7 +38,7 @@
   const percentage = new Intl.NumberFormat("en-US", { style: "percent", maximumFractionDigits: 2 });
   const state = {
     client: null, user: null, account: null, accounts: [], holdings: [], quotes: [], snapshots: [], incomeSources: [], incomeSourcesAvailable: true, planSettings: null, properties: [], propertiesAvailable: true, planDataAvailable: true,
-    providerMetrics: {}, providerMetricsPending: new Set(), configured: false, pendingQuote: null, quoteTimer: null, quoteRequestId: 0, holdingFilter: "all", holdingSort: "value", portfolioFilter: "all", portfolioSort: "value", propertySort: "value", performancePeriod: "all", incomePeriod: "year", incomeDividendSort: "value", planHorizon: 10, incomeSourceDialogId: null, incomeSourceDeleteId: null, propertyDialogId: null, propertyDeleteId: null,
+    providerMetrics: {}, providerMetricsPending: new Set(), configured: false, pendingQuote: null, quoteTimer: null, quoteRequestId: 0, portfolioFilter: "all", portfolioSort: "value", propertySort: "value", performancePeriod: "all", incomePeriod: "year", incomeDividendSort: "value", planHorizon: 10, incomeSourceDialogId: null, incomeSourceDeleteId: null, propertyDialogId: null, propertyDeleteId: null,
   };
 
   function cents(value) {
@@ -198,6 +198,7 @@
   }
 
   function renderPerformancePeriods() {
+    const periodLabels = { all: "All time", "1y": "1 year", "6m": "6 months", "3m": "3 months" };
     document.querySelectorAll("[data-performance-period]").forEach((control) => {
       const period = control.dataset.performancePeriod;
       const hasHistory = summarizePerformance(state.snapshots, period).snapshots.length >= 2;
@@ -205,13 +206,14 @@
       control.classList.toggle("is-active", state.performancePeriod === period);
       control.setAttribute("aria-selected", String(state.performancePeriod === period));
     });
+    setText("#performance-period-label", periodLabels[state.performancePeriod]);
   }
   function renderHistory() {
     const trend = $("#history-trend");
     const performance = summarizePerformance(state.snapshots, state.performancePeriod);
     const snapshots = performance.snapshots;
     renderPerformancePeriods();
-    setDelta("#performance-rate", performance.changeRate, displaySignedPercentage);
+    setDelta("#performance-rate", performance.changeRate, (value) => `(${displaySignedPercentage(value)})`);
     setDelta("#performance-amount", performance.changeCents, displaySignedCurrency);
     if (snapshots.length < 2) {
       trend.innerHTML = '<span class="acadia-card-trend-empty">History appears after two New York daily snapshots.</span>';
@@ -225,7 +227,8 @@
     const range = maximum - minimum || 1;
     const points = values.map((value, index) => `${(index / (values.length - 1)) * 100},${96 - ((value - minimum) / range) * 84}`);
     const area = `0,100 ${points.join(" ")} 100,100`;
-    trend.innerHTML = `<svg class="acadia-card-trend-chart is-primary" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><polygon class="acadia-card-trend-area" points="${area}"></polygon><polyline class="acadia-card-trend-line" points="${points.join(" ")}"></polyline></svg>`;
+    const startY = points[0].split(",")[1];
+    trend.innerHTML = `<svg class="acadia-card-trend-chart is-primary" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><polyline class="acadia-card-trend-baseline" points="0,${startY} 100,${startY}"></polyline><polygon class="acadia-card-trend-area" points="${area}"></polygon><polyline class="acadia-card-trend-line" points="${points.join(" ")}"></polyline></svg>`;
     const summary = `${dateLabel(snapshots[0].snapshotDate)} ${currency.format(values[0])} to ${dateLabel(snapshots.at(-1).snapshotDate)} ${currency.format(values.at(-1))}`;
     trend.setAttribute("aria-label", `Portfolio performance: ${summary}.`);
     setText("#history-summary", summary);
@@ -235,37 +238,7 @@
   function instrumentLabel(value) {
     return value.replaceAll("-", " ").replace(/\b\w/g, (letter) => letter.toUpperCase());
   }
-  function holdingFilters() {
-    return [...new Set(state.holdings.map((holding) => holding.instrument_type).filter(Boolean))]
-      .sort((left, right) => instrumentLabel(left).localeCompare(instrumentLabel(right)));
-  }
-  function renderHoldingFilters() {
-    const filters = holdingFilters();
-    if (state.holdingFilter !== "all" && !filters.includes(state.holdingFilter)) state.holdingFilter = "all";
-    const controls = $("#holding-filters");
-    controls.replaceChildren(...["all", ...filters].map((filter) => {
-      const control = document.createElement("button");
-      control.type = "button";
-      control.className = "acadia-badge acadia-badge-grey acadia-badge-round acadia-page-header-pattern-filter";
-      control.dataset.holdingFilter = filter;
-      control.setAttribute("aria-pressed", String(state.holdingFilter === filter));
-      control.textContent = filter === "all" ? "All" : instrumentLabel(filter);
-      control.addEventListener("click", () => {
-        state.holdingFilter = filter;
-        render();
-      });
-      return control;
-    }));
-  }
-  function matchingHoldingRows(summary) {
-    const search = $("#holding-search").value.trim().toLowerCase();
-    return summary.rows.filter((row) => {
-      const matchesFilter = state.holdingFilter === "all" || row.asset.instrumentType === state.holdingFilter;
-      const matchesSearch = `${row.asset.symbol || ""} ${row.asset.name || ""} ${row.asset.instrumentType}`.toLowerCase().includes(search);
-      return matchesFilter && matchesSearch;
-    });
-  }
-  function sortHoldingRows(rows, sort = state.holdingSort) {
+  function sortHoldingRows(rows, sort = "value") {
     return [...rows].sort((left, right) => {
       if (sort === "name") {
         const leftName = left.asset.symbol || left.asset.name || left.asset.instrumentType;
@@ -278,13 +251,6 @@
         return new Date(rightHolding?.updated_at || rightHolding?.created_at || 0) - new Date(leftHolding?.updated_at || leftHolding?.created_at || 0);
       }
       return right.marketValueCents - left.marketValueCents;
-    });
-  }
-  function renderHoldingSort() {
-    const labels = { value: "Value", name: "Name", updated: "Recently updated" };
-    setText("#holding-sort-label", labels[state.holdingSort]);
-    document.querySelectorAll("[data-holding-sort]").forEach((control) => {
-      control.setAttribute("aria-checked", String(control.dataset.holdingSort === state.holdingSort));
     });
   }
   function openHoldingFromEvent(event) {
@@ -348,21 +314,51 @@
     });
   }
   function renderHoldings(summary) {
-    renderHoldingFilters();
-    renderHoldingSort();
-    const matchingRows = matchingHoldingRows(summary);
-    const rows = sortHoldingRows(matchingRows).slice(0, 4);
     const grid = $("#holdings-grid");
-    renderHoldingCards(grid, rows);
-    setText("#holdings-count", `${matchingRows.length} ${matchingRows.length === 1 ? "asset" : "assets"}`);
-    $("#holdings-empty").hidden = rows.length > 0;
-    if (!rows.length) {
-      const hasAssets = state.holdings.length > 0;
-      setText("#holdings-empty-title", hasAssets ? "No matching assets" : "No assets yet");
-      setText("#holdings-empty-copy", hasAssets
-        ? "Adjust your search or filter to see a different investment."
-        : "Add an asset to begin your private Brokerage workspace.");
-    }
+    const candidates = [
+      ...summary.rows.map((row) => ({ kind: "holding", valueCents: row.marketValueCents, row })),
+      ...(state.propertiesAvailable ? state.properties.map((property) => {
+        const model = propertyModel(property);
+        return { kind: "property", valueCents: propertyEquityCents(model), model };
+      }) : []),
+    ].sort((left, right) => right.valueCents - left.valueCents);
+    const topAssets = candidates.slice(0, 4);
+    grid.replaceChildren(...topAssets.map((candidate) => {
+      const card = document.createElement("article");
+      card.className = "acadia-card is-content is-interactive acadia-asset-preview-card";
+      card.tabIndex = 0;
+      if (candidate.kind === "holding") {
+        const { row } = candidate;
+        const holding = state.holdings.find((entry) => entry.id === row.asset.id);
+        const title = row.asset.symbol || row.asset.name;
+        const price = row.asset.valuationBasis === VALUATION_BASES.MANUAL_VALUE
+          ? "Manual value"
+          : row.asset.unitPriceCents === null
+            ? "Needs price"
+            : displayCardPrice(row.asset.unitPriceCents);
+        const shares = row.asset.shares === null ? "" : `${displayCardShares(row.asset.shares)} shares`;
+        card.dataset.holdingId = holding.id;
+        card.setAttribute("aria-label", `Open ${title}`);
+        card.innerHTML = `<div class="acadia-card-header"><div class="acadia-card-content-title-row"><h3>${escapeHtml(title)}</h3><span class="acadia-card-content-caption">${escapeHtml(displayCurrency(row.marketValueCents / 100))}</span></div><p>${escapeHtml(row.asset.name || instrumentLabel(row.asset.instrumentType))}</p></div><div class="acadia-card-content"><div class="acadia-card-content-blurbs"><strong>${price}</strong>${shares ? `<span>${shares}</span>` : ""}</div></div>`;
+        card.addEventListener("click", openHoldingFromEvent);
+        card.addEventListener("keydown", keyOpenHolding);
+        return card;
+      }
+      const { model } = candidate;
+      card.setAttribute("role", "button");
+      card.setAttribute("aria-label", `Edit ${model.name} property`);
+      card.innerHTML = `<div class="acadia-card-header"><div class="acadia-card-content-title-row"><h3>${escapeHtml(model.name)}</h3><span class="acadia-card-content-caption">${escapeHtml(displayCurrency(candidate.valueCents / 100))}</span></div><p>Property</p></div><div class="acadia-card-content"><div class="acadia-card-content-blurbs"><strong>${escapeHtml(displayCurrency(candidate.valueCents / 100))}</strong><span>Equity</span></div></div>`;
+      card.addEventListener("click", () => openPropertyDialog(model.id));
+      card.addEventListener("keydown", (event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          openPropertyDialog(model.id);
+        }
+      });
+      return card;
+    }));
+    setText("#holdings-count", `${candidates.length} ${candidates.length === 1 ? "asset" : "assets"}`);
+    $("#holdings-empty").hidden = topAssets.length > 0;
   }
 
   function matchingPortfolioHoldingRows(summary) {
@@ -485,21 +481,19 @@
     $("#plan-workspace").hidden = true;
     $("#asset-workspace").hidden = true;
     setActiveNavigation("home");
-    setText("#metric-value", state.propertiesAvailable
-      ? displayCurrency((summary.totalMarketValueCents + totalPropertyEquity()) / 100)
-      : "Not set");
+    setText("#metric-value", displayCurrency(summary.totalMarketValueCents / 100));
     const metricsLoading = state.providerMetricsPending.size > 0;
     setText("#metric-income", metricsLoading
       ? "Loading…"
       : summary.totalEstimatedAnnualIncomeCents === null
         ? "Not set"
         : displayCurrency(summary.totalEstimatedAnnualIncomeCents / 100));
-    const performance = renderHistory();
+    renderHistory();
     setText(
       "#metric-change-value",
-      Number.isSafeInteger(performance.changeCents) ? displaySignedCurrency(performance.changeCents) : "—",
+      Number.isSafeInteger(summary.totalDayChangeCents) ? displaySignedCurrency(summary.totalDayChangeCents) : "—",
     );
-    setDelta("#metric-change-rate", performance.changeRate, displaySignedPercentage);
+    setDelta("#metric-change-rate", summary.totalDayChangeRate, displaySignedPercentage);
     setText("#metric-estimated-growth", metricsLoading
       ? "Loading…"
       : summary.totalEstimatedAnnualGrowthCents === null
@@ -1605,7 +1599,6 @@
   $("#asset-shares").addEventListener("input", () => scheduleQuote({ preserveQuote: true }));
   $("#asset-manual-price").addEventListener("input", renderQuickQuotePreview);
   $("#asset-manual-value").addEventListener("input", renderQuickQuotePreview);
-  $("#holding-search").addEventListener("input", render);
   $("#portfolio-search").addEventListener("input", render);
   $("#income-search").addEventListener("input", render);
   $("#add-income").addEventListener("click", () => openIncomeSourceDialog());
@@ -1616,13 +1609,6 @@
   $("#cancel-delete-income-source").addEventListener("click", closeDeleteIncomeSourceDialog);
   $("#delete-income-source-dialog").addEventListener("close", () => { $("#delete-income-source-dialog").hidden = true; });
   $("#delete-income-source-form").addEventListener("submit", deleteIncomeSource);
-  document.querySelectorAll("[data-holding-sort]").forEach((control) => {
-    control.addEventListener("click", () => {
-      state.holdingSort = control.dataset.holdingSort;
-      $("#holding-sort").open = false;
-      render();
-    });
-  });
   document.querySelectorAll("[data-portfolio-holding-sort]").forEach((control) => {
     control.addEventListener("click", () => {
       state.portfolioSort = control.dataset.portfolioHoldingSort;

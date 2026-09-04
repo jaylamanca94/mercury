@@ -6,12 +6,12 @@ Use this file as the visual and interaction source of truth for Mercury. Keep th
 
 ## Home design contract
 
-- Figma node `82:1863` establishes Home's content hierarchy: navigation, dashboard header with search, two summary cards, authentic Performance, and Investments. Acadia establishes every rendered visual treatment and responsive rule.
+- Figma node `82:1863` establishes Home's chart-led hierarchy: navigation, a 320px portfolio-history card with current value and selected-period change, three supporting metric cards, and a four-card Top Assets preview. Acadia establishes every rendered visual treatment and responsive rule.
 - Consume canonical `acadia.css` and its font assets unchanged. Do not create local visual tokens, component rules, chart styles, layout rules, or responsive overrides in Mercury.
 - Use Acadia Responsive Navbar, Page Header, Form/Search, Dashboard, Content Card, Card Trend, Status Row, Badge, Action Menu, Dialog, and Button contracts directly.
 - Home presents the sole Brokerage account directly. Do not show pretend account data or call Brokerage-only value "net worth".
-- Performance renders only persisted daily snapshots. It uses the Acadia Card Trend presentation with a textual alternative; absent history uses Acadia's explicit empty state. Do not add Figma's decorative comparison line or performance percentage without a stored source.
-- Investments holds the Add asset action, Acadia sort menu, and dynamic instrument filters. Filter labels derive only from present Brokerage holdings; they never advertise future account modules.
+- Performance renders only persisted daily snapshots. It uses the Acadia Card Trend presentation with a textual alternative and a source-backed start-value reference; absent history uses Acadia's explicit empty state. The selected-period amount and percentage appear only when that range contains two stored points. Do not add Figma's illustrative S&P 500 series until Mercury stores or retrieves a date-aligned benchmark.
+- Top Assets ranks saved holdings and property by current value, shows the first four in the compact Content Card treatment, and retains direct navigation or editing. Search, sorting, metrics, and classification filters remain in the full Portfolio workspace rather than crowding Home.
 - Figma node `82:1593` defines the compact Add asset dialog: Symbol and Shares lead, live Price and Value are read-only, optional Recurring/Frequency fields save the holding's contribution plan, and the approved screenshot addendum places a Retirement choice directly beneath them. Advanced details remain on Asset detail, while manual valuation recovery stays hidden until automatic pricing fails.
 - Retirement is an editable per-holding classification inside the sole Brokerage account. Its Portfolio filter is active and may overlap instrument filters such as Crypto; it does not introduce a separate account or change calculations.
 - Asset detail uses the Figma hierarchy of Back, asset identity, summary metrics, investment profile, and a primary Details form. Its advanced fields live in Acadia Accordion disclosure; do not create a Mercury-specific details panel.

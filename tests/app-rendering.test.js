@@ -11,7 +11,7 @@ const homeSource = fs.readFileSync(path.join(root, "brokerage.js"), "utf8");
 const planSource = fs.readFileSync(path.join(root, "plan.js"), "utf8");
 
 test("Home consumes Acadia without a Mercury presentation layer", () => {
-  assert.match(styles, /^@import url\("acadia\.css\?v=20260903-add-asset-v4"\);/);
+  assert.match(styles, /^@import url\("acadia\.css\?v=20260903-home-overview-v1"\);/);
   assert.match(acadiaStyles, /\.acadia-responsive-navbar/);
   assert.match(acadiaStyles, /\.acadia-card\.is-content/);
   assert.match(acadiaStyles, /\.acadia-dialog\.is-form-modal/);
@@ -45,17 +45,22 @@ test("Mercury tightens only the page header gap before each workspace's first se
 
 test("Home follows the Figma composition with a focused Brokerage dashboard", () => {
   assert.match(indexHtml, /class="acadia-responsive-navbar"/);
-  assert.match(indexHtml, /<section class="acadia-dashboard-main" aria-label="Brokerage dashboard">/);
-  assert.match(indexHtml, /Net worth/);
-  assert.match(indexHtml, /Investment change/);
-  assert.match(indexHtml, /Estimated annual growth/);
-  assert.match(indexHtml, /Annual dividends/);
-  assert.match(indexHtml, />Performance</);
-  assert.match(indexHtml, />Investments</);
-  assert.match(indexHtml, /id="holding-sort"/);
-  assert.match(indexHtml, /id="holding-filters"/);
+  assert.match(indexHtml, /<section class="acadia-dashboard-main acadia-home-dashboard" aria-label="Brokerage dashboard">/);
+  assert.match(indexHtml, /id="metric-value"/);
+  assert.match(indexHtml, /id="performance-amount"/);
+  assert.match(indexHtml, /id="performance-rate"/);
+  assert.match(indexHtml, /id="performance-period-label"[^>]*>All time</);
+  assert.match(indexHtml, />Portfolio change</);
+  assert.match(indexHtml, />Expected annual growth</);
+  assert.match(indexHtml, />Passive income</);
+  assert.match(indexHtml, />Top Assets</);
+  assert.doesNotMatch(indexHtml, />Dashboard</);
+  assert.doesNotMatch(indexHtml, /id="holding-search"|id="holding-sort"|id="holding-filters"/);
   assert.match(indexHtml, /id="performance-periods"/);
   assert.match(indexHtml, /class="acadia-card is-content is-dashboard-trend"/);
+  assert.match(indexHtml, /class="acadia-grid acadia-dashboard-metric-grid" style="--acadia-grid-columns: 3"/);
+  assert.match(indexHtml, /class="acadia-grid acadia-top-assets-grid" style="--acadia-grid-columns: 4"/);
+  assert.match(indexHtml, /class="acadia-chart-legend"[\s\S]*>Portfolio</);
   assert.doesNotMatch(indexHtml, /--acadia-card-trend-height: 16rem/);
   assert.match(indexHtml, /id="holdings-count"/);
   assert.doesNotMatch(indexHtml, /id="target-status"|Portfolio targets/);
@@ -103,20 +108,21 @@ test("Mercury composes the complete Acadia responsive Navbar", () => {
   assert.match(homeSource, /document\.querySelectorAll\("\[data-sign-out\]"\)/);
 });
 
-test("Home uses genuine performance history, dynamic investment controls, and Acadia card actions", () => {
+test("Home uses genuine performance history and ranks holdings with properties", () => {
   assert.match(homeSource, /snapshots\.length < 2/);
   assert.match(homeSource, /slice\(0, 4\)/);
   assert.match(homeSource, /acadia-card-trend-chart/);
-  assert.match(homeSource, /acadia-action-menu/);
-  assert.match(homeSource, /holdingFilter/);
-  assert.match(homeSource, /holdingSort/);
-  assert.match(homeSource, /matchingHoldingRows/);
-  assert.match(homeSource, /renderHoldingFilters/);
+  assert.match(homeSource, /acadia-card-trend-baseline/);
+  assert.match(homeSource, /kind: "property"/);
+  assert.match(homeSource, /propertyEquityCents\(model\)/);
+  assert.match(homeSource, /acadia-asset-preview-card/);
+  assert.doesNotMatch(homeSource, /holdingFilter|holdingSort|matchingHoldingRows|renderHoldingFilters/);
   assert.match(homeSource, /summarizePerformance/);
   assert.match(homeSource, /data-performance-period/);
   assert.match(homeSource, /control\.disabled = !hasHistory/);
   assert.doesNotMatch(homeSource, /S&P 500/);
-  assert.match(homeSource, /Recently updated/);
+  assert.match(homeSource, /summary\.totalDayChangeCents/);
+  assert.match(homeSource, /summary\.totalDayChangeRate/);
   assert.match(homeSource, /Last successful quote remains in place/);
 });
 
@@ -128,13 +134,13 @@ test("large currency display values use the shared compact format", () => {
   assert.match(homeSource, /thousandCurrency\.format\(value\)/);
   assert.match(homeSource, /millionCurrency\.format\(value\)/);
   assert.match(homeSource, /\[KMBT\]/);
-  assert.match(homeSource, /summary\.totalMarketValueCents \+ totalPropertyEquity\(\)/);
+  assert.match(homeSource, /setText\("#metric-value", displayCurrency\(summary\.totalMarketValueCents \/ 100\)\)/);
   assert.match(homeSource, /setText\(\s*"#metric-change-value"/);
-  assert.match(homeSource, /setDelta\("#metric-change-rate", performance\.changeRate/);
+  assert.match(homeSource, /setDelta\("#metric-change-rate", summary\.totalDayChangeRate/);
   assert.match(homeSource, /"#metric-estimated-growth"/);
   assert.match(homeSource, /summary\.totalEstimatedAnnualGrowthCents/);
   assert.match(homeSource, /summary\.estimatedAnnualGrowthRate/);
-  assert.match(indexHtml, /Estimated annual growth/);
+  assert.match(indexHtml, /Expected annual growth/);
   assert.match(homeSource, /summary\.distributionYieldRate/);
   assert.match(homeSource, /annual_dividend_cents/);
   assert.match(homeSource, /valueBadge\(valueCents\)[\s\S]*displayCurrency/);
@@ -232,7 +238,7 @@ test("Plan is a separate Base-plan projection workspace with aligned portfolio c
   assert.match(indexHtml, /id="plan-assumptions-dialog"/);
   assert.match(indexHtml, /id="property-dialog"/);
   assert.match(indexHtml, /<script src="plan\.js\?v=20260903-property-v1"><\/script>/);
-  assert.match(indexHtml, /<script src="brokerage\.js\?v=20260903-add-asset-v4"><\/script>/);
+  assert.match(indexHtml, /<script src="brokerage\.js\?v=20260903-home-overview-v1"><\/script>/);
   assert.match(homeSource, /function routePlan\(\)/);
   assert.match(homeSource, /function renderPlan\(summary\)/);
   assert.match(homeSource, /function renderPlanChart/);

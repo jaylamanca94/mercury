@@ -75,3 +75,61 @@ final result: blocked
 - Recheck one authenticated save and detail edit after the updated application is deployed.
 
 final result: passed
+
+---
+
+## Refined Home overview — 2026-09-03
+
+**Comparison target**
+
+- Source visual truth: `/Users/jaylamanca/Desktop/Mercury/Home - Macbook 14_.png` and Figma `CSCV8qZu9ryspC07K36vTg`, node `82:1863`.
+- Populated visual comparison: a temporary local QA fixture at `http://127.0.0.1:4199/home-qa.html` in the Codex in-app Browser (removed after the inline comparison capture).
+- Production-state check: `http://127.0.0.1:4199/` in the truthful unconfigured state.
+- Desktop viewport: 1512 × 981 CSS pixels at device scale 1.
+- Mobile viewport: 390 × 844 CSS pixels at device scale 1.
+- Source raster: 3024 × 1962 pixels at device scale 2, normalised to the 1512 × 981 CSS viewport for comparison.
+- State: dark theme; populated comparison uses the supplied illustrative values only to exercise the production markup and CSS, while the application continues to render persisted owner data in normal use.
+
+**Full-view comparison evidence**
+
+- The implementation matches the source's 148px desktop rail, 48px content inset below the 80px Navbar, 320px chart card, 24px primary rhythm, three equal supporting metrics, Top Assets hierarchy, and four equal 160px asset cards.
+- The 390px pass collapses the chart header, legend, period controls, supporting metrics, and asset grid without horizontal clipping. The fixed Acadia phone navigation remains available.
+- Mercury intentionally omits the source's illustrative S&P 500 curve and legend because the current data model has no date-aligned benchmark series. The portfolio line, filled area, selected-range change, and start-value reference remain source-backed.
+
+**Focused region comparison evidence**
+
+- The chart header and supporting metric row were inspected at 1:1 CSS scale. Value hierarchy is 32px / 20px / 16px as in Figma, the selected period retains Acadia's pill treatment, and supporting cards use the source's compact title-to-label gap.
+- The Top Assets region was inspected at 1:1 CSS scale. Holding and property cards share the same title, accent value, category, and lower detail rhythm; property uses the truthful `Equity` label instead of the screenshot's placeholder share count.
+
+**Comparison history**
+
+- [P2 resolved] The first implementation pass let the metric-card content gap expand the cards to 139px. The supporting-card content gap was reduced to 4px, producing the source-aligned 119px rendered row.
+- [P2 resolved] The initial movement rates inherited red/green semantic colours and 24px metric values. The refined pass maps the overview's rates to the Figma Tiffany accent and uses 20px metric values without changing the underlying calculations.
+- [P2 resolved] The first mobile pass was checked for chart-control and card overflow. Responsive stacking now preserves readable controls and full-width cards at 390px.
+
+**Required fidelity surfaces**
+
+- Fonts and typography: local Syncopate and Geist assets render the existing Mercury wordmark and Acadia hierarchy; sizes, weights, wrapping, and compact labels match the Figma roles.
+- Spacing and layout rhythm: desktop rails, 32px card padding, 24px gaps, card heights, grid tracks, radii, and responsive collapse were measured against the source.
+- Colors and visual tokens: surfaces, borders, shadows, page gradient, text hierarchy, and Tiffany data accents use Acadia tokens; no new Mercury colour system was introduced.
+- Image quality and asset fidelity: the existing vector Mercury mark and Font Awesome glyphs are retained. The chart remains a live data visualisation rather than a static Figma export.
+- Copy and content: Portfolio change, Expected annual growth, Passive income, Top Assets, period labels, property equity, and Add asset match the refined hierarchy while preserving truthful data semantics.
+
+**Interaction evidence**
+
+- Period controls retain their selected, disabled-without-history, and keyboard-operable button states. Home holding cards still navigate to Asset Details; property cards open the existing editor; Add asset retains the existing quick-add flow.
+- The production empty state correctly disables unavailable actions and does not invent portfolio history or holdings.
+- The in-app Browser reported no console warnings or errors in the populated visual comparison.
+
+**Findings**
+
+- No actionable P0, P1, or P2 differences remain.
+- P3: a genuine S&P 500 comparison can be added later once Mercury has a date-aligned benchmark contract; displaying it now would misrepresent illustrative Figma data as live financial history.
+
+**Implementation checklist**
+
+- Keep portfolio history and selected-range change sourced from persisted daily snapshots.
+- Keep Portfolio as the full search, sort, filter, and detailed-metric workspace.
+- Recheck the populated authenticated Home after deployment because deployment and local design acceptance are separate claims.
+
+final result: passed
