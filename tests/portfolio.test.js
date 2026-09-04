@@ -416,12 +416,18 @@ test("performance periods use only persisted daily snapshots and calculate an au
   const all = summarizePerformance(snapshots);
   const threeMonths = summarizePerformance(snapshots, "3m");
 
-  assert.deepEqual(Object.keys(PERFORMANCE_PERIODS), ["all", "1y", "6m", "3m"]);
+  assert.deepEqual(Object.keys(PERFORMANCE_PERIODS), ["3m", "6m", "1y", "all"]);
   assert.equal(all.changeCents, 50_000);
   assert.equal(all.changeRate, 0.5);
+  assert.equal(all.startDate, "2025-01-01");
+  assert.equal(all.endDate, "2026-09-01");
+  assert.equal(all.latestValueCents, 150_000);
   assert.deepEqual(performanceSnapshots(snapshots, "3m").map((snapshot) => snapshot.snapshotDate), ["2026-06-01", "2026-09-01"]);
   assert.equal(threeMonths.changeCents, 15_000);
   assert.ok(Math.abs(threeMonths.changeRate - (150_000 / 135_000 - 1)) < Number.EPSILON);
+  assert.equal(threeMonths.startDate, "2026-06-01");
+  assert.equal(threeMonths.endDate, "2026-09-01");
+  assert.equal(threeMonths.latestValueCents, 150_000);
 });
 
 test("performance returns stay unavailable until a range has two authentic snapshots", () => {
@@ -429,4 +435,18 @@ test("performance returns stay unavailable until a range has two authentic snaps
 
   assert.equal(performance.changeCents, null);
   assert.equal(performance.changeRate, null);
+  assert.equal(performance.startDate, "2026-09-01");
+  assert.equal(performance.endDate, "2026-09-01");
+  assert.equal(performance.latestValueCents, 150_000);
+});
+
+test("performance context stays explicitly unavailable when no authentic snapshots exist", () => {
+  assert.deepEqual(summarizePerformance([], "6m"), {
+    snapshots: [],
+    startDate: null,
+    endDate: null,
+    latestValueCents: null,
+    changeCents: null,
+    changeRate: null,
+  });
 });

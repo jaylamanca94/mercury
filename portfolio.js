@@ -33,10 +33,10 @@ const ALLOCATION_CATEGORIES = Object.freeze([
 
 const CONTRIBUTION_FREQUENCIES = Object.freeze(["weekly", "monthly"]);
 const PERFORMANCE_PERIODS = Object.freeze({
-  all: null,
-  "1y": { years: 1 },
-  "6m": { months: 6 },
   "3m": { months: 3 },
+  "6m": { months: 6 },
+  "1y": { years: 1 },
+  all: null,
 });
 
 class PortfolioValidationError extends Error {
@@ -376,14 +376,27 @@ function performanceSnapshots(snapshots, period = "all") {
 
 function summarizePerformance(snapshots, period = "all") {
   const range = performanceSnapshots(snapshots, period);
+  const startDate = range[0]?.snapshotDate ?? null;
+  const endDate = range.at(-1)?.snapshotDate ?? null;
+  const latestValueCents = range.at(-1)?.totalValueCents ?? null;
   if (range.length < 2) {
-    return { snapshots: range, changeCents: null, changeRate: null };
+    return {
+      snapshots: range,
+      startDate,
+      endDate,
+      latestValueCents,
+      changeCents: null,
+      changeRate: null,
+    };
   }
   const start = range[0].totalValueCents;
   const end = range.at(-1).totalValueCents;
   const changeCents = end - start;
   return {
     snapshots: range,
+    startDate,
+    endDate,
+    latestValueCents,
     changeCents,
     changeRate: start === 0 ? null : changeCents / start,
   };

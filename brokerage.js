@@ -108,6 +108,22 @@
     element.classList.toggle("is-danger", value < 0);
     element.classList.remove("is-warning");
   }
+  function setMovement(selector, value, formatter, { hideWhenUnavailable = false } = {}) {
+    const element = $(selector);
+    const isAvailable = Number.isFinite(value);
+    element.hidden = hideWhenUnavailable && !isAvailable;
+    element.textContent = isAvailable ? formatter(value) : "—";
+    element.classList.toggle("is-positive", isAvailable && value > 0);
+    element.classList.toggle("is-danger", isAvailable && value < 0);
+    element.classList.toggle("is-neutral", !isAvailable || value === 0);
+  }
+  function setNeutralMetric(selector, value, formatter) {
+    const element = $(selector);
+    const isAvailable = Number.isFinite(value);
+    element.hidden = !isAvailable;
+    if (isAvailable) element.textContent = formatter(value);
+    element.classList.remove("is-positive", "is-danger", "is-warning");
+  }
   function escapeHtml(value) {
     return String(value ?? "").replace(/[&<>"']/g, (character) => ({
       "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;",
@@ -116,6 +132,11 @@
   function dateLabel(value) {
     const date = /^\d{4}-\d{2}-\d{2}$/.test(value) ? new Date(`${value}T12:00:00.000Z`) : new Date(value);
     return new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric", timeZone: "America/New_York" }).format(date);
+  }
+  function historyDateLabel(value) {
+    if (!value) return "—";
+    const date = /^\d{4}-\d{2}-\d{2}$/.test(value) ? new Date(`${value}T12:00:00.000Z`) : new Date(value);
+    return new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric", year: "numeric", timeZone: "America/New_York" }).format(date);
   }
   function routeAssetId() {
     const match = window.location.hash.match(/^#asset\/([^/]+)$/);
@@ -196,7 +217,6 @@
     return value ? value.replaceAll("-", " ").replace(/\b\w/g, (letter) => letter.toUpperCase()) : "Not set";
   }
   function setControlsDisabled(disabled) {
-    $("#add-asset").disabled = disabled;
     $("#portfolio-add-asset").disabled = disabled;
     $("#portfolio-add-property").disabled = disabled || !state.propertiesAvailable;
     $("#add-income").disabled = disabled || !state.incomeSourcesAvailable;
@@ -208,23 +228,58 @@
     document.querySelectorAll("[data-performance-period]").forEach((control) => {
       const period = control.dataset.performancePeriod;
       const hasHistory = summarizePerformance(state.snapshots, period).snapshots.length >= 2;
+      const isActive = state.performancePeriod === period;
       control.disabled = !hasHistory;
-      control.classList.toggle("is-active", state.performancePeriod === period);
-      control.setAttribute("aria-selected", String(state.performancePeriod === period));
+      control.classList.toggle("is-active", isActive);
+      control.setAttribute("aria-selected", String(isActive));
+      control.tabIndex = isActive && hasHistory ? 0 : -1;
     });
-    setText("#performance-period-label", periodLabels[state.performancePeriod]);
+    const activeTab = document.querySelector(`[data-performance-period="${state.performancePeriod}"]`);
+    $("#history-panel").setAttribute("aria-labelledby", activeTab.id);
+    setText("#performance-context", `Portfolio change · ${periodLabels[state.performancePeriod]}`);
+  }
+  function selectPerformancePeriod(period, { focus = false } = {}) {
+    const control = document.querySelector(`[data-performance-period="${period}"]`);
+    if (!control || control.disabled) return;
+    state.performancePeriod = period;
+    render();
+    if (focus) control.focus();
+  }
+  function handlePerformancePeriodKeydown(event) {
+    const enabledTabs = [...document.querySelectorAll("[data-performance-period]:not(:disabled)")];
+    const currentIndex = enabledTabs.indexOf(event.currentTarget);
+    if (currentIndex < 0) return;
+    let nextIndex = null;
+    if (["ArrowRight", "ArrowDown"].includes(event.key)) nextIndex = (currentIndex + 1) % enabledTabs.length;
+    if (["ArrowLeft", "ArrowUp"].includes(event.key)) nextIndex = (currentIndex - 1 + enabledTabs.length) % enabledTabs.length;
+    if (event.key === "Home") nextIndex = 0;
+    if (event.key === "End") nextIndex = enabledTabs.length - 1;
+    if (nextIndex === null) return;
+    event.preventDefault();
+    selectPerformancePeriod(enabledTabs[nextIndex].dataset.performancePeriod, { focus: true });
   }
   function renderHistory() {
     const trend = $("#history-trend");
     const performance = summarizePerformance(state.snapshots, state.performancePeriod);
     const snapshots = performance.snapshots;
+    const allHistory = summarizePerformance(state.snapshots, "all");
     renderPerformancePeriods();
-    setDelta("#performance-rate", performance.changeRate, (value) => `(${displaySignedPercentage(value)})`);
-    setDelta("#performance-amount", performance.changeCents, displaySignedCurrency);
+    setMovement("#performance-rate", performance.changeRate, (value) => `(${displaySignedPercentage(value)})`, { hideWhenUnavailable: true });
+    setMovement("#performance-amount", performance.changeCents, displaySignedCurrency, { hideWhenUnavailable: true });
+    setText("#history-start-date", historyDateLabel(performance.startDate));
+    setText("#history-end-date", historyDateLabel(performance.endDate));
+    setText("#history-latest-value", Number.isSafeInteger(performance.latestValueCents)
+      ? displayCurrency(performance.latestValueCents / 100)
+      : "—");
+    setText("#history-available-since", allHistory.startDate
+      ? `History available since ${historyDateLabel(allHistory.startDate)}`
+      : "History not available yet");
     if (snapshots.length < 2) {
       trend.innerHTML = '<span class="acadia-card-trend-empty">History appears after two New York daily snapshots.</span>';
       trend.setAttribute("aria-label", "Portfolio performance unavailable until two daily snapshots exist");
-      setText("#history-summary", "A performance trend appears after two New York daily snapshots.");
+      setText("#history-summary", allHistory.startDate
+        ? `History is available since ${historyDateLabel(allHistory.startDate)}, and a performance trend appears after two daily snapshots.`
+        : "A performance trend appears after two New York daily snapshots.");
       return performance;
     }
     const values = snapshots.map((snapshot) => snapshot.totalValueCents / 100);
@@ -235,7 +290,7 @@
     const area = `0,100 ${points.join(" ")} 100,100`;
     const startY = points[0].split(",")[1];
     trend.innerHTML = `<svg class="acadia-card-trend-chart is-primary" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><polyline class="acadia-card-trend-baseline" points="0,${startY} 100,${startY}"></polyline><polygon class="acadia-card-trend-area" points="${area}"></polygon><polyline class="acadia-card-trend-line" points="${points.join(" ")}"></polyline></svg>`;
-    const summary = `${dateLabel(snapshots[0].snapshotDate)} ${currency.format(values[0])} to ${dateLabel(snapshots.at(-1).snapshotDate)} ${currency.format(values.at(-1))}`;
+    const summary = `${historyDateLabel(performance.startDate)} ${currency.format(values[0])} to ${historyDateLabel(performance.endDate)} ${currency.format(values.at(-1))}; latest portfolio value ${displayCurrency(performance.latestValueCents / 100)}`;
     trend.setAttribute("aria-label", `Portfolio performance: ${summary}.`);
     setText("#history-summary", summary);
     return performance;
@@ -389,41 +444,50 @@
       }) : []),
     ].sort((left, right) => right.valueCents - left.valueCents);
     const topAssets = candidates.slice(0, 4);
-    grid.replaceChildren(...topAssets.map((candidate) => {
-      const card = document.createElement("article");
-      card.className = "acadia-card is-content is-interactive acadia-asset-preview-card";
-      card.tabIndex = 0;
+    grid.replaceChildren(...topAssets.map((candidate, index) => {
+      const item = document.createElement("article");
+      item.className = "mercury-home-asset-row";
+      item.setAttribute("role", "listitem");
+      const button = document.createElement("button");
+      button.className = "mercury-home-asset-action";
+      button.type = "button";
       if (candidate.kind === "holding") {
         const { row } = candidate;
         const holding = state.holdings.find((entry) => entry.id === row.asset.id);
         const title = row.asset.symbol || row.asset.name;
-        const price = row.asset.valuationBasis === VALUATION_BASES.MANUAL_VALUE
-          ? "Manual value"
+        const accountClassification = row.asset.isRetirement
+          ? "Retirement"
+          : row.asset.instrumentType === "crypto"
+            ? "Crypto"
+            : "Brokerage";
+        const specificInstrument = row.asset.instrumentType === "other"
+          || instrumentLabel(row.asset.instrumentType).toLowerCase() === accountClassification.toLowerCase()
+          ? ""
+          : instrumentLabel(row.asset.instrumentType);
+        const classification = [accountClassification, specificInstrument].filter(Boolean).join(" · ");
+        const detail = row.asset.valuationBasis === VALUATION_BASES.MANUAL_VALUE
+          ? "Manual valuation"
           : row.asset.unitPriceCents === null
-            ? "Needs price"
-            : displayCardPrice(row.asset.unitPriceCents);
-        const shares = row.asset.shares === null ? "" : `${displayCardShares(row.asset.shares)} shares`;
-        card.dataset.holdingId = holding.id;
-        card.setAttribute("aria-label", `Open ${title}`);
-        card.innerHTML = `<div class="acadia-card-header"><div class="acadia-card-content-title-row"><h3>${escapeHtml(title)}</h3><span class="acadia-card-content-caption">${escapeHtml(displayCurrency(row.marketValueCents / 100))}</span></div><p>${escapeHtml(row.asset.name || instrumentLabel(row.asset.instrumentType))}</p></div><div class="acadia-card-content"><div class="acadia-card-content-blurbs"><strong>${price}</strong>${shares ? `<span>${shares}</span>` : ""}</div></div>`;
-        card.addEventListener("click", openHoldingFromEvent);
-        card.addEventListener("keydown", keyOpenHolding);
-        return card;
+            ? "Price not set"
+            : `${displayCardPrice(row.asset.unitPriceCents)} price · ${displayCardShares(row.asset.shares)} shares`;
+        button.dataset.homeHoldingId = holding.id;
+        button.setAttribute("aria-label", `Open ${title} asset details`);
+        button.innerHTML = `<span class="mercury-home-asset-rank" aria-hidden="true">${index + 1}</span><span class="mercury-home-asset-identity"><strong>${escapeHtml(title)}</strong><small>${escapeHtml(classification)}</small></span><span class="mercury-home-asset-value"><strong>${escapeHtml(displayCurrency(row.marketValueCents / 100))}</strong><small>Current value</small></span><span class="mercury-home-asset-detail">${escapeHtml(detail)}</span><i class="fa-solid fa-chevron-right acadia-icon" aria-hidden="true"></i>`;
+        button.addEventListener("click", () => navigateToAsset(holding.id));
+        item.append(button);
+        return item;
       }
       const { model } = candidate;
-      card.setAttribute("role", "button");
-      card.setAttribute("aria-label", `Edit ${model.name} property`);
-      card.innerHTML = `<div class="acadia-card-header"><div class="acadia-card-content-title-row"><h3>${escapeHtml(model.name)}</h3><span class="acadia-card-content-caption">${escapeHtml(displayCurrency(candidate.valueCents / 100))}</span></div><p>Property</p></div><div class="acadia-card-content"><div class="acadia-card-content-blurbs"><strong>${escapeHtml(displayCurrency(candidate.valueCents / 100))}</strong><span>Equity</span></div></div>`;
-      card.addEventListener("click", () => openPropertyDialog(model.id));
-      card.addEventListener("keydown", (event) => {
-        if (event.key === "Enter" || event.key === " ") {
-          event.preventDefault();
-          openPropertyDialog(model.id);
-        }
-      });
-      return card;
+      button.dataset.homePropertyId = model.id;
+      button.setAttribute("aria-label", `Edit ${model.name} property`);
+      button.innerHTML = `<span class="mercury-home-asset-rank" aria-hidden="true">${index + 1}</span><span class="mercury-home-asset-identity"><strong>${escapeHtml(model.name)}</strong><small>Property</small></span><span class="mercury-home-asset-value"><strong>${escapeHtml(displayCurrency(candidate.valueCents / 100))}</strong><small>Equity</small></span><span class="mercury-home-asset-detail">Market value ${escapeHtml(displayCurrency(model.currentValueCents / 100))} · Mortgage ${escapeHtml(displayCurrency(model.mortgageBalanceCents / 100))}</span><i class="fa-solid fa-chevron-right acadia-icon" aria-hidden="true"></i>`;
+      button.addEventListener("click", () => openPropertyDialog(model.id));
+      item.append(button);
+      return item;
     }));
-    setText("#holdings-count", `${candidates.length} ${candidates.length === 1 ? "asset" : "assets"}`);
+    setText("#holdings-count", candidates.length
+      ? `${topAssets.length} of ${candidates.length} shown`
+      : "0 assets");
     $("#holdings-empty").hidden = topAssets.length > 0;
   }
 
@@ -655,18 +719,15 @@
         ? "Not set"
         : displayCurrency(summary.totalEstimatedAnnualIncomeCents / 100));
     renderHistory();
-    setText(
-      "#metric-change-value",
-      Number.isSafeInteger(summary.totalDayChangeCents) ? displaySignedCurrency(summary.totalDayChangeCents) : "—",
-    );
-    setDelta("#metric-change-rate", summary.totalDayChangeRate, displaySignedPercentage);
+    setMovement("#metric-change-value", summary.totalDayChangeCents, displaySignedCurrency);
+    setMovement("#metric-change-rate", summary.totalDayChangeRate, displaySignedPercentage, { hideWhenUnavailable: true });
     setText("#metric-estimated-growth", metricsLoading
       ? "Loading…"
       : summary.totalEstimatedAnnualGrowthCents === null
         ? "Not set"
         : displayCurrency(summary.totalEstimatedAnnualGrowthCents / 100));
-    setDelta("#metric-estimated-growth-rate", metricsLoading ? null : summary.estimatedAnnualGrowthRate, percentage.format.bind(percentage));
-    setDelta("#metric-income-yield", metricsLoading ? null : summary.distributionYieldRate, percentage.format.bind(percentage));
+    setNeutralMetric("#metric-estimated-growth-rate", metricsLoading ? null : summary.estimatedAnnualGrowthRate, percentage.format.bind(percentage));
+    setNeutralMetric("#metric-income-yield", metricsLoading ? null : summary.distributionYieldRate, percentage.format.bind(percentage));
     setText("#portfolio-warnings", state.holdings.length ? summary.warnings.join(" ") : "");
     renderHoldings(summary);
   }
@@ -1919,7 +1980,6 @@
       window.location.reload();
     });
   });
-  $("#add-asset").addEventListener("click", openQuickAdd);
   $("#portfolio-add-asset").addEventListener("click", openQuickAdd);
   $("#close-dialog").addEventListener("click", () => $("#asset-dialog").close());
   $("#cancel-dialog").addEventListener("click", () => $("#asset-dialog").close());
@@ -1977,10 +2037,9 @@
   });
   document.querySelectorAll("[data-performance-period]").forEach((control) => {
     control.addEventListener("click", () => {
-      if (control.disabled) return;
-      state.performancePeriod = control.dataset.performancePeriod;
-      render();
+      selectPerformancePeriod(control.dataset.performancePeriod);
     });
+    control.addEventListener("keydown", handlePerformancePeriodKeydown);
   });
   document.querySelectorAll("[data-income-period]").forEach((control) => {
     control.addEventListener("click", () => {

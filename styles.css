@@ -1,5 +1,204 @@
 @import url("acadia.css?v=20260903-home-overview-v1");
 
+.mercury-home-trend {
+  --acadia-dashboard-trend-card-height: 14rem;
+  gap: var(--acadia-space-2) !important;
+  grid-template-rows: auto minmax(4.5rem, 1fr) auto !important;
+}
+
+.mercury-home-trend-headlines {
+  align-items: end;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--acadia-space-3);
+}
+
+.mercury-home-headline,
+.mercury-home-performance-result {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.mercury-home-kicker {
+  color: var(--acadia-color-text-muted);
+  font-size: var(--acadia-type-size-small);
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.mercury-home-performance-result .acadia-dashboard-trend-summary {
+  gap: var(--acadia-space-1);
+}
+
+.acadia-dashboard-trend-change.is-positive,
+.mercury-home-metric-strip .is-positive {
+  color: var(--acadia-color-action);
+}
+
+.acadia-dashboard-trend-change.is-neutral,
+.mercury-home-metric-strip .is-neutral {
+  color: var(--acadia-color-text);
+}
+
+.mercury-home-trend-footer {
+  align-items: end;
+  border-block-start: 1px solid var(--acadia-color-border);
+  display: flex;
+  gap: var(--acadia-space-3);
+  justify-content: space-between;
+  padding-block-start: var(--acadia-space-1);
+}
+
+.mercury-home-history-context {
+  display: flex;
+  gap: var(--acadia-space-3);
+  margin: 0;
+}
+
+.mercury-home-history-context > div {
+  align-items: baseline;
+  display: flex;
+  gap: 0.25rem;
+}
+
+.mercury-home-history-context dt,
+.mercury-home-trend-footer p {
+  color: var(--acadia-color-text-muted);
+  font-size: 0.75rem;
+  line-height: 1rem;
+  margin: 0;
+}
+
+.mercury-home-history-context dd {
+  font-size: var(--acadia-type-size-small);
+  font-weight: 700;
+  margin: 0;
+}
+
+.mercury-home-metric-strip {
+  display: grid;
+  gap: 0;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  padding-block: var(--acadia-space-2);
+}
+
+.mercury-home-metric-strip > div {
+  display: grid;
+  gap: 0.25rem;
+  min-width: 0;
+  padding: 0.25rem var(--acadia-space-3);
+}
+
+.mercury-home-metric-strip > div + div {
+  border-inline-start: 1px solid var(--acadia-color-border);
+}
+
+.mercury-home-metric-strip dt,
+.mercury-home-metric-basis {
+  color: var(--acadia-color-text-muted);
+  font-size: var(--acadia-type-size-small);
+}
+
+.mercury-home-metric-strip dt {
+  font-weight: 700;
+}
+
+.mercury-home-metric-strip dd {
+  align-items: baseline;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--acadia-space-1);
+  margin: 0;
+}
+
+.mercury-home-metric-strip dd.mercury-home-metric-basis {
+  display: block;
+}
+
+.mercury-home-metric-strip dd strong {
+  font-family: var(--acadia-font-expression);
+  font-size: var(--acadia-type-size-lead);
+}
+
+.mercury-home-metric-strip dd span {
+  color: var(--acadia-color-text);
+  font-weight: 700;
+}
+
+.mercury-home-metric-strip .is-danger {
+  color: var(--acadia-color-danger);
+}
+
+.mercury-home-assets-list {
+  padding-block: 0;
+}
+
+.mercury-home-asset-row + .mercury-home-asset-row {
+  border-block-start: 1px solid var(--acadia-color-border);
+}
+
+.mercury-home-asset-action {
+  align-items: center;
+  appearance: none;
+  background: transparent;
+  border: 0;
+  color: var(--acadia-color-text);
+  cursor: pointer;
+  display: grid;
+  font: inherit;
+  gap: var(--acadia-space-3);
+  grid-template-columns: 2rem minmax(10rem, 1fr) minmax(7rem, auto) minmax(15rem, 1.3fr) 1rem;
+  min-height: 4.75rem;
+  padding: var(--acadia-space-2) var(--acadia-space-3);
+  text-align: start;
+  width: 100%;
+}
+
+.mercury-home-asset-action:hover {
+  background: color-mix(in srgb, var(--acadia-color-action) 6%, transparent);
+}
+
+.mercury-home-asset-action:focus-visible {
+  box-shadow: inset 0 0 0 2px var(--acadia-color-focus);
+  outline: 0;
+}
+
+.mercury-home-asset-rank {
+  color: var(--acadia-color-text-muted);
+  font-family: var(--acadia-font-expression);
+  font-weight: 700;
+  text-align: center;
+}
+
+.mercury-home-asset-identity,
+.mercury-home-asset-value {
+  display: grid;
+  gap: 0.125rem;
+  min-width: 0;
+}
+
+.mercury-home-asset-identity strong,
+.mercury-home-asset-value strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mercury-home-asset-identity small,
+.mercury-home-asset-value small,
+.mercury-home-asset-detail {
+  color: var(--acadia-color-text-muted);
+}
+
+.mercury-home-asset-value {
+  justify-items: end;
+  text-align: end;
+}
+
+.mercury-home-asset-detail {
+  text-align: end;
+}
+
 /* Figma 110:7662 keeps one dense-section unit between Portfolio header
    content and the content surface that follows it. */
 #portfolio-workspace .mercury-portfolio-view-panel,
@@ -322,6 +521,66 @@
 }
 
 @media (max-width: 47.98rem) {
+  .mercury-home-trend {
+    --acadia-dashboard-trend-card-height: auto;
+    min-block-size: 20rem !important;
+    grid-template-rows: auto minmax(8rem, 1fr) auto !important;
+  }
+
+  .mercury-home-trend-footer,
+  .mercury-home-history-context {
+    align-items: stretch;
+    flex-direction: column;
+    gap: var(--acadia-space-2);
+  }
+
+  .mercury-home-history-context {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .mercury-home-history-context > div {
+    align-items: start;
+    display: grid;
+  }
+
+  .mercury-home-history-context > div:last-child {
+    grid-column: 1 / -1;
+  }
+
+  .mercury-home-metric-strip {
+    grid-template-columns: 1fr;
+  }
+
+  .mercury-home-metric-strip > div {
+    padding-block: var(--acadia-space-2);
+  }
+
+  .mercury-home-metric-strip > div + div {
+    border-block-start: 1px solid var(--acadia-color-border);
+    border-inline-start: 0;
+  }
+
+  .mercury-home-asset-action {
+    align-items: start;
+    gap: var(--acadia-space-2);
+    grid-template-columns: 1.5rem minmax(0, 1fr) auto;
+  }
+
+  .mercury-home-asset-value {
+    grid-column: 3;
+    grid-row: 1;
+  }
+
+  .mercury-home-asset-detail {
+    grid-column: 2 / -1;
+    text-align: start;
+  }
+
+  .mercury-home-asset-action > .acadia-icon {
+    display: none;
+  }
+
   .mercury-portfolio-summary {
     grid-template-columns: 1fr;
   }
