@@ -93,6 +93,67 @@
   display: none;
 }
 
+.mercury-portfolio-view-panel[hidden] {
+  display: none;
+}
+
+#portfolio-holdings-grid[hidden],
+.mercury-portfolio-table-wrap[hidden],
+.mercury-portfolio-object-list[hidden] {
+  display: none;
+}
+
+.mercury-portfolio-table-wrap .acadia-table {
+  min-width: 68rem;
+}
+
+.mercury-portfolio-table-wrap th:last-child,
+.mercury-portfolio-table-wrap td:last-child {
+  text-align: right;
+  width: 3rem;
+}
+
+.mercury-portfolio-asset-identity {
+  display: grid;
+  gap: 0.125rem;
+  min-width: 8rem;
+}
+
+.mercury-portfolio-asset-link.acadia-button {
+  font-weight: 800;
+  justify-content: flex-start;
+  min-height: 2rem;
+  padding: 0.125rem 0.25rem;
+}
+
+.mercury-portfolio-object-list {
+  display: none;
+}
+
+.mercury-portfolio-object-metrics {
+  display: grid;
+  gap: var(--acadia-space-2);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin: 0;
+}
+
+.mercury-portfolio-object-metrics > div {
+  display: grid;
+  gap: 0.125rem;
+}
+
+.mercury-portfolio-object-metrics dt {
+  color: var(--acadia-color-text-muted);
+  font-size: 0.75rem;
+  font-weight: 700;
+  line-height: 1rem;
+  text-transform: uppercase;
+}
+
+.mercury-portfolio-object-metrics dd {
+  margin: 0;
+}
+
 @media (max-width: 47.98rem) {
   .mercury-budget-row {
     grid-template-columns: minmax(0, 1fr) auto;
@@ -104,5 +165,13 @@
 
   .mercury-budget-row-status {
     grid-column: 1 / -1;
+  }
+
+  .mercury-portfolio-table-wrap {
+    display: none;
+  }
+
+  .mercury-portfolio-object-list {
+    display: grid;
   }
 }

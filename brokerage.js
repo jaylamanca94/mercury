@@ -42,7 +42,7 @@
   const wholePercentage = new Intl.NumberFormat("en-US", { style: "percent", maximumFractionDigits: 0 });
   const state = {
     client: null, user: null, account: null, accounts: [], holdings: [], quotes: [], snapshots: [], incomeSources: [], incomeSourcesAvailable: true, budgetCategories: [], budgetCategoriesAvailable: true, planSettings: null, properties: [], propertiesAvailable: true, planDataAvailable: true,
-    providerMetrics: {}, providerMetricsPending: new Set(), configured: false, pendingQuote: null, quoteTimer: null, quoteRequestId: 0, portfolioFilter: "all", portfolioSort: "value", propertySort: "value", performancePeriod: "all", incomePeriod: "year", incomeDividendSort: "value", planHorizon: 10, incomeSourceDialogId: null, incomeSourceDeleteId: null, budgetCategoryDialogId: null, budgetCategoryDeleteId: null, propertyDialogId: null, propertyDeleteId: null,
+    providerMetrics: {}, providerMetricsPending: new Set(), configured: false, pendingQuote: null, quoteTimer: null, quoteRequestId: 0, portfolioFilter: "all", portfolioSort: "value", portfolioView: "cards", propertySort: "value", performancePeriod: "all", incomePeriod: "year", incomeDividendSort: "value", planHorizon: 10, incomeSourceDialogId: null, incomeSourceDeleteId: null, budgetCategoryDialogId: null, budgetCategoryDeleteId: null, propertyDialogId: null, propertyDeleteId: null,
   };
 
   function cents(value) {
@@ -258,6 +258,75 @@
       return right.marketValueCents - left.marketValueCents;
     });
   }
+  function holdingRecord(row) {
+    return state.holdings.find((holding) => holding.id === row.asset.id);
+  }
+  function holdingPriceLabel(row) {
+    if (row.asset.valuationBasis === VALUATION_BASES.MANUAL_VALUE) return "Manual value";
+    return row.asset.unitPriceCents === null ? "Needs price" : displayCardPrice(row.asset.unitPriceCents);
+  }
+  function holdingSharesLabel(row, suffix = false) {
+    if (row.asset.shares === null) return suffix ? "" : "—";
+    const shares = displayCardShares(row.asset.shares);
+    return suffix ? `${shares} shares` : shares;
+  }
+  function holdingUpdatedLabel(row) {
+    const holding = holdingRecord(row);
+    const value = holding?.updated_at || holding?.created_at;
+    if (!value || Number.isNaN(new Date(value).getTime())) return { value: null, label: "Not set" };
+    return {
+      value,
+      label: new Intl.DateTimeFormat("en-US", {
+        month: "short", day: "numeric", year: "numeric", timeZone: "America/New_York",
+      }).format(new Date(value)),
+    };
+  }
+  function holdingMetricSummary(row) {
+    const live = state.providerMetrics[row.asset.id] || {};
+    const isLoading = state.providerMetricsPending.has(row.asset.id);
+    const years = live.annualizedReturnYears;
+    const returnLabel = Number.isFinite(years)
+      ? `${years >= 4.75 ? "Five-year" : `${years}-year`} annualised return`
+      : "Annualised return";
+    const returnValue = Number.isFinite(live.annualizedReturnRate)
+      ? percentage.format(live.annualizedReturnRate)
+      : isLoading ? "Loading…" : "Not set";
+    const hasYield = !["crypto", "cash"].includes(row.asset.instrumentType);
+    const yieldRate = row.asset.distributionYieldRate ?? live.distributionYieldRate;
+    const yieldValue = !hasYield
+      ? "—"
+      : Number.isFinite(yieldRate) ? percentage.format(yieldRate) : isLoading ? "Loading…" : "Not set";
+    return {
+      hasYield,
+      returnLabel,
+      returnValue,
+      yieldLabel: hasYield ? "Trailing 12-month dividend yield" : "Dividend yield not applicable",
+      yieldValue,
+    };
+  }
+  function holdingIdentityMarkup(row) {
+    const title = row.asset.symbol || row.asset.name;
+    const instrument = instrumentLabel(row.asset.instrumentType || "other");
+    const secondary = [row.asset.name && row.asset.name !== title ? row.asset.name : null, instrument]
+      .filter(Boolean)
+      .join(" · ");
+    const retirement = row.asset.isRetirement
+      ? '<span class="acadia-badge acadia-badge-grey acadia-badge-round acadia-badge-small">Retirement</span>'
+      : "";
+    return `<div class="mercury-portfolio-asset-identity"><div class="acadia-cluster"><button class="acadia-button acadia-button-quiet mercury-portfolio-asset-link" type="button" data-open-asset-id="${escapeHtml(row.asset.id)}">${escapeHtml(title)}</button>${retirement}</div><span class="acadia-text-muted">${escapeHtml(secondary)}</span></div>`;
+  }
+  function holdingActionMenuMarkup(row) {
+    const title = row.asset.symbol || row.asset.name;
+    return `<span class="acadia-row-actions"><details class="acadia-action-menu"><summary class="acadia-action-menu-trigger acadia-icon-action" aria-label="Actions for ${escapeHtml(title)}"><i class="fa-solid fa-ellipsis acadia-icon" aria-hidden="true"></i></summary><div class="acadia-action-menu-panel"><button class="acadia-action-menu-item" type="button" data-edit-id="${escapeHtml(row.asset.id)}">Edit details</button></div></details></span>`;
+  }
+  function bindPortfolioHoldingActions(container) {
+    container.querySelectorAll("[data-open-asset-id]").forEach((button) => {
+      button.addEventListener("click", () => navigateToAsset(button.dataset.openAssetId));
+    });
+    container.querySelectorAll("[data-edit-id]").forEach((button) => {
+      button.addEventListener("click", () => navigateToAsset(button.dataset.editId));
+    });
+  }
   function openHoldingFromEvent(event) {
     const card = event.currentTarget;
     if (event.target.closest("button, summary, a, input, select")) return;
@@ -270,30 +339,12 @@
     }
   }
   function holdingCardMetrics(row) {
-    const live = state.providerMetrics[row.asset.id] || {};
-    const isLoading = state.providerMetricsPending.has(row.asset.id);
-    const years = live.annualizedReturnYears;
-    const returnLabel = Number.isFinite(years)
-      ? `${years >= 4.75 ? "Five-year" : `${years}-year`} annualised return`
-      : "Annualised return";
-    const metrics = [
-      {
-        icon: "fa-chart-line",
-        label: returnLabel,
-        value: live.annualizedReturnRate,
-      },
+    const metrics = holdingMetricSummary(row);
+    const items = [
+      { icon: "fa-chart-line", label: metrics.returnLabel, value: metrics.returnValue },
+      ...(metrics.hasYield ? [{ icon: "fa-coins", label: metrics.yieldLabel, value: metrics.yieldValue }] : []),
     ];
-    if (!["crypto", "cash"].includes(row.asset.instrumentType)) {
-      metrics.push({
-        icon: "fa-coins",
-        label: "Trailing 12-month dividend yield",
-        value: row.asset.distributionYieldRate ?? live.distributionYieldRate,
-      });
-    }
-    return `<div class="acadia-icon-with-text-row" aria-label="Investment metrics">${metrics.map(({ icon, label, value }) => {
-      const displayValue = Number.isFinite(value) ? percentage.format(value) : isLoading ? "Loading…" : "Not set";
-      return `<span class="acadia-icon-with-text acadia-icon-with-text-brand" aria-label="${label}: ${displayValue}"><span class="acadia-icon-with-text-icon"><i class="fa-solid ${icon} acadia-icon" aria-hidden="true"></i></span><span>${displayValue}</span></span>`;
-    }).join("")}</div>`;
+    return `<div class="acadia-icon-with-text-row" aria-label="Investment metrics">${items.map(({ icon, label, value }) => `<span class="acadia-icon-with-text acadia-icon-with-text-brand" aria-label="${label}: ${value}"><span class="acadia-icon-with-text-icon"><i class="fa-solid ${icon} acadia-icon" aria-hidden="true"></i></span><span>${value}</span></span>`).join("")}</div>`;
   }
   function renderHoldingCards(grid, rows, { showMetrics = false } = {}) {
     grid.replaceChildren(...rows.map((row) => {
@@ -383,12 +434,72 @@
     document.querySelectorAll("[data-portfolio-holding-sort]").forEach((control) => {
       control.setAttribute("aria-checked", String(control.dataset.portfolioHoldingSort === state.portfolioSort));
     });
+    document.querySelectorAll("[data-portfolio-table-sort-heading]").forEach((heading) => {
+      if (heading.dataset.portfolioTableSortHeading === state.portfolioSort) {
+        heading.setAttribute("aria-sort", state.portfolioSort === "name" ? "ascending" : "descending");
+      } else {
+        heading.removeAttribute("aria-sort");
+      }
+    });
   }
   function renderPortfolioFilters() {
     document.querySelectorAll("[data-portfolio-filter]").forEach((control) => {
       const isCurrent = control.dataset.portfolioFilter === state.portfolioFilter;
       control.setAttribute("aria-pressed", String(isCurrent));
     });
+  }
+  function renderPortfolioView(hasRows) {
+    document.querySelectorAll("[data-portfolio-view]").forEach((control) => {
+      const selected = control.dataset.portfolioView === state.portfolioView;
+      control.classList.toggle("is-active", selected);
+      control.setAttribute("aria-selected", String(selected));
+      control.tabIndex = selected ? 0 : -1;
+    });
+    const tableView = state.portfolioView === "table";
+    $("#portfolio-holding-sort").hidden = tableView;
+    if (tableView) $("#portfolio-holding-sort").open = false;
+    $("#portfolio-cards-panel").hidden = tableView;
+    $("#portfolio-table-panel").hidden = !tableView;
+    $("#portfolio-holdings-grid").hidden = !hasRows;
+    $("#portfolio-holdings-table-wrap").hidden = !hasRows;
+    $("#portfolio-holdings-object-list").hidden = !hasRows;
+  }
+  function selectPortfolioView(view, { focus = false } = {}) {
+    if (!["cards", "table"].includes(view)) return;
+    state.portfolioView = view;
+    render();
+    if (focus) document.querySelector(`[data-portfolio-view="${view}"]`)?.focus();
+  }
+  function handlePortfolioViewKeydown(event) {
+    const tabs = [...document.querySelectorAll("[data-portfolio-view]")];
+    const currentIndex = tabs.indexOf(event.currentTarget);
+    let nextIndex = currentIndex;
+    if (["ArrowRight", "ArrowDown"].includes(event.key)) nextIndex = (currentIndex + 1) % tabs.length;
+    else if (["ArrowLeft", "ArrowUp"].includes(event.key)) nextIndex = (currentIndex - 1 + tabs.length) % tabs.length;
+    else if (event.key === "Home") nextIndex = 0;
+    else if (event.key === "End") nextIndex = tabs.length - 1;
+    else return;
+    event.preventDefault();
+    selectPortfolioView(tabs[nextIndex].dataset.portfolioView, { focus: true });
+  }
+  function renderPortfolioTable(rows) {
+    const tableBody = $("#portfolio-holdings-table-body");
+    tableBody.innerHTML = rows.map((row) => {
+      const metrics = holdingMetricSummary(row);
+      const updated = holdingUpdatedLabel(row);
+      const dateMarkup = updated.value
+        ? `<time datetime="${escapeHtml(updated.value)}">${escapeHtml(updated.label)}</time>`
+        : updated.label;
+      return `<tr><td>${holdingIdentityMarkup(row)}</td><td>${escapeHtml(holdingPriceLabel(row))}</td><td>${escapeHtml(holdingSharesLabel(row))}</td><td aria-label="${escapeHtml(metrics.returnLabel)}: ${escapeHtml(metrics.returnValue)}">${escapeHtml(metrics.returnValue)}</td><td aria-label="${escapeHtml(metrics.yieldLabel)}: ${escapeHtml(metrics.yieldValue)}">${escapeHtml(metrics.yieldValue)}</td><td><strong>${escapeHtml(displayCurrency(row.marketValueCents / 100))}</strong></td><td>${dateMarkup}</td><td>${holdingActionMenuMarkup(row)}</td></tr>`;
+    }).join("");
+    const objectList = $("#portfolio-holdings-object-list");
+    objectList.innerHTML = rows.map((row) => {
+      const metrics = holdingMetricSummary(row);
+      const updated = holdingUpdatedLabel(row);
+      return `<article class="acadia-object-card"><div class="acadia-object-card-header">${holdingIdentityMarkup(row)}<div class="acadia-object-actions">${holdingActionMenuMarkup(row)}</div></div><div class="acadia-object-meta"><span>Updated ${escapeHtml(updated.label)}</span></div><dl class="mercury-portfolio-object-metrics"><div><dt>Price</dt><dd>${escapeHtml(holdingPriceLabel(row))}</dd></div><div><dt>Shares</dt><dd>${escapeHtml(holdingSharesLabel(row))}</dd></div><div><dt>Return</dt><dd aria-label="${escapeHtml(metrics.returnLabel)}: ${escapeHtml(metrics.returnValue)}">${escapeHtml(metrics.returnValue)}</dd></div><div><dt>Yield</dt><dd aria-label="${escapeHtml(metrics.yieldLabel)}: ${escapeHtml(metrics.yieldValue)}">${escapeHtml(metrics.yieldValue)}</dd></div><div><dt>Value</dt><dd><strong>${escapeHtml(displayCurrency(row.marketValueCents / 100))}</strong></dd></div></dl></article>`;
+    }).join("");
+    bindPortfolioHoldingActions(tableBody);
+    bindPortfolioHoldingActions(objectList);
   }
   function renderPortfolioHoldings(summary) {
     renderPortfolioHoldingSort();
@@ -397,6 +508,8 @@
     const rows = sortHoldingRows(matchingRows, state.portfolioSort);
     const grid = $("#portfolio-holdings-grid");
     renderHoldingCards(grid, rows, { showMetrics: true });
+    renderPortfolioTable(rows);
+    renderPortfolioView(rows.length > 0);
     setText("#portfolio-holdings-count", `${matchingRows.length} ${matchingRows.length === 1 ? "asset" : "assets"}`);
     $("#portfolio-holdings-empty").hidden = rows.length > 0;
     if (!rows.length) {
@@ -1799,6 +1912,16 @@
       $("#portfolio-holding-sort").open = false;
       render();
     });
+  });
+  document.querySelectorAll("[data-portfolio-table-sort]").forEach((control) => {
+    control.addEventListener("click", () => {
+      state.portfolioSort = control.dataset.portfolioTableSort;
+      render();
+    });
+  });
+  document.querySelectorAll("[data-portfolio-view]").forEach((control) => {
+    control.addEventListener("click", () => selectPortfolioView(control.dataset.portfolioView));
+    control.addEventListener("keydown", handlePortfolioViewKeydown);
   });
   document.querySelectorAll("[data-portfolio-filter]").forEach((control) => {
     control.addEventListener("click", () => {
