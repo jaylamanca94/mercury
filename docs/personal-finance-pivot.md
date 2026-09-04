@@ -45,11 +45,15 @@ Realised gains, cost basis, tax lots, and tax reporting are explicitly deferred.
 | Allocation | Asset value ÷ total portfolio value |
 | Expected annual growth | Asset value × expected annual return |
 | Estimated annual income | Asset value × distribution yield |
-| Weekly contribution | Portfolio weekly contribution × asset contribution allocation |
+| Weekly-equivalent recurring total | Sum each saved holding contribution at its cadence for one year, then divide the annual total by 52 |
 | Day change | Current value − prior recorded value |
 
 Portfolio-level day movement is unavailable until every tracked asset has a prior value. Mercury
 must not display a partial total as if it covered the complete portfolio.
+
+Portfolio summary figures always use the complete saved collection rather than the active Investments
+search or classification filter. Property contributes current equity (market value minus mortgage),
+while recurring rows retain their canonical weekly or monthly cadence.
 
 Targets and weekly allocations can be incomplete while the portfolio is being set up. Once all
 assets have values, Mercury warns if either total is not 100%.

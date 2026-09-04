@@ -120,6 +120,10 @@ function annualRecurringContributionCents(holdings, {
     : 0;
 }
 
+function weeklyEquivalentRecurringContributionCents(holdings) {
+  return Math.round(annualRecurringContributionCents(holdings) / 52);
+}
+
 function resolvePlanAssumptions(settings, portfolioSummary) {
   const normalized = normalizePlanSettings(settings || {});
   return Object.freeze({
@@ -188,6 +192,7 @@ const planContract = {
   resolvePlanAssumptions,
   totalNetWorthCents,
   totalPropertyEquityCents,
+  weeklyEquivalentRecurringContributionCents,
 };
 
 if (typeof module !== "undefined") module.exports = planContract;

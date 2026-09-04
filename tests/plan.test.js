@@ -13,6 +13,7 @@ const {
   resolvePlanAssumptions,
   totalNetWorthCents,
   totalPropertyEquityCents,
+  weeklyEquivalentRecurringContributionCents,
 } = require("../plan");
 
 test("Plan annualises direct holding contributions before using a complete legacy allocation", () => {
@@ -36,6 +37,14 @@ test("Plan annualises direct holding contributions before using a complete legac
     legacyWeeklyContributionCents: 100_000,
     legacyWeeklyAllocationRate: 0.9,
   }), 0);
+});
+
+test("Portfolio recurring summary converts mixed cadences to one weekly equivalent", () => {
+  assert.equal(weeklyEquivalentRecurringContributionCents([
+    { contributionCents: 20_000, contributionFrequency: "weekly" },
+    { contributionCents: 50_000, contributionFrequency: "monthly" },
+  ]), 31_538);
+  assert.equal(weeklyEquivalentRecurringContributionCents([]), 0);
 });
 
 test("Plan settings override Portfolio assumptions only inside the Base plan", () => {

@@ -4,9 +4,173 @@
    content and the content surface that follows it. */
 #portfolio-workspace .mercury-portfolio-view-panel,
 #portfolio-workspace #portfolio-holdings-empty,
+#portfolio-workspace #portfolio-recurring-panel,
 #portfolio-workspace #portfolio-properties-grid,
 #portfolio-workspace #portfolio-properties-empty {
   margin-block-start: var(--acadia-space-3);
+}
+
+.mercury-portfolio-summary {
+  display: grid;
+  gap: 0;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  padding-block: var(--acadia-space-2);
+}
+
+.mercury-portfolio-summary > div {
+  display: grid;
+  gap: 0.25rem;
+  min-width: 0;
+  padding: 0.25rem var(--acadia-space-3);
+}
+
+.mercury-portfolio-summary > div + div {
+  border-inline-start: 1px solid var(--acadia-color-border);
+}
+
+.mercury-portfolio-summary dt {
+  color: var(--acadia-color-text-muted);
+  font-size: var(--acadia-type-size-small);
+  font-weight: 700;
+}
+
+.mercury-portfolio-summary dd {
+  font-family: var(--acadia-font-expression);
+  font-size: var(--acadia-type-size-heading-small);
+  font-weight: 800;
+  line-height: 1.2;
+  margin: 0;
+}
+
+.mercury-portfolio-toolbar {
+  align-items: center;
+  grid-template-columns: minmax(14rem, 1fr) auto;
+  margin-block-start: var(--acadia-space-2);
+  max-width: none;
+  padding: var(--acadia-space-2);
+}
+
+.mercury-portfolio-search {
+  max-width: 28rem;
+  width: 100%;
+}
+
+.mercury-portfolio-toolbar-actions {
+  flex-wrap: wrap;
+}
+
+.mercury-holding-card {
+  --acadia-content-card-padding: var(--acadia-section-padding-dense);
+  gap: var(--acadia-space-2);
+}
+
+.mercury-holding-card .acadia-card-header > p {
+  color: var(--acadia-color-text-muted);
+  margin: 0;
+}
+
+.mercury-holding-card .acadia-card-content {
+  gap: var(--acadia-space-2);
+}
+
+.mercury-holding-card-primary,
+.mercury-holding-card-metrics,
+.mercury-holding-card-value {
+  align-items: baseline;
+  color: var(--acadia-color-text-muted);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 0;
+}
+
+.mercury-holding-card-primary strong,
+.mercury-holding-card-value strong {
+  color: var(--acadia-color-text);
+}
+
+.mercury-holding-card-value {
+  justify-content: space-between;
+  padding-block-start: var(--acadia-space-1);
+}
+
+.mercury-metric-separator {
+  color: var(--acadia-color-text-muted);
+}
+
+.mercury-metric-movement.is-positive {
+  color: var(--acadia-color-action);
+}
+
+.mercury-metric-movement.is-negative {
+  color: var(--acadia-color-danger);
+}
+
+.mercury-recurring-panel {
+  padding-block: 0;
+}
+
+.mercury-recurring-list {
+  display: grid;
+}
+
+.mercury-recurring-row {
+  align-items: center;
+  display: grid;
+  gap: var(--acadia-space-3);
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  min-width: 0;
+  padding-block: var(--acadia-space-2);
+}
+
+.mercury-recurring-row + .mercury-recurring-row {
+  border-block-start: 1px solid var(--acadia-color-border);
+}
+
+.mercury-recurring-identity,
+.mercury-recurring-amount {
+  display: grid;
+  gap: 0.125rem;
+}
+
+.mercury-recurring-amount {
+  justify-items: end;
+  min-width: 7rem;
+}
+
+.mercury-recurring-amount span {
+  color: var(--acadia-color-text-muted);
+}
+
+#portfolio-recurring-empty {
+  margin: 0;
+  padding-block: var(--acadia-space-2);
+}
+
+.mercury-property-card {
+  --acadia-content-card-padding: var(--acadia-section-padding-dense);
+  gap: var(--acadia-space-2);
+}
+
+.mercury-property-metrics {
+  display: grid;
+  gap: var(--acadia-space-3);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin: 0;
+}
+
+.mercury-property-metrics > div {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.mercury-property-metrics dt {
+  color: var(--acadia-color-text-muted);
+  font-size: var(--acadia-type-size-small);
+}
+
+.mercury-property-metrics dd {
+  margin: 0;
 }
 
 .mercury-plan-chart-card .acadia-card-body {
@@ -158,6 +322,46 @@
 }
 
 @media (max-width: 47.98rem) {
+  .mercury-portfolio-summary {
+    grid-template-columns: 1fr;
+  }
+
+  .mercury-portfolio-summary > div {
+    padding-block: var(--acadia-space-2);
+  }
+
+  .mercury-portfolio-summary > div + div {
+    border-block-start: 1px solid var(--acadia-color-border);
+    border-inline-start: 0;
+  }
+
+  .mercury-portfolio-toolbar {
+    grid-template-columns: 1fr;
+  }
+
+  .mercury-portfolio-search {
+    max-width: none;
+  }
+
+  .mercury-portfolio-toolbar-actions {
+    align-items: flex-start;
+    justify-content: flex-start;
+  }
+
+  .mercury-recurring-row {
+    align-items: start;
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .mercury-recurring-row > .acadia-button {
+    grid-column: 1 / -1;
+    justify-self: start;
+  }
+
+  .mercury-property-metrics {
+    grid-template-columns: 1fr;
+  }
+
   .mercury-budget-row {
     grid-template-columns: minmax(0, 1fr) auto;
   }
