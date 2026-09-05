@@ -134,12 +134,18 @@
   }
   function routeAssetId() {
     const match = window.location.hash.match(/^#asset\/([^/]+)$/);
-    return match ? decodeURIComponent(match[1]) : null;
+    if (!match) return null;
+    try { return decodeURIComponent(match[1]); } catch { return match[1]; }
   }
   function routePortfolio() { return window.location.hash === "#portfolio"; }
   function routeIncome() { return ["#income", "#income/budget"].includes(window.location.hash); }
   function routePlan() { return window.location.hash === "#plan"; }
-  function navigateToAsset(id) { window.location.hash = `asset/${encodeURIComponent(id)}`; }
+  let assetReturnHash = "#portfolio";
+  function navigateToAsset(id) {
+    if (!routeAssetId()) assetReturnHash = window.location.hash || "#";
+    window.location.hash = `asset/${encodeURIComponent(id)}`;
+  }
+  function navigateBackFromAsset() { window.location.hash = assetReturnHash; }
   function navigateHome() { window.location.hash = ""; }
   function setActiveNavigation(page) {
     document.querySelectorAll("[data-nav-page]").forEach((control) => {
@@ -1017,7 +1023,7 @@
     document.querySelectorAll("[data-plan-horizon]").forEach((control) => {
       const active = Number(control.dataset.planHorizon) === state.planHorizon;
       control.classList.toggle("is-active", active);
-      control.setAttribute("aria-selected", String(active));
+      control.setAttribute("aria-pressed", String(active));
     });
     renderPlanChart({ chartSelector: "#plan-value-chart", axisSelector: "#plan-value-axis", endpointsSelector: "#plan-value-endpoints", summarySelector: "#plan-value-summary", points, key: "investmentValueCents", label: "Projected investment value", unavailableText });
     renderPlanChart({ chartSelector: "#plan-income-chart", axisSelector: "#plan-income-axis", endpointsSelector: "#plan-income-endpoints", summarySelector: "#plan-income-summary", points, key: "projectedIncomeCents", label: "Projected portfolio income", unavailableText });
@@ -1057,7 +1063,8 @@
   function assetRow(holding, summary) {
     return summary.rows.find((row) => row.asset.id === holding.id) || null;
   }
-  function renderAsset() {
+  let renderedAssetId = null;
+  function renderAsset({ resetForm = false } = {}) {
     const id = routeAssetId();
     const holding = state.holdings.find((entry) => entry.id === id);
     const summary = portfolio();
@@ -1074,7 +1081,7 @@
       setText("#asset-title", "Asset unavailable");
       setText("#asset-subtitle", "This asset is not available in your current Brokerage account.");
       setText("#asset-price", "—");
-      setText("#asset-status", "Return Home to select an available asset.");
+      setText("#asset-status", "Return to Portfolio to select an available asset.");
       return;
     }
 
@@ -1098,6 +1105,9 @@
     setText("#asset-quote-source", quote?.source || (holding.manual_price_cents !== null ? "Manual price" : "No quote recorded."));
     setText("#asset-quote-asof", quote?.as_of ? `As of ${dateLabel(quote.as_of)}` : "No as-of time");
 
+    // Refresh the summary without replacing a draft while provider data arrives.
+    if (renderedAssetId === id && !resetForm) return;
+    renderedAssetId = id;
     const setValue = (selector, value) => { $(selector).value = value ?? ""; };
     $("#asset-detail-form").hidden = false;
     setDetailFormDisabled(false);
@@ -1125,6 +1135,15 @@
 
   let renderedPortfolio = false;
   function render() {
+    if (state.configured && !state.user) {
+      ["home", "portfolio", "income", "plan", "asset"].forEach((page) => { $(`#${page}-workspace`).hidden = true; });
+      $("#auth-panel").hidden = false;
+      setControlsDisabled(true);
+      document.title = "Mercury | Sign in";
+      $("#main-content").setAttribute("aria-busy", "false");
+      return;
+    }
+    if (!routeAssetId()) renderedAssetId = null;
     const isPortfolio = routePortfolio();
     if (isPortfolio && !renderedPortfolio) state.portfolioView = "cards";
     renderedPortfolio = isPortfolio;
@@ -1138,6 +1157,8 @@
     else if (routeIncome()) renderIncome(summary);
     else if (routePlan()) renderPlan(summary);
     else renderHome(summary);
+    const pageTitle = routeAssetId() ? $("#asset-title").textContent : routePortfolio() ? "Portfolio" : routeIncome() ? (window.location.hash === "#income/budget" ? "Budget" : "Income") : routePlan() ? "Plan" : "Home";
+    document.title = `Mercury | ${pageTitle}`;
     $("#main-content").setAttribute("aria-busy", "false");
     if (focusAttribute && !focused.isConnected) {
       const replacement = document.querySelector(`[${focusAttribute}="${CSS.escape(focusValue)}"]`);
@@ -1202,7 +1223,9 @@
     $("#asset-manual-price").value = "";
     $("#asset-manual-value").value = "";
   }
+  let quickAssetId = null;
   function openQuickAdd() {
+    quickAssetId = crypto.randomUUID();
     const form = $("#asset-form");
     form.reset();
     clearTimeout(state.quoteTimer);
@@ -1230,10 +1253,12 @@
   }
   function canQuote() {
     return Boolean($("#asset-symbol").value.trim())
+      && $("#asset-shares").value.trim() !== ""
+      && $("#asset-shares").validity.valid
       && Number.isFinite(Number($("#asset-shares").value))
       && Number($("#asset-shares").value) >= 0;
   }
-  async function lookupQuote({ revealFallback = false } = {}) {
+  async function lookupQuote({ revealFallback = true } = {}) {
     if (!canQuote()) return null;
     const requestId = ++state.quoteRequestId;
     const requestedSymbol = $("#asset-symbol").value.trim().toUpperCase();
@@ -1245,6 +1270,7 @@
         || requestedSymbol !== $("#asset-symbol").value.trim().toUpperCase()
       ) return null;
       state.pendingQuote = quote;
+      clearManualFallback();
       renderQuickQuotePreview();
       setQuickAddStatus(
         `${preciseCurrency.format(quote.priceCents / 100)} from ${quote.source}. As of ${dateLabel(quote.asOf)}.`,
@@ -1255,7 +1281,7 @@
       if (requestId !== state.quoteRequestId) return null;
       state.pendingQuote = null;
       renderQuickQuotePreview();
-      const message = `${error.message} Enter a manual authoritative price or total value.`;
+      const message = "Automatic price unavailable. Enter a manual price or total value.";
       if (revealFallback) showManualFallback(message);
       else setQuickAddStatus(message);
       return null;
@@ -1270,7 +1296,7 @@
     } else {
       renderQuickQuotePreview();
     }
-    if (state.pendingQuote) return;
+    if (state.pendingQuote || (preserveQuote && !$("#manual-fallback").hidden)) return;
     if (!canQuote()) return;
     state.quoteTimer = setTimeout(() => lookupQuote(), 450);
   }
@@ -1282,7 +1308,7 @@
       getFormValue(form, "contributionFrequency"),
     );
     const holding = {
-      id: crypto.randomUUID(),
+      id: quickAssetId ||= crypto.randomUUID(),
       account_id: state.account.id,
       symbol: getFormValue(form, "symbol")?.toUpperCase() || null,
       name: null,
@@ -1312,6 +1338,8 @@
   async function saveQuickAsset(event) {
     event.preventDefault();
     const save = $("#save-asset");
+    if (save.disabled) return;
+    clearTimeout(state.quoteTimer);
     try {
       save.disabled = true;
       save.textContent = "Adding…";
@@ -1319,17 +1347,17 @@
         await lookupQuote({ revealFallback: true });
       }
       const holding = quickHolding();
-      const { error } = await state.client.from("holdings").insert(holding);
+      const { error } = await state.client.from("holdings").upsert(holding, { onConflict: "id" });
       if (error) throw error;
       if (state.pendingQuote) {
-        const { error: quoteError } = await state.client.from("holding_quotes").insert({
+        const { error: quoteError } = await state.client.from("holding_quotes").upsert({
           holding_id: holding.id,
           price_cents: state.pendingQuote.priceCents,
           previous_close_cents: state.pendingQuote.priorCloseCents,
           ...quoteDividendFields(holding.id, state.pendingQuote),
           source: state.pendingQuote.source,
           as_of: state.pendingQuote.asOf,
-        });
+        }, { onConflict: "holding_id,as_of" });
         if (quoteError) throw quoteError;
       }
       $("#asset-dialog").close();
@@ -1415,6 +1443,7 @@
       const { error } = await state.client.from("holdings").update(detailHolding(holding)).eq("id", holding.id);
       if (error) throw error;
       await loadData();
+      if (routeAssetId() === holding.id) renderAsset({ resetForm: true });
       setText("#asset-detail-status", "Details saved.");
       setText("#data-status", "Saved to your private Brokerage account.");
     } catch (error) {
@@ -1914,8 +1943,7 @@
       state.client = window.supabase.createClient(config.supabaseUrl, config.supabaseAnonKey);
       const { data: { session } } = await state.client.auth.getSession();
       if (!session) {
-        $("#auth-panel").hidden = false;
-        $("#main-content").setAttribute("aria-busy", "false");
+        render();
         return;
       }
       state.user = session.user;
@@ -1934,11 +1962,24 @@
   $("#magic-link-form").addEventListener("submit", async (event) => {
     event.preventDefault();
     if (!state.client) return;
-    const { error } = await state.client.auth.signInWithOtp({
-      email: $("#email").value,
-      options: { emailRedirectTo: window.location.origin },
-    });
-    setText("#auth-message", error ? error.message : "Check your email for a sign-in link.");
+    const send = $("#send-magic-link");
+    if (send.disabled) return;
+    send.disabled = true;
+    send.textContent = "Sending…";
+    setText("#auth-message", "Sending your sign-in link…");
+    try {
+      const { error } = await state.client.auth.signInWithOtp({
+        email: $("#email").value.trim(),
+        options: { emailRedirectTo: window.location.origin },
+      });
+      if (error) throw error;
+      setText("#auth-message", "Check your email for a sign-in link. If it does not arrive, check spam or try again.");
+    } catch (error) {
+      setText("#auth-message", error.message || "The link could not be sent. Check your connection and try again.");
+    } finally {
+      send.disabled = false;
+      send.textContent = "Send magic link";
+    }
   });
   document.querySelectorAll("[data-sign-out]").forEach((control) => {
     control.addEventListener("click", async () => {
@@ -2063,8 +2104,8 @@
       render();
     });
   });
-  $("#asset-back").addEventListener("click", navigateHome);
-  $("#asset-cancel").addEventListener("click", renderAsset);
+  $("#asset-back").addEventListener("click", navigateBackFromAsset);
+  $("#asset-cancel").addEventListener("click", () => renderAsset({ resetForm: true }));
   $("#asset-detail-form").addEventListener("submit", saveAssetDetails);
   $("#asset-detail-valuation-basis").addEventListener("change", syncDetailValuationFields);
   $("#asset-refresh-price").addEventListener("click", refreshCurrentAssetPrice);

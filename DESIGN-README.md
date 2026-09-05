@@ -25,6 +25,14 @@ Use this file as the visual and interaction source of truth for Mercury. Keep th
 - Asset detail uses the Figma hierarchy of Back, asset identity, summary metrics, investment profile, and a primary Details form. Its advanced fields live in Acadia Accordion disclosure; do not create a Mercury-specific details panel.
 - Home has no sample-data state. A missing private configuration presents an empty disabled workspace; any displayed holding, quote, or history point must be persisted owner data.
 
+## Flow recovery contract — 2026-09-05
+
+- Configured private routes remain on sign-in until an authenticated owner is available. Do not show an empty, editable portfolio beneath authentication. Sending a magic link has visible pending and failure states and prevents duplicate submissions.
+- Quote lookup waits for entered valid shares. The first failed lookup reveals manual price/total-value recovery immediately. Changing shares preserves a manual fallback already being edited.
+- Background quote/metric rendering may update summaries, but must not overwrite the current asset form. Explicit Cancel reloads saved values. The asset Back control returns to its entry route, defaulting to Portfolio for direct links.
+- Use a native pressed-button group for Plan horizon choices, with `aria-pressed`. These choices change a projection parameter rather than select tab panels. Route titles reflect the current workspace or asset.
+- Retrying Add within the same dialog reuses the holding ID and quote identity so partial persistence cannot create another holding. Closing the dialog and opening a new one starts a new entry.
+
 ## Brokerage MVP visual contract
 
 - Use the provided Brokerage sheet as the information model: summary metrics first, then holdings-value, allocation, annual-income, and history charts, followed by the core calculation table.
