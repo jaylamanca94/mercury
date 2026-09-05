@@ -33,6 +33,13 @@ Use this file as the visual and interaction source of truth for Mercury. Keep th
 - Use a native pressed-button group for Plan horizon choices, with `aria-pressed`. These choices change a projection parameter rather than select tab panels. Route titles reflect the current workspace or asset.
 - Retrying Add within the same dialog reuses the holding ID and quote identity so partial persistence cannot create another holding. Closing the dialog and opening a new one starts a new entry.
 
+## Asset editing refinement — 2026-09-05
+
+- Compose the Details card and Acadia Form Actions inside one form. Keep the sticky action bar outside the clipped card so Save/Cancel remain reachable during long edits. The only local layout adapter raises the bar above the existing phone navigation using `--acadia-mobile-dock-clearance`.
+- Saved values have inactive Save/Cancel controls. Editing a field or classification shows the quiet `Unsaved changes` live status. Returning every field to its saved value clears that state. Cancel restores the saved record.
+- Read the form before disabling controls during persistence. Keep fields and Cancel locked while saving, prevent duplicate writes, then show `Changes saved` or a recoverable error with the draft intact. Reapply manual-valuation field availability afterwards.
+- Use Acadia Summary Measures for the investment profile so return/yield labels and values have distinct hierarchy. No financial calculations or Home composition changes.
+
 ## Brokerage MVP visual contract
 
 - Use the provided Brokerage sheet as the information model: summary metrics first, then holdings-value, allocation, annual-income, and history charts, followed by the core calculation table.

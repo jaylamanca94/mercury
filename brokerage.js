@@ -1044,6 +1044,26 @@
     return summary.rows.find((row) => row.asset.id === holding.id) || null;
   }
   let renderedAssetId = null;
+  let assetFormBaseline = "";
+  let savingAssetId = null;
+  function assetFormSnapshot() {
+    return JSON.stringify(Array.from($("#asset-detail-form").elements)
+      .filter((element) => element.name)
+      .map((element) => [element.name, element.type === "checkbox" ? element.checked : String(element.value)]));
+  }
+  function setAssetEditStatus(message) {
+    setText("#asset-detail-status", message);
+    $("#asset-detail-status").hidden = !message;
+  }
+  function syncAssetEditState({ announce = false } = {}) {
+    const saving = savingAssetId === renderedAssetId && savingAssetId !== null;
+    const dirty = assetFormSnapshot() !== assetFormBaseline;
+    $("#asset-save").disabled = Boolean(savingAssetId) || !dirty;
+    $("#asset-cancel").disabled = saving || !dirty;
+    $("#asset-save").textContent = saving ? "Saving…" : "Save";
+    $("#asset-detail-form").setAttribute("aria-busy", String(saving));
+    if (announce) setAssetEditStatus(dirty ? "Unsaved changes" : "");
+  }
   function renderAsset({ resetForm = false } = {}) {
     const id = routeAssetId();
     const holding = state.holdings.find((entry) => entry.id === id);
@@ -1110,7 +1130,10 @@
     setValue("#asset-detail-manual-price", holding.manual_price_cents === null ? null : Number(holding.manual_price_cents) / 100);
     setValue("#asset-detail-manual-value", holding.manual_value_cents === null ? null : Number(holding.manual_value_cents) / 100);
     syncDetailValuationFields();
-    setText("#asset-detail-status", "");
+    assetFormBaseline = assetFormSnapshot();
+    setAssetEditStatus("");
+    if (savingAssetId === id) setDetailFormDisabled(true);
+    syncAssetEditState();
   }
 
   let renderedPortfolio = false;
@@ -1415,22 +1438,31 @@
   async function saveAssetDetails(event) {
     event.preventDefault();
     const holding = state.holdings.find((entry) => entry.id === routeAssetId());
-    if (!holding) return;
-    const save = $("#asset-save");
+    if (!holding || savingAssetId || assetFormSnapshot() === assetFormBaseline) return;
     try {
-      save.disabled = true;
-      save.textContent = "Saving…";
-      const { error } = await state.client.from("holdings").update(detailHolding(holding)).eq("id", holding.id);
+      // Read enabled fields before locking the form; disabled fields are absent from FormData.
+      const updates = detailHolding(holding);
+      savingAssetId = holding.id;
+      setDetailFormDisabled(true);
+      syncAssetEditState();
+      setAssetEditStatus("Saving changes…");
+      const { error } = await state.client.from("holdings").update(updates).eq("id", holding.id);
       if (error) throw error;
       await loadData();
-      if (routeAssetId() === holding.id) renderAsset({ resetForm: true });
-      setText("#asset-detail-status", "Details saved.");
+      if (routeAssetId() === holding.id) {
+        renderAsset({ resetForm: true });
+        setAssetEditStatus("Changes saved");
+      }
       setText("#data-status", "Saved to your private Brokerage account.");
     } catch (error) {
-      setText("#asset-detail-status", error.message || "This asset could not be saved.");
+      if (routeAssetId() === holding.id) setAssetEditStatus(error.message || "This asset could not be saved.");
     } finally {
-      save.disabled = false;
-      save.textContent = "Save";
+      savingAssetId = null;
+      if (routeAssetId() === holding.id) {
+        setDetailFormDisabled(false);
+        syncDetailValuationFields();
+      }
+      if (routeAssetId() === renderedAssetId) syncAssetEditState();
     }
   }
 
@@ -1847,10 +1879,10 @@
   async function refreshCurrentAssetPrice() {
     const holding = state.holdings.find((entry) => entry.id === routeAssetId());
     if (!holding || holding.valuation_basis !== VALUATION_BASES.SHARES_AND_PRICE || !holding.symbol) {
-      return setText("#asset-detail-status", "This asset does not have an automatic price to refresh.");
+      return setAssetEditStatus("This asset does not have an automatic price to refresh.");
     }
     try {
-      setText("#asset-detail-status", "Refreshing price…");
+      setAssetEditStatus("Refreshing price…");
       const quote = await requestQuote(holding.symbol, holding.instrument_type);
       const { error } = await state.client.from("holding_quotes").upsert({
         holding_id: holding.id,
@@ -1862,9 +1894,9 @@
       }, { onConflict: "holding_id,as_of" });
       if (error) throw error;
       await loadData();
-      setText("#asset-detail-status", "Price refreshed.");
+      setAssetEditStatus("Price refreshed.");
     } catch (error) {
-      setText("#asset-detail-status", `${error.message} Last successful quote remains in place.`);
+      setAssetEditStatus(`${error.message} Last successful quote remains in place.`);
     }
   }
   async function hydrateProviderMetrics() {
@@ -2088,6 +2120,8 @@
   $("#asset-back").addEventListener("click", navigateBackFromAsset);
   $("#asset-cancel").addEventListener("click", () => renderAsset({ resetForm: true }));
   $("#asset-detail-form").addEventListener("submit", saveAssetDetails);
+  $("#asset-detail-form").addEventListener("input", () => syncAssetEditState({ announce: true }));
+  $("#asset-detail-form").addEventListener("change", () => syncAssetEditState({ announce: true }));
   $("#asset-detail-valuation-basis").addEventListener("change", syncDetailValuationFields);
   $("#asset-refresh-price").addEventListener("click", refreshCurrentAssetPrice);
   $("#asset-delete").addEventListener("click", openDeleteAssetDialog);

@@ -449,3 +449,10 @@
   #portfolio-workspace .mercury-portfolio-summary > div { padding: var(--acadia-space-2) 0; }
 }
 .mercury-comparison-table tbody th { background: transparent; text-transform: none; letter-spacing: normal; }
+
+/* Keep Acadia's form actions above Mercury's persistent phone navigation. */
+@media (max-width: 767px) {
+  #asset-detail-form .acadia-form-actions {
+    bottom: var(--acadia-mobile-dock-clearance);
+  }
+}

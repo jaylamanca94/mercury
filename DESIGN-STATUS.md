@@ -1,21 +1,15 @@
 # Mercury — Design Status
 
-> **Active-flow headline:** Home now presents only authentic Brokerage data, and a selected holding opens an Acadia-native Asset page for details. Live authentication and quotes still require configured Supabase and Twelve Data environments.
+**Last reviewed:** 2026-09-05
 
-**Last reviewed:** 2026-09-01
+10 implemented canonical flows have design and automated coverage at varying depths; private export remains deferred. Home, Portfolio, Income Overview/Budget, Plan and Asset details use Acadia. This pass refines one existing flow; no screens or flows added.
 
-## Verified signals
+Asset editing now has a sticky Acadia action bar with saved, dirty, saving, success and recoverable failure states. Return/yield labels use canonical Summary Measures. Desktop 1440px, tablet 768px and phones 390/320px were checked with disposable local data. No horizontal overflow; phone buttons are 44px high and clear the dock by 12px. Save failure, retry, Cancel and background draft preservation were checked. `npm run check`: 116 passed.
 
-| Signal | Current status |
-| --- | --- |
-| Active surface | Figma-composed Home dashboard and hash-routed Asset page backed by the Brokerage account; Home offers truthful value/income/performance cards plus dynamic investment controls. |
-| Data states | Honest empty/configuration-unavailable, signed-out, automatic quote, unavailable/manual fallback, and the two-snapshot history threshold are present. |
-| Visual language | Canonical Acadia only: responsive navigation, content cards, metrics, forms, dialogs, badges, status rows, and trend treatment. |
-| Responsive behaviour | Acadia collapses the dashboard and card grids to one clear reading order on phone widths. |
-| Accessibility | Semantic landmarks, labelled controls, visible Acadia focus, native dialog semantics, live status copy, and textual history summaries are present. |
+The only new adapter positions Acadia's action bar above Mercury's phone navigation using its existing clearance token. No new visual primitives, missing design states or calculations were introduced. Long forms remain the main complexity hotspot. These checks do not establish authenticated production writes, physical-keyboard viewport behaviour or full assistive-technology acceptance.
 
 ## Next design opportunities
 
-1. **Credential-backed Brokerage QA.** Inspect magic-link, retained quote and manual fallback states with a real owner account.
-2. **Asset-detail calibration.** Review a real first holding through the primary and advanced detail fields before widening the page.
-3. **History calibration.** Review a real first week of snapshots before adding date-range controls or more financial chart density.
+1. **Protect drafts when leaving Asset details.** Confirmed: navigating Back discards unsaved changes. The new dirty state makes edits explicit; navigation protection remains separate work.
+2. **Clarify expired-session recovery.** Hypothesis: an expired session during a long edit may leave an unclear route to signing in and resuming. Requires a real expiry-state review.
+3. **Calibrate first-use history and manual valuation.** Review the existing honest empty/history-building states with the owner's early records before adding further content or controls.

@@ -25,7 +25,7 @@ function controller() {
   };
   const context = vm.createContext({window,document,Intl,Date,Number,Set,Map,console,
     setTimeout,clearTimeout,crypto:require('node:crypto').webcrypto,
-    FormData: class { get(key) { return node('#asset-form').fields?.[key] ?? null; } },
+    FormData: class { constructor(form) { this.form = form; } get(key) { const field = this.form.elements.find(element => element.name === key && !element.disabled); return field ? field.value : this.form.fields?.[key] ?? null; } },
     fetch:async()=>({ok:false,json:async()=>({error:'provider unavailable'})}),
   });
   const source = fs.readFileSync(require.resolve('../brokerage.js'),'utf8').replace('  initialise();',
@@ -112,4 +112,51 @@ test('retrying after a quote-write failure reuses the same holding id',async()=>
   assert.equal(holdings.length,2);assert.equal(holdings[0].payload.id,holdings[1].payload.id);
   assert.equal(node('#save-asset').disabled,false);
   assert.equal(node('#quote-form-status').textContent,'Quote storage unavailable');
+});
+
+function editableAsset() {
+  const view=controller(); const {api,node,window}=view;
+  window.location.hash='#asset/test';
+  api.state.holdings=[{id:'test',symbol:'TEST',name:'Test',instrument_type:'stock',allocation_category:'other',valuation_basis:'shares-and-price',shares:10,manual_price_cents:10000,manual_value_cents:null,expected_annual_return_rate:null,distribution_yield_rate:null,target_allocation_rate:null,weekly_contribution_rate:null,contribution_cents:null,contribution_frequency:null}];
+  const fields=[['shares','shares'],['manual-price','manualPrice'],['valuation-basis','valuationBasis'],['retirement','isRetirement']].map(([id,name])=>{
+    const field=node(`#asset-detail-${id}`);field.name=name;field.type=id==='retirement'?'checkbox':'number';return field;
+  });
+  node('#asset-detail-form').elements=[...fields,node('#asset-save'),node('#asset-cancel')];
+  api.renderAsset();
+  return view;
+}
+
+test('asset edit actions distinguish saved, changed, reverted and cancelled values',()=>{
+  const {node}=editableAsset();const changed=node('#asset-detail-form').listeners.input;
+  assert.equal(node('#asset-save').disabled,true);
+  node('#asset-detail-shares').value='11';changed();
+  assert.equal(node('#asset-save').disabled,false);
+  assert.equal(node('#asset-detail-status').textContent,'Unsaved changes');
+  node('#asset-detail-shares').value='10';changed();
+  assert.equal(node('#asset-save').disabled,true);
+  assert.equal(node('#asset-detail-status').hidden,true);
+  node('#asset-detail-retirement').checked=true;changed();
+  assert.equal(node('#asset-save').disabled,false);
+  node('#asset-cancel').listeners.click();
+  assert.equal(node('#asset-detail-retirement').checked,false);
+  assert.equal(node('#asset-save').disabled,true);
+});
+
+test('asset save captures enabled fields, locks editing, prevents duplicate writes and retains a failed draft',async()=>{
+  const {api,node}=editableAsset();let finish,calls=0,payload;
+  api.state.client.from=()=>({update(value){payload=value;calls++;return {eq(){return new Promise(resolve=>{finish=resolve})}}}});
+  node('#asset-detail-shares').value='17';node('#asset-detail-form').listeners.input();
+  const submit=node('#asset-detail-form').listeners.submit;
+  const first=submit({preventDefault(){}});await submit({preventDefault(){}});
+  assert.equal(calls,1);assert.equal(payload.shares,17);assert.equal(payload.manual_price_cents,10000);
+  assert.equal(node('#asset-detail-shares').disabled,true);
+  assert.equal(node('#asset-cancel').disabled,true);
+  assert.equal(node('#asset-save').textContent,'Saving…');
+  api.renderAsset();assert.equal(node('#asset-detail-shares').disabled,true);
+  finish({error:{message:'Save failed; retry'}});await first;
+  assert.equal(node('#asset-detail-shares').value,'17');
+  assert.equal(node('#asset-detail-shares').disabled,false);
+  assert.equal(node('#asset-save').disabled,false);
+  assert.equal(node('#asset-detail-status').textContent,'Save failed; retry');
+  assert.equal(node('#asset-detail-status').hidden,false);
 });
