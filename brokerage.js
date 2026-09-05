@@ -145,7 +145,7 @@
     if (!routeAssetId()) assetReturnHash = window.location.hash || "#";
     window.location.hash = `asset/${encodeURIComponent(id)}`;
   }
-  function navigateBackFromAsset() { window.location.hash = assetReturnHash; }
+  function navigateBackFromAsset() { leaveWorkspace(() => { window.location.hash = assetReturnHash; }); }
   function navigateHome() { window.location.hash = ""; }
   function setActiveNavigation(page) {
     document.querySelectorAll("[data-nav-page]").forEach((control) => {
@@ -1136,6 +1136,94 @@
     syncAssetEditState();
   }
 
+  // Drafts remain in the current document only; never store private form data locally.
+  const protectedDialogs = new Map();
+  const pendingFormValues = new Map();
+  let pendingDiscard = null;
+  let lastRenderedHash = window.location.hash;
+  function formSnapshot(form) {
+    return JSON.stringify(Array.from(form.elements).filter((field) => field.name)
+      .map((field) => [field.name, field.type === "checkbox" ? field.checked : String(field.value)]));
+  }
+  function assetHasDraft() {
+    return renderedAssetId !== null && assetFormSnapshot() !== assetFormBaseline;
+  }
+  function dialogHasDraft(entry) {
+    return entry.dialog.open && entry.baseline !== formSnapshot(entry.form);
+  }
+  function hasPendingWrite() {
+    return Boolean(savingAssetId) || Array.from(protectedDialogs.values()).some((entry) => entry.pending);
+  }
+  function hasUnsavedWork() {
+    return assetHasDraft() || Array.from(protectedDialogs.values()).some(dialogHasDraft);
+  }
+  function requestDiscard(action) {
+    if (pendingDiscard) return;
+    pendingDiscard = action;
+    $("#discard-changes-dialog").hidden = false;
+    $("#discard-changes-dialog").showModal();
+    $("#keep-editing").focus();
+  }
+  function leaveWorkspace(action) {
+    if (hasPendingWrite()) {
+      if (savingAssetId) setAssetEditStatus("Saving changes… Please wait before leaving.");
+      return;
+    }
+    const leave = () => {
+      assetFormBaseline = assetFormSnapshot();
+      protectedDialogs.forEach((entry) => { if (entry.dialog.open) entry.dialog.close(); });
+      action();
+    };
+    if (hasUnsavedWork()) requestDiscard(leave);
+    else leave();
+  }
+  function openFormDialog(selector) {
+    const dialog = $(selector);
+    const entry = protectedDialogs.get(dialog);
+    if (entry) entry.baseline = formSnapshot(entry.form);
+    dialog.showModal();
+  }
+  function protectDialog(dialogSelector, formSelector, submit) {
+    const dialog = $(dialogSelector), form = $(formSelector);
+    const entry = { dialog, form, baseline: "", pending: false };
+    protectedDialogs.set(dialog, entry);
+    const dismiss = (event) => {
+      if (entry.pending || dialogHasDraft(entry)) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        if (!entry.pending) requestDiscard(() => dialog.close());
+      }
+    };
+    dialog.addEventListener("cancel", dismiss);
+    dialog.addEventListener("click", (event) => {
+      const button = event.target.closest("button");
+      if (button && /^(close-|cancel-)/.test(button.id)) dismiss(event);
+    }, true);
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      if (entry.pending) return;
+      const controls = Array.from(form.elements);
+      const disabled = controls.map((control) => control.disabled);
+      const focus = document.activeElement;
+      entry.pending = true;
+      // Retain successful form values while controls are disabled, including
+      // Quick Add's asynchronous quote lookup before it constructs the holding.
+      pendingFormValues.set(form, new FormData(form));
+      try {
+        const request = submit(event);
+        controls.forEach((control) => { control.disabled = true; });
+        form.setAttribute("aria-busy", "true");
+        await request;
+      } finally {
+        entry.pending = false;
+        pendingFormValues.delete(form);
+        controls.forEach((control, index) => { control.disabled = disabled[index]; });
+        form.setAttribute("aria-busy", "false");
+        if (dialog.open && focus?.isConnected) focus.focus();
+      }
+    });
+  }
+
   let renderedPortfolio = false;
   function render() {
     if (state.configured && !state.user) {
@@ -1146,6 +1234,13 @@
       $("#main-content").setAttribute("aria-busy", "false");
       return;
     }
+    if (window.location.hash !== lastRenderedHash && (hasUnsavedWork() || hasPendingWrite())) {
+      const destination = window.location.hash;
+      window.history.pushState(null, "", lastRenderedHash || window.location.pathname + window.location.search);
+      leaveWorkspace(() => { window.location.hash = destination; render(); });
+      return;
+    }
+    lastRenderedHash = window.location.hash;
     if (!routeAssetId()) renderedAssetId = null;
     const isPortfolio = routePortfolio();
     if (isPortfolio && !renderedPortfolio) state.portfolioView = "cards";
@@ -1170,7 +1265,7 @@
   }
 
   function getFormValue(form, key) {
-    const value = new FormData(form).get(key);
+    const value = (pendingFormValues.get(form) || new FormData(form)).get(key);
     return value === "" ? null : value;
   }
   function manualValuation() {
@@ -1228,6 +1323,7 @@
   }
   let quickAssetId = null;
   function openQuickAdd() {
+    if (protectedDialogs.get($("#asset-dialog"))?.pending) return;
     quickAssetId = crypto.randomUUID();
     const form = $("#asset-form");
     form.reset();
@@ -1236,7 +1332,7 @@
     clearManualFallback();
     setQuickAddStatus("");
     syncQuickValuationFields();
-    $("#asset-dialog").showModal();
+    openFormDialog("#asset-dialog");
     $("#asset-symbol").focus();
   }
 
@@ -1467,6 +1563,7 @@
   }
 
   function openDeleteAssetDialog() {
+    if (protectedDialogs.get($("#delete-asset-dialog"))?.pending) return;
     const holding = state.holdings.find((entry) => entry.id === routeAssetId());
     if (!holding) return;
     const label = holding.symbol || holding.name || "this asset";
@@ -1474,7 +1571,7 @@
     setText("#delete-asset-description", `This permanently removes ${label} and its saved quotes from your Brokerage account. Historical portfolio snapshots stay unchanged.`);
     setText("#delete-asset-status", "");
     $("#delete-asset-dialog").hidden = false;
-    $("#delete-asset-dialog").showModal();
+    openFormDialog("#delete-asset-dialog");
   }
   function closeDeleteAssetDialog() {
     $("#delete-asset-dialog").close();
@@ -1497,6 +1594,7 @@
         .maybeSingle();
       if (error) throw error;
       if (!data) throw new Error("This asset could not be deleted.");
+      assetFormBaseline = assetFormSnapshot();
       state.holdings = state.holdings.filter((entry) => entry.id !== holding.id);
       state.quotes = state.quotes.filter((quote) => quote.holding_id !== holding.id);
       closeDeleteAssetDialog();
@@ -1529,6 +1627,7 @@
     };
   }
   function openIncomeSourceDialog(id = null) {
+    if (protectedDialogs.get($("#income-source-dialog"))?.pending) return;
     const form = $("#income-source-form");
     const existing = id ? state.incomeSources.find((source) => source.id === id) : null;
     state.incomeSourceDialogId = existing?.id || null;
@@ -1543,7 +1642,7 @@
       $("#income-source-frequency").value = existing.frequency;
     }
     $("#income-source-dialog").hidden = false;
-    $("#income-source-dialog").showModal();
+    openFormDialog("#income-source-dialog");
   }
   function closeIncomeSourceDialog() { $("#income-source-dialog").close(); }
   async function saveIncomeSource(event) {
@@ -1569,6 +1668,7 @@
     }
   }
   function openDeleteIncomeSourceDialog(id) {
+    if (protectedDialogs.get($("#delete-income-source-dialog"))?.pending) return;
     const source = state.incomeSources.find((entry) => entry.id === id);
     if (!source) return;
     state.incomeSourceDeleteId = id;
@@ -1576,7 +1676,7 @@
     setText("#delete-income-source-description", `This permanently removes ${source.name} from your expected income plan.`);
     setText("#delete-income-source-status", "");
     $("#delete-income-source-dialog").hidden = false;
-    $("#delete-income-source-dialog").showModal();
+    openFormDialog("#delete-income-source-dialog");
   }
   function closeDeleteIncomeSourceDialog() { $("#delete-income-source-dialog").close(); }
   async function deleteIncomeSource(event) {
@@ -1616,6 +1716,7 @@
     };
   }
   function openBudgetCategoryDialog(id = null) {
+    if (protectedDialogs.get($("#budget-category-dialog"))?.pending) return;
     if (!state.budgetCategoriesAvailable) return;
     const form = $("#budget-category-form");
     const existing = id ? state.budgetCategories.find((category) => category.id === id) : null;
@@ -1629,7 +1730,7 @@
       $("#budget-category-amount").value = (Number(existing.monthly_amount_cents) / 100).toFixed(2);
     }
     $("#budget-category-dialog").hidden = false;
-    $("#budget-category-dialog").showModal();
+    openFormDialog("#budget-category-dialog");
   }
   function closeBudgetCategoryDialog() { $("#budget-category-dialog").close(); }
   async function saveBudgetCategory(event) {
@@ -1656,6 +1757,7 @@
     }
   }
   function openDeleteBudgetCategoryDialog(id) {
+    if (protectedDialogs.get($("#delete-budget-category-dialog"))?.pending) return;
     const category = state.budgetCategories.find((entry) => entry.id === id);
     if (!category) return;
     state.budgetCategoryDeleteId = id;
@@ -1663,7 +1765,7 @@
     setText("#delete-budget-category-description", `This permanently removes ${category.name} from your spending plan.`);
     setText("#delete-budget-category-status", "");
     $("#delete-budget-category-dialog").hidden = false;
-    $("#delete-budget-category-dialog").showModal();
+    openFormDialog("#delete-budget-category-dialog");
   }
   function closeDeleteBudgetCategoryDialog() { $("#delete-budget-category-dialog").close(); }
   async function deleteBudgetCategory(event) {
@@ -1689,6 +1791,7 @@
   }
 
   function openPlanAssumptionsDialog() {
+    if (protectedDialogs.get($("#plan-assumptions-dialog"))?.pending) return;
     if (!state.planDataAvailable) return;
     const settings = planSettingsModel(state.planSettings);
     const form = $("#plan-assumptions-form");
@@ -1702,7 +1805,7 @@
     $("#plan-distribution-policy").value = settings?.distributionPolicy || "reinvest";
     setText("#plan-assumptions-form-status", "");
     $("#plan-assumptions-dialog").hidden = false;
-    $("#plan-assumptions-dialog").showModal();
+    openFormDialog("#plan-assumptions-dialog");
   }
   function closePlanAssumptionsDialog() { $("#plan-assumptions-dialog").close(); }
   async function savePlanAssumptions(event) {
@@ -1737,6 +1840,7 @@
   }
 
   function openPropertyDialog(id = null) {
+    if (protectedDialogs.get($("#property-dialog"))?.pending) return;
     if (!state.propertiesAvailable) return;
     const form = $("#property-form");
     const property = state.properties.find((entry) => entry.id === id);
@@ -1753,7 +1857,7 @@
       $("#property-debt-balance").value = (model.mortgageBalanceCents / 100).toFixed(2);
     }
     $("#property-dialog").hidden = false;
-    $("#property-dialog").showModal();
+    openFormDialog("#property-dialog");
   }
   function closePropertyDialog() { $("#property-dialog").close(); }
   async function saveProperty(event) {
@@ -1795,13 +1899,14 @@
     }
   }
   function openDeletePropertyDialog(id) {
+    if (protectedDialogs.get($("#delete-property-dialog"))?.pending) return;
     const property = state.properties.find((entry) => entry.id === id);
     if (!property) return;
     state.propertyDeleteId = id;
     setText("#delete-property-description", `This removes ${property.name || "this property"} and its equity from your net worth.`);
     setText("#delete-property-status", "");
     $("#delete-property-dialog").hidden = false;
-    $("#delete-property-dialog").showModal();
+    openFormDialog("#delete-property-dialog");
   }
   function closeDeletePropertyDialog() { $("#delete-property-dialog").close(); }
   async function deleteProperty(event) {
@@ -1994,10 +2099,11 @@
     }
   });
   document.querySelectorAll("[data-sign-out]").forEach((control) => {
-    control.addEventListener("click", async () => {
-      await state.client.auth.signOut();
+    control.addEventListener("click", () => leaveWorkspace(async () => {
+      const { error } = await state.client.auth.signOut();
+      if (error) { setText("#data-status", error.message || "Sign out failed. Try again."); return; }
       window.location.reload();
-    });
+    }));
   });
   $("#portfolio-add-asset").addEventListener("click", openQuickAdd);
   $("#home-add-asset").addEventListener("click", openQuickAdd);
@@ -2007,7 +2113,7 @@
     clearTimeout(state.quoteTimer);
     state.quoteRequestId += 1;
   });
-  $("#asset-form").addEventListener("submit", saveQuickAsset);
+  protectDialog("#asset-dialog", "#asset-form", saveQuickAsset);
   $("#asset-valuation-basis").addEventListener("change", syncQuickValuationFields);
   $("#asset-symbol").addEventListener("input", () => scheduleQuote());
   $("#asset-shares").addEventListener("input", () => scheduleQuote({ preserveQuote: true }));
@@ -2019,18 +2125,18 @@
   $("#close-income-source-dialog").addEventListener("click", closeIncomeSourceDialog);
   $("#cancel-income-source-dialog").addEventListener("click", closeIncomeSourceDialog);
   $("#income-source-dialog").addEventListener("close", () => { $("#income-source-dialog").hidden = true; });
-  $("#income-source-form").addEventListener("submit", saveIncomeSource);
+  protectDialog("#income-source-dialog", "#income-source-form", saveIncomeSource);
   $("#cancel-delete-income-source").addEventListener("click", closeDeleteIncomeSourceDialog);
   $("#delete-income-source-dialog").addEventListener("close", () => { $("#delete-income-source-dialog").hidden = true; });
-  $("#delete-income-source-form").addEventListener("submit", deleteIncomeSource);
+  protectDialog("#delete-income-source-dialog", "#delete-income-source-form", deleteIncomeSource);
   $("#add-budget-category").addEventListener("click", () => openBudgetCategoryDialog());
   $("#close-budget-category-dialog").addEventListener("click", closeBudgetCategoryDialog);
   $("#cancel-budget-category-dialog").addEventListener("click", closeBudgetCategoryDialog);
   $("#budget-category-dialog").addEventListener("close", () => { $("#budget-category-dialog").hidden = true; });
-  $("#budget-category-form").addEventListener("submit", saveBudgetCategory);
+  protectDialog("#budget-category-dialog", "#budget-category-form", saveBudgetCategory);
   $("#cancel-delete-budget-category").addEventListener("click", closeDeleteBudgetCategoryDialog);
   $("#delete-budget-category-dialog").addEventListener("close", () => { $("#delete-budget-category-dialog").hidden = true; });
-  $("#delete-budget-category-form").addEventListener("submit", deleteBudgetCategory);
+  protectDialog("#delete-budget-category-dialog", "#delete-budget-category-form", deleteBudgetCategory);
   document.querySelectorAll("[data-portfolio-holding-sort]").forEach((control) => {
     control.addEventListener("click", () => {
       state.portfolioSort = control.dataset.portfolioHoldingSort;
@@ -2101,15 +2207,15 @@
   $("#close-plan-assumptions-dialog").addEventListener("click", closePlanAssumptionsDialog);
   $("#cancel-plan-assumptions").addEventListener("click", closePlanAssumptionsDialog);
   $("#plan-assumptions-dialog").addEventListener("close", () => { $("#plan-assumptions-dialog").hidden = true; });
-  $("#plan-assumptions-form").addEventListener("submit", savePlanAssumptions);
+  protectDialog("#plan-assumptions-dialog", "#plan-assumptions-form", savePlanAssumptions);
   $("#portfolio-add-property").addEventListener("click", () => openPropertyDialog());
   $("#close-property-dialog").addEventListener("click", closePropertyDialog);
   $("#cancel-property-dialog").addEventListener("click", closePropertyDialog);
   $("#property-dialog").addEventListener("close", () => { $("#property-dialog").hidden = true; });
-  $("#property-form").addEventListener("submit", saveProperty);
+  protectDialog("#property-dialog", "#property-form", saveProperty);
   $("#cancel-delete-property").addEventListener("click", closeDeletePropertyDialog);
   $("#delete-property-dialog").addEventListener("close", () => { $("#delete-property-dialog").hidden = true; });
-  $("#delete-property-form").addEventListener("submit", deleteProperty);
+  protectDialog("#delete-property-dialog", "#delete-property-form", deleteProperty);
   document.querySelectorAll("[data-property-sort]").forEach((control) => {
     control.addEventListener("click", () => {
       state.propertySort = control.dataset.propertySort;
@@ -2127,7 +2233,47 @@
   $("#asset-delete").addEventListener("click", openDeleteAssetDialog);
   $("#cancel-delete-asset").addEventListener("click", closeDeleteAssetDialog);
   $("#delete-asset-dialog").addEventListener("close", () => { $("#delete-asset-dialog").hidden = true; });
-  $("#delete-asset-form").addEventListener("submit", deleteCurrentAsset);
+  protectDialog("#delete-asset-dialog", "#delete-asset-form", deleteCurrentAsset);
+  $("#keep-editing").addEventListener("click", () => {
+    pendingDiscard = null;
+    $("#discard-changes-dialog").close();
+  });
+  $("#discard-changes-dialog").addEventListener("cancel", () => { pendingDiscard = null; });
+  $("#discard-changes").addEventListener("click", () => {
+    const action = pendingDiscard;
+    pendingDiscard = null;
+    $("#discard-changes-dialog").close();
+    action?.();
+  });
+  $("#discard-changes-dialog").addEventListener("close", () => {
+    // Native close events are queued; a subsequent navigation may already
+    // have reopened this dialog by the time the earlier event arrives.
+    if ($("#discard-changes-dialog").open) return;
+    pendingDiscard = null;
+    $("#discard-changes-dialog").hidden = true;
+  });
+  document.addEventListener("click", (event) => {
+    const link = event.target.closest("a[href]");
+    if (!link || event.defaultPrevented || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || link.target === "_blank") return;
+    const href = link.getAttribute("href");
+    if (href === "#main-content") {
+      event.preventDefault();
+      $("#main-content").focus();
+      $("#main-content").scrollIntoView();
+      return;
+    }
+    if (!hasUnsavedWork() && !hasPendingWrite()) return;
+    event.preventDefault();
+    leaveWorkspace(() => {
+      if (href.startsWith("#")) window.location.hash = href;
+      else window.location.assign(link.href);
+    });
+  });
+  window.addEventListener("beforeunload", (event) => {
+    if (!hasUnsavedWork() && !hasPendingWrite()) return;
+    event.preventDefault();
+    event.returnValue = "";
+  });
   window.addEventListener("hashchange", render);
   initialise();
 })();

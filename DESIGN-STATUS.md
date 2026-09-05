@@ -2,14 +2,14 @@
 
 **Last reviewed:** 2026-09-05
 
-10 implemented canonical flows have design and automated coverage at varying depths; private export remains deferred. Home, Portfolio, Income Overview/Budget, Plan and Asset details use Acadia. This pass refines one existing flow; no screens or flows added.
+10 implemented canonical flows have design and automated coverage at varying depths; private export remains deferred. This pass strengthens existing editors and navigation without adding product flows.
 
-Asset editing now has a sticky Acadia action bar with saved, dirty, saving, success and recoverable failure states. Return/yield labels use canonical Summary Measures. Desktop 1440px, tablet 768px and phones 390/320px were checked with disposable local data. No horizontal overflow; phone buttons are 44px high and clear the dock by 12px. Save failure, retry, Cancel and background draft preservation were checked. `npm run check`: 116 passed.
+Asset Back and workspace navigation now protect unsaved edits with Keep editing / Discard changes. Add asset, Income, Budget, Plan and Property forms protect dismissal; all nine save/delete dialogs lock controls and Escape during persistence, prevent duplicate submissions and retain failed drafts. Skip to content retains the current route. Canonical Acadia styles are unchanged.
 
-The only new adapter positions Acadia's action bar above Mercury's phone navigation using its existing clearance token. No new visual primitives, missing design states or calculations were introduced. Long forms remain the main complexity hotspot. These checks do not establish authenticated production writes, physical-keyboard viewport behaviour or full assistive-technology acceptance.
+Current isolated browser checks cover manual holding creation, asset navigation, income/category/Plan saves, failure recovery, focus restoration and desktop dialog states. The new confirmation fits 390px and 320px embedded viewports; both actions are 44px high at 320px. `npm run check`: 124 passing tests. Production deployment browser access is Vercel-sign-in-gated; physical-device, VoiceOver, real email redemption/expiry and authenticated database acceptance remain separate.
 
 ## Next design opportunities
 
-1. **Protect drafts when leaving Asset details.** Confirmed: navigating Back discards unsaved changes. The new dirty state makes edits explicit; navigation protection remains separate work.
-2. **Clarify expired-session recovery.** Hypothesis: an expired session during a long edit may leave an unclear route to signing in and resuming. Requires a real expiry-state review.
-3. **Calibrate first-use history and manual valuation.** Review the existing honest empty/history-building states with the owner's early records before adding further content or controls.
+1. **Recover from session expiry during edits.** Verify real magic-link redemption and expired-session recovery using a disposable authenticated account; preserve the task while respecting private-data boundaries.
+2. **Clarify partial Add persistence.** Holding and quote writes remain separate. Same-dialog retry reuses identity, but cancellation after the holding succeeds and quote storage fails still needs a deliberate reconciliation flow.
+3. **Review existing form-dialog phone containment.** The shared non-compact form layout can exceed the viewport when padding is added outside its width. The new confirmation uses the standard dialog; existing editing dialogs need focused Acadia sizing review.

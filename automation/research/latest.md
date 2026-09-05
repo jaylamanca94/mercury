@@ -1,46 +1,94 @@
-# Mercury flow research — 2026-09-05
+# Mercury flow audit — continuity follow-through
 
-This run replaces the July research baseline for the retired public economy dashboard. The active product is Home, Portfolio, Income Overview/Budget, Plan and private asset/property editing.
+Reviewed 2026-09-05 against main `7d04404`, followed by the changes in this report. The prior run guided prioritisation; all evidence below comes from this run. No owner records, schema or credentials were modified. Browser data is explicitly labelled disposable local test data.
 
-## Findings resolved
+## Outcome
 
-1. **P1 — Signed-out navigation exposed enabled creation controls.** A fresh production browser could show the sign-in form and an empty editable Portfolio together. Private routes now remain at sign-in, with disabled private creation controls. Magic-link submission has pending, success and recoverable error feedback and prevents simultaneous sends.
-2. **P1 — Quote failure instructed an impossible next step.** In production, Add asset asked for manual valuation while its fields remained hidden until another Add attempt. The first failure now reveals those fields. Lookup requires entered valid shares, and subsequent share edits preserve manual input.
-3. **P1 — Background rendering could replace an asset draft.** Source tracing and isolated controller/browser checks confirmed that provider hydration called the same render that populated all form values. Summary refresh now preserves the current form; Cancel and a completed Save explicitly reload saved values.
-4. **P1 — Partial Add retries could create duplicate holdings.** Holding creation preceded quote persistence, with a new UUID on every attempt. The dialog now keeps one holding ID and upserts its holding and quote on retry. A regression test forces repeated quote-storage failures and verifies one identity.
-5. **P2 — Asset Back always returned Home.** Confirmed by opening an asset from Portfolio in production. Back now returns to the entry route; direct links default to Portfolio. Invalid encoded IDs reach the unavailable state instead of throwing.
-6. **P2 — Route identity and horizon semantics were inconsistent.** The browser title remained Home across workspaces, and Plan applied `aria-selected` to ordinary buttons. Titles now follow the route, and the horizon is a labelled group of native pressed buttons.
+The most consequential reproduced issue was silent draft loss: change asset shares, press Back, reopen the asset, and the saved shares replace the draft. Income forms likewise dismissed changed values immediately with Escape. Pending modal writes only disabled the submit button, allowing dismissal, field changes or another submission while the original request was unresolved.
 
-## Flow coverage
+Implemented one shared protection pattern across the existing flows:
 
-| Step | Journey | Result and evidence boundary |
+- Asset Back, workspace navigation, external navigation and sign-out protect unsaved work. Changed forms offer **Keep editing** or **Discard changes**. Pristine forms leave immediately.
+- Add asset, Income, Budget, Plan and Property protect Close, Cancel and Escape when changed. Keep editing returns to the existing fields.
+- All nine entry/edit/delete dialogs prevent duplicate submission, lock inputs and dismissal while saving, expose `aria-busy`, then restore the draft and controls on failure. A dialog cannot reopen while its prior request is still settling.
+- Quick Add keeps its submitted values available during asynchronous quote lookup, even while controls are disabled.
+- Reload/close uses the browser's native unsaved-work warning where supported. No financial drafts are written to local/session storage.
+- Skip to content focuses the existing main region without triggering the hash router.
+- The new confirmation uses the existing Acadia standard dialog. Its footer wraps at narrow widths; no stylesheet or financial-calculation changes.
+
+## Canonical flow coverage
+
+| Step | Flow and current health | Evidence and limits |
 | --- | --- | --- |
-| 1 | Open private workspace and sign in | Production signed-out boundary reproduced; local send/failure/retry verified without sending email. |
-| 2 | Read Home position, planning, history and allocation | Saved production data rendered; current value and recorded history stayed distinct. Local 390px light-theme capture had no horizontal overflow. |
-| 3 | Portfolio Cards/Table, filters and recurring holdings | Production controls inspected; local populated route and detail return verified. Existing rendering/state tests retained. |
-| 4 | Add asset, quote failure, manual valuation, save | Production recovery defect reproduced; local manual creation completed; late responses and partial-write retries covered by controller tests. |
-| 5 | Asset details, Cancel, background refresh and Back | Saved production details inspected. Local draft remained 9 shares after refresh and restored its saved 3 on Cancel; Back returned Portfolio. |
-| 6 | Income source editing and Budget | Production saved sources/categories inspected. Local source save restored focus; category failure preserved form/error; confirmed deletion returned focus to Add and an empty state. |
-| 7 | Plan assumptions and horizon | Production missing-assumption state inspected. Local assumption save and 20-year projection exercised; pressed-button state verified. |
-| 8 | Property entry | Production saved property inspected. Local form exercised with database defaults; property calculations remain covered by domain tests. |
-| 9 | Theme, responsive navigation and account actions | Desktop dark and 390px light Home/Income/Budget/Plan captures reviewed; sign-in failure fits phone width. Existing signed-in session preserved. |
-| 10 | Background history and recovery/export | Source and existing tests reviewed. Cron execution, actual mail delivery, second-user RLS and owner export acceptance were not executed in this run. Export is a deferred UI boundary, not a visible broken control. |
+| 1 | Sign in — local gating/send recovery covered; remote acceptance open | Existing controller checks rerun. Current production deployment redirects this browser to Vercel sign-in. Real magic-link delivery, redemption and expired-session recovery not completed. |
+| 2 | Understand position — local read path healthy | Current Home screenshot, explicit history-building state, investment allocation, property equity and honest missing metrics. Domain/history suite passes. |
+| 3 | Portfolio — local navigation healthy | Current Cards/summary/allocation/property read path captured; asset entry verified. Existing filter/sort/view tests pass; not every combination repeated in this browser. |
+| 4 | Add a holding — manual recovery and completion verified | Unsupported provider exposes fallback immediately. Entered 3 shares and a $25 manual price; saved asset shows $75 and correct source semantics. Deferred lookup test checks locked fields preserve input values. |
+| 5 | Refresh an automatic quote — regression coverage passes; live provider acceptance open | Provider-failure/manual-fallback browser path and adapter tests. No successful current-run Twelve Data call or production timestamp-refresh acceptance. |
+| 6 | Edit/delete an asset — navigation and pending-write protections improved | Reproduced loss, then verified page Back, Keep editing, retained values and discard. Browser Back, repeated Back after Keep editing, and Discard to Portfolio were verified after fixing a queued native close-event race. Asset save failure and all four deletion-dialog duplicate/pending/error states have controller tests. No owner deletion performed. |
+| 7 | Expected income — save/dismissal/failure flow verified locally | Changed 2000 to 2200, saved, observed updated planning values and focus on invoking Edit. Changed again to 2300 with delayed failure: Escape did not dismiss; error restored Save and retained 2300. Keep editing after Escape restored field focus. |
+| 8 | Budget — local save flow verified | Changed monthly category from 500 to 600; saved row, planned balance and Edit focus updated. Deferred failure/duplicate guard covered by controller tests. |
+| 9 | Base plan — local save flow verified | Changed the illustrative return assumption from 5% to 6%; saved assumption and projections updated. Pending/failure handling covered by controller tests. |
+| 10 | Daily history — automated coverage; remote schedule acceptance open | Market-close/date/idempotency/history tests pass; Home shows honest zero-date history. No scheduled production execution verified. |
+| Boundary | Private export — deferred, unchanged | No visible export surface added. Owner isolation/export contents require authenticated RLS acceptance. |
+| Supporting flow | Property — controller coverage strengthened | Portfolio property entry/read path captured. Update payload, pending duplicate prevention and failure restoration tested. Creation/deletion browser paths were not repeated this run. |
 
-## Research applied
+## Research informing the changes
 
-- [W3C modal dialogs](https://www.w3.org/WAI/ARIA/apg/patterns/dialog-modal/) supports keeping focus in the dialog and restoring it to the invoking control or a logical successor. Existing source/category Save/Cancel/deletion behaviour was retained and checked.
-- [W3C tabs](https://www.w3.org/WAI/ARIA/apg/patterns/tabs/) distinguishes tabs with associated panels from other choices. Plan uses native pressed buttons for its projection parameter; Income and Portfolio retain their actual tabs.
-- [Nielsen Norman Group: preventing slips](https://www.nngroup.com/articles/slips/) informed preserving entered work and preventing repeated submissions. [Confirmation-dialog guidance](https://www.nngroup.com/articles/confirmation-dialog/) supports reserving confirmation for consequential removal rather than adding prompts to ordinary navigation.
-- [Monarch manual-balance editing](https://help.monarch.com/hc/en-us/articles/32368722344212-Manually-Edit-an-Account-Balance) provides a relevant explicit Edit/Save pattern. Mercury retains explicit manual valuation and Save/Cancel without importing account aggregation, transaction entry or balance-history editing.
+- [W3C: Let users go back](https://www.w3.org/WAI/WCAG2/supplemental/patterns/o4p02-back-undo/) explains why back navigation should preserve entered work. Mercury retains the current draft and asks only when leaving would lose it.
+- [W3C form notifications](https://www.w3.org/WAI/tutorials/forms/notifications/) recommends concise, understandable feedback for pending work, errors and success. Existing visible errors and save labels remain associated with the form.
+- [W3C modal dialog pattern](https://www.w3.org/WAI/ARIA/apg/patterns/dialog-modal/) informed a labelled native dialog, focus on the safe action and return to the originating field. Keyboard and focus observations are limited checks, not accessibility certification.
+- [YNAB editing patterns](https://support.ynab.com/en_us/how-to-edit-and-delete-transactions-BJG4oS1s) retain an explicit Save action. This supports preserving Mercury's existing Save/Cancel model; no transaction features or autosave were introduced.
 
-## Validation and remaining limits
+## Current-run screenshots
 
-`npm run check`: 114 passing tests, including seven new behavioural controller regressions. Tests are dependency-free. Isolated browser writes use an in-memory adapter and never touch the owner's records. Local fixture setup initially omitted database defaults and shared array references; those harness issues were corrected before accepting property evidence.
+All screenshots were captured from the current browser and inspected. Older intermediate confirmation styling is not release evidence. The phone captures use a 390px/320px iframe because the browser viewport override did not change the measured main-tab width. This is responsive CSS evidence, not physical-device verification.
 
-This is a broad flow audit with focused recovery fixes, not a claim that every remote failure and physical-device state has passed. Full email-link redemption, expired-session recovery, scheduled snapshot execution, cross-user database isolation and physical-device assistive technology remain acceptance work. Long-form navigation still discards unsaved edits; this pass specifically protects against unsolicited background resets. Holding and quote persistence remains two requests: same-dialog retry is idempotent, but closing during a partial save does not roll back the holding. No schema, provider configuration or financial values were changed.
+1. **Home — healthy read path.**
 
-Screenshots containing private saved values stay in the automation's local evidence folder; they are not committed or published. The local audit includes the screenshots and their source/state labels.
+![Home](screenshots/2026-09-05-continuity/01-home.png)
 
-## Release evidence
+2. **Income — clear planning context and explicit editing.**
 
-Implementation commit `07d9fd7` was pushed to `origin/main`. At 2026-09-05 02:42 UTC, the production `brokerage.js` SHA-256 matched the committed local file. A fresh deployed `#portfolio` route settled at Sign in with no editable portfolio visible. The existing authenticated Safari session reloaded the new Plan title and pressed horizon controls, then opened the owner's saved Portfolio successfully. This verifies deployment and authenticated read access separately from the isolated write tests.
+![Income](screenshots/2026-09-05-continuity/02-income.png)
+
+3. **Pending save — dismissal and fields locked.**
+
+![Pending save](screenshots/2026-09-05-continuity/05-save-pending.png)
+
+4. **Save failure — entered value retained and retry available.**
+
+![Save failure](screenshots/2026-09-05-continuity/06-save-failure.png)
+
+5. **Budget and Plan — successful local save paths; source-backed calculations unchanged.**
+
+![Budget](screenshots/2026-09-05-continuity/07-budget.png)
+
+![Plan](screenshots/2026-09-05-continuity/08-plan.png)
+
+6. **Portfolio and Add — existing organisation retained; manual asset completed.**
+
+![Portfolio](screenshots/2026-09-05-continuity/09-portfolio.png)
+
+![Manual asset saved](screenshots/2026-09-05-continuity/13-added-asset.png)
+
+7. **Navigation confirmation — safe initial focus, full actions at narrow widths.**
+
+![Desktop confirmation](screenshots/2026-09-05-continuity/10-asset-navigation-guard.png)
+
+![390px confirmation](screenshots/2026-09-05-continuity/11-phone-discard.png)
+
+![320px confirmation](screenshots/2026-09-05-continuity/12-320-discard.png)
+
+At 320px the inner content width was 305px including the desktop scrollbar allowance; dialog bounds were 7.5–297.5px, and both buttons were 44px high. No confirmation overflow. The standard Acadia teal focus treatment and red destructive action remain intact.
+
+## Remaining findings and acceptance limits
+
+- **High priority: real auth recovery and private persistence.** Vercel login prevents authenticated production flow acceptance in this browser. The connector returned no projects and could not resolve the deployment; GitHub deployment records remain available. Real email redemption/expiry, second-user isolation, authenticated CRUD and scheduled snapshots need independent evidence.
+- **Partial Add persistence remains a boundary.** Holding and quote writes are separate. Same-dialog retry reuses identity; a quote-storage failure followed by cancellation still needs deliberate reconciliation. This pass prevents cancellation while requests are pending, not rollback of an already successful write.
+- **Existing form-dialog mobile sizing needs follow-through.** The non-compact shared form composition includes padding outside its width. A confirmation built with that modifier exceeded the 320px viewport, so the new confirmation uses Acadia's standard dialog. Existing form compositions should receive focused shared-system review.
+- Browser-history behaviour outside the tested in-app browser, full VoiceOver, physical-device keyboard/safe-area behaviour and forced mobile process termination remain unverified. `beforeunload` is best effort and does not guarantee recovery after a forced exit.
+
+## Validation and publication
+
+`npm run check`: **124 tests pass**, including eight new behavioural regressions for navigation/unload, asset saves, modal drafts, modal writes, deferred Quick Add, deletion concurrency Skip to content and queued confirmation-close events. `git diff --check` passes. Publication status is recorded after push below.

@@ -450,3 +450,10 @@ Avoid utilities for:
 This file is the living design standards README for Mercury.
 
 When a UX detail, UI pattern, visual utility, chart treatment, component behavior, accessibility expectation, responsive rule, or product-specific design convention changes, update this file in the same work.
+
+## Draft and pending-write protection — 2026-09-05
+
+- Changed asset details and open entry/edit dialogs require a deliberate Keep editing or Discard changes choice before leaving. Use Acadia's standard native dialog with labelled header/body/footer; Keep editing receives initial focus, and narrow layouts allow footer actions to wrap.
+- Protect page Back, workspace links, modal Close/Cancel/Escape and browser unload. Pristine forms do not prompt. Browser unload protection is best effort and does not preserve drafts after a forced close or mobile process termination. Private drafts stay in memory only.
+- All nine persistence dialogs reject duplicate submissions, disable their fields and dismissal controls during the request, expose busy state, and restore controls after failure. Read the submitted form values before disabling fields, including Add asset's asynchronous quote fallback. Do not reopen a dialog while its previous request is still settling.
+- Skip to content moves focus and scrolls the current main region without changing the workspace route.
