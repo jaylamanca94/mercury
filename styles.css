@@ -1,18 +1,18 @@
 @import url("acadia.css?v=20260903-home-overview-v1");
 
 /* Page composition only; the shared Acadia primitives and tokens stay canonical. */
-:is(#portfolio-workspace, #income-workspace) {
+#income-workspace {
   gap: var(--acadia-space-6);
 }
-:is(#portfolio-workspace, #income-workspace) h1 {
+#income-workspace h1 {
   font-size: var(--acadia-type-size-heading-large);
   margin: 0;
 }
-:is(#portfolio-workspace, #income-workspace) h2 {
+#income-workspace h2 {
   font-size: var(--acadia-type-size-heading-small);
   margin: 0;
 }
-:is(#portfolio-workspace, #income-workspace) h3 {
+#income-workspace h3 {
   font-size: var(--acadia-type-size-body);
 }
 .mercury-caption {
@@ -48,7 +48,7 @@
 .mercury-income-summary > div:not(:first-child):not(:nth-child(2)) { border-inline-start: 1px solid var(--acadia-color-border); padding-inline-start: var(--acadia-space-3); }
 .mercury-income-navigation, .mercury-section-toolbar { display: flex; align-items: center; flex-wrap: wrap; justify-content: space-between; gap: var(--acadia-space-2); }
 .mercury-income-navigation { margin-block-start: calc(-1 * var(--acadia-space-3)); }
-.mercury-income-sections, .mercury-portfolio-sections { display: grid; gap: var(--acadia-space-6); }
+.mercury-income-sections { display: grid; gap: var(--acadia-space-6); }
 .mercury-section-toolbar { margin-block: var(--acadia-space-3); }
 .mercury-section-search { width: min(100%, 24rem); }
 .mercury-income-source-row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(8rem, auto) minmax(8rem, auto) auto; gap: var(--acadia-space-3); align-items: center; padding-block: var(--acadia-space-2); border-block-start: 1px solid var(--acadia-color-border); }
@@ -67,180 +67,6 @@
 .mercury-income-table-wrap { border: 0; background: transparent; box-shadow: none; }
 /* Figma 110:7662 keeps one dense-section unit between Portfolio header
    content and the content surface that follows it. */
-#portfolio-workspace .mercury-portfolio-view-panel,
-#portfolio-workspace #portfolio-holdings-empty,
-#portfolio-workspace #portfolio-recurring-panel,
-#portfolio-workspace #portfolio-properties-grid,
-#portfolio-workspace #portfolio-properties-empty {
-  margin-block-start: var(--acadia-space-3);
-}
-
-.mercury-portfolio-summary {
-  display: grid;
-  gap: 0;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  padding-block: var(--acadia-space-2);
-}
-
-.mercury-portfolio-summary > div {
-  display: grid;
-  gap: 0.25rem;
-  min-width: 0;
-  padding: 0.25rem var(--acadia-space-3);
-}
-
-.mercury-portfolio-summary > div + div {
-  border-inline-start: 1px solid var(--acadia-color-border);
-}
-
-.mercury-portfolio-summary dt {
-  color: var(--acadia-color-text-muted);
-  font-size: var(--acadia-type-size-small);
-  font-weight: 700;
-}
-
-.mercury-portfolio-summary dd {
-  font-family: var(--acadia-font-expression);
-  font-size: var(--acadia-type-size-heading-small);
-  font-weight: 800;
-  line-height: 1.2;
-  margin: 0;
-}
-
-.mercury-portfolio-toolbar {
-  box-sizing: border-box;
-  width: 100%;
-  min-width: 0;
-  align-items: center;
-  grid-template-columns: minmax(14rem, 1fr) auto;
-  margin-block-start: var(--acadia-space-2);
-  max-width: none;
-  padding: var(--acadia-space-2);
-}
-
-.mercury-portfolio-search {
-  max-width: 28rem;
-  width: 100%;
-}
-
-.mercury-portfolio-toolbar-actions {
-  flex-wrap: wrap;
-}
-
-.mercury-holding-card {
-  --acadia-content-card-padding: var(--acadia-section-padding-dense);
-  gap: var(--acadia-space-2);
-}
-
-.mercury-holding-card .acadia-card-header > p {
-  color: var(--acadia-color-text-muted);
-  margin: 0;
-}
-
-.mercury-holding-card .acadia-card-content {
-  gap: var(--acadia-space-2);
-}
-
-.mercury-holding-card-primary,
-.mercury-holding-card-metrics,
-.mercury-holding-card-value {
-  align-items: baseline;
-  color: var(--acadia-color-text-muted);
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  margin: 0;
-}
-
-.mercury-holding-card-primary strong,
-.mercury-holding-card-value strong {
-  color: var(--acadia-color-text);
-}
-
-.mercury-holding-card-value {
-  justify-content: space-between;
-  padding-block-start: var(--acadia-space-1);
-}
-
-.mercury-metric-separator {
-  color: var(--acadia-color-text-muted);
-}
-
-.mercury-metric-movement.is-positive {
-  color: var(--acadia-color-action);
-}
-
-.mercury-metric-movement.is-negative {
-  color: var(--acadia-color-danger);
-}
-
-.mercury-recurring-panel {
-  padding-block: 0;
-}
-
-.mercury-recurring-list {
-  display: grid;
-}
-
-.mercury-recurring-row {
-  align-items: center;
-  display: grid;
-  gap: var(--acadia-space-3);
-  grid-template-columns: minmax(0, 1fr) auto auto;
-  min-width: 0;
-  padding-block: var(--acadia-space-2);
-}
-
-.mercury-recurring-row + .mercury-recurring-row {
-  border-block-start: 1px solid var(--acadia-color-border);
-}
-
-.mercury-recurring-identity,
-.mercury-recurring-amount {
-  display: grid;
-  gap: 0.125rem;
-}
-
-.mercury-recurring-amount {
-  justify-items: end;
-  min-width: 7rem;
-}
-
-.mercury-recurring-amount span {
-  color: var(--acadia-color-text-muted);
-}
-
-#portfolio-recurring-empty {
-  margin: 0;
-  padding-block: var(--acadia-space-2);
-}
-
-.mercury-property-card {
-  --acadia-content-card-padding: var(--acadia-section-padding-dense);
-  gap: var(--acadia-space-2);
-}
-
-.mercury-property-metrics {
-  display: grid;
-  gap: var(--acadia-space-3);
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  margin: 0;
-}
-
-.mercury-property-metrics > div {
-  display: grid;
-  gap: 0.25rem;
-}
-
-.mercury-property-metrics dt {
-  color: var(--acadia-color-text-muted);
-  font-size: var(--acadia-type-size-small);
-}
-
-.mercury-property-metrics dd {
-  margin: 0;
-}
-
 .mercury-plan-chart-card .acadia-card-body {
   display: grid;
   grid-template-rows: minmax(0, 1fr) auto auto;
@@ -294,10 +120,6 @@
   display: none;
 }
 
-.mercury-portfolio-table-wrap .acadia-table {
-  min-width: 68rem;
-}
-
 .mercury-portfolio-table-wrap th:last-child,
 .mercury-portfolio-table-wrap td:last-child {
   text-align: right;
@@ -311,10 +133,7 @@
 }
 
 .mercury-portfolio-asset-link.acadia-button {
-  font-weight: 800;
   justify-content: flex-start;
-  min-height: 2rem;
-  padding: 0.125rem 0.25rem;
 }
 
 .mercury-portfolio-object-list {
@@ -333,62 +152,11 @@
   gap: 0.125rem;
 }
 
-.mercury-portfolio-object-metrics dt {
-  color: var(--acadia-color-text-muted);
-  font-size: 0.75rem;
-  font-weight: 700;
-  line-height: 1rem;
-  text-transform: uppercase;
-}
-
 .mercury-portfolio-object-metrics dd {
   margin: 0;
 }
 
 @media (max-width: 47.98rem) {
-  .mercury-portfolio-summary {
-    grid-template-columns: 1fr;
-  }
-
-  .mercury-portfolio-summary > div {
-    padding-block: var(--acadia-space-2);
-  }
-
-  .mercury-portfolio-summary > div + div {
-    border-block-start: 1px solid var(--acadia-color-border);
-    border-inline-start: 0;
-  }
-
-  .mercury-portfolio-toolbar {
-    grid-template-columns: 1fr;
-  }
-
-  .mercury-portfolio-search {
-    max-width: none;
-  }
-
-  .mercury-portfolio-toolbar-actions {
-    align-items: flex-start;
-    justify-content: flex-start;
-  }
-
-  .mercury-recurring-row {
-    align-items: start;
-    grid-template-columns: minmax(0, 1fr) auto;
-  }
-
-  .mercury-recurring-row > .acadia-button {
-    grid-column: 1 / -1;
-    justify-self: start;
-  }
-
-  .mercury-property-metrics {
-    grid-template-columns: 1fr;
-  }
-
-
-
-
   .mercury-portfolio-table-wrap {
     display: none;
   }
@@ -397,26 +165,9 @@
     display: grid;
   }
 }
-/* Values lead dense, comparable holding cards. */
-#portfolio-workspace .mercury-portfolio-card-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-#portfolio-workspace .mercury-portfolio-summary { padding: 0; margin: 0; }
-#portfolio-workspace .mercury-portfolio-summary > div { gap: var(--acadia-space-1); padding-block: 0; }
-#portfolio-workspace .mercury-portfolio-summary > div:first-child { padding-inline-start: 0; }
-#portfolio-workspace .mercury-holding-card { padding: var(--acadia-space-3); }
-#portfolio-workspace .mercury-holding-card-value { display: grid; gap: var(--acadia-space-1); padding: 0; }
-#portfolio-workspace .mercury-holding-card-value strong { font-size: var(--acadia-type-size-heading-large); font-weight: var(--acadia-font-weight-medium); }
-#portfolio-workspace .mercury-holding-card-value span { font-size: var(--acadia-type-size-caption); }
-.mercury-holding-comparison { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--acadia-space-1); margin: var(--acadia-space-2) 0 0; padding-block-start: var(--acadia-space-2); border-block-start: 1px solid var(--acadia-color-border); }
-.mercury-holding-comparison div { display: grid; align-content: start; gap: var(--acadia-space-1); min-width: 0; }
-.mercury-holding-comparison dt { color: var(--acadia-color-text-muted); font-size: var(--acadia-type-size-caption); }
-.mercury-holding-comparison dd { font-size: var(--acadia-type-size-small); margin: 0; overflow-wrap: anywhere; font-variant-numeric: tabular-nums; }
-@media (min-width: 90rem) {
-  #portfolio-workspace .mercury-portfolio-card-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-}
 @media (max-width: 47.98rem) {
   .mercury-primary-metric, .mercury-income-summary .mercury-primary-metric { font-size: var(--acadia-type-size-heading-large); }
-  #portfolio-workspace .mercury-portfolio-card-grid { grid-template-columns: 1fr; }
-  :is(#portfolio-workspace, #income-workspace) .acadia-page-header-pattern-section-intro { order: 0; }
+  #income-workspace .acadia-page-header-pattern-section-intro { order: 0; }
   :is(#income-workspace) .acadia-page-header-pattern-section { display: flex; flex-wrap: wrap; justify-content: space-between; gap: var(--acadia-space-1); }
   .mercury-income-summary { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .mercury-income-summary > div:not(:first-child):not(:nth-child(2)) { border-inline-start: 0; padding-inline-start: 0; }
@@ -434,19 +185,14 @@
   .mercury-comparison-table td::before { content: attr(data-label); color: var(--acadia-color-text-muted); font-size: var(--acadia-type-size-small); }
   .mercury-comparison-table td[data-label="Actions"]::before { content: none; }
   .mercury-comparison-table td[data-label="Actions"] { justify-content: end; }
-  .mercury-holding-comparison { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--acadia-space-2); }
 }
 
-.mercury-portfolio-toolbar-actions, .mercury-portfolio-toolbar .acadia-page-header-pattern-filters { min-width: 0; max-width: 100%; }
 .mercury-income-sections > section { min-width: 0; }
 .mercury-comparison-table { table-layout: fixed; }
 .mercury-comparison-table :is(th, td) { white-space: normal; overflow-wrap: anywhere; }
 @media (min-width: 48rem) and (max-width: 79.98rem) {
   .mercury-income-summary { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .mercury-income-summary > div:nth-child(5) { border-inline-start: 0; padding-inline-start: 0; }
-}
-@media (max-width: 47.98rem) {
-  #portfolio-workspace .mercury-portfolio-summary > div { padding: var(--acadia-space-2) 0; }
 }
 .mercury-comparison-table tbody th { background: transparent; text-transform: none; letter-spacing: normal; }
 

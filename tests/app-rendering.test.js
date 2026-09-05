@@ -32,7 +32,7 @@ test("Home consumes Acadia without a Mercury presentation layer", () => {
   assert.match(indexHtml, /data-acadia-page-frame="spacious"/);
   assert.match(indexHtml, /id="main-content" class="acadia-shell acadia-mobile-dock-safe-area"/);
   assert.match(indexHtml, /id="home-workspace" class="acadia-stack acadia-home-dashboard" hidden/);
-  assert.match(indexHtml, /id="portfolio-workspace" class="acadia-stack mercury-workspace" hidden aria-live="polite"/);
+  assert.match(indexHtml, /id="portfolio-workspace" class="acadia-stack mercury-workspace" hidden/);
   assert.match(indexHtml, /id="income-workspace" class="acadia-stack mercury-workspace" hidden/);
   assert.match(indexHtml, /id="plan-workspace" class="acadia-stack mercury-workspace" hidden aria-live="polite"/);
   assert.match(indexHtml, /id="asset-workspace" class="acadia-stack mercury-workspace" hidden aria-live="polite"/);
@@ -46,7 +46,7 @@ test("Mercury preserves the Acadia 24px page-header and Portfolio content rhythm
   assert.match(acadiaStyles, /--acadia-space-3: 1\.5rem;/);
   assert.match(acadiaStyles, /\.acadia-stack \{\s*display: flex;\s*flex-direction: column;\s*gap: var\(--acadia-space-3\);/);
   assert.doesNotMatch(styles, /\.mercury-workspace > \.acadia-page-header/);
-  assert.match(styles, /#portfolio-workspace \.mercury-portfolio-view-panel,[\s\S]*margin-block-start: var\(--acadia-space-3\);/);
+  assert.match(indexHtml, /id="portfolio-cards-panel" class="acadia-stack"/);
   assert.doesNotMatch(acadiaStyles, /\.mercury-workspace/);
 });
 
@@ -194,7 +194,7 @@ test("holding cards compact large share counts while preserving fractional share
   assert.match(homeSource, /displayCardShares\(row\.asset\.shares\)/);
 });
 
-test("Portfolio cards show the Figma return and dividend-yield metrics without changing Home cards", () => {
+test("Portfolio comparison retains source-backed return and yield while cards stay minimal", () => {
   const homeRenderer = homeSource.slice(
     homeSource.indexOf("function renderHoldings(summary)"),
     homeSource.indexOf("function matchingPortfolioHoldingRows(summary)"),
@@ -204,7 +204,7 @@ test("Portfolio cards show the Figma return and dividend-yield metrics without c
     homeSource.indexOf("function renderHome(summary)"),
   );
 
-  assert.match(homeSource, /function holdingCardMetrics\(row\)/);
+  assert.match(homeSource, /function holdingMetricSummary\(row\)/);
   assert.match(homeSource, /state\.providerMetrics\[row\.asset\.id\]/);
   assert.match(homeSource, /annualizedReturnRate/);
   assert.match(homeSource, /Trailing 12-month dividend yield/);
@@ -213,7 +213,7 @@ test("Portfolio cards show the Figma return and dividend-yield metrics without c
   assert.doesNotMatch(homeSource, /fa-chart-line/);
   assert.doesNotMatch(homeSource, /fa-coins/);
   assert.match(homeSource, /returnShortLabel/);
-  assert.match(homeSource, />Yield<\/dt><dd>\$\{escapeHtml\(metrics\.yieldValue\)\}/);
+  assert.match(homeSource, /metrics\.yieldValue/);
   assert.doesNotMatch(homeRenderer, /showMetrics: true/);
   assert.match(portfolioRenderer, /renderHoldingCards\(grid, rows\)/);
   assert.match(homeSource, /function hydrateProviderMetrics\(\)/);
@@ -287,7 +287,7 @@ test("Plan is a separate Base-plan projection workspace with aligned portfolio c
   assert.match(indexHtml, /id="plan-assumptions-dialog"/);
   assert.match(indexHtml, /id="property-dialog"/);
   assert.match(indexHtml, /<script src="plan\.js\?v=20260904-portfolio-dashboard-v1"><\/script>/);
-  assert.match(indexHtml, /<script src="brokerage\.js\?v=20260905-flow-continuity-v2"><\/script>/);
+  assert.match(indexHtml, /<script src="brokerage\.js\?v=20260905-portfolio-refinement-v1"><\/script>/);
   assert.match(homeSource, /function routePlan\(\)/);
   assert.match(homeSource, /function renderPlan\(summary\)/);
   assert.match(homeSource, /function renderPlanChart/);
@@ -344,11 +344,9 @@ test("Home never falls back to fabricated assets and Portfolio is a functional r
   assert.match(indexHtml, /id="portfolio-search"/);
   assert.match(indexHtml, /id="portfolio-add-asset"/);
   assert.match(indexHtml, /id="portfolio-holding-sort"/);
-  assert.match(indexHtml, /data-portfolio-filter="all"/);
-  assert.match(indexHtml, /data-portfolio-filter="brokerage"/);
-  assert.match(indexHtml, /data-portfolio-filter="crypto"/);
-  assert.match(indexHtml, /data-portfolio-filter="retirement" aria-pressed="false"/);
-  assert.doesNotMatch(indexHtml, /data-portfolio-filter="retirement"[^>]*(?:disabled|aria-disabled)/);
+  assert.match(portfolioWorkspace, /id="portfolio-filter"[^>]*aria-label="Filter investments"/);
+  assert.match(portfolioWorkspace, /<option value="retirement">Retirement/);
+  assert.doesNotMatch(portfolioWorkspace, /data-portfolio-filter="brokerage"/);
   assert.match(indexHtml, /id="portfolio-holdings-grid"/);
   assert.match(indexHtml, /id="portfolio-add-property"/);
   assert.match(indexHtml, /id="portfolio-property-sort"/);
@@ -374,7 +372,7 @@ test("Portfolio investments switch between shared Cards and Table presentations"
   const portfolioWorkspace = indexHtml.slice(indexHtml.indexOf('<section id="portfolio-workspace"'), indexHtml.indexOf('<section id="income-workspace"'));
   const propertySection = portfolioWorkspace.slice(portfolioWorkspace.indexOf('aria-labelledby="portfolio-properties-title"'));
 
-  assert.match(portfolioWorkspace, /id="portfolio-view-tabs" class="acadia-tabs acadia-page-header-pattern-switch" role="tablist"/);
+  assert.match(portfolioWorkspace, /id="portfolio-view-tabs" class="acadia-tabs" role="tablist"/);
   assert.match(portfolioWorkspace, /id="portfolio-cards-tab"[^>]*role="tab"[^>]*data-portfolio-view="cards"[^>]*aria-controls="portfolio-cards-panel"[^>]*aria-selected="true"[^>]*tabindex="0"/);
   assert.match(portfolioWorkspace, /id="portfolio-table-tab"[^>]*role="tab"[^>]*data-portfolio-view="table"[^>]*aria-controls="portfolio-table-panel"[^>]*aria-selected="false"[^>]*tabindex="-1"/);
   assert.match(portfolioWorkspace, /id="portfolio-cards-panel"[^>]*role="tabpanel"[^>]*aria-labelledby="portfolio-cards-tab"/);
@@ -401,46 +399,29 @@ test("Portfolio investments switch between shared Cards and Table presentations"
   assert.match(homeSource, /Dividend yield not applicable/);
   assert.match(homeSource, /acadia-object-card/);
   assert.match(styles, /\.mercury-portfolio-view-panel\[hidden\]/);
-  assert.match(styles, /\.mercury-portfolio-table-wrap \.acadia-table/);
   assert.match(styles, /@media \(max-width: 47\.98rem\)[\s\S]*\.mercury-portfolio-table-wrap \{\s*display: none;/);
   assert.match(styles, /@media \(max-width: 47\.98rem\)[\s\S]*\.mercury-portfolio-object-list \{\s*display: grid;/);
-  assert.match(readme, /matching Cards or Table views for investments/);
-  assert.match(designReadme, /Page Header peer-view Tabs/);
+  assert.match(readme, /matching Cards or Table views/);
+  assert.match(designReadme, /Cards and Table preserve search/);
   assert.match(productReadme, /Cards and Table are peer views/);
 });
 
-test("Portfolio uses a concise ownership summary, attached investment toolbar, recurring rows, and labelled property values", () => {
-  const portfolioWorkspace = indexHtml.slice(indexHtml.indexOf('<section id="portfolio-workspace"'), indexHtml.indexOf('<section id="income-workspace"'));
-
-  assert.match(portfolioWorkspace, /id="portfolio-summary" class="mercury-portfolio-summary mercury-metric-band"/);
-  assert.match(portfolioWorkspace, /id="portfolio-summary-investments"/);
-  assert.match(portfolioWorkspace, /id="portfolio-summary-property-equity"/);
-  assert.match(portfolioWorkspace, /id="portfolio-summary-recurring-weekly"/);
-  assert.match(portfolioWorkspace, /id="portfolio-investments-toolbar" class="acadia-toolbar acadia-muted-panel mercury-portfolio-toolbar"/);
-  assert.match(portfolioWorkspace, /id="portfolio-search" type="search" placeholder="Search assets"/);
-  assert.match(portfolioWorkspace, /id="portfolio-holdings-grid" class="acadia-grid mercury-portfolio-card-grid"/);
-  assert.match(portfolioWorkspace, /id="portfolio-recurring"/);
-  assert.match(portfolioWorkspace, /id="portfolio-recurring-total"/);
-  assert.match(portfolioWorkspace, /id="portfolio-recurring-list"/);
-  assert.match(portfolioWorkspace, /id="portfolio-recurring-empty"/);
-
-  assert.match(homeSource, /function renderPortfolioSummary\(summary\)/);
-  assert.match(homeSource, /function renderRecurringInvestments\(summary\)/);
-  assert.match(homeSource, /weeklyEquivalentRecurringContributionCents/);
-  assert.match(homeSource, /function matchingProperties\(\) \{\s*return state\.properties;/);
-  assert.match(homeSource, />Market value</);
-  assert.match(homeSource, />Mortgage balance</);
-  assert.match(homeSource, />Equity</);
-  assert.match(homeSource, /returnShortLabel: Number\.isFinite\(years\)/);
-  assert.match(homeSource, /\? "5" : years\}Y return/);
-  assert.match(homeSource, />Yield<\/dt>/);
-  assert.match(styles, /\.mercury-portfolio-summary[\s\S]*grid-template-columns: repeat\(3, minmax\(0, 1fr\)\)/);
-  assert.match(styles, /\.mercury-portfolio-toolbar[\s\S]*grid-template-columns: minmax\(14rem, 1fr\) auto/);
-  assert.match(styles, /@media \(max-width: 47\.98rem\)[\s\S]*\.mercury-portfolio-summary \{\s*grid-template-columns: 1fr;/);
-  assert.match(readme, /weekly-equivalent Recurring summary/);
-  assert.match(designReadme, /weekly equivalent of every saved recurring investment/);
-  assert.match(productReadme, /weekly equivalent before an Investments-only toolbar/);
-  assert.match(personalFinancePivot, /Weekly-equivalent recurring total/);
+test("Portfolio uses Acadia disclosure, preview cards and native controls with contextual totals", () => {
+  const workspace = indexHtml.slice(indexHtml.indexOf('<section id="portfolio-workspace"'), indexHtml.indexOf('<section id="income-workspace"'));
+  assert.match(workspace, /id="portfolio-summary-investments"/);
+  assert.match(workspace, /id="portfolio-valuation-status"/);
+  assert.match(workspace, /id="portfolio-summary-property-equity"/);
+  assert.match(workspace, /id="portfolio-recurring-total"/);
+  assert.match(workspace, /id="portfolio-allocation-disclosure" class="acadia-accordion-item"/);
+  assert.match(workspace, /id="portfolio-holdings-grid" class="acadia-device-grid"/);
+  assert.match(workspace, /id="portfolio-reset-filters"/);
+  assert.match(indexHtml, /id="property-dialog" class="acadia-dialog is-form-modal is-compact"/);
+  assert.match(indexHtml, /id="delete-property-dialog" class="acadia-dialog is-form-modal is-compact"/);
+  assert.match(workspace, /select id="portfolio-holding-sort"[^>]*aria-label="Sort investments"/);
+  assert.doesNotMatch(workspace, /mercury-portfolio-summary|mercury-portfolio-toolbar|mercury-holding-card/);
+  for (const name of ["accordion-plus.svg", "accordion-minus.svg"]) {
+    assert.ok(fs.readFileSync(path.join(root, "assets", name)).length > 0);
+  }
 });
 
 test("the Asset page uses Acadia primary details and an advanced disclosure", () => {

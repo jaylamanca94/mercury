@@ -31,7 +31,7 @@ function controller() {
     fetch:async()=>({ok:false,json:async()=>({error:'provider unavailable'})}),
   });
   const source = fs.readFileSync(require.resolve('../brokerage.js'),'utf8').replace('  initialise();',
-    '  window.testController = {state,render,renderAsset,canQuote,lookupQuote,saveQuickAsset,navigateToAsset,navigateBackFromAsset,routeAssetId,openFormDialog,hasPendingWrite,hasUnsavedWork};');
+    '  window.testController = {state,render,renderAsset,canQuote,lookupQuote,saveQuickAsset,navigateToAsset,navigateBackFromAsset,routeAssetId,openFormDialog,hasPendingWrite,hasUnsavedWork,matchingPortfolioHoldingRows,sortHoldingRows,holdingValueLabel,renderPortfolioView,renderPortfolioSummary,detailHolding};');
   vm.runInContext(source,context);
   const api=window.testController;
   api.state.client={auth:{getSession:async()=>({data:{session:{access_token:'isolated-test'}}})}};
@@ -296,4 +296,71 @@ test('a queued close event cannot hide a newly reopened discard confirmation', (
   assert.equal(dialog.open,true);assert.equal(dialog.hidden,false);
   node('#discard-changes').listeners.click();
   assert.equal(api.hasUnsavedWork(),false);
+});
+
+
+test('Portfolio retains unvalued holdings in search and overlapping classification filters',()=>{
+  const {api,node}=controller();
+  const base={instrument_type:'stock',valuation_basis:'shares-and-price',shares:10,manual_price_cents:null,manual_value_cents:null};
+  api.state.holdings=[{...base,id:'known',symbol:'KNOWN'}, {...base,id:'missing',symbol:'MISSING',instrument_type:'crypto',is_retirement:true}];
+  const known={asset:{id:'known',symbol:'KNOWN',instrumentType:'stock'},marketValueCents:20000};
+  const summary={rows:[known]};
+  let rows=api.matchingPortfolioHoldingRows(summary);
+  assert.equal(rows.length,2);
+  assert.equal(rows[1].marketValueCents,null);
+  assert.equal(api.holdingValueLabel(rows[1]),'Needs valuation');
+  assert.equal(api.sortHoldingRows(rows)[0].asset.id,'known');
+  assert.equal(api.sortHoldingRows(rows,'name')[1].asset.id,'missing');
+  for(const filter of ['crypto','retirement']) {
+    api.state.portfolioFilter=filter;
+    assert.equal(api.matchingPortfolioHoldingRows(summary)[0].asset.id,'missing');
+  }
+  node('#portfolio-search').value='known';
+  assert.equal(api.matchingPortfolioHoldingRows(summary).length,0);
+  api.state.portfolioFilter='all';
+  assert.equal(api.matchingPortfolioHoldingRows(summary)[0].asset.id,'known');
+  assert.equal(summary.rows.length,1, 'display recovery must not manufacture a valuation');
+});
+
+test('Portfolio view switches preserve sort and filters and keep mobile sorting available',()=>{
+  const {api,node}=controller();
+  api.state.portfolioFilter='retirement';api.state.portfolioSort='name';
+  node('#portfolio-search').value='fund';
+  for(const view of ['table','cards']) {
+    api.state.portfolioView=view;api.renderPortfolioView(true);
+    assert.equal(node('#portfolio-holding-sort').hidden,false);
+    assert.equal(node('#portfolio-table-panel').hidden,view!=='table');
+    assert.equal(node('#portfolio-cards-panel').hidden,view!=='cards');
+    assert.equal(api.state.portfolioFilter,'retirement');
+    assert.equal(api.state.portfolioSort,'name');
+    assert.equal(node('#portfolio-search').value,'fund');
+  }
+});
+
+test('Portfolio incomplete valuation is explained without showing a partial total',()=>{
+  const {api,node}=controller();api.state.holdings=[{id:'known'},{id:'missing'}];
+  api.renderPortfolioSummary({rows:[{}],totalMarketValueCents:20000});
+  assert.equal(node('#portfolio-summary-investments').textContent,'Not set');
+  assert.equal(node('#portfolio-valuation-status').hidden,false);
+  assert.equal(node('#portfolio-valuation-status').textContent,'1 asset needs a valuation');
+  api.renderPortfolioSummary({rows:[{},{}],totalMarketValueCents:40000});
+  assert.equal(node('#portfolio-valuation-status').hidden,true);
+  assert.equal(node('#portfolio-summary-investments').textContent,'$400');
+});
+
+
+test('a missing quote can be repaired with manual price or total value, without replacing an available quote',()=>{
+  const {api,node}=controller();
+  const holding={id:'missing',symbol:'MISSING',valuation_basis:'shares-and-price',shares:25,manual_price_cents:null,manual_value_cents:null};
+  api.state.holdings=[holding];
+  node('#asset-detail-form').fields={shares:'25',valuationBasis:'shares-and-price',manualPrice:'50'};
+  assert.equal(api.detailHolding(holding).manual_price_cents,5000);
+  node('#asset-detail-form').fields.manualPrice='';
+  assert.throws(()=>api.detailHolding(holding),/manual price is required/);
+  node('#asset-detail-form').fields={valuationBasis:'manual-value',manualValue:'1250'};
+  const total=api.detailHolding(holding);
+  assert.equal(total.manual_value_cents,125000);assert.equal(total.shares,null);
+  api.state.quotes=[{holding_id:'missing',price_cents:6000,as_of:'2026-09-05T00:00:00Z'}];
+  node('#asset-detail-form').fields={shares:'25',valuationBasis:'shares-and-price',manualPrice:'50'};
+  assert.equal(api.detailHolding(holding).manual_price_cents,null);
 });

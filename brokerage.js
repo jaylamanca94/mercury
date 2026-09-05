@@ -290,6 +290,7 @@
   }
 
   function instrumentLabel(value) {
+    if (value === "etf") return "ETF";
     return value.replaceAll("-", " ").replace(/\b\w/g, (letter) => letter.toUpperCase());
   }
   function sortHoldingRows(rows, sort = "value") {
@@ -304,7 +305,7 @@
         const rightHolding = state.holdings.find((holding) => holding.id === right.asset.id);
         return new Date(rightHolding?.updated_at || rightHolding?.created_at || 0) - new Date(leftHolding?.updated_at || leftHolding?.created_at || 0);
       }
-      return right.marketValueCents - left.marketValueCents;
+      return (right.marketValueCents ?? -Infinity) - (left.marketValueCents ?? -Infinity);
     });
   }
   function holdingRecord(row) {
@@ -392,31 +393,27 @@
       navigateToAsset(event.currentTarget.dataset.holdingId);
     }
   }
-  function holdingCardMetrics(row) {
-    const metrics = holdingMetricSummary(row);
-    const price = row.asset.valuationBasis === VALUATION_BASES.MANUAL_VALUE ? "Manual value" : displayCardPrice(row.asset.unitPriceCents);
-    const shares = row.asset.shares === null ? "—" : displayCardShares(row.asset.shares);
-    return `<dl class="mercury-holding-comparison"><div><dt>Price</dt><dd>${escapeHtml(price)}</dd></div><div><dt>Shares</dt><dd>${escapeHtml(shares)}</dd></div><div><dt title="${escapeHtml(metrics.returnLabel)}">${escapeHtml(metrics.returnShortLabel)}</dt><dd>${escapeHtml(metrics.returnValue)}</dd></div><div><dt title="${escapeHtml(metrics.yieldLabel)}">Yield</dt><dd>${escapeHtml(metrics.yieldValue)}</dd></div></dl>`;
+  function holdingValueLabel(row) {
+    return row.marketValueCents === null ? "Needs valuation" : displayCurrency(row.marketValueCents / 100);
   }
   function renderHoldingCards(grid, rows) {
     grid.replaceChildren(...rows.map((row) => {
-      const holding = state.holdings.find((entry) => entry.id === row.asset.id);
-      const retirement = row.asset.isRetirement
-        ? '<span class="acadia-badge acadia-badge-grey acadia-badge-round acadia-badge-small">Retirement</span>'
-        : "";
       const card = document.createElement("article");
-      card.className = "acadia-card is-content is-interactive mercury-holding-card";
-      card.dataset.holdingId = holding.id;
+      const title = row.asset.symbol || row.asset.name;
+      const classification = row.asset.isRetirement ? "Retirement" : instrumentLabel(row.asset.instrumentType);
+      const detail = row.marketValueCents === null ? "Add a price in asset details"
+        : row.asset.valuationBasis === VALUATION_BASES.MANUAL_VALUE ? "Manual valuation"
+        : `${holdingSharesLabel(row, true)} · ${holdingPriceLabel(row)} ${row.asset.quoteSource === "Manual price" ? "manual price" : "price"}`;
+      card.className = "acadia-card is-content is-interactive acadia-asset-preview-card";
+      card.dataset.holdingId = row.asset.id;
       card.tabIndex = 0;
-      card.setAttribute("aria-label", `Open ${row.asset.symbol || row.asset.name}`);
-      card.innerHTML = `<div class="acadia-card-actions" role="group" aria-label="Actions for ${escapeHtml(row.asset.symbol || row.asset.name)}"><details class="acadia-action-menu"><summary class="acadia-action-menu-trigger acadia-icon-action" aria-label="Actions for ${escapeHtml(row.asset.symbol || row.asset.name)}"><i class="fa-solid fa-ellipsis acadia-icon" aria-hidden="true"></i></summary><div class="acadia-action-menu-panel"><button class="acadia-action-menu-item" type="button" data-edit-id="${escapeHtml(holding.id)}">Edit details</button></div></details></div><div class="acadia-card-header"><div class="acadia-card-content-title-row"><h3>${escapeHtml(row.asset.symbol || row.asset.name)}</h3>${retirement}</div><p>${escapeHtml(row.asset.name || instrumentLabel(row.asset.instrumentType))}</p></div><div class="acadia-card-content"><p class="mercury-holding-card-value"><span>Value</span><strong>${escapeHtml(displayCurrency(row.marketValueCents / 100))}</strong></p>${holdingCardMetrics(row)}</div>`;
+      card.setAttribute("role", "link");
+      card.setAttribute("aria-label", `Open ${title} asset details, ${holdingValueLabel(row)}`);
+      card.innerHTML = `<div class="acadia-card-header"><div class="acadia-card-content-title-row"><h3>${escapeHtml(title)}</h3><span class="acadia-card-content-caption" title="${row.marketValueCents === null ? "Needs valuation" : escapeHtml(preciseCurrency.format(row.marketValueCents / 100))}">${escapeHtml(holdingValueLabel(row))}</span></div><p>${escapeHtml(classification)}</p></div><div class="acadia-card-content"><small class="acadia-text-muted">${escapeHtml(detail)}</small></div>`;
       card.addEventListener("click", openHoldingFromEvent);
       card.addEventListener("keydown", keyOpenHolding);
       return card;
     }));
-    grid.querySelectorAll("[data-edit-id]").forEach((button) => {
-      button.addEventListener("click", () => navigateToAsset(button.dataset.editId));
-    });
   }
   function renderHoldings(summary) {
     const grid = $("#holdings-grid");
@@ -464,9 +461,12 @@
 
   function matchingPortfolioHoldingRows(summary) {
     const search = $("#portfolio-search").value.trim().toLowerCase();
-    return summary.rows.filter((row) => {
+    // Keep saved holdings reachable even when their valuation is unavailable.
+    const valued = new Map(summary.rows.map((row) => [row.asset.id, row]));
+    const rows = state.holdings.map((holding) => valued.get(holding.id)
+      || { asset: holdingAsset(holding), marketValueCents: null });
+    return rows.filter((row) => {
       const matchesFilter = state.portfolioFilter === "all"
-        || state.portfolioFilter === "brokerage"
         || (state.portfolioFilter === "crypto" && row.asset.instrumentType === "crypto")
         || (state.portfolioFilter === "retirement" && row.asset.isRetirement);
       const matchesSearch = `${row.asset.symbol || ""} ${row.asset.name || ""} ${row.asset.instrumentType}`.toLowerCase().includes(search);
@@ -479,13 +479,13 @@
       .filter((asset) => asset.contributionCents !== null && asset.contributionFrequency);
   }
   function renderPortfolioSummary(summary) {
-    const recurringAssets = recurringPortfolioAssets();
-    const weeklyEquivalentCents = weeklyEquivalentRecurringContributionCents(recurringAssets);
+    const missingCount = state.holdings.length - summary.rows.length;
+    $("#portfolio-valuation-status").hidden = missingCount === 0;
+    setText("#portfolio-valuation-status", `${missingCount} ${missingCount === 1 ? "asset needs" : "assets need"} a valuation`);
     setText("#portfolio-summary-investments", summary.rows.length === state.holdings.length ? displayCurrency(summary.totalMarketValueCents / 100) : "Not set");
     setText("#portfolio-summary-property-equity", state.propertiesAvailable
       ? displayCurrency(totalPropertyEquity() / 100)
       : "Not set");
-    setText("#portfolio-summary-recurring-weekly", displayCurrency(weeklyEquivalentCents / 100));
   }
   function renderRecurringInvestments(summary) {
     const assets = recurringPortfolioAssets();
@@ -495,24 +495,17 @@
     const list = $("#portfolio-recurring-list");
     list.innerHTML = assets.map((asset) => {
       const title = asset.symbol || asset.name;
-      const detail = asset.name && asset.name !== title
-        ? asset.name
-        : instrumentLabel(asset.instrumentType);
       const cadence = asset.contributionFrequency === "monthly" ? "Monthly" : "Weekly";
       const retirement = asset.isRetirement
         ? '<span class="acadia-badge acadia-badge-grey acadia-badge-round acadia-badge-small">Retirement</span>'
         : "";
-      return `<article class="mercury-recurring-row" role="listitem"><div class="mercury-recurring-identity"><div class="acadia-cluster"><button class="acadia-button acadia-button-quiet mercury-portfolio-asset-link" type="button" data-open-asset-id="${escapeHtml(asset.id)}">${escapeHtml(title)}</button>${retirement}</div><span class="acadia-text-muted">${escapeHtml(detail)}</span></div><div class="mercury-recurring-amount"><strong>${escapeHtml(displayCurrency(asset.contributionCents / 100))}</strong><span>${cadence}</span></div><button class="acadia-button acadia-button-quiet" type="button" data-edit-id="${escapeHtml(asset.id)}">Edit details</button></article>`;
+      return `<article class="acadia-section-header" role="listitem"><div class="acadia-read-only"><div class="acadia-cluster"><strong>${escapeHtml(title)}</strong>${retirement}</div><span class="acadia-text-muted">${escapeHtml(displayCurrency(asset.contributionCents / 100))} · ${cadence.toLowerCase()}</span></div><button class="acadia-button acadia-button-quiet" type="button" data-edit-id="${escapeHtml(asset.id)}" aria-label="Edit recurring investment for ${escapeHtml(title)}">Edit</button></article>`;
     }).join("");
     bindPortfolioHoldingActions(list);
     $("#portfolio-recurring-empty").hidden = assets.length > 0;
   }
   function renderPortfolioHoldingSort() {
-    const labels = { value: "Value", name: "Name", updated: "Recently updated" };
-    setText("#portfolio-holding-sort-label", labels[state.portfolioSort]);
-    document.querySelectorAll("[data-portfolio-holding-sort]").forEach((control) => {
-      control.setAttribute("aria-checked", String(control.dataset.portfolioHoldingSort === state.portfolioSort));
-    });
+    $("#portfolio-holding-sort").value = state.portfolioSort;
     document.querySelectorAll("[data-portfolio-table-sort-heading]").forEach((heading) => {
       if (heading.dataset.portfolioTableSortHeading === state.portfolioSort) {
         heading.setAttribute("aria-sort", state.portfolioSort === "name" ? "ascending" : "descending");
@@ -522,10 +515,7 @@
     });
   }
   function renderPortfolioFilters() {
-    document.querySelectorAll("[data-portfolio-filter]").forEach((control) => {
-      const isCurrent = control.dataset.portfolioFilter === state.portfolioFilter;
-      control.setAttribute("aria-pressed", String(isCurrent));
-    });
+    $("#portfolio-filter").value = state.portfolioFilter;
   }
   function renderPortfolioView(hasRows) {
     document.querySelectorAll("[data-portfolio-view]").forEach((control) => {
@@ -535,8 +525,6 @@
       control.tabIndex = selected ? 0 : -1;
     });
     const tableView = state.portfolioView === "table";
-    $("#portfolio-holding-sort").hidden = tableView;
-    if (tableView) $("#portfolio-holding-sort").open = false;
     $("#portfolio-cards-panel").hidden = tableView;
     $("#portfolio-table-panel").hidden = !tableView;
     $("#portfolio-holdings-grid").hidden = !hasRows;
@@ -569,13 +557,13 @@
       const dateMarkup = updated.value
         ? `<time datetime="${escapeHtml(updated.value)}">${escapeHtml(updated.label)}</time>`
         : updated.label;
-      return `<tr><td>${holdingIdentityMarkup(row)}</td><td>${escapeHtml(holdingPriceLabel(row))}</td><td>${escapeHtml(holdingSharesLabel(row))}</td><td aria-label="${escapeHtml(metrics.returnLabel)}: ${escapeHtml(metrics.returnValue)}">${escapeHtml(metrics.returnValue)}</td><td aria-label="${escapeHtml(metrics.yieldLabel)}: ${escapeHtml(metrics.yieldValue)}">${escapeHtml(metrics.yieldValue)}</td><td><strong>${escapeHtml(displayCurrency(row.marketValueCents / 100))}</strong></td><td>${dateMarkup}</td><td>${holdingActionMenuMarkup(row)}</td></tr>`;
+      return `<tr><td>${holdingIdentityMarkup(row)}</td><td>${escapeHtml(holdingPriceLabel(row))}</td><td>${escapeHtml(holdingSharesLabel(row))}</td><td aria-label="${escapeHtml(metrics.returnLabel)}: ${escapeHtml(metrics.returnValue)}">${escapeHtml(metrics.returnValue)}</td><td aria-label="${escapeHtml(metrics.yieldLabel)}: ${escapeHtml(metrics.yieldValue)}">${escapeHtml(metrics.yieldValue)}</td><td><strong>${escapeHtml(holdingValueLabel(row))}</strong></td><td>${dateMarkup}</td><td>${holdingActionMenuMarkup(row)}</td></tr>`;
     }).join("");
     const objectList = $("#portfolio-holdings-object-list");
     objectList.innerHTML = rows.map((row) => {
       const metrics = holdingMetricSummary(row);
       const updated = holdingUpdatedLabel(row);
-      return `<article class="acadia-object-card"><div class="acadia-object-card-header">${holdingIdentityMarkup(row)}<div class="acadia-object-actions">${holdingActionMenuMarkup(row)}</div></div><div class="acadia-object-meta"><span>Updated ${escapeHtml(updated.label)}</span></div><dl class="mercury-portfolio-object-metrics"><div><dt>Price</dt><dd>${escapeHtml(holdingPriceLabel(row))}</dd></div><div><dt>Shares</dt><dd>${escapeHtml(holdingSharesLabel(row))}</dd></div><div><dt>Return</dt><dd aria-label="${escapeHtml(metrics.returnLabel)}: ${escapeHtml(metrics.returnValue)}">${escapeHtml(metrics.returnValue)}</dd></div><div><dt>Yield</dt><dd aria-label="${escapeHtml(metrics.yieldLabel)}: ${escapeHtml(metrics.yieldValue)}">${escapeHtml(metrics.yieldValue)}</dd></div><div><dt>Value</dt><dd><strong>${escapeHtml(displayCurrency(row.marketValueCents / 100))}</strong></dd></div></dl></article>`;
+      return `<article class="acadia-object-card"><div class="acadia-object-card-header">${holdingIdentityMarkup(row)}<div class="acadia-object-actions">${holdingActionMenuMarkup(row)}</div></div><div class="acadia-object-meta"><span>Updated ${escapeHtml(updated.label)}</span></div><dl class="mercury-portfolio-object-metrics"><div><dt class="acadia-field-hint">Price</dt><dd>${escapeHtml(holdingPriceLabel(row))}</dd></div><div><dt class="acadia-field-hint">Shares</dt><dd>${escapeHtml(holdingSharesLabel(row))}</dd></div><div><dt class="acadia-field-hint">Return</dt><dd aria-label="${escapeHtml(metrics.returnLabel)}: ${escapeHtml(metrics.returnValue)}">${escapeHtml(metrics.returnValue)}</dd></div><div><dt class="acadia-field-hint">Yield</dt><dd aria-label="${escapeHtml(metrics.yieldLabel)}: ${escapeHtml(metrics.yieldValue)}">${escapeHtml(metrics.yieldValue)}</dd></div><div><dt class="acadia-field-hint">Value</dt><dd><strong>${escapeHtml(holdingValueLabel(row))}</strong></dd></div></dl></article>`;
     }).join("");
     bindPortfolioHoldingActions(tableBody);
     bindPortfolioHoldingActions(objectList);
@@ -591,6 +579,7 @@
     renderPortfolioView(rows.length > 0);
     setText("#portfolio-holdings-count", `${matchingRows.length} ${matchingRows.length === 1 ? "asset" : "assets"}`);
     $("#portfolio-holdings-empty").hidden = rows.length > 0;
+    $("#portfolio-reset-filters").hidden = rows.length > 0 || (!$("#portfolio-search").value && state.portfolioFilter === "all");
     if (!rows.length) {
       const hasAssets = state.holdings.length > 0;
       setText("#portfolio-holdings-empty-title", hasAssets ? "No matching assets" : "No assets yet");
@@ -640,9 +629,9 @@
       const model = propertyModel(property);
       const equityCents = propertyEquityCents(model);
       const card = document.createElement("article");
-      card.className = "acadia-card is-content mercury-property-card";
+      card.className = "acadia-card is-content";
       card.setAttribute("aria-label", `${model.name}${model.location ? `, ${model.location}` : ""}, market value ${displayCurrency(model.currentValueCents / 100)}, mortgage balance ${displayCurrency(model.mortgageBalanceCents / 100)}, equity ${displayCurrency(equityCents / 100)}`);
-      card.innerHTML = `<div class="acadia-card-actions" role="group" aria-label="Actions for ${escapeHtml(model.name)}"><details class="acadia-action-menu"><summary class="acadia-action-menu-trigger acadia-icon-action" aria-label="Actions for ${escapeHtml(model.name)}"><i class="fa-solid fa-ellipsis acadia-icon" aria-hidden="true"></i></summary><div class="acadia-action-menu-panel"><button class="acadia-action-menu-item" type="button" data-edit-property-id="${escapeHtml(model.id)}">Edit property</button><div class="acadia-action-menu-divider"></div><button class="acadia-action-menu-item is-danger" type="button" data-delete-property-id="${escapeHtml(model.id)}">Delete property</button></div></details></div><div class="acadia-card-header"><h3>${escapeHtml(model.name)}</h3>${model.location ? `<p>${escapeHtml(model.location)}</p>` : ""}</div><div class="acadia-card-content"><dl class="mercury-property-metrics"><div><dt>Market value</dt><dd>${escapeHtml(displayCurrency(model.currentValueCents / 100))}</dd></div><div><dt>Mortgage balance</dt><dd>${escapeHtml(displayCurrency(model.mortgageBalanceCents / 100))}</dd></div><div><dt>Equity</dt><dd><strong>${escapeHtml(displayCurrency(equityCents / 100))}</strong></dd></div></dl></div>`;
+      card.innerHTML = `<div class="acadia-card-actions" role="group" aria-label="Actions for ${escapeHtml(model.name)}"><details class="acadia-action-menu"><summary class="acadia-action-menu-trigger acadia-icon-action" aria-label="Actions for ${escapeHtml(model.name)}"><i class="fa-solid fa-ellipsis acadia-icon" aria-hidden="true"></i></summary><div class="acadia-action-menu-panel"><button class="acadia-action-menu-item" type="button" data-edit-property-id="${escapeHtml(model.id)}">Edit property</button><div class="acadia-action-menu-divider"></div><button class="acadia-action-menu-item is-danger" type="button" data-delete-property-id="${escapeHtml(model.id)}">Delete property</button></div></details></div><div class="acadia-card-header"><h3>${escapeHtml(model.name)}</h3>${model.location ? `<p>${escapeHtml(model.location)}</p>` : ""}</div><div class="acadia-card-content"><div class="acadia-stack"><div class="acadia-read-only"><span class="acadia-text-muted">Market value</span><strong>${escapeHtml(displayCurrency(model.currentValueCents / 100))}</strong></div><div class="acadia-read-only"><span class="acadia-text-muted">Mortgage balance</span><strong>${escapeHtml(displayCurrency(model.mortgageBalanceCents / 100))}</strong></div><div class="acadia-read-only"><span class="acadia-text-muted">Equity</span><strong>${escapeHtml(displayCurrency(equityCents / 100))}</strong></div></div></div>`;
       return card;
     }));
     grid.querySelectorAll("[data-edit-property-id]").forEach((button) => {
@@ -689,7 +678,7 @@
     const allocation = summarizeHoldingAllocation(state.holdings.map(holdingAsset));
     const node = $(selector);
     const coverage = allocation.unvaluedCount ? `${allocation.unvaluedCount} ${allocation.unvaluedCount === 1 ? "holding has" : "holdings have"} no valuation. Shares use valued investments only.` : "Shares of investment value. Property equity is separate.";
-    node.innerHTML = allocation.rows.length ? `<div class="mercury-allocation-rows">${allocation.rows.map((row) => `<div class="acadia-card-progress"><div class="acadia-card-progress-heading"><span>${escapeHtml(row.name)}</span><span class="mercury-allocation-amount">${escapeHtml(planningValue(row.valueCents))}<span>${percentage.format(row.allocationRate)}</span></span></div><progress value="${row.valueCents}" max="${allocation.totalValueCents}" aria-label="${escapeHtml(row.name)}: ${percentage.format(row.allocationRate)} of valued investments"></progress></div>`).join("")}</div><p class="mercury-caption">${coverage}</p>` : `<p class="mercury-caption">No investment value to allocate.${allocation.unvaluedCount ? ` ${coverage}` : ""}</p>`;
+    node.innerHTML = allocation.rows.length ? `<div class="acadia-chart-list">${allocation.rows.map((row) => `<div class="acadia-card-progress"><div class="acadia-card-progress-heading"><span>${escapeHtml(row.name)}</span><span class="acadia-cluster">${escapeHtml(planningValue(row.valueCents))}<span>${percentage.format(row.allocationRate)}</span></span></div><progress value="${row.valueCents}" max="${allocation.totalValueCents}" aria-label="${escapeHtml(row.name)}: ${percentage.format(row.allocationRate)} of valued investments"></progress></div>`).join("")}</div><p class="acadia-text-muted">${coverage}</p>` : `<p class="acadia-text-muted">No investment value to allocate.${allocation.unvaluedCount ? ` ${coverage}` : ""}</p>`;
     return allocation;
   }
   function renderHomeAllocation() {
@@ -1125,7 +1114,7 @@
     setValue("#asset-detail-return", holding.expected_annual_return_rate === null ? null : Number(holding.expected_annual_return_rate) * 100);
     setValue("#asset-detail-yield", holding.distribution_yield_rate === null ? null : Number(holding.distribution_yield_rate) * 100);
     setValue("#asset-detail-policy-note", holding.custom_policy_note);
-    $("#asset-manual-valuation").hidden = !hasManualValuation;
+    $("#asset-manual-valuation").hidden = !hasManualValuation && asset.unitPriceCents !== null;
     setValue("#asset-detail-valuation-basis", holding.valuation_basis);
     setValue("#asset-detail-manual-price", holding.manual_price_cents === null ? null : Number(holding.manual_price_cents) / 100);
     setValue("#asset-detail-manual-value", holding.manual_value_cents === null ? null : Number(holding.manual_value_cents) / 100);
@@ -1473,7 +1462,8 @@
 
   function detailHolding(holding) {
     const form = $("#asset-detail-form");
-    const hasManualValuation = holding.valuation_basis === VALUATION_BASES.MANUAL_VALUE || holding.manual_price_cents !== null;
+    const hasManualValuation = holding.valuation_basis === VALUATION_BASES.MANUAL_VALUE
+      || holding.manual_price_cents !== null || holdingAsset(holding).unitPriceCents === null;
     const valuationBasis = hasManualValuation
       ? getFormValue(form, "valuationBasis") || holding.valuation_basis
       : holding.valuation_basis;
@@ -2137,12 +2127,9 @@
   $("#cancel-delete-budget-category").addEventListener("click", closeDeleteBudgetCategoryDialog);
   $("#delete-budget-category-dialog").addEventListener("close", () => { $("#delete-budget-category-dialog").hidden = true; });
   protectDialog("#delete-budget-category-dialog", "#delete-budget-category-form", deleteBudgetCategory);
-  document.querySelectorAll("[data-portfolio-holding-sort]").forEach((control) => {
-    control.addEventListener("click", () => {
-      state.portfolioSort = control.dataset.portfolioHoldingSort;
-      $("#portfolio-holding-sort").open = false;
-      render();
-    });
+  $("#portfolio-holding-sort").addEventListener("change", (event) => {
+    state.portfolioSort = event.target.value;
+    render();
   });
   document.querySelectorAll("[data-portfolio-table-sort]").forEach((control) => {
     control.addEventListener("click", () => {
@@ -2154,12 +2141,15 @@
     control.addEventListener("click", () => selectPortfolioView(control.dataset.portfolioView));
     control.addEventListener("keydown", handlePortfolioViewKeydown);
   });
-  document.querySelectorAll("[data-portfolio-filter]").forEach((control) => {
-    control.addEventListener("click", () => {
-      if (control.disabled) return;
-      state.portfolioFilter = control.dataset.portfolioFilter;
-      render();
-    });
+  $("#portfolio-filter").addEventListener("change", (event) => {
+    state.portfolioFilter = event.target.value;
+    render();
+  });
+  $("#portfolio-reset-filters").addEventListener("click", () => {
+    state.portfolioFilter = "all";
+    $("#portfolio-search").value = "";
+    render();
+    $("#portfolio-search").focus();
   });
   document.querySelectorAll("[data-performance-period]").forEach((control) => {
     control.addEventListener("click", () => {
