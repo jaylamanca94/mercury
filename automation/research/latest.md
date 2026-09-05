@@ -92,3 +92,5 @@ At 320px the inner content width was 305px including the desktop scrollbar allow
 ## Validation and publication
 
 `npm run check`: **124 tests pass**, including eight new behavioural regressions for navigation/unload, asset saves, modal drafts, modal writes, deferred Quick Add, deletion concurrency Skip to content and queued confirmation-close events. `git diff --check` passes. Publication status is recorded after push below.
+
+**Publication blocked — 2026-09-05 19:20 UTC.** Implementation is committed locally as `99a9033`. Automatic approval review rejected `git push origin main`: it classified the push as a consequential publication that may trigger deployment and did not accept the automation transcript as sufficient authorisation. No alternative push/deployment mechanism was attempted. Direct user confirmation is required before publishing the local commits. The working checkout is on main; code checks pass, but this release is not on origin/main or deployed.
