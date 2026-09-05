@@ -1,9 +1,53 @@
 @import url("acadia.css?v=20260903-home-overview-v1");
 
 .mercury-home-trend {
-  --acadia-dashboard-trend-card-height: 14rem;
+  --acadia-dashboard-trend-card-height: auto;
   gap: var(--acadia-space-2) !important;
-  grid-template-rows: auto minmax(4.5rem, 1fr) auto !important;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-rows: auto 8rem auto !important;
+}
+
+.mercury-home-headline .acadia-dashboard-trend-value {
+  font-size: var(--acadia-type-size-display);
+  font-weight: var(--acadia-font-weight-medium);
+  line-height: var(--acadia-type-line-display);
+  font-variant-numeric: tabular-nums;
+}
+
+.mercury-home-net-worth-context {
+  color: var(--acadia-color-text-muted);
+  font-size: var(--acadia-type-size-small);
+  margin: 0;
+}
+
+.mercury-home-trend > .acadia-dashboard-trend-header {
+  align-items: end;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: var(--acadia-space-2);
+}
+
+.mercury-home-trend > .acadia-card-body,
+.mercury-home-trend > .mercury-home-trend-footer {
+  grid-column: 1 / -1;
+}
+
+.mercury-home-trend .mercury-home-performance-result {
+  justify-items: end;
+}
+
+#home-workspace #holdings-count {
+  font-size: var(--acadia-type-size-small);
+  font-weight: var(--acadia-font-weight-regular);
+}
+
+#home-workspace .acadia-top-assets {
+  padding-block-start: 0;
+  gap: var(--acadia-space-2);
+}
+
+.mercury-home-trend .acadia-dashboard-trend-tools {
+  gap: var(--acadia-space-2);
 }
 
 .mercury-home-trend-headlines {
@@ -16,13 +60,13 @@
 .mercury-home-headline,
 .mercury-home-performance-result {
   display: grid;
-  gap: 0.25rem;
+  gap: var(--acadia-space-1);
 }
 
 .mercury-home-kicker {
   color: var(--acadia-color-text-muted);
   font-size: var(--acadia-type-size-small);
-  font-weight: 700;
+  font-weight: var(--acadia-font-weight-medium);
   line-height: 1.2;
 }
 
@@ -41,7 +85,7 @@
 }
 
 .mercury-home-trend-footer {
-  align-items: end;
+  align-items: center;
   border-block-start: 1px solid var(--acadia-color-border);
   display: flex;
   gap: var(--acadia-space-3);
@@ -71,7 +115,7 @@
 
 .mercury-home-history-context dd {
   font-size: var(--acadia-type-size-small);
-  font-weight: 700;
+  font-weight: var(--acadia-font-weight-medium);
   margin: 0;
 }
 
@@ -79,6 +123,7 @@
   display: grid;
   gap: 0;
   grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin: 0;
   padding-block: var(--acadia-space-2);
 }
 
@@ -100,7 +145,7 @@
 }
 
 .mercury-home-metric-strip dt {
-  font-weight: 700;
+  font-weight: var(--acadia-font-weight-medium);
 }
 
 .mercury-home-metric-strip dd {
@@ -117,7 +162,9 @@
 
 .mercury-home-metric-strip dd strong {
   font-family: var(--acadia-font-expression);
-  font-size: var(--acadia-type-size-lead);
+  font-size: var(--acadia-type-size-heading-small);
+  font-weight: var(--acadia-font-weight-medium);
+  font-variant-numeric: tabular-nums;
 }
 
 .mercury-home-metric-strip dd span {
@@ -130,7 +177,7 @@
 }
 
 .mercury-home-assets-list {
-  padding-block: 0;
+  padding: 0 var(--acadia-space-2);
 }
 
 .mercury-home-asset-row + .mercury-home-asset-row {
@@ -147,9 +194,9 @@
   display: grid;
   font: inherit;
   gap: var(--acadia-space-3);
-  grid-template-columns: 2rem minmax(10rem, 1fr) minmax(7rem, auto) minmax(15rem, 1.3fr) 1rem;
+  grid-template-columns: 1.5rem minmax(0, 1fr) minmax(0, 1fr) minmax(7rem, auto) 1rem;
   min-height: 4.75rem;
-  padding: var(--acadia-space-2) var(--acadia-space-3);
+  padding: var(--acadia-space-2) var(--acadia-space-1);
   text-align: start;
   width: 100%;
 }
@@ -191,11 +238,17 @@
 }
 
 .mercury-home-asset-value {
+  grid-column: 4;
+  grid-row: 1;
+  font-variant-numeric: tabular-nums;
   justify-items: end;
   text-align: end;
 }
 
 .mercury-home-asset-detail {
+  grid-column: 3;
+  grid-row: 1;
+  font-size: var(--acadia-type-size-small);
   text-align: end;
 }
 
@@ -524,14 +577,57 @@
   .mercury-home-trend {
     --acadia-dashboard-trend-card-height: auto;
     min-block-size: 20rem !important;
-    grid-template-rows: auto minmax(8rem, 1fr) auto !important;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto auto 6rem auto !important;
+  }
+
+  .mercury-home-trend > .acadia-dashboard-trend-header {
+    align-items: start;
+    border-block-start: 1px solid var(--acadia-color-border);
+    padding-block-start: var(--acadia-space-2);
+  }
+
+  .mercury-home-trend .mercury-home-performance-result {
+    justify-items: start;
+  }
+
+  .mercury-home-trend .acadia-chart-legend {
+    display: none;
+  }
+
+  .mercury-home-trend .acadia-dashboard-trend-tools {
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  #home-workspace .acadia-page-header-pattern-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: var(--acadia-space-1);
+  }
+
+  #home-workspace .acadia-page-header-pattern-section-intro {
+    order: 0;
+  }
+
+  #home-workspace .acadia-page-header-pattern-section-title {
+    font-size: var(--acadia-type-size-heading-small);
+  }
+
+  #home-workspace .acadia-page-header-pattern-meta {
+    align-items: start;
+    flex-direction: column;
+    gap: 0;
   }
 
   .mercury-home-trend-footer,
   .mercury-home-history-context {
     align-items: stretch;
     flex-direction: column;
-    gap: var(--acadia-space-2);
+    gap: var(--acadia-space-1);
   }
 
   .mercury-home-history-context {
@@ -545,15 +641,41 @@
   }
 
   .mercury-home-history-context > div:last-child {
+    display: flex;
+    align-items: baseline;
+    gap: var(--acadia-space-1);
     grid-column: 1 / -1;
   }
 
   .mercury-home-metric-strip {
     grid-template-columns: 1fr;
+    padding-block: 0;
   }
 
   .mercury-home-metric-strip > div {
-    padding-block: var(--acadia-space-2);
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: baseline;
+    padding: var(--acadia-space-2) var(--acadia-space-1);
+  }
+
+  .mercury-home-metric-strip dd:not(.mercury-home-metric-basis) {
+    grid-column: 2;
+    grid-row: 1 / 3;
+    justify-content: end;
+    align-self: center;
+  }
+
+  .mercury-home-metric-strip dd.mercury-home-metric-basis {
+    grid-column: 1;
+    font-size: var(--acadia-type-size-caption);
+  }
+
+  .mercury-home-metric-strip dd strong {
+    font-size: var(--acadia-type-size-lead);
+  }
+
+  .mercury-home-metric-strip dd span {
+    font-size: var(--acadia-type-size-small);
   }
 
   .mercury-home-metric-strip > div + div {
@@ -574,6 +696,8 @@
 
   .mercury-home-asset-detail {
     grid-column: 2 / -1;
+    grid-row: 2;
+    overflow-wrap: anywhere;
     text-align: start;
   }
 

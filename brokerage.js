@@ -488,6 +488,7 @@
     setText("#holdings-count", candidates.length
       ? `${topAssets.length} of ${candidates.length} shown`
       : "0 assets");
+    grid.hidden = topAssets.length === 0;
     $("#holdings-empty").hidden = topAssets.length > 0;
   }
 
@@ -712,6 +713,7 @@
     setActiveNavigation("home");
     const netWorthCents = currentNetWorthCents(summary);
     setText("#metric-value", netWorthCents === null ? "Not set" : displayCurrency(netWorthCents / 100));
+    $("#metric-value").title = netWorthCents === null ? "Property equity is unavailable" : currency.format(netWorthCents / 100);
     const metricsLoading = state.providerMetricsPending.size > 0;
     setText("#metric-income", metricsLoading
       ? "Loading…"

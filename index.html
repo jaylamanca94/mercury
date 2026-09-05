@@ -12,7 +12,7 @@
     <link rel="preload" href="fonts/Syncopate-Regular.ttf" as="font" type="font/ttf" crossorigin>
     <link rel="preload" href="fonts/Syncopate-Bold.ttf" as="font" type="font/ttf" crossorigin>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" referrerpolicy="no-referrer">
-    <link rel="stylesheet" href="styles.css?v=20260904-home-overview-v2">
+    <link rel="stylesheet" href="styles.css?v=20260904-home-refinement-v3">
   </head>
   <body class="acadia-app">
     <a class="acadia-skip-link" href="#main-content">Skip to content</a>
@@ -33,12 +33,13 @@
         <p id="data-status" class="acadia-sr-only" role="status" aria-live="polite">Loading your Brokerage account…</p>
         <section class="acadia-dashboard-main acadia-home-dashboard" aria-label="Brokerage dashboard">
           <article class="acadia-card is-content is-dashboard-trend mercury-home-trend" aria-labelledby="history-title">
+            <div class="mercury-home-headline">
+              <span id="net-worth-label" class="mercury-home-kicker">Net worth</span>
+              <h1 id="history-title" class="acadia-dashboard-trend-value"><span class="acadia-sr-only">Net worth </span><span id="metric-value">$0</span></h1>
+              <p class="mercury-home-net-worth-context">Investments + property equity</p>
+            </div>
             <div class="acadia-dashboard-trend-header">
               <div class="mercury-home-trend-headlines">
-                <div class="mercury-home-headline">
-                  <span id="net-worth-label" class="mercury-home-kicker">Net worth</span>
-                  <h1 id="history-title" class="acadia-dashboard-trend-value"><span class="acadia-sr-only">Net worth </span><span id="metric-value">$0</span></h1>
-                </div>
                 <div class="mercury-home-performance-result">
                   <span id="performance-context" class="mercury-home-kicker">Portfolio change · All time</span>
                   <div class="acadia-dashboard-trend-summary">
@@ -64,13 +65,13 @@
             </footer>
           </article>
           <dl id="home-metric-strip" class="acadia-muted-panel mercury-home-metric-strip" aria-label="Portfolio estimates and prior-close movement">
-            <div><dt>Portfolio change</dt><dd><strong id="metric-change-value">—</strong><span id="metric-change-rate" hidden>—</span></dd><dd class="mercury-home-metric-basis">Since prior close</dd></div>
+            <div><dt>Since prior close</dt><dd><strong id="metric-change-value">—</strong><span id="metric-change-rate" hidden>—</span></dd><dd class="mercury-home-metric-basis">Portfolio movement</dd></div>
             <div><dt>Estimated annual growth</dt><dd><strong id="metric-estimated-growth">Not set</strong><span id="metric-estimated-growth-rate" hidden>—</span></dd><dd class="mercury-home-metric-basis">Current holdings · return assumptions</dd></div>
             <div><dt>Estimated annual income</dt><dd><strong id="metric-income">$0</strong><span id="metric-income-yield" hidden>—</span></dd><dd class="mercury-home-metric-basis">Current holdings · trailing yield</dd></div>
           </dl>
           <section class="acadia-top-assets" aria-labelledby="holdings-title">
             <div class="acadia-page-header-pattern-section">
-              <div class="acadia-page-header-pattern-section-intro"><div class="acadia-page-header-pattern-meta"><h2 id="holdings-title" class="acadia-page-header-pattern-section-title">Top assets</h2><span id="holdings-count" class="is-accent">0 assets</span></div><p id="portfolio-warnings" class="acadia-sr-only"></p></div>
+              <div class="acadia-page-header-pattern-section-intro"><div class="acadia-page-header-pattern-meta"><h2 id="holdings-title" class="acadia-page-header-pattern-section-title">Top assets</h2><span id="holdings-count" class="acadia-text-muted">0 assets</span></div><p id="portfolio-warnings" class="acadia-sr-only"></p></div>
               <div class="acadia-page-header-pattern-tools"><a id="view-portfolio" class="acadia-button acadia-button-quiet" href="#portfolio">View portfolio <i class="fa-solid fa-arrow-right acadia-icon" aria-hidden="true"></i></a></div>
             </div>
             <div id="holdings-grid" class="acadia-muted-panel mercury-home-assets-list" role="list" aria-live="polite"></div>
@@ -200,6 +201,6 @@
     <script src="portfolio.js?v=20260904-home-overview-v2"></script>
     <script src="income.js?v=20260904-budget-v1"></script>
     <script src="plan.js?v=20260904-portfolio-dashboard-v1"></script>
-    <script src="brokerage.js?v=20260904-home-overview-v2"></script>
+    <script src="brokerage.js?v=20260904-home-refinement-v3"></script>
   </body>
 </html>

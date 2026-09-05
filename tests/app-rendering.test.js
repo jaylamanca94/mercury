@@ -174,7 +174,7 @@ test("large currency display values use the shared compact format", () => {
   assert.match(homeSource, /setNeutralMetric\("#metric-estimated-growth-rate"/);
   assert.match(homeSource, /setNeutralMetric\("#metric-income-yield"/);
   assert.match(indexHtml, /Estimated annual growth/);
-  assert.match(styles, /\.mercury-home-trend \{[\s\S]*--acadia-dashboard-trend-card-height: 14rem/);
+  assert.match(styles, /\.mercury-home-trend \{[\s\S]*--acadia-dashboard-trend-card-height: auto/);
   assert.match(styles, /\.mercury-home-metric-strip[\s\S]*grid-template-columns: repeat\(3/);
   assert.match(styles, /@media \(max-width: 47\.98rem\)[\s\S]*\.mercury-home-trend \{[\s\S]*min-block-size: 20rem/);
   assert.match(homeSource, /summary\.distributionYieldRate/);
@@ -292,7 +292,7 @@ test("Plan is a separate Base-plan projection workspace with aligned portfolio c
   assert.match(indexHtml, /id="plan-assumptions-dialog"/);
   assert.match(indexHtml, /id="property-dialog"/);
   assert.match(indexHtml, /<script src="plan\.js\?v=20260904-portfolio-dashboard-v1"><\/script>/);
-  assert.match(indexHtml, /<script src="brokerage\.js\?v=20260904-home-overview-v2"><\/script>/);
+  assert.match(indexHtml, /<script src="brokerage\.js\?v=20260904-home-refinement-v3"><\/script>/);
   assert.match(homeSource, /function routePlan\(\)/);
   assert.match(homeSource, /function renderPlan\(summary\)/);
   assert.match(homeSource, /function renderPlanChart/);
