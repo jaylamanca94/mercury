@@ -40,3 +40,7 @@ This run replaces the July research baseline for the retired public economy dash
 This is a broad flow audit with focused recovery fixes, not a claim that every remote failure and physical-device state has passed. Full email-link redemption, expired-session recovery, scheduled snapshot execution, cross-user database isolation and physical-device assistive technology remain acceptance work. Long-form navigation still discards unsaved edits; this pass specifically protects against unsolicited background resets. Holding and quote persistence remains two requests: same-dialog retry is idempotent, but closing during a partial save does not roll back the holding. No schema, provider configuration or financial values were changed.
 
 Screenshots containing private saved values stay in the automation's local evidence folder; they are not committed or published. The local audit includes the screenshots and their source/state labels.
+
+## Release evidence
+
+Implementation commit `07d9fd7` was pushed to `origin/main`. At 2026-09-05 02:42 UTC, the production `brokerage.js` SHA-256 matched the committed local file. A fresh deployed `#portfolio` route settled at Sign in with no editable portfolio visible. The existing authenticated Safari session reloaded the new Plan title and pressed horizon controls, then opened the owner's saved Portfolio successfully. This verifies deployment and authenticated read access separately from the isolated write tests.
