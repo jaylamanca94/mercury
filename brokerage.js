@@ -218,6 +218,7 @@
   }
   function setControlsDisabled(disabled) {
     $("#portfolio-add-asset").disabled = disabled;
+    $("#home-add-asset").disabled = disabled;
     $("#portfolio-add-property").disabled = disabled || !state.propertiesAvailable;
     $("#add-income").disabled = disabled || !state.incomeSourcesAvailable;
     $("#add-budget-category").disabled = disabled || !state.budgetCategoriesAvailable;
@@ -264,17 +265,12 @@
   function renderHistory() {
     const trend = $("#history-trend");
     const performance = summarizeDashboardHistory(state.snapshots, state.performancePeriod);
-    const allHistory = summarizeDashboardHistory(state.snapshots, "all");
     renderPerformancePeriods();
     setMovement("#performance-rate", performance.changeRate, (value) => `(${displaySignedPercentage(value)})`, { hideWhenUnavailable: true });
     setMovement("#performance-amount", performance.changeCents, movementCurrency, { hideWhenUnavailable: true });
-    setText("#history-start-date", historyDateLabel(performance.startDate));
-    setText("#history-end-date", historyDateLabel(performance.endDate));
-    setText("#history-latest-value", Number.isSafeInteger(performance.latestValueCents) ? displayCurrency(performance.latestValueCents / 100) : "—");
-    setText("#history-available-since", allHistory.startDate ? `Recording since ${historyDateLabel(allHistory.startDate)}` : "No recorded history yet");
     $("#history-building").hidden = performance.showTrend;
     trend.hidden = !performance.showTrend;
-    setText("#history-building", `History building · ${performance.recordedDays} ${performance.recordedDays === 1 ? "day" : "days"} recorded`);
+    setText("#history-building", `History building · ${performance.recordedDays} of 30 days`);
     if (!performance.showTrend) {
       trend.replaceChildren();
       setText("#history-summary", `${performance.recordedDays} distinct daily snapshots in this range. The full trend appears after 30 recorded days. Portfolio snapshots exclude property equity.`);
@@ -432,49 +428,35 @@
       }) : []),
     ].sort((left, right) => right.valueCents - left.valueCents);
     const topAssets = candidates.slice(0, 4);
-    grid.replaceChildren(...topAssets.map((candidate, index) => {
+    grid.replaceChildren(...topAssets.map((candidate) => {
       const item = document.createElement("article");
-      item.className = "mercury-home-asset-row";
-      item.setAttribute("role", "listitem");
-      const button = document.createElement("button");
-      button.className = "mercury-home-asset-action";
-      button.type = "button";
-      if (candidate.kind === "holding") {
-        const { row } = candidate;
-        const holding = state.holdings.find((entry) => entry.id === row.asset.id);
-        const title = row.asset.symbol || row.asset.name;
-        const accountClassification = row.asset.isRetirement
-          ? "Retirement"
-          : row.asset.instrumentType === "crypto"
-            ? "Crypto"
-            : "Brokerage";
-        const specificInstrument = row.asset.instrumentType === "other"
-          || instrumentLabel(row.asset.instrumentType).toLowerCase() === accountClassification.toLowerCase()
-          ? ""
-          : instrumentLabel(row.asset.instrumentType);
-        const classification = [accountClassification, specificInstrument].filter(Boolean).join(" · ");
-        const detail = row.asset.valuationBasis === VALUATION_BASES.MANUAL_VALUE
-          ? "Manual valuation"
-          : row.asset.unitPriceCents === null
-            ? "Price not set"
-            : `${displayCardPrice(row.asset.unitPriceCents)} price · ${displayCardShares(row.asset.shares)} shares`;
-        button.dataset.homeHoldingId = holding.id;
-        button.setAttribute("aria-label", `Open ${title} asset details`);
-        button.innerHTML = `<span class="mercury-home-asset-rank" aria-hidden="true">${index + 1}</span><span class="mercury-home-asset-identity"><strong>${escapeHtml(title)}</strong><small>${escapeHtml(classification)}</small></span><span class="mercury-home-asset-value"><strong>${escapeHtml(displayCurrency(row.marketValueCents / 100))}</strong><small>Current value</small></span><span class="mercury-home-asset-detail">${escapeHtml(detail)}</span><i class="fa-solid fa-chevron-right acadia-icon" aria-hidden="true"></i>`;
-        button.addEventListener("click", () => navigateToAsset(holding.id));
-        item.append(button);
-        return item;
-      }
-      const { model } = candidate;
-      button.dataset.homePropertyId = model.id;
-      button.setAttribute("aria-label", `Edit ${model.name} property`);
-      button.innerHTML = `<span class="mercury-home-asset-rank" aria-hidden="true">${index + 1}</span><span class="mercury-home-asset-identity"><strong>${escapeHtml(model.name)}</strong><small>Property</small></span><span class="mercury-home-asset-value"><strong>${escapeHtml(displayCurrency(candidate.valueCents / 100))}</strong><small>Equity</small></span><span class="mercury-home-asset-detail">Market value ${escapeHtml(displayCurrency(model.currentValueCents / 100))} · Mortgage ${escapeHtml(displayCurrency(model.mortgageBalanceCents / 100))}</span><i class="fa-solid fa-chevron-right acadia-icon" aria-hidden="true"></i>`;
-      button.addEventListener("click", () => openPropertyDialog(model.id));
-      item.append(button);
-      return item;
+      item.className = "acadia-card is-content is-interactive acadia-asset-preview-card";
+      item.setAttribute("role", "button");
+      item.tabIndex = 0;
+      const isHolding = candidate.kind === "holding";
+      const row = candidate.row;
+      const title = isHolding ? row.asset.symbol || row.asset.name : candidate.model.name;
+      const classification = isHolding
+        ? row.asset.isRetirement ? "Retirement" : row.asset.instrumentType === "crypto" ? "Crypto" : "Brokerage"
+        : "Property equity";
+      const detail = isHolding
+        ? row.asset.valuationBasis === VALUATION_BASES.MANUAL_VALUE ? "Manual valuation"
+          : `${holdingPriceLabel(row)} price · ${holdingSharesLabel(row, true)}`
+        : `Market value ${displayCurrency(candidate.model.currentValueCents / 100)} · Mortgage ${displayCurrency(candidate.model.mortgageBalanceCents / 100)}`;
+      item.innerHTML = `<div class="acadia-card-header"><div class="acadia-card-content-title-row"><h3>${escapeHtml(title)}</h3><span class="acadia-card-content-caption" title="${escapeHtml(currency.format(candidate.valueCents / 100))}">${escapeHtml(displayCurrency(candidate.valueCents / 100))}</span></div><p>${escapeHtml(classification)}</p></div><div class="acadia-card-content"><small class="acadia-text-muted">${escapeHtml(detail)}</small></div>`;
+      item.setAttribute("aria-label", isHolding ? `Open ${title} asset details` : `Edit ${title} property`);
+      const open = () => isHolding ? navigateToAsset(row.asset.id) : openPropertyDialog(candidate.model.id);
+      item.addEventListener("click", open);
+      item.addEventListener("keydown", (event) => {
+        if (event.key === "Enter" || event.key === " ") { event.preventDefault(); open(); }
+      });
+      const wrapper = document.createElement("div");
+      wrapper.setAttribute("role", "listitem");
+      wrapper.append(item);
+      return wrapper;
     }));
     setText("#holdings-count", candidates.length
-      ? `${topAssets.length} of ${candidates.length} shown`
+      ? candidates.length > 4 ? `4 of ${candidates.length} assets` : `${candidates.length} ${candidates.length === 1 ? "asset" : "assets"}`
       : "0 assets");
     grid.hidden = topAssets.length === 0;
     $("#holdings-empty").hidden = topAssets.length > 0;
@@ -710,16 +692,11 @@
     node.innerHTML = allocation.rows.length ? `<div class="mercury-allocation-rows">${allocation.rows.map((row) => `<div class="acadia-card-progress"><div class="acadia-card-progress-heading"><span>${escapeHtml(row.name)}</span><span class="mercury-allocation-amount">${escapeHtml(planningValue(row.valueCents))}<span>${percentage.format(row.allocationRate)}</span></span></div><progress value="${row.valueCents}" max="${allocation.totalValueCents}" aria-label="${escapeHtml(row.name)}: ${percentage.format(row.allocationRate)} of valued investments"></progress></div>`).join("")}</div><p class="mercury-caption">${coverage}</p>` : `<p class="mercury-caption">No investment value to allocate.${allocation.unvaluedCount ? ` ${coverage}` : ""}</p>`;
     return allocation;
   }
-  function renderReview(summary, allocation) {
-    const reviews = [];
-    const unavailable = [[!state.configured || !state.account, "account", "#portfolio"], [!state.propertiesAvailable, "property equity", "#portfolio"], [!state.incomeSourcesAvailable, "income sources", "#income"], [!state.budgetCategoriesAvailable, "budget categories", "#income/budget"]].filter(([missing]) => missing);
-    if (unavailable.length) reviews.push({ title: `${unavailable.length} ${unavailable.length === 1 ? "data source unavailable" : "data sources unavailable"}`, detail: unavailable.map(([, label]) => label).join(", "), href: unavailable[0][2], action: "Review setup" });
-    const missingMetrics = summary.rows.filter((row) => row.estimatedAnnualGrowthCents === null || row.estimatedAnnualIncomeCents === null).length;
-    if (allocation.unvaluedCount || (missingMetrics && !state.providerMetricsPending.size)) reviews.push({ title: "Incomplete portfolio coverage", detail: [allocation.unvaluedCount ? `${allocation.unvaluedCount} missing valuations` : null, missingMetrics ? (state.providerMetricsPending.size ? "Metrics loading" : `${missingMetrics} holdings with incomplete estimates`) : null].filter(Boolean).join(" · "), href: "#portfolio", action: "Review holdings" });
-    const history = summarizeDashboardHistory(state.snapshots, "all");
-    if (!history.showTrend) reviews.push({ title: "History is building", detail: `${history.recordedDays} of 30 daily observations recorded. No action needed.`, href: null });
-    if (summary.rows.length === state.holdings.length && summary.totalDayChangeCents < 0) reviews.push({ title: "Portfolio value decreased", detail: `${movementCurrency(summary.totalDayChangeCents)} since prior close.`, href: "#portfolio", action: "View portfolio" });
-    $("#home-review-list").innerHTML = reviews.length ? reviews.slice(0, 4).map((item) => `<li><strong>${escapeHtml(item.title)}</strong><p>${escapeHtml(item.detail)}</p>${item.href ? `<a class="acadia-button acadia-button-quiet" href="${item.href}">${item.action}<i class="fa-solid fa-arrow-right acadia-icon" aria-hidden="true"></i></a>` : ""}</li>`).join("") : '<li><p>No review items</p></li>';
+  function renderHomeAllocation() {
+    const allocation = summarizeHoldingAllocation(state.holdings.map(holdingAsset));
+    const node = $("#home-allocation");
+    node.innerHTML = allocation.rows.length ? allocation.rows.map((row) => `<div class="acadia-card-progress"><div class="acadia-card-progress-heading"><span>${escapeHtml(row.name)}</span><span>${percentage.format(row.allocationRate)}</span></div><progress value="${row.valueCents}" max="${allocation.totalValueCents}" aria-label="${escapeHtml(row.name)}: ${percentage.format(row.allocationRate)} of valued investments"></progress></div>`).join("") : '<p class="acadia-text-muted">No investment value yet</p>';
+    if (allocation.unvaluedCount) node.insertAdjacentHTML("beforeend", `<small class="acadia-text-muted">${allocation.unvaluedCount} missing ${allocation.unvaluedCount === 1 ? "valuation" : "valuations"}</small>`);
   }
   function renderHome(summary) {
     $("#home-workspace").hidden = false;
@@ -731,17 +708,20 @@
     const netWorthCents = currentNetWorthCents(summary);
     setText("#metric-value", netWorthCents === null ? "Not set" : displayCurrency(netWorthCents / 100));
     $("#metric-value").title = netWorthCents === null ? "Complete valuations are unavailable" : currency.format(netWorthCents / 100);
-    setText("#home-investments", summary.rows.length === state.holdings.length ? planningValue(summary.totalMarketValueCents) : "Not set");
-    setText("#home-property-equity", state.propertiesAvailable ? planningValue(totalPropertyEquity()) : "Not set");
-    const planning = planningPosition(summary, "month");
-    for (const [id, key] of [["income", "expectedCents"], ["spending", "spendingCents"], ["investing", "investingCents"], ["balance", "balanceCents"]]) setText(`#home-planning-${id}`, planningValue(planning[key]));
+    const estimatesComplete = state.configured && Boolean(state.account) && summary.rows.length === state.holdings.length;
+    const growth = estimatesComplete ? summary.totalExpectedAnnualGrowthCents : null;
+    const passive = estimatesComplete && state.providerMetricsPending.size === 0 ? summary.totalEstimatedAnnualIncomeCents : null;
+    setText("#home-growth", growth === null ? "Not set" : displayCurrency(growth / 100));
+    setText("#home-passive-income", passive === null ? "Not set" : displayCurrency(passive / 100));
+    setText("#home-growth-context", growth === null ? "Add return assumptions in Portfolio" : "From saved return assumptions");
+    setText("#home-passive-context", state.providerMetricsPending.size ? "Loading dividend estimates…" : passive === null ? "Incomplete dividend coverage" : "Estimated annual dividends");
     renderHistory();
     const dailyMovementComplete = summary.rows.length === state.holdings.length;
     setMovement("#metric-change-value", dailyMovementComplete ? summary.totalDayChangeCents : null, movementCurrency);
     setMovement("#metric-change-rate", dailyMovementComplete ? summary.totalDayChangeRate : null, displaySignedPercentage, { hideWhenUnavailable: true });
     setText("#portfolio-warnings", state.holdings.length ? summary.warnings.join(" ") : "");
     renderHoldings(summary);
-    renderReview(summary, renderAllocation("#home-allocation"));
+    renderHomeAllocation();
   }
 
   function renderPortfolio(summary) {
@@ -1988,6 +1968,7 @@
     });
   });
   $("#portfolio-add-asset").addEventListener("click", openQuickAdd);
+  $("#home-add-asset").addEventListener("click", openQuickAdd);
   $("#close-dialog").addEventListener("click", () => $("#asset-dialog").close());
   $("#cancel-dialog").addEventListener("click", () => $("#asset-dialog").close());
   $("#asset-dialog").addEventListener("close", () => {

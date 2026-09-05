@@ -12,7 +12,7 @@
     <link rel="preload" href="fonts/Syncopate-Regular.ttf" as="font" type="font/ttf" crossorigin>
     <link rel="preload" href="fonts/Syncopate-Bold.ttf" as="font" type="font/ttf" crossorigin>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" referrerpolicy="no-referrer">
-    <link rel="stylesheet" href="styles.css?v=20260904-dashboard-v4">
+    <link rel="stylesheet" href="styles.css?v=20260905-home-minimal-v1">
   </head>
   <body class="acadia-app">
     <a class="acadia-skip-link" href="#main-content">Skip to content</a>
@@ -29,28 +29,34 @@
     <main id="main-content" class="acadia-shell acadia-mobile-dock-safe-area" aria-busy="true">
       <section id="auth-panel" class="acadia-card is-content" aria-labelledby="auth-title" hidden><div class="acadia-card-header"><h1 id="auth-title">Your private dashboard</h1><p>Sign in with email to access your personal Brokerage account.</p></div><form id="magic-link-form" class="acadia-card-body"><div class="acadia-form-control" data-acadia-form-variant="input"><label class="acadia-label" for="email">Email</label><input class="acadia-control" id="email" name="email" type="email" autocomplete="email" required placeholder="you@example.com"><span id="auth-message" class="acadia-field-hint" role="status" aria-live="polite"></span></div><div class="acadia-card-footer"><span></span><button id="send-magic-link" class="acadia-button acadia-button-primary" type="submit">Send magic link</button></div></form></section>
 
-      <section id="home-workspace" class="acadia-stack mercury-workspace" hidden>
-        <header class="acadia-page-header acadia-page-header-pattern"><h1 class="acadia-page-header-pattern-title">Home</h1></header>
+      <section id="home-workspace" class="acadia-stack acadia-home-dashboard" hidden>
+        <h1 class="acadia-sr-only">Home</h1>
         <p id="data-status" class="acadia-sr-only" role="status" aria-live="polite">Loading your Brokerage account…</p>
-        <section class="mercury-command-grid" aria-label="Brokerage dashboard">
-          <article class="acadia-card is-content mercury-position" aria-labelledby="history-title">
-            <div class="mercury-position-head"><div><span id="net-worth-label" class="mercury-home-kicker">Net worth</span><h2 id="history-title" class="mercury-primary-metric"><span class="acadia-sr-only">Net worth </span><span id="metric-value">—</span></h2></div></div>
-            <dl class="mercury-position-breakdown"><div><dt>Investments</dt><dd id="home-investments">—</dd></div><div><dt>Property equity</dt><dd id="home-property-equity">—</dd></div></dl>
-            <div class="mercury-history-heading"><div><span id="performance-context" class="mercury-home-kicker">Portfolio value change · All time</span><p class="acadia-dashboard-trend-summary"><span id="performance-amount" class="acadia-dashboard-trend-change" hidden>—</span><span id="performance-rate" class="acadia-dashboard-trend-change" hidden>—</span></p></div><div id="performance-periods" class="acadia-tabs" role="tablist" aria-label="Performance range"><button id="performance-3m-tab" class="acadia-tab" type="button" role="tab" data-performance-period="3m" aria-controls="history-panel" aria-selected="false" tabindex="-1">3M</button><button id="performance-6m-tab" class="acadia-tab" type="button" role="tab" data-performance-period="6m" aria-controls="history-panel" aria-selected="false" tabindex="-1">6M</button><button id="performance-1y-tab" class="acadia-tab" type="button" role="tab" data-performance-period="1y" aria-controls="history-panel" aria-selected="false" tabindex="-1">1Y</button><button id="performance-all-tab" class="acadia-tab is-active" type="button" role="tab" data-performance-period="all" aria-controls="history-panel" aria-selected="true" tabindex="0">All</button></div></div>
-            <div id="history-panel" role="tabpanel" aria-labelledby="performance-all-tab" tabindex="0"><p id="history-building" class="mercury-history-building">History building · 0 days recorded</p><div id="history-trend" class="acadia-card-trend" role="img" aria-label="Portfolio value history unavailable" hidden></div><p id="history-summary" class="acadia-sr-only" aria-live="polite"></p></div>
-            <footer class="mercury-home-trend-footer"><dl class="mercury-home-history-context"><div><dt>Start</dt><dd id="history-start-date">—</dd></div><div><dt>End</dt><dd id="history-end-date">—</dd></div><div><dt>Latest recorded value</dt><dd id="history-latest-value">—</dd></div></dl><p id="history-available-since"></p></footer>
-            <p class="mercury-prior-close"><span>Since prior close</span><strong id="metric-change-value">—</strong><span id="metric-change-rate" hidden>—</span></p>
-          </article>
-          <aside class="acadia-card is-content mercury-home-planning" aria-labelledby="home-planning-title"><div class="acadia-page-header-pattern-section"><h2 id="home-planning-title">Monthly planning</h2></div><p class="mercury-caption">Expected gross amounts, including estimated dividends; not spendable cash.</p><dl class="mercury-planning-lines"><div><dt>Expected income</dt><dd id="home-planning-income">—</dd></div><div><dt>Planned spending</dt><dd id="home-planning-spending">—</dd></div><div><dt>Planned investing</dt><dd id="home-planning-investing">—</dd></div><div class="mercury-planning-balance"><dt>Planned balance</dt><dd id="home-planning-balance">—</dd></div></dl><div class="mercury-planning-actions"><a class="acadia-button acadia-button-quiet" href="#income">Income <i class="fa-solid fa-arrow-right acadia-icon" aria-hidden="true"></i></a><a class="acadia-button acadia-button-quiet" href="#income/budget">Budget <i class="fa-solid fa-arrow-right acadia-icon" aria-hidden="true"></i></a></div></aside>
-          <aside class="mercury-home-review" aria-labelledby="home-review-title"><h2 id="home-review-title">For review</h2><ul id="home-review-list" class="mercury-review-list"></ul></aside>
-          <section class="mercury-home-evidence" aria-label="Portfolio evidence"><section aria-labelledby="home-allocation-title"><div class="acadia-page-header-pattern-section"><h2 id="home-allocation-title">Investment allocation</h2><span class="mercury-caption">By holding value</span></div><div id="home-allocation" class="mercury-allocation"></div></section>          <section class="acadia-top-assets" aria-labelledby="holdings-title">
-            <div class="acadia-page-header-pattern-section">
-              <div class="acadia-page-header-pattern-section-intro"><div class="acadia-page-header-pattern-meta"><h2 id="holdings-title" class="acadia-page-header-pattern-section-title">Top assets</h2><span id="holdings-count" class="acadia-text-muted">0 assets</span></div><p id="portfolio-warnings" class="acadia-sr-only"></p></div>
-              <div class="acadia-page-header-pattern-tools"><a id="view-portfolio" class="acadia-button acadia-button-quiet" href="#portfolio">View portfolio <i class="fa-solid fa-arrow-right acadia-icon" aria-hidden="true"></i></a></div>
+        <div class="acadia-dashboard-layout">
+          <article class="acadia-card is-content is-dashboard-trend" aria-labelledby="net-worth-label">
+            <div class="acadia-dashboard-trend-header">
+              <div class="acadia-card-metric"><span id="net-worth-label" class="acadia-text-muted">Net worth</span><h2 id="metric-value" class="acadia-dashboard-trend-value">—</h2></div>
+              <div class="acadia-dashboard-trend-tools"><div id="performance-periods" class="acadia-tabs" role="tablist" aria-label="Performance range"><button id="performance-3m-tab" class="acadia-tab" type="button" role="tab" data-performance-period="3m" aria-controls="history-panel" aria-selected="false" tabindex="-1">3M</button><button id="performance-6m-tab" class="acadia-tab" type="button" role="tab" data-performance-period="6m" aria-controls="history-panel" aria-selected="false" tabindex="-1">6M</button><button id="performance-1y-tab" class="acadia-tab" type="button" role="tab" data-performance-period="1y" aria-controls="history-panel" aria-selected="false" tabindex="-1">1Y</button><button id="performance-all-tab" class="acadia-tab is-active" type="button" role="tab" data-performance-period="all" aria-controls="history-panel" aria-selected="true" tabindex="0">All</button></div></div>
             </div>
-            <div id="holdings-grid" class="acadia-muted-panel mercury-home-assets-list" role="list" aria-live="polite"></div>
-            <div id="holdings-empty" class="acadia-status-row is-info"><span class="acadia-status-icon" aria-hidden="true"><i class="fa-solid fa-circle-info acadia-icon"></i></span><div><strong id="holdings-empty-title">No assets yet</strong><p id="holdings-empty-copy">Open Portfolio to add your first asset.</p></div></div>
-          </section></section>
+            <div id="history-panel" class="acadia-card-body" role="tabpanel" aria-labelledby="performance-all-tab" tabindex="0">
+              <div class="acadia-cluster"><span id="performance-context" class="acadia-text-muted">Portfolio value change · All time</span><span id="performance-amount" hidden>—</span><span id="performance-rate" hidden>—</span></div>
+              <div id="history-building" class="acadia-card-trend acadia-card-trend-empty">History building · 0 of 30 days</div>
+              <div id="history-trend" class="acadia-card-trend" role="img" aria-label="Portfolio value history unavailable" hidden></div>
+              <p id="history-summary" class="acadia-sr-only" aria-live="polite"></p>
+            </div>
+          </article>
+          <aside class="acadia-card is-content" aria-labelledby="home-allocation-title"><div class="acadia-card-header"><h2 id="home-allocation-title">Allocation</h2><p>Investment value</p></div><div id="home-allocation" class="acadia-chart-list"></div></aside>
+        </div>
+        <div class="acadia-grid acadia-dashboard-metric-grid" style="--acadia-grid-columns: 3" aria-label="Investment summary">
+          <article class="acadia-card is-content"><div class="acadia-card-content"><span>Portfolio change</span><div class="acadia-card-metric-value-row"><strong id="metric-change-value" class="acadia-card-metric-value">—</strong><span id="metric-change-rate" hidden>—</span></div><small class="acadia-text-muted">Since prior close</small></div></article>
+          <article class="acadia-card is-content"><div class="acadia-card-content"><span>Expected annual growth</span><strong id="home-growth" class="acadia-card-metric-value">—</strong><small id="home-growth-context" class="acadia-text-muted">From saved return assumptions</small></div></article>
+          <article class="acadia-card is-content"><div class="acadia-card-content"><span>Passive income</span><strong id="home-passive-income" class="acadia-card-metric-value">—</strong><small id="home-passive-context" class="acadia-text-muted">Estimated annual dividends</small></div></article>
+        </div>
+        <section class="acadia-top-assets" aria-labelledby="holdings-title">
+          <div class="acadia-page-header-pattern-section"><div class="acadia-page-header-pattern-meta"><h2 id="holdings-title" class="acadia-page-header-pattern-section-title">Top assets</h2><span id="holdings-count" class="acadia-text-muted">0 assets</span></div><div class="acadia-page-header-pattern-tools"><button id="home-add-asset" class="acadia-button acadia-button-quiet" type="button"><i class="fa-solid fa-plus acadia-icon" aria-hidden="true"></i> Add asset</button></div></div>
+          <div id="holdings-grid" class="acadia-device-grid" role="list" aria-live="polite"></div>
+          <div id="holdings-empty" class="acadia-status-row is-info"><span class="acadia-status-icon" aria-hidden="true"><i class="fa-solid fa-circle-info acadia-icon"></i></span><div><strong id="holdings-empty-title">No assets yet</strong><p id="holdings-empty-copy">Add your first asset to build your dashboard.</p></div></div>
+          <p id="portfolio-warnings" class="acadia-sr-only"></p>
         </section>
       </section>
 
@@ -180,6 +186,6 @@
     <script src="income.js?v=20260904-budget-v1"></script>
     <script src="plan.js?v=20260904-portfolio-dashboard-v1"></script>
     <script src="dashboard.js?v=20260904-dashboard-v4"></script>
-    <script src="brokerage.js?v=20260905-flow-recovery-v1"></script>
+    <script src="brokerage.js?v=20260905-home-minimal-v1"></script>
   </body>
 </html>

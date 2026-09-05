@@ -31,7 +31,7 @@ test("Home consumes Acadia without a Mercury presentation layer", () => {
   assert.match(indexHtml, /data-acadia-layout="wide"/);
   assert.match(indexHtml, /data-acadia-page-frame="spacious"/);
   assert.match(indexHtml, /id="main-content" class="acadia-shell acadia-mobile-dock-safe-area"/);
-  assert.match(indexHtml, /id="home-workspace" class="acadia-stack mercury-workspace" hidden/);
+  assert.match(indexHtml, /id="home-workspace" class="acadia-stack acadia-home-dashboard" hidden/);
   assert.match(indexHtml, /id="portfolio-workspace" class="acadia-stack mercury-workspace" hidden aria-live="polite"/);
   assert.match(indexHtml, /id="income-workspace" class="acadia-stack mercury-workspace" hidden/);
   assert.match(indexHtml, /id="plan-workspace" class="acadia-stack mercury-workspace" hidden aria-live="polite"/);
@@ -50,15 +50,17 @@ test("Mercury preserves the Acadia 24px page-header and Portfolio content rhythm
   assert.doesNotMatch(acadiaStyles, /\.mercury-workspace/);
 });
 
-test("Home composes position, planning, review and evidence", () => {
+test("Home composes a minimal Acadia dashboard", () => {
   assert.match(indexHtml, /class="acadia-responsive-navbar"/);
-  assert.match(indexHtml, /<section class="mercury-command-grid" aria-label="Brokerage dashboard">/);
+  assert.match(indexHtml, /class="acadia-dashboard-layout"/);
   assert.match(indexHtml, /id="metric-value"/);
   assert.match(indexHtml, /id="net-worth-label"[^>]*>Net worth</);
   assert.match(indexHtml, /id="performance-amount"/);
   assert.match(indexHtml, /id="performance-rate"/);
   assert.match(indexHtml, /id="performance-context"[^>]*>Portfolio value change · All time</);
-  assert.match(indexHtml, /id="home-planning-balance"/);
+  assert.doesNotMatch(indexHtml, /id="home-planning-balance"|id="home-review-list"/);
+  assert.match(indexHtml, /id="home-growth"/);
+  assert.match(indexHtml, /id="home-passive-income"/);
   assert.match(indexHtml, />Estimated annual income</);
   assert.match(indexHtml, />Top assets</);
   assert.doesNotMatch(indexHtml, />Dashboard</);
@@ -66,18 +68,13 @@ test("Home composes position, planning, review and evidence", () => {
   assert.match(indexHtml, /id="performance-periods" class="acadia-tabs" role="tablist"/);
   assert.match(indexHtml, /data-performance-period="3m"[\s\S]*data-performance-period="6m"[\s\S]*data-performance-period="1y"[\s\S]*data-performance-period="all"/);
   assert.match(indexHtml, /id="history-panel"[^>]*role="tabpanel"/);
-  assert.match(indexHtml, /class="acadia-card is-content mercury-position"/);
-  assert.match(indexHtml, /id="home-review-list"/);
+  assert.match(indexHtml, /class="acadia-card is-content is-dashboard-trend"/);
+
   assert.match(indexHtml, /id="home-allocation"/);
-  assert.match(indexHtml, /id="holdings-grid" class="acadia-muted-panel mercury-home-assets-list" role="list"/);
+  assert.match(indexHtml, /id="holdings-grid" class="acadia-device-grid"[^>]*role="list"/);
   assert.match(indexHtml, /id="history-building"/);
   assert.doesNotMatch(indexHtml, /--acadia-card-trend-height: 16rem/);
   assert.match(indexHtml, /id="holdings-count"/);
-  assert.match(indexHtml, /id="history-start-date"/);
-  assert.match(indexHtml, /id="history-end-date"/);
-  assert.match(indexHtml, /id="history-latest-value"/);
-  assert.match(indexHtml, /id="history-available-since"/);
-  assert.match(indexHtml, /id="view-portfolio"[^>]*href="#portfolio"[^>]*>View portfolio/);
   assert.doesNotMatch(indexHtml.slice(indexHtml.indexOf('id="home-workspace"'), indexHtml.indexOf('id="portfolio-workspace"')), /id="add-asset"/);
   assert.doesNotMatch(indexHtml, /id="target-status"|Portfolio targets/);
   assert.doesNotMatch(indexHtml, /id="account-filter"/);
@@ -130,15 +127,15 @@ test("Home uses genuine performance history and ranks holdings with properties",
   assert.match(homeSource, /acadia-card-trend-baseline/);
   assert.match(homeSource, /kind: "property"/);
   assert.match(homeSource, /propertyEquityCents\(model\)/);
-  assert.match(homeSource, /mercury-home-asset-row/);
-  assert.match(homeSource, /mercury-home-asset-rank/);
+  assert.match(homeSource, /acadia-asset-preview-card/);
+  assert.doesNotMatch(styles, /#home-workspace|mercury-home|mercury-command-grid/);
+  assert.match(indexHtml, /id="home-add-asset"/);
   assert.match(homeSource, /Retirement/);
   assert.match(homeSource, /Crypto/);
   assert.match(homeSource, /Brokerage/);
   assert.match(homeSource, /Manual valuation/);
   assert.match(homeSource, /Market value/);
   assert.match(homeSource, /Mortgage/);
-  assert.match(homeSource, /`\$\{topAssets\.length\} of \$\{candidates\.length\} shown`/);
   assert.doesNotMatch(homeSource, /holdingFilter|holdingSort|matchingHoldingRows|renderHoldingFilters/);
   assert.match(homeSource, /summarizePerformance/);
   assert.match(homeSource, /data-performance-period/);
@@ -148,7 +145,6 @@ test("Home uses genuine performance history and ranks holdings with properties",
   assert.match(homeSource, /event\.key === "Home"/);
   assert.match(homeSource, /event\.key === "End"/);
   assert.match(homeSource, /historyDateLabel\(performance\.startDate\)/);
-  assert.match(homeSource, /allHistory\.startDate/);
   assert.doesNotMatch(homeSource, /S&P 500/);
   assert.match(homeSource, /summary\.totalDayChangeCents/);
   assert.match(homeSource, /summary\.totalDayChangeRate/);
@@ -171,8 +167,6 @@ test("large currency display values use the shared compact format", () => {
   assert.match(homeSource, /setMovement\("#metric-change-rate", dailyMovementComplete \? summary\.totalDayChangeRate/);
   assert.match(homeSource, /function planningPosition/);
   assert.match(homeSource, /summarizePlanningPosition/);
-  assert.match(styles, /grid-template-columns: repeat\(12, minmax\(0, 1fr\)\)/);
-  assert.match(styles, /@media \(min-width: 80rem\)/);
   assert.match(homeSource, /row\.distributionYieldRate/);
   assert.match(homeSource, /annual_dividend_cents/);
   assert.match(homeSource, /valueBadge\(valueCents\)[\s\S]*displayCurrency/);
@@ -293,7 +287,7 @@ test("Plan is a separate Base-plan projection workspace with aligned portfolio c
   assert.match(indexHtml, /id="plan-assumptions-dialog"/);
   assert.match(indexHtml, /id="property-dialog"/);
   assert.match(indexHtml, /<script src="plan\.js\?v=20260904-portfolio-dashboard-v1"><\/script>/);
-  assert.match(indexHtml, /<script src="brokerage\.js\?v=20260905-flow-recovery-v1"><\/script>/);
+  assert.match(indexHtml, /<script src="brokerage\.js\?v=20260905-home-minimal-v1"><\/script>/);
   assert.match(homeSource, /function routePlan\(\)/);
   assert.match(homeSource, /function renderPlan\(summary\)/);
   assert.match(homeSource, /function renderPlanChart/);

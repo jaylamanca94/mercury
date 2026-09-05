@@ -43,6 +43,7 @@ test('signed-out route changes show only authentication and disable private crea
     assert.equal(node('#auth-panel').hidden,false);
     for(const page of ['home','portfolio','income','plan','asset'])assert.equal(node(`#${page}-workspace`).hidden,true);
     assert.equal(node('#portfolio-add-asset').disabled,true);
+    assert.equal(node('#home-add-asset').disabled,true);
     assert.equal(document.title,'Mercury | Sign in');
   }
 });
