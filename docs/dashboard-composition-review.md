@@ -14,7 +14,18 @@ The approved change gives Home a position/planning/review/evidence hierarchy, Po
 
 Before release, the existing signed-in Safari session loaded the owner's saved Home and Income records, including existing sources and categories. This establishes account/data availability, separately from the isolated implementation checks above.
 
-Commit/push and deployed verification are recorded separately below after delivery. Production writes are intentionally not inferred from isolated persistence tests. Real-device VoiceOver and touch testing remain broader acceptance work; desktop browser viewport and keyboard checks do not establish physical-device acceptance.
+Implementation commit `b6c453a` was pushed to `origin/main`. The production URL served the new dashboard version and its `brokerage.js` SHA-256 matched the committed local asset.
+
+The signed-in Safari deployment review confirmed:
+
+- Home loads saved current investment/property values, the compact four-day history state, four-plus-remainder investment allocation and ranked assets.
+- Home and Income show identical monthly planning components and balance after provider estimates finish loading. Pending coverage remains unavailable while known components stay visible.
+- Income preserves the saved source amount/cadence in a read-mode row; Edit opens an explicit Save/Cancel dialog and Cancel returns without changing the saved values.
+- `#income/budget` loads all existing monthly categories and their shares, with the same planning totals as Overview.
+- Portfolio loads the saved investment and property records, switches to investment-only Table, and resets to Cards after leaving for Plan and revisiting.
+- Plan still renders its existing assumptions and unavailable-projection states where no return assumption is saved.
+
+Production save/delete writes were not performed; isolated persistence checks above cover those flows. Real-device VoiceOver and touch testing remain broader acceptance work; desktop browser viewport and keyboard checks do not establish physical-device acceptance.
 
 ## Repeatable acceptance path
 
