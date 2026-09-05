@@ -33,7 +33,7 @@ test("Home consumes Acadia without a Mercury presentation layer", () => {
   assert.match(indexHtml, /id="main-content" class="acadia-shell acadia-mobile-dock-safe-area"/);
   assert.match(indexHtml, /id="home-workspace" class="acadia-stack mercury-workspace" hidden/);
   assert.match(indexHtml, /id="portfolio-workspace" class="acadia-stack mercury-workspace" hidden aria-live="polite"/);
-  assert.match(indexHtml, /id="income-workspace" class="acadia-stack mercury-workspace" hidden aria-live="polite"/);
+  assert.match(indexHtml, /id="income-workspace" class="acadia-stack mercury-workspace" hidden/);
   assert.match(indexHtml, /id="plan-workspace" class="acadia-stack mercury-workspace" hidden aria-live="polite"/);
   assert.match(indexHtml, /id="asset-workspace" class="acadia-stack mercury-workspace" hidden aria-live="polite"/);
   assert.match(acadiaStyles, /\[data-acadia-page-frame="spacious"\]/);
@@ -50,15 +50,15 @@ test("Mercury preserves the Acadia 24px page-header and Portfolio content rhythm
   assert.doesNotMatch(acadiaStyles, /\.mercury-workspace/);
 });
 
-test("Home follows the Figma composition with a focused Brokerage dashboard", () => {
+test("Home composes position, planning, review and evidence", () => {
   assert.match(indexHtml, /class="acadia-responsive-navbar"/);
-  assert.match(indexHtml, /<section class="acadia-dashboard-main acadia-home-dashboard" aria-label="Brokerage dashboard">/);
+  assert.match(indexHtml, /<section class="mercury-command-grid" aria-label="Brokerage dashboard">/);
   assert.match(indexHtml, /id="metric-value"/);
   assert.match(indexHtml, /id="net-worth-label"[^>]*>Net worth</);
   assert.match(indexHtml, /id="performance-amount"/);
   assert.match(indexHtml, /id="performance-rate"/);
-  assert.match(indexHtml, /id="performance-context"[^>]*>Portfolio change · All time</);
-  assert.match(indexHtml, />Estimated annual growth</);
+  assert.match(indexHtml, /id="performance-context"[^>]*>Portfolio value change · All time</);
+  assert.match(indexHtml, /id="home-planning-balance"/);
   assert.match(indexHtml, />Estimated annual income</);
   assert.match(indexHtml, />Top assets</);
   assert.doesNotMatch(indexHtml, />Dashboard</);
@@ -66,10 +66,11 @@ test("Home follows the Figma composition with a focused Brokerage dashboard", ()
   assert.match(indexHtml, /id="performance-periods" class="acadia-tabs" role="tablist"/);
   assert.match(indexHtml, /data-performance-period="3m"[\s\S]*data-performance-period="6m"[\s\S]*data-performance-period="1y"[\s\S]*data-performance-period="all"/);
   assert.match(indexHtml, /id="history-panel"[^>]*role="tabpanel"/);
-  assert.match(indexHtml, /class="acadia-card is-content is-dashboard-trend mercury-home-trend"/);
-  assert.match(indexHtml, /id="home-metric-strip" class="acadia-muted-panel mercury-home-metric-strip"/);
+  assert.match(indexHtml, /class="acadia-card is-content mercury-position"/);
+  assert.match(indexHtml, /id="home-review-list"/);
+  assert.match(indexHtml, /id="home-allocation"/);
   assert.match(indexHtml, /id="holdings-grid" class="acadia-muted-panel mercury-home-assets-list" role="list"/);
-  assert.match(indexHtml, /class="acadia-chart-legend"[\s\S]*>Portfolio</);
+  assert.match(indexHtml, /id="history-building"/);
   assert.doesNotMatch(indexHtml, /--acadia-card-trend-height: 16rem/);
   assert.match(indexHtml, /id="holdings-count"/);
   assert.match(indexHtml, /id="history-start-date"/);
@@ -123,7 +124,7 @@ test("Mercury composes the complete Acadia responsive Navbar", () => {
 });
 
 test("Home uses genuine performance history and ranks holdings with properties", () => {
-  assert.match(homeSource, /snapshots\.length < 2/);
+  assert.match(homeSource, /if \(!performance\.showTrend\)/);
   assert.match(homeSource, /slice\(0, 4\)/);
   assert.match(homeSource, /acadia-card-trend-chart/);
   assert.match(homeSource, /acadia-card-trend-baseline/);
@@ -163,21 +164,16 @@ test("large currency display values use the shared compact format", () => {
   assert.match(homeSource, /millionCurrency\.format\(value\)/);
   assert.match(homeSource, /\[KMBT\]/);
   assert.match(homeSource, /function currentNetWorthCents\(summary\)/);
-  assert.match(homeSource, /if \(!state\.propertiesAvailable\) return null/);
+  assert.match(homeSource, /if \(!state\.propertiesAvailable \|\| summary\.rows\.length !== state\.holdings\.length\) return null/);
   assert.match(homeSource, /totalNetWorthCents\(summary\.totalMarketValueCents, state\.properties\.map\(propertyModel\)\)/);
   assert.match(homeSource, /netWorthCents === null \? "Not set" : displayCurrency\(netWorthCents \/ 100\)/);
-  assert.match(homeSource, /setMovement\("#metric-change-value", summary\.totalDayChangeCents/);
-  assert.match(homeSource, /setMovement\("#metric-change-rate", summary\.totalDayChangeRate/);
-  assert.match(homeSource, /"#metric-estimated-growth"/);
-  assert.match(homeSource, /summary\.totalEstimatedAnnualGrowthCents/);
-  assert.match(homeSource, /summary\.estimatedAnnualGrowthRate/);
-  assert.match(homeSource, /setNeutralMetric\("#metric-estimated-growth-rate"/);
-  assert.match(homeSource, /setNeutralMetric\("#metric-income-yield"/);
-  assert.match(indexHtml, /Estimated annual growth/);
-  assert.match(styles, /\.mercury-home-trend \{[\s\S]*--acadia-dashboard-trend-card-height: auto/);
-  assert.match(styles, /\.mercury-home-metric-strip[\s\S]*grid-template-columns: repeat\(3/);
-  assert.match(styles, /@media \(max-width: 47\.98rem\)[\s\S]*\.mercury-home-trend \{[\s\S]*min-block-size: 20rem/);
-  assert.match(homeSource, /summary\.distributionYieldRate/);
+  assert.match(homeSource, /setMovement\("#metric-change-value", dailyMovementComplete \? summary\.totalDayChangeCents/);
+  assert.match(homeSource, /setMovement\("#metric-change-rate", dailyMovementComplete \? summary\.totalDayChangeRate/);
+  assert.match(homeSource, /function planningPosition/);
+  assert.match(homeSource, /summarizePlanningPosition/);
+  assert.match(styles, /grid-template-columns: repeat\(12, minmax\(0, 1fr\)\)/);
+  assert.match(styles, /@media \(min-width: 80rem\)/);
+  assert.match(homeSource, /row\.distributionYieldRate/);
   assert.match(homeSource, /annual_dividend_cents/);
   assert.match(homeSource, /valueBadge\(valueCents\)[\s\S]*displayCurrency/);
   assert.match(homeSource, /setText\("#asset-total-value", row \? displayCurrency/);
@@ -201,7 +197,7 @@ test("holding cards compact large share counts while preserving fractional share
   assert.match(homeSource, /function displayCardShares\(value\)/);
   assert.match(homeSource, /if \(absolute < 1000\)/);
   assert.match(homeSource, /Math\.trunc\(\(shares \/ divisor\) \* 10\) \/ 10/);
-  assert.match(homeSource, /`\$\{displayCardShares\(row\.asset\.shares\)\} shares`/);
+  assert.match(homeSource, /displayCardShares\(row\.asset\.shares\)/);
 });
 
 test("Portfolio cards show the Figma return and dividend-yield metrics without changing Home cards", () => {
@@ -223,9 +219,9 @@ test("Portfolio cards show the Figma return and dividend-yield metrics without c
   assert.doesNotMatch(homeSource, /fa-chart-line/);
   assert.doesNotMatch(homeSource, /fa-coins/);
   assert.match(homeSource, /returnShortLabel/);
-  assert.match(homeSource, />Yield \$\{escapeHtml\(metrics\.yieldValue\)\}/);
+  assert.match(homeSource, />Yield<\/dt><dd>\$\{escapeHtml\(metrics\.yieldValue\)\}/);
   assert.doesNotMatch(homeRenderer, /showMetrics: true/);
-  assert.match(portfolioRenderer, /renderHoldingCards\(grid, rows, \{ showMetrics: true \}\)/);
+  assert.match(portfolioRenderer, /renderHoldingCards\(grid, rows\)/);
   assert.match(homeSource, /function hydrateProviderMetrics\(\)/);
   assert.match(homeSource, /includeMetrics: true/);
   assert.match(homeSource, /providerMetricsPending/);
@@ -233,21 +229,21 @@ test("Portfolio cards show the Figma return and dividend-yield metrics without c
 
 test("Income is a functional planning workspace with live dividend coverage and saved recurring sources", () => {
   const incomeWorkspace = indexHtml.slice(indexHtml.indexOf('<section id="income-workspace"'), indexHtml.indexOf('<section id="plan-workspace"'));
-  assert.match(incomeWorkspace, /Planning view · Expected income, not bank-confirmed deposits/);
+  assert.match(incomeWorkspace, /Planning estimates: expected gross amounts/);
   assert.match(incomeWorkspace, /id="income-periods"/);
   assert.match(incomeWorkspace, /data-income-period="year"/);
   assert.match(incomeWorkspace, /data-income-period="month"/);
   assert.match(incomeWorkspace, /id="income-expenses"/);
-  assert.match(incomeWorkspace, /Expenses/);
-  assert.match(incomeWorkspace, /Total income/);
-  assert.match(incomeWorkspace, /Earned income/);
-  assert.match(incomeWorkspace, /Passive income/);
+  assert.match(incomeWorkspace, /Planned spending/);
+  assert.match(incomeWorkspace, /Expected income/);
+  assert.match(incomeWorkspace, /Earned &amp; other income/);
+  assert.match(incomeWorkspace, /Estimated dividends/);
   assert.match(incomeWorkspace, /id="income-dividend-sort"/);
   assert.match(incomeWorkspace, /id="income-dividends-grid"/);
   assert.match(incomeWorkspace, /id="income-sources-grid"/);
-  assert.match(incomeWorkspace, /id="income-budget"/);
+  assert.match(incomeWorkspace, /id="income-budget-panel"/);
   assert.match(incomeWorkspace, /id="income-budget-list"/);
-  assert.match(incomeWorkspace, /Monthly Expenses/);
+  assert.match(incomeWorkspace, /Monthly amount/);
   assert.match(incomeWorkspace, /id="add-budget-category"/);
   assert.match(indexHtml, /id="income-source-dialog"/);
   assert.match(indexHtml, /id="delete-income-source-dialog"/);
@@ -261,12 +257,17 @@ test("Income is a functional planning workspace with live dividend coverage and 
   assert.match(homeSource, /state\.client\.from\("income_sources"\)/);
   assert.match(homeSource, /state\.client\.from\("budget_categories"\)/);
   assert.match(homeSource, /summarizeBudgetCategories/);
-  assert.match(homeSource, /saveBudgetCategoryInline/);
+  assert.doesNotMatch(homeSource, /saveBudgetCategoryInline|saveIncomeSourceInline/);
+  assert.match(homeSource, /data-edit-income-source/);
+  assert.match(homeSource, /data-edit-budget-category/);
+  assert.match(incomeWorkspace, /id="income-view-tabs"[^>]*role="tablist"/);
+  assert.match(homeSource, /#income\/budget/);
+  assert.doesNotMatch(incomeWorkspace, /id="income-search"/);
   assert.match(homeSource, /openDeleteBudgetCategoryDialog/);
   assert.match(homeSource, /openDeleteIncomeSourceDialog/);
   assert.match(homeSource, /data-income-dividend-sort/);
-  assert.match(styles, /\.mercury-budget-card/);
-  assert.match(styles, /\.mercury-budget-row/);
+  assert.match(styles, /\.mercury-comparison-table/);
+  assert.match(styles, /\.mercury-income-source-row/);
   assert.match(styles, /@media \(max-width: 47\.98rem\)/);
   assert.match(readme, /monthly category-level spending limits/);
   assert.match(personalFinancePivot, /category-level only/);
@@ -292,7 +293,7 @@ test("Plan is a separate Base-plan projection workspace with aligned portfolio c
   assert.match(indexHtml, /id="plan-assumptions-dialog"/);
   assert.match(indexHtml, /id="property-dialog"/);
   assert.match(indexHtml, /<script src="plan\.js\?v=20260904-portfolio-dashboard-v1"><\/script>/);
-  assert.match(indexHtml, /<script src="brokerage\.js\?v=20260904-home-refinement-v3"><\/script>/);
+  assert.match(indexHtml, /<script src="brokerage\.js\?v=20260904-dashboard-v4"><\/script>/);
   assert.match(homeSource, /function routePlan\(\)/);
   assert.match(homeSource, /function renderPlan\(summary\)/);
   assert.match(homeSource, /function renderPlanChart/);
@@ -395,7 +396,7 @@ test("Portfolio investments switch between shared Cards and Table presentations"
   assert.match(homeSource, /portfolioView: "cards"/);
   assert.match(homeSource, /function renderPortfolioView\(hasRows\)/);
   assert.match(homeSource, /function renderPortfolioTable\(rows\)/);
-  assert.match(homeSource, /renderHoldingCards\(grid, rows, \{ showMetrics: true \}\);\s*renderPortfolioTable\(rows\);/);
+  assert.match(homeSource, /renderHoldingCards\(grid, rows\);\s*renderPortfolioTable\(rows\);/);
   assert.match(homeSource, /state\.portfolioView === "table"/);
   assert.match(homeSource, /data-portfolio-table-sort-heading/);
   assert.match(homeSource, /state\.portfolioSort === "name" \? "ascending" : "descending"/);
@@ -417,13 +418,13 @@ test("Portfolio investments switch between shared Cards and Table presentations"
 test("Portfolio uses a concise ownership summary, attached investment toolbar, recurring rows, and labelled property values", () => {
   const portfolioWorkspace = indexHtml.slice(indexHtml.indexOf('<section id="portfolio-workspace"'), indexHtml.indexOf('<section id="income-workspace"'));
 
-  assert.match(portfolioWorkspace, /id="portfolio-summary" class="acadia-muted-panel mercury-portfolio-summary"/);
+  assert.match(portfolioWorkspace, /id="portfolio-summary" class="mercury-portfolio-summary mercury-metric-band"/);
   assert.match(portfolioWorkspace, /id="portfolio-summary-investments"/);
   assert.match(portfolioWorkspace, /id="portfolio-summary-property-equity"/);
   assert.match(portfolioWorkspace, /id="portfolio-summary-recurring-weekly"/);
   assert.match(portfolioWorkspace, /id="portfolio-investments-toolbar" class="acadia-toolbar acadia-muted-panel mercury-portfolio-toolbar"/);
   assert.match(portfolioWorkspace, /id="portfolio-search" type="search" placeholder="Search assets"/);
-  assert.match(portfolioWorkspace, /id="portfolio-holdings-grid" class="acadia-grid mercury-portfolio-card-grid" style="--acadia-grid-columns: 2"/);
+  assert.match(portfolioWorkspace, /id="portfolio-holdings-grid" class="acadia-grid mercury-portfolio-card-grid"/);
   assert.match(portfolioWorkspace, /id="portfolio-recurring"/);
   assert.match(portfolioWorkspace, /id="portfolio-recurring-total"/);
   assert.match(portfolioWorkspace, /id="portfolio-recurring-list"/);
@@ -438,7 +439,7 @@ test("Portfolio uses a concise ownership summary, attached investment toolbar, r
   assert.match(homeSource, />Equity</);
   assert.match(homeSource, /returnShortLabel: Number\.isFinite\(years\)/);
   assert.match(homeSource, /\? "5" : years\}Y return/);
-  assert.match(homeSource, />Yield /);
+  assert.match(homeSource, />Yield<\/dt>/);
   assert.match(styles, /\.mercury-portfolio-summary[\s\S]*grid-template-columns: repeat\(3, minmax\(0, 1fr\)\)/);
   assert.match(styles, /\.mercury-portfolio-toolbar[\s\S]*grid-template-columns: minmax\(14rem, 1fr\) auto/);
   assert.match(styles, /@media \(max-width: 47\.98rem\)[\s\S]*\.mercury-portfolio-summary \{\s*grid-template-columns: 1fr;/);

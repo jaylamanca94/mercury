@@ -1,6 +1,6 @@
 # Mercury
 
-Mercury is a private personal-finance workspace. Home is the active daily briefing: a visibly labelled Net worth headline combines investments and property equity, while the compact chart and selected-period change remain portfolio-only. Authentic snapshot dates and latest plotted value explain the chart; a shallow strip separates prior-close movement from neutral annual growth and income estimates; and a ranked four-row Top assets list leads into Portfolio. Portfolio is the source-of-truth holdings workspace: an unfiltered Investments, Property equity, and weekly-equivalent Recurring summary leads into investment-only search, filters, sorting, quick add, and matching Cards or Table views for investments. Recurring schedules use compact rows and Property remains explicitly labelled and card-based. Income is a planning view for expected recurring gross income, live portfolio dividend estimates, and monthly category-level spending limits; it does not represent bank-confirmed activity or track individual expenses. Plan is a single illustrative Base plan that projects portfolio value and projected portfolio income from current holdings, recurring investment amounts, and its own saved assumptions.
+Mercury is a private personal-finance workspace. Home answers where the owner stands and what deserves review: current net worth, monthly planning, factual coverage/history items, investment allocation and four ranked assets. Portfolio presents an unfiltered investment/property/weekly-equivalent Recurring summary, allocation, and matching Cards or Table views for investments; search and filters affect records only. Income opens a monthly planning Overview with gross recurring sources, estimated dividends and explicit Edit dialogs; `#income/budget` opens monthly category-level spending limits. Planned balance subtracts planned spending and investing from expected income and is never presented as spendable cash. Plan remains a single illustrative Base plan with its existing assumptions and projections.
 
 ## Setup
 
@@ -32,6 +32,7 @@ No package installation is needed for the dependency-free checks.
 
 ## Key files
 
+- `dashboard.js` — pure shared planning, investment allocation and distinct-date history calculations.
 - `index.html`, `brokerage.js` — the private Home dashboard, hash-routed Portfolio, Income, and Plan workspaces, Asset pages, and simplified entry flows.
 - `acadia.css`, `fonts/` — the canonical Acadia stylesheet and font assets, vendored unchanged; `styles.css` adds only narrow Mercury page compositions. The shared `wide` plus `spacious` frame aligns Home, Portfolio and Asset desktop rails at 148px while retaining Acadia's smaller-device gutters.
 - `portfolio.js`, `income.js`, `plan.js` — cent-based portfolio, recurring-income, monthly spending-plan, and Base-plan calculation contracts, also exposed to the browser.

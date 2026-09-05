@@ -27,6 +27,7 @@
     totalNetWorthCents,
     weeklyEquivalentRecurringContributionCents,
   } = window.MercuryPlan;
+  const { summarizePlanningPosition, summarizeHoldingAllocation, summarizeDashboardHistory } = window.MercuryDashboard;
   const $ = (selector) => document.querySelector(selector);
   const currency = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 });
   const compactCurrency = new Intl.NumberFormat("en-US", {
@@ -43,7 +44,7 @@
   const wholePercentage = new Intl.NumberFormat("en-US", { style: "percent", maximumFractionDigits: 0 });
   const state = {
     client: null, user: null, account: null, accounts: [], holdings: [], quotes: [], snapshots: [], incomeSources: [], incomeSourcesAvailable: true, budgetCategories: [], budgetCategoriesAvailable: true, planSettings: null, properties: [], propertiesAvailable: true, planDataAvailable: true,
-    providerMetrics: {}, providerMetricsPending: new Set(), configured: false, pendingQuote: null, quoteTimer: null, quoteRequestId: 0, portfolioFilter: "all", portfolioSort: "value", portfolioView: "cards", propertySort: "value", performancePeriod: "all", incomePeriod: "year", incomeDividendSort: "value", planHorizon: 10, incomeSourceDialogId: null, incomeSourceDeleteId: null, budgetCategoryDialogId: null, budgetCategoryDeleteId: null, propertyDialogId: null, propertyDeleteId: null,
+    providerMetrics: {}, providerMetricsPending: new Set(), configured: false, pendingQuote: null, quoteTimer: null, quoteRequestId: 0, portfolioFilter: "all", portfolioSort: "value", portfolioView: "cards", propertySort: "value", performancePeriod: "all", incomePeriod: "month", incomeDividendSort: "value", planHorizon: 10, incomeSourceDialogId: null, incomeSourceDeleteId: null, budgetCategoryDialogId: null, budgetCategoryDeleteId: null, propertyDialogId: null, propertyDeleteId: null,
   };
 
   function cents(value) {
@@ -117,13 +118,6 @@
     element.classList.toggle("is-danger", isAvailable && value < 0);
     element.classList.toggle("is-neutral", !isAvailable || value === 0);
   }
-  function setNeutralMetric(selector, value, formatter) {
-    const element = $(selector);
-    const isAvailable = Number.isFinite(value);
-    element.hidden = !isAvailable;
-    if (isAvailable) element.textContent = formatter(value);
-    element.classList.remove("is-positive", "is-danger", "is-warning");
-  }
   function escapeHtml(value) {
     return String(value ?? "").replace(/[&<>"']/g, (character) => ({
       "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;",
@@ -143,7 +137,7 @@
     return match ? decodeURIComponent(match[1]) : null;
   }
   function routePortfolio() { return window.location.hash === "#portfolio"; }
-  function routeIncome() { return window.location.hash === "#income"; }
+  function routeIncome() { return ["#income", "#income/budget"].includes(window.location.hash); }
   function routePlan() { return window.location.hash === "#plan"; }
   function navigateToAsset(id) { window.location.hash = `asset/${encodeURIComponent(id)}`; }
   function navigateHome() { window.location.hash = ""; }
@@ -227,7 +221,7 @@
     const periodLabels = { all: "All time", "1y": "1 year", "6m": "6 months", "3m": "3 months" };
     document.querySelectorAll("[data-performance-period]").forEach((control) => {
       const period = control.dataset.performancePeriod;
-      const hasHistory = summarizePerformance(state.snapshots, period).snapshots.length >= 2;
+      const hasHistory = summarizeDashboardHistory(state.snapshots, period).recordedDays > 0;
       const isActive = state.performancePeriod === period;
       control.disabled = !hasHistory;
       control.classList.toggle("is-active", isActive);
@@ -236,7 +230,7 @@
     });
     const activeTab = document.querySelector(`[data-performance-period="${state.performancePeriod}"]`);
     $("#history-panel").setAttribute("aria-labelledby", activeTab.id);
-    setText("#performance-context", `Portfolio change · ${periodLabels[state.performancePeriod]}`);
+    setText("#performance-context", `Portfolio value change · ${periodLabels[state.performancePeriod]}`);
   }
   function selectPerformancePeriod(period, { focus = false } = {}) {
     const control = document.querySelector(`[data-performance-period="${period}"]`);
@@ -258,40 +252,37 @@
     event.preventDefault();
     selectPerformancePeriod(enabledTabs[nextIndex].dataset.performancePeriod, { focus: true });
   }
+  function movementCurrency(value) {
+    return `${value > 0 ? "Up" : value < 0 ? "Down" : "No change"} ${displayCurrency(Math.abs(value) / 100)}`;
+  }
   function renderHistory() {
     const trend = $("#history-trend");
-    const performance = summarizePerformance(state.snapshots, state.performancePeriod);
-    const snapshots = performance.snapshots;
-    const allHistory = summarizePerformance(state.snapshots, "all");
+    const performance = summarizeDashboardHistory(state.snapshots, state.performancePeriod);
+    const allHistory = summarizeDashboardHistory(state.snapshots, "all");
     renderPerformancePeriods();
     setMovement("#performance-rate", performance.changeRate, (value) => `(${displaySignedPercentage(value)})`, { hideWhenUnavailable: true });
-    setMovement("#performance-amount", performance.changeCents, displaySignedCurrency, { hideWhenUnavailable: true });
+    setMovement("#performance-amount", performance.changeCents, movementCurrency, { hideWhenUnavailable: true });
     setText("#history-start-date", historyDateLabel(performance.startDate));
     setText("#history-end-date", historyDateLabel(performance.endDate));
-    setText("#history-latest-value", Number.isSafeInteger(performance.latestValueCents)
-      ? displayCurrency(performance.latestValueCents / 100)
-      : "—");
-    setText("#history-available-since", allHistory.startDate
-      ? `History available since ${historyDateLabel(allHistory.startDate)}`
-      : "History not available yet");
-    if (snapshots.length < 2) {
-      trend.innerHTML = '<span class="acadia-card-trend-empty">History appears after two New York daily snapshots.</span>';
-      trend.setAttribute("aria-label", "Portfolio performance unavailable until two daily snapshots exist");
-      setText("#history-summary", allHistory.startDate
-        ? `History is available since ${historyDateLabel(allHistory.startDate)}, and a performance trend appears after two daily snapshots.`
-        : "A performance trend appears after two New York daily snapshots.");
+    setText("#history-latest-value", Number.isSafeInteger(performance.latestValueCents) ? displayCurrency(performance.latestValueCents / 100) : "—");
+    setText("#history-available-since", allHistory.startDate ? `Recording since ${historyDateLabel(allHistory.startDate)}` : "No recorded history yet");
+    $("#history-building").hidden = performance.showTrend;
+    trend.hidden = !performance.showTrend;
+    setText("#history-building", `History building · ${performance.recordedDays} ${performance.recordedDays === 1 ? "day" : "days"} recorded`);
+    if (!performance.showTrend) {
+      trend.replaceChildren();
+      setText("#history-summary", `${performance.recordedDays} distinct daily snapshots in this range. The full trend appears after 30 recorded days. Portfolio snapshots exclude property equity.`);
       return performance;
     }
-    const values = snapshots.map((snapshot) => snapshot.totalValueCents / 100);
-    const minimum = Math.min(...values);
-    const maximum = Math.max(...values);
-    const range = maximum - minimum || 1;
-    const points = values.map((value, index) => `${(index / (values.length - 1)) * 100},${96 - ((value - minimum) / range) * 84}`);
+    const values = performance.snapshots.map((point) => point.totalValueCents / 100);
+    const minimum = Math.min(...values), maximum = Math.max(...values);
+    const range = maximum - minimum;
+    const points = values.map((value, index) => `${performance.positions[index]},${range ? 96 - ((value - minimum) / range) * 84 : 50}`);
     const area = `0,100 ${points.join(" ")} 100,100`;
     const startY = points[0].split(",")[1];
     trend.innerHTML = `<svg class="acadia-card-trend-chart is-primary" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><polyline class="acadia-card-trend-baseline" points="0,${startY} 100,${startY}"></polyline><polygon class="acadia-card-trend-area" points="${area}"></polygon><polyline class="acadia-card-trend-line" points="${points.join(" ")}"></polyline></svg>`;
-    const summary = `${historyDateLabel(performance.startDate)} ${currency.format(values[0])} to ${historyDateLabel(performance.endDate)} ${currency.format(values.at(-1))}; latest portfolio value ${displayCurrency(performance.latestValueCents / 100)}`;
-    trend.setAttribute("aria-label", `Portfolio performance: ${summary}.`);
+    const summary = `${movementCurrency(performance.changeCents)}${performance.changeRate === null ? "" : ` (${displaySignedPercentage(performance.changeRate)})`} from ${historyDateLabel(performance.startDate)} to ${historyDateLabel(performance.endDate)}. Recorded portfolio value ${currency.format(values[0])} to ${currency.format(values.at(-1))}. Value changes include contributions and withdrawals; property equity is excluded.`;
+    trend.setAttribute("aria-label", summary);
     setText("#history-summary", summary);
     return performance;
   }
@@ -393,6 +384,7 @@
     navigateToAsset(card.dataset.holdingId);
   }
   function keyOpenHolding(event) {
+    if (event.target !== event.currentTarget) return;
     if (event.key === "Enter" || event.key === " ") {
       event.preventDefault();
       navigateToAsset(event.currentTarget.dataset.holdingId);
@@ -400,23 +392,13 @@
   }
   function holdingCardMetrics(row) {
     const metrics = holdingMetricSummary(row);
-    const returnTone = metrics.returnRate === null
-      ? ""
-      : metrics.returnRate < 0 ? " is-negative" : metrics.returnRate > 0 ? " is-positive" : "";
-    const yieldMarkup = metrics.hasYield
-      ? `<span aria-label="${escapeHtml(metrics.yieldLabel)}: ${escapeHtml(metrics.yieldValue)}">Yield ${escapeHtml(metrics.yieldValue)}</span>`
-      : "";
-    return `<p class="mercury-holding-card-metrics" aria-label="Investment metrics"><span class="mercury-metric-movement${returnTone}" aria-label="${escapeHtml(metrics.returnLabel)}: ${escapeHtml(metrics.returnValue)}">${escapeHtml(metrics.returnShortLabel)} ${escapeHtml(metrics.returnValue)}</span>${yieldMarkup ? '<span class="mercury-metric-separator" aria-hidden="true">·</span>' : ""}${yieldMarkup}</p>`;
+    const price = row.asset.valuationBasis === VALUATION_BASES.MANUAL_VALUE ? "Manual value" : displayCardPrice(row.asset.unitPriceCents);
+    const shares = row.asset.shares === null ? "—" : displayCardShares(row.asset.shares);
+    return `<dl class="mercury-holding-comparison"><div><dt>Price</dt><dd>${escapeHtml(price)}</dd></div><div><dt>Shares</dt><dd>${escapeHtml(shares)}</dd></div><div><dt title="${escapeHtml(metrics.returnLabel)}">${escapeHtml(metrics.returnShortLabel)}</dt><dd>${escapeHtml(metrics.returnValue)}</dd></div><div><dt title="${escapeHtml(metrics.yieldLabel)}">Yield</dt><dd>${escapeHtml(metrics.yieldValue)}</dd></div></dl>`;
   }
-  function renderHoldingCards(grid, rows, { showMetrics = false } = {}) {
+  function renderHoldingCards(grid, rows) {
     grid.replaceChildren(...rows.map((row) => {
       const holding = state.holdings.find((entry) => entry.id === row.asset.id);
-      const price = row.asset.valuationBasis === VALUATION_BASES.MANUAL_VALUE
-        ? "Manual value"
-        : row.asset.unitPriceCents === null
-          ? "Needs price"
-          : displayCardPrice(row.asset.unitPriceCents);
-      const shares = row.asset.shares === null ? "" : `${displayCardShares(row.asset.shares)} shares`;
       const retirement = row.asset.isRetirement
         ? '<span class="acadia-badge acadia-badge-grey acadia-badge-round acadia-badge-small">Retirement</span>'
         : "";
@@ -425,7 +407,7 @@
       card.dataset.holdingId = holding.id;
       card.tabIndex = 0;
       card.setAttribute("aria-label", `Open ${row.asset.symbol || row.asset.name}`);
-      card.innerHTML = `<div class="acadia-card-actions" role="group" aria-label="Actions for ${escapeHtml(row.asset.symbol || row.asset.name)}"><details class="acadia-action-menu"><summary class="acadia-action-menu-trigger acadia-icon-action" aria-label="Actions for ${escapeHtml(row.asset.symbol || row.asset.name)}"><i class="fa-solid fa-ellipsis acadia-icon" aria-hidden="true"></i></summary><div class="acadia-action-menu-panel"><button class="acadia-action-menu-item" type="button" data-edit-id="${escapeHtml(holding.id)}">Edit details</button></div></details></div><div class="acadia-card-header"><div class="acadia-card-content-title-row"><h3>${escapeHtml(row.asset.symbol || row.asset.name)}</h3>${retirement}</div><p>${escapeHtml(row.asset.name || instrumentLabel(row.asset.instrumentType))}</p></div><div class="acadia-card-content"><p class="mercury-holding-card-primary"><span><strong>${escapeHtml(price)}</strong>${price === "Manual value" || price === "Needs price" ? "" : " price"}</span>${shares ? '<span class="mercury-metric-separator" aria-hidden="true">·</span>' : ""}${shares ? `<span>${escapeHtml(shares)}</span>` : ""}</p>${showMetrics ? holdingCardMetrics(row) : ""}<p class="mercury-holding-card-value"><span>Value</span><strong>${escapeHtml(displayCurrency(row.marketValueCents / 100))}</strong></p></div>`;
+      card.innerHTML = `<div class="acadia-card-actions" role="group" aria-label="Actions for ${escapeHtml(row.asset.symbol || row.asset.name)}"><details class="acadia-action-menu"><summary class="acadia-action-menu-trigger acadia-icon-action" aria-label="Actions for ${escapeHtml(row.asset.symbol || row.asset.name)}"><i class="fa-solid fa-ellipsis acadia-icon" aria-hidden="true"></i></summary><div class="acadia-action-menu-panel"><button class="acadia-action-menu-item" type="button" data-edit-id="${escapeHtml(holding.id)}">Edit details</button></div></details></div><div class="acadia-card-header"><div class="acadia-card-content-title-row"><h3>${escapeHtml(row.asset.symbol || row.asset.name)}</h3>${retirement}</div><p>${escapeHtml(row.asset.name || instrumentLabel(row.asset.instrumentType))}</p></div><div class="acadia-card-content"><p class="mercury-holding-card-value"><span>Value</span><strong>${escapeHtml(displayCurrency(row.marketValueCents / 100))}</strong></p>${holdingCardMetrics(row)}</div>`;
       card.addEventListener("click", openHoldingFromEvent);
       card.addEventListener("keydown", keyOpenHolding);
       return card;
@@ -511,7 +493,7 @@
   function renderPortfolioSummary(summary) {
     const recurringAssets = recurringPortfolioAssets();
     const weeklyEquivalentCents = weeklyEquivalentRecurringContributionCents(recurringAssets);
-    setText("#portfolio-summary-investments", displayCurrency(summary.totalMarketValueCents / 100));
+    setText("#portfolio-summary-investments", summary.rows.length === state.holdings.length ? displayCurrency(summary.totalMarketValueCents / 100) : "Not set");
     setText("#portfolio-summary-property-equity", state.propertiesAvailable
       ? displayCurrency(totalPropertyEquity() / 100)
       : "Not set");
@@ -616,7 +598,7 @@
     const matchingRows = matchingPortfolioHoldingRows(summary);
     const rows = sortHoldingRows(matchingRows, state.portfolioSort);
     const grid = $("#portfolio-holdings-grid");
-    renderHoldingCards(grid, rows, { showMetrics: true });
+    renderHoldingCards(grid, rows);
     renderPortfolioTable(rows);
     renderPortfolioView(rows.length > 0);
     setText("#portfolio-holdings-count", `${matchingRows.length} ${matchingRows.length === 1 ? "asset" : "assets"}`);
@@ -645,7 +627,7 @@
     return totalPropertyEquityCents(state.properties.map(propertyModel));
   }
   function currentNetWorthCents(summary) {
-    if (!state.propertiesAvailable) return null;
+    if (!state.propertiesAvailable || summary.rows.length !== state.holdings.length) return null;
     return totalNetWorthCents(summary.totalMarketValueCents, state.properties.map(propertyModel));
   }
   function matchingProperties() {
@@ -704,6 +686,35 @@
     }
   }
 
+  function planningPosition(summary, period) {
+    const completeValuations = summary.rows.length === state.holdings.length;
+    return summarizePlanningPosition({
+      sources: state.incomeSources.map(incomeSourceModel), categories: state.budgetCategories.map(budgetCategoryModel),
+      holdings: state.holdings.map(holdingAsset), passiveAnnualCents: summary.totalEstimatedAnnualIncomeCents,
+      sourcesAvailable: state.configured && state.incomeSourcesAvailable, categoriesAvailable: state.configured && state.budgetCategoriesAvailable,
+      holdingsAvailable: state.configured && Boolean(state.account), passiveAvailable: state.configured && Boolean(state.account) && completeValuations && state.providerMetricsPending.size === 0,
+      period,
+    });
+  }
+  function planningValue(value) { return Number.isSafeInteger(value) ? (value % 100 === 0 ? currency : preciseCurrency).format(value / 100) : "Not set"; }
+  function renderAllocation(selector) {
+    const allocation = summarizeHoldingAllocation(state.holdings.map(holdingAsset));
+    const node = $(selector);
+    const coverage = allocation.unvaluedCount ? `${allocation.unvaluedCount} ${allocation.unvaluedCount === 1 ? "holding has" : "holdings have"} no valuation. Shares use valued investments only.` : "Shares of investment value. Property equity is separate.";
+    node.innerHTML = allocation.rows.length ? `<div class="mercury-allocation-rows">${allocation.rows.map((row) => `<div class="acadia-card-progress"><div class="acadia-card-progress-heading"><span>${escapeHtml(row.name)}</span><span class="mercury-allocation-amount">${escapeHtml(planningValue(row.valueCents))}<span>${percentage.format(row.allocationRate)}</span></span></div><progress value="${row.valueCents}" max="${allocation.totalValueCents}" aria-label="${escapeHtml(row.name)}: ${percentage.format(row.allocationRate)} of valued investments"></progress></div>`).join("")}</div><p class="mercury-caption">${coverage}</p>` : `<p class="mercury-caption">No investment value to allocate.${allocation.unvaluedCount ? ` ${coverage}` : ""}</p>`;
+    return allocation;
+  }
+  function renderReview(summary, allocation) {
+    const reviews = [];
+    const unavailable = [[!state.configured || !state.account, "account", "#portfolio"], [!state.propertiesAvailable, "property equity", "#portfolio"], [!state.incomeSourcesAvailable, "income sources", "#income"], [!state.budgetCategoriesAvailable, "budget categories", "#income/budget"]].filter(([missing]) => missing);
+    if (unavailable.length) reviews.push({ title: `${unavailable.length} ${unavailable.length === 1 ? "data source unavailable" : "data sources unavailable"}`, detail: unavailable.map(([, label]) => label).join(", "), href: unavailable[0][2], action: "Review setup" });
+    const missingMetrics = summary.rows.filter((row) => row.estimatedAnnualGrowthCents === null || row.estimatedAnnualIncomeCents === null).length;
+    if (allocation.unvaluedCount || (missingMetrics && !state.providerMetricsPending.size)) reviews.push({ title: "Incomplete portfolio coverage", detail: [allocation.unvaluedCount ? `${allocation.unvaluedCount} missing valuations` : null, missingMetrics ? (state.providerMetricsPending.size ? "Metrics loading" : `${missingMetrics} holdings with incomplete estimates`) : null].filter(Boolean).join(" · "), href: "#portfolio", action: "Review holdings" });
+    const history = summarizeDashboardHistory(state.snapshots, "all");
+    if (!history.showTrend) reviews.push({ title: "History is building", detail: `${history.recordedDays} of 30 daily observations recorded. No action needed.`, href: null });
+    if (summary.rows.length === state.holdings.length && summary.totalDayChangeCents < 0) reviews.push({ title: "Portfolio value decreased", detail: `${movementCurrency(summary.totalDayChangeCents)} since prior close.`, href: "#portfolio", action: "View portfolio" });
+    $("#home-review-list").innerHTML = reviews.length ? reviews.slice(0, 4).map((item) => `<li><strong>${escapeHtml(item.title)}</strong><p>${escapeHtml(item.detail)}</p>${item.href ? `<a class="acadia-button acadia-button-quiet" href="${item.href}">${item.action}<i class="fa-solid fa-arrow-right acadia-icon" aria-hidden="true"></i></a>` : ""}</li>`).join("") : '<li><p>No review items</p></li>';
+  }
   function renderHome(summary) {
     $("#home-workspace").hidden = false;
     $("#portfolio-workspace").hidden = true;
@@ -713,25 +724,18 @@
     setActiveNavigation("home");
     const netWorthCents = currentNetWorthCents(summary);
     setText("#metric-value", netWorthCents === null ? "Not set" : displayCurrency(netWorthCents / 100));
-    $("#metric-value").title = netWorthCents === null ? "Property equity is unavailable" : currency.format(netWorthCents / 100);
-    const metricsLoading = state.providerMetricsPending.size > 0;
-    setText("#metric-income", metricsLoading
-      ? "Loading…"
-      : summary.totalEstimatedAnnualIncomeCents === null
-        ? "Not set"
-        : displayCurrency(summary.totalEstimatedAnnualIncomeCents / 100));
+    $("#metric-value").title = netWorthCents === null ? "Complete valuations are unavailable" : currency.format(netWorthCents / 100);
+    setText("#home-investments", summary.rows.length === state.holdings.length ? planningValue(summary.totalMarketValueCents) : "Not set");
+    setText("#home-property-equity", state.propertiesAvailable ? planningValue(totalPropertyEquity()) : "Not set");
+    const planning = planningPosition(summary, "month");
+    for (const [id, key] of [["income", "expectedCents"], ["spending", "spendingCents"], ["investing", "investingCents"], ["balance", "balanceCents"]]) setText(`#home-planning-${id}`, planningValue(planning[key]));
     renderHistory();
-    setMovement("#metric-change-value", summary.totalDayChangeCents, displaySignedCurrency);
-    setMovement("#metric-change-rate", summary.totalDayChangeRate, displaySignedPercentage, { hideWhenUnavailable: true });
-    setText("#metric-estimated-growth", metricsLoading
-      ? "Loading…"
-      : summary.totalEstimatedAnnualGrowthCents === null
-        ? "Not set"
-        : displayCurrency(summary.totalEstimatedAnnualGrowthCents / 100));
-    setNeutralMetric("#metric-estimated-growth-rate", metricsLoading ? null : summary.estimatedAnnualGrowthRate, percentage.format.bind(percentage));
-    setNeutralMetric("#metric-income-yield", metricsLoading ? null : summary.distributionYieldRate, percentage.format.bind(percentage));
+    const dailyMovementComplete = summary.rows.length === state.holdings.length;
+    setMovement("#metric-change-value", dailyMovementComplete ? summary.totalDayChangeCents : null, movementCurrency);
+    setMovement("#metric-change-rate", dailyMovementComplete ? summary.totalDayChangeRate : null, displaySignedPercentage, { hideWhenUnavailable: true });
     setText("#portfolio-warnings", state.holdings.length ? summary.warnings.join(" ") : "");
     renderHoldings(summary);
+    renderReview(summary, renderAllocation("#home-allocation"));
   }
 
   function renderPortfolio(summary) {
@@ -742,6 +746,7 @@
     $("#asset-workspace").hidden = true;
     setActiveNavigation("portfolio");
     renderPortfolioSummary(summary);
+    renderAllocation("#portfolio-allocation");
     renderPortfolioHoldings(summary);
     renderRecurringInvestments(summary);
     renderProperties();
@@ -764,7 +769,7 @@
     return state.incomePeriod === "year" ? annualCents : Math.round(annualCents / 12);
   }
   function matchingIncomeDividendRows(summary) {
-    const search = $("#income-search").value.trim().toLowerCase();
+    const search = $("#income-dividends-search").value.trim().toLowerCase();
     return summary.rows.filter((row) => {
       if (row.asset.instrumentType === "crypto") return false;
       const searchable = `${row.asset.symbol || ""} ${row.asset.name || ""} ${row.asset.instrumentType}`.toLowerCase();
@@ -798,25 +803,24 @@
       const isLoading = state.providerMetricsPending.has(row.asset.id);
       const annualCents = row.estimatedAnnualIncomeCents;
       const amount = Number.isSafeInteger(annualCents)
-        ? displayCurrency(incomePeriodCents(annualCents) / 100)
+        ? displayCurrency(annualCents / 100)
         : isLoading ? "Loading…" : "Not set";
       const yieldRate = row.distributionYieldRate;
       const yieldDisplay = Number.isFinite(yieldRate) ? percentage.format(yieldRate) : isLoading ? "Loading…" : "Not set";
-      const card = document.createElement("article");
-      card.className = "acadia-card is-content";
-      card.setAttribute("aria-label", `${row.asset.symbol || row.asset.name} dividend estimate`);
-      card.innerHTML = `<div class="acadia-card-header"><div class="acadia-card-content-title-row"><h3>${escapeHtml(row.asset.symbol || row.asset.name)}</h3><span class="acadia-card-content-caption">${escapeHtml(row.asset.name || row.asset.instrumentType.replaceAll("-", " "))}</span></div></div><div class="acadia-card-content"><div class="acadia-card-content-title-row"><strong class="is-accent" aria-label="Trailing dividend yield: ${yieldDisplay}">${yieldDisplay}</strong><span aria-label="Expected dividends per ${incomePeriodLabel()}: ${amount}">${amount}</span></div><p class="acadia-sr-only">Expected dividends per ${incomePeriodLabel()}. Rates are trailing annual yields.</p></div>`;
+      const card = document.createElement("tr");
+      card.innerHTML = `<th scope="row"><strong>${escapeHtml(row.asset.symbol || row.asset.name)}</strong><small>${escapeHtml(row.asset.name || instrumentLabel(row.asset.instrumentType))}</small></th><td data-label="Estimated annual income">${amount}</td><td data-label="Annual yield">${yieldDisplay}</td>`;
       return card;
     }));
     setText("#income-dividends-count", `${matchingRows.length} ${matchingRows.length === 1 ? "source" : "sources"}`);
     $("#income-dividends-empty").hidden = rows.length > 0;
+    grid.closest(".mercury-income-table-wrap").hidden = rows.length === 0;
     if (!rows.length) {
       const hasEligible = summary.rows.some((row) => row.asset.instrumentType !== "crypto");
       $("#income-dividends-empty").querySelector("strong").textContent = hasEligible ? "No matching dividend sources" : "No dividend sources";
     }
   }
   function matchingIncomeSources(rows) {
-    const search = $("#income-search").value.trim().toLowerCase();
+    const search = $("#income-sources-search").value.trim().toLowerCase();
     return rows.filter((row) => !search || `${row.source.name} ${row.source.incomeType}`.toLowerCase().includes(search));
   }
   function renderIncomeSources(incomeSummary) {
@@ -825,15 +829,9 @@
     grid.replaceChildren(...matchingRows.map((row) => {
       const source = row.source;
       const card = document.createElement("article");
-      card.className = "acadia-card is-content";
-      card.innerHTML = `<div class="acadia-card-actions"><details class="acadia-action-menu"><summary class="acadia-action-menu-trigger acadia-icon-action" aria-label="Actions for ${escapeHtml(source.name)}"><i class="fa-solid fa-ellipsis acadia-icon" aria-hidden="true"></i></summary><div class="acadia-action-menu-panel"><button class="acadia-action-menu-item" type="button" data-edit-income-source="${escapeHtml(source.id)}">Edit source</button><button class="acadia-action-menu-item is-danger" type="button" data-delete-income-source="${escapeHtml(source.id)}">Delete source</button></div></details></div><div class="acadia-card-header"><h3>${escapeHtml(source.name)}</h3><p>${escapeHtml(incomeTypeLabel(source.incomeType))}</p></div><div class="acadia-card-body"><div class="acadia-dialog-field-grid"><div class="acadia-form-control" data-acadia-form-variant="input"><label class="acadia-label" for="income-amount-${source.id}">Amount</label><input class="acadia-control" id="income-amount-${source.id}" type="number" step="0.01" min="0.01" value="${(source.amountCents / 100).toFixed(2)}"></div><div class="acadia-form-control" data-acadia-form-variant="select"><label class="acadia-label" for="income-frequency-${source.id}">Frequency</label><select class="acadia-control" id="income-frequency-${source.id}">${Object.entries(INCOME_FREQUENCIES).map(([value, detail]) => `<option value="${value}"${source.frequency === value ? " selected" : ""}>${detail.label}</option>`).join("")}</select></div></div><div class="acadia-card-content"><span class="acadia-card-content-subtitle">Planned income</span><div class="acadia-card-content-title-row"><strong>${displayCurrency(row.periodIncomeCents / 100)}</strong><span>per ${incomePeriodLabel()}</span></div><p id="income-source-status-${source.id}" class="acadia-field-hint" role="status" aria-live="polite"></p></div></div>`;
-      const saveInline = async () => {
-        const amount = cents(card.querySelector(`#income-amount-${CSS.escape(source.id)}`).value);
-        const frequency = card.querySelector(`#income-frequency-${CSS.escape(source.id)}`).value;
-        await saveIncomeSourceInline(source.id, amount, frequency);
-      };
-      card.querySelector(`#income-amount-${CSS.escape(source.id)}`).addEventListener("change", saveInline);
-      card.querySelector(`#income-frequency-${CSS.escape(source.id)}`).addEventListener("change", saveInline);
+      card.className = "mercury-income-source-row";
+      card.setAttribute("role", "listitem");
+      card.innerHTML = `<div class="mercury-record-identity"><strong>${escapeHtml(source.name)}</strong><small>${escapeHtml(incomeTypeLabel(source.incomeType))}</small></div><div class="mercury-record-cadence"><strong>${planningValue(source.amountCents)}</strong><small>${INCOME_FREQUENCIES[source.frequency].label}</small></div><div class="mercury-record-total"><strong>${planningValue(row.periodIncomeCents)}</strong><small>per ${incomePeriodLabel()}</small></div><div class="acadia-row-actions"><button class="acadia-button acadia-button-quiet" type="button" data-edit-income-source="${escapeHtml(source.id)}" aria-label="Edit ${escapeHtml(source.name)}">Edit</button><button class="acadia-icon-action" type="button" data-delete-income-source="${escapeHtml(source.id)}" aria-label="Delete ${escapeHtml(source.name)}"><i class="fa-solid fa-trash acadia-icon" aria-hidden="true"></i></button></div>`;
       return card;
     }));
     grid.querySelectorAll("[data-edit-income-source]").forEach((control) => control.addEventListener("click", () => openIncomeSourceDialog(control.dataset.editIncomeSource)));
@@ -847,7 +845,7 @@
         ? "Income sources are unavailable"
         : state.incomeSources.length ? "No matching income sources" : "No income sources yet";
       copy.textContent = !state.incomeSourcesAvailable
-        ? "Apply the latest private Income schema migration to save recurring sources."
+        ? "Saved income sources could not be loaded. Try reloading the page."
         : "Add expected recurring income to include it in your planning totals.";
     }
   }
@@ -866,7 +864,7 @@
     if (duplicate) throw new Error("Category names must be unique.");
   }
   function matchingBudgetCategories(rows) {
-    const search = $("#income-search").value.trim().toLowerCase();
+    const search = $("#income-budget-search").value.trim().toLowerCase();
     return rows.filter((row) => !search || row.category.name.toLowerCase().includes(search));
   }
   function renderBudgetCategories(budgetSummary) {
@@ -874,22 +872,15 @@
     const list = $("#income-budget-list");
     list.replaceChildren(...matchingRows.map((row) => {
       const category = row.category;
-      const item = document.createElement("div");
-      item.className = "mercury-budget-row";
-      item.innerHTML = `<div class="acadia-form-control" data-acadia-form-variant="input"><label class="acadia-sr-only" for="budget-category-name-${category.id}">Category name</label><input class="acadia-control" id="budget-category-name-${category.id}" type="text" required value="${escapeHtml(category.name)}"></div><div class="acadia-form-control" data-acadia-form-variant="input"><label class="acadia-sr-only" for="budget-category-amount-${category.id}">Monthly amount for ${escapeHtml(category.name)}</label><div class="acadia-control-affix-shell"><span class="acadia-control-leading-affix" aria-hidden="true">$</span><input class="acadia-control has-leading-affix" id="budget-category-amount-${category.id}" type="number" step="0.01" min="0.01" required value="${(category.monthlyAmountCents / 100).toFixed(2)}"></div></div><strong class="mercury-budget-allocation" aria-label="${wholePercentage.format(row.allocationRate)} of planned spending">${wholePercentage.format(row.allocationRate)}</strong><details class="acadia-action-menu"><summary class="acadia-action-menu-trigger acadia-icon-action" aria-label="Actions for ${escapeHtml(category.name)}"><i class="fa-solid fa-ellipsis acadia-icon" aria-hidden="true"></i></summary><div class="acadia-action-menu-panel"><button class="acadia-action-menu-item" type="button" data-edit-budget-category="${escapeHtml(category.id)}">Edit category</button><button class="acadia-action-menu-item is-danger" type="button" data-delete-budget-category="${escapeHtml(category.id)}">Delete category</button></div></details><p id="budget-category-status-${category.id}" class="acadia-field-hint mercury-budget-row-status" role="status" aria-live="polite"></p>`;
-      const saveInline = async () => {
-        const name = item.querySelector(`#budget-category-name-${CSS.escape(category.id)}`).value;
-        const amountCents = cents(item.querySelector(`#budget-category-amount-${CSS.escape(category.id)}`).value);
-        await saveBudgetCategoryInline(category.id, name, amountCents);
-      };
-      item.querySelector(`#budget-category-name-${CSS.escape(category.id)}`).addEventListener("change", saveInline);
-      item.querySelector(`#budget-category-amount-${CSS.escape(category.id)}`).addEventListener("change", saveInline);
+      const item = document.createElement("tr");
+      item.innerHTML = `<th scope="row">${escapeHtml(category.name)}</th><td data-label="Monthly amount">${planningValue(category.monthlyAmountCents)}</td><td data-label="Share">${percentage.format(row.allocationRate)}</td><td data-label="Actions"><span class="acadia-row-actions"><button class="acadia-button acadia-button-quiet" type="button" data-edit-budget-category="${escapeHtml(category.id)}" aria-label="Edit ${escapeHtml(category.name)}">Edit</button><button class="acadia-icon-action" type="button" data-delete-budget-category="${escapeHtml(category.id)}" aria-label="Delete ${escapeHtml(category.name)}"><i class="fa-solid fa-trash acadia-icon" aria-hidden="true"></i></button></span></td>`;
       return item;
     }));
     list.querySelectorAll("[data-edit-budget-category]").forEach((control) => control.addEventListener("click", () => openBudgetCategoryDialog(control.dataset.editBudgetCategory)));
     list.querySelectorAll("[data-delete-budget-category]").forEach((control) => control.addEventListener("click", () => openDeleteBudgetCategoryDialog(control.dataset.deleteBudgetCategory)));
     setText("#income-budget-count", `${matchingRows.length} ${matchingRows.length === 1 ? "category" : "categories"}`);
     $("#income-budget-empty").hidden = matchingRows.length > 0;
+    list.closest(".mercury-income-table-wrap").hidden = matchingRows.length === 0;
     if (!matchingRows.length) {
       const title = $("#income-budget-empty").querySelector("strong");
       const copy = $("#income-budget-empty").querySelector("p");
@@ -897,7 +888,7 @@
         ? "Budget categories are unavailable"
         : state.budgetCategories.length ? "No matching budget categories" : "No budget categories yet";
       copy.textContent = !state.budgetCategoriesAvailable
-        ? "Apply the latest private Income schema migration to save a spending plan."
+        ? "Saved budget categories could not be loaded. Try reloading the page."
         : "Add monthly category limits to build your spending plan.";
     }
   }
@@ -908,29 +899,26 @@
     $("#plan-workspace").hidden = true;
     $("#asset-workspace").hidden = true;
     setActiveNavigation("income");
+    const view = window.location.hash === "#income/budget" ? "budget" : "overview";
+    document.querySelectorAll("[data-income-view]").forEach((control) => {
+      const active = control.dataset.incomeView === view;
+      control.classList.toggle("is-active", active);
+      control.setAttribute("aria-selected", String(active)); control.tabIndex = active ? 0 : -1;
+      $(`#income-${control.dataset.incomeView}-panel`).hidden = !active;
+    });
     document.querySelectorAll("[data-income-period]").forEach((control) => {
       const active = control.dataset.incomePeriod === state.incomePeriod;
       control.classList.toggle("is-active", active);
-      control.setAttribute("aria-selected", String(active));
+      control.setAttribute("aria-selected", String(active)); control.tabIndex = active ? 0 : -1;
+      if (active) $("#income-summary").setAttribute("aria-labelledby", control.id);
     });
-    const incomeSummary = summarizeIncomeSources(state.incomeSources.map(incomeSourceModel), state.incomePeriod);
-    const budgetSummary = summarizeBudgetCategories(state.budgetCategories.map(budgetCategoryModel), state.incomePeriod);
-    const metricsLoading = state.providerMetricsPending.size > 0;
-    const passiveAnnualCents = summary.totalEstimatedAnnualIncomeCents;
-    const passiveAvailable = Number.isSafeInteger(passiveAnnualCents);
-    const passiveDisplay = metricsLoading ? "Loading…" : passiveAvailable ? displayCurrency(incomePeriodCents(passiveAnnualCents) / 100) : "Not set";
-    const totalDisplay = metricsLoading ? "Loading…" : passiveAvailable ? displayCurrency((incomeSummary.totalPeriodIncomeCents + incomePeriodCents(passiveAnnualCents)) / 100) : "Not set";
-    setText("#income-earned", displayCurrency(incomeSummary.totalPeriodIncomeCents / 100));
-    const expensesDisplay = budgetSummary.totalPeriodAmountCents
-      ? displayCurrency(-budgetSummary.totalPeriodAmountCents / 100)
-      : displayCurrency(0);
-    setText("#income-expenses", state.budgetCategoriesAvailable ? expensesDisplay : "Not set");
-    setText("#income-passive", passiveDisplay);
-    setText("#income-total", totalDisplay);
-    setDelta("#income-passive-yield", metricsLoading ? null : summary.distributionYieldRate, percentage.format.bind(percentage));
+    const planning = planningPosition(summary, state.incomePeriod);
+    for (const [id, key] of [["total", "expectedCents"], ["earned", "recurringCents"], ["passive", "passiveCents"], ["expenses", "spendingCents"], ["investing", "investingCents"], ["balance", "balanceCents"]]) setText(`#income-${id}`, planningValue(planning[key]));
+    setText("#income-balance-period", `/ ${incomePeriodLabel()}`);
+    setText("#income-balance-status", planning.balanceCents === null ? "Complete income and allocation data is needed" : planning.balanceCents < 0 ? "Planned allocations exceed expected income" : planning.balanceCents === 0 ? "Expected income is fully allocated" : "After planned spending and investing");
     renderIncomeDividends(summary);
-    renderIncomeSources(incomeSummary);
-    renderBudgetCategories(budgetSummary);
+    renderIncomeSources(summarizeIncomeSources(state.incomeSources.map(incomeSourceModel), state.incomePeriod));
+    renderBudgetCategories(summarizeBudgetCategories(state.budgetCategories.map(budgetCategoryModel), state.incomePeriod));
   }
 
   function planSettingsModel(settings) {
@@ -1135,7 +1123,14 @@
     setText("#asset-detail-status", "");
   }
 
+  let renderedPortfolio = false;
   function render() {
+    const isPortfolio = routePortfolio();
+    if (isPortfolio && !renderedPortfolio) state.portfolioView = "cards";
+    renderedPortfolio = isPortfolio;
+    const focused = document.activeElement;
+    const focusAttribute = ["data-edit-income-source", "data-edit-budget-category", "data-delete-income-source", "data-delete-budget-category"].find((attribute) => focused?.hasAttribute(attribute));
+    const focusValue = focusAttribute ? focused.getAttribute(focusAttribute) : null;
     setControlsDisabled(!state.configured);
     const summary = portfolio();
     if (routeAssetId()) renderAsset();
@@ -1144,6 +1139,10 @@
     else if (routePlan()) renderPlan(summary);
     else renderHome(summary);
     $("#main-content").setAttribute("aria-busy", "false");
+    if (focusAttribute && !focused.isConnected) {
+      const replacement = document.querySelector(`[${focusAttribute}="${CSS.escape(focusValue)}"]`);
+      (replacement || $(focusAttribute.includes("budget") ? "#add-budget-category" : "#add-income")).focus();
+    }
   }
 
   function getFormValue(form, key) {
@@ -1528,23 +1527,6 @@
       save.textContent = state.incomeSourceDialogId ? "Save" : "Add";
     }
   }
-  async function saveIncomeSourceInline(id, amountCents, frequency) {
-    const raw = state.incomeSources.find((source) => source.id === id);
-    const status = $("#income-source-status-" + id);
-    if (!raw || !state.account) return;
-    try {
-      const source = normalizeIncomeSource({ ...incomeSourceModel(raw), amountCents, frequency });
-      status.textContent = "Saving…";
-      const { error } = await state.client.from("income_sources").update({
-        amount_cents: source.amountCents,
-        frequency: source.frequency,
-      }).eq("id", id).eq("account_id", state.account.id);
-      if (error) throw error;
-      await loadData();
-    } catch (error) {
-      status.textContent = error.message || "This income source could not be saved.";
-    }
-  }
   function openDeleteIncomeSourceDialog(id) {
     const source = state.incomeSources.find((entry) => entry.id === id);
     if (!source) return;
@@ -1630,24 +1612,6 @@
     } finally {
       save.disabled = false;
       save.textContent = state.budgetCategoryDialogId ? "Save" : "Add";
-    }
-  }
-  async function saveBudgetCategoryInline(id, name, monthlyAmountCents) {
-    const raw = state.budgetCategories.find((category) => category.id === id);
-    const status = $("#budget-category-status-" + id);
-    if (!raw || !state.account) return;
-    try {
-      const category = normalizeBudgetCategory({ id, name, monthlyAmountCents });
-      assertBudgetCategoryNameAvailable(category, id);
-      status.textContent = "Saving…";
-      const { error } = await state.client.from("budget_categories").update({
-        name: category.name,
-        monthly_amount_cents: category.monthlyAmountCents,
-      }).eq("id", id).eq("account_id", state.account.id);
-      if (error) throw error;
-      await loadData();
-    } catch (error) {
-      status.textContent = error.message || "This budget category could not be saved.";
     }
   }
   function openDeleteBudgetCategoryDialog(id) {
@@ -1996,7 +1960,7 @@
   $("#asset-manual-price").addEventListener("input", renderQuickQuotePreview);
   $("#asset-manual-value").addEventListener("input", renderQuickQuotePreview);
   $("#portfolio-search").addEventListener("input", render);
-  $("#income-search").addEventListener("input", render);
+  ["#income-dividends-search", "#income-sources-search", "#income-budget-search"].forEach((selector) => $(selector).addEventListener("input", render));
   $("#add-income").addEventListener("click", () => openIncomeSourceDialog());
   $("#close-income-source-dialog").addEventListener("click", closeIncomeSourceDialog);
   $("#cancel-income-source-dialog").addEventListener("click", closeIncomeSourceDialog);
@@ -2043,12 +2007,26 @@
     });
     control.addEventListener("keydown", handlePerformancePeriodKeydown);
   });
+  function moveTabFocus(event, selector) {
+    const tabs = [...document.querySelectorAll(selector)];
+    const index = tabs.indexOf(event.currentTarget);
+    const next = ["ArrowRight", "ArrowDown"].includes(event.key) ? (index + 1) % tabs.length
+      : ["ArrowLeft", "ArrowUp"].includes(event.key) ? (index - 1 + tabs.length) % tabs.length
+      : event.key === "Home" ? 0 : event.key === "End" ? tabs.length - 1 : null;
+    if (next === null) return;
+    event.preventDefault(); tabs[next].click(); tabs[next].focus();
+  }
+  document.querySelectorAll("[data-income-view]").forEach((control) => {
+    control.addEventListener("click", () => { window.location.hash = control.dataset.incomeView === "budget" ? "income/budget" : "income"; });
+    control.addEventListener("keydown", (event) => moveTabFocus(event, "[data-income-view]"));
+  });
   document.querySelectorAll("[data-income-period]").forEach((control) => {
     control.addEventListener("click", () => {
       state.incomePeriod = control.dataset.incomePeriod;
       render();
     });
   });
+  document.querySelectorAll("[data-income-period]").forEach((control) => control.addEventListener("keydown", (event) => moveTabFocus(event, "[data-income-period]")));
   document.querySelectorAll("[data-income-dividend-sort]").forEach((control) => {
     control.addEventListener("click", () => {
       state.incomeDividendSort = control.dataset.incomeDividendSort;
