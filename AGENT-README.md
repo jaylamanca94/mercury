@@ -84,14 +84,15 @@ Use `DESIGN-README.md` as the product's design source of truth.
 
 ## Approval Rules
 
+- Standing founder instruction, explicitly confirmed on 2026-09-05: always commit and push code after completing the work. This applies to ordinary tasks and automation runs, includes accompanying documentation and the existing Git-triggered deployment, and does not require separate routine commit or push confirmation.
 - If the founder sends exactly `y`, treat it as confirmation that any current `Tasks for Founder` are complete and proceed with the recommended next step using available connected tools.
 - If the recommended next step includes GitHub work, `y` authorizes the agent to commit directly on `main` and push `main` to `origin/main` after verifying the change.
 - A direct founder request in an automation run or ordinary chat is approval to complete the normal delivery loop for that request: implement, validate, commit on `main`, push `main` to `origin/main`, and verify clean main state when repository access is available.
 - Temporary PR creation and updates are approved only when direct-to-main is technically blocked; do not report completion until the PR is merged to `main`.
 - Do not stop after changing files locally. If the agent made a code or documentation change, completion requires a commit on `main`, a push to `origin/main`, and a clean main checkout unless a true external blocker remains.
-- After completing, reviewing, and verifying work, the agent must commit and push the completed changes using GitHub tools when repository access is available. Do not ask for separate commit or push approval unless the action is destructive, deploys production, rotates secrets, deletes data, removes repositories, or overwrites history.
+- After completing, reviewing, and verifying work, commit and push the scoped changes through the authorised Git workflow. Routine publication and its existing Git-triggered deployment are covered by the standing instruction. Destructive actions, secret changes, data deletion, repository removal, history rewrites and unrelated deployments still require specific authorisation.
 - If the recommended next step includes Supabase work and the agent has access, `y` authorizes the agent to use available Supabase tools for the approved database, auth, storage, migration, seed, policy, or configuration work.
-- Do not deploy, delete data, rotate secrets, remove repositories, overwrite history, or make destructive repository changes unless that action was explicitly included in the recommended next step or separately confirmed.
+- Do not perform deployments outside the authorised Git-triggered workflow, delete data, rotate secrets, remove repositories, overwrite history, or make destructive repository changes unless that action was explicitly included in the recommended next step or separately confirmed.
 - If the founder sends `y+`, proceed with the recommended next step, then look for cleanup, documentation, or small quality improvements.
 
 ## Direct-To-Main Completion Rules
