@@ -1,20 +1,6 @@
 @import url("acadia.css?v=20260903-home-overview-v1");
 
 /* Page composition only; the shared Acadia primitives and tokens stay canonical. */
-#income-workspace {
-  gap: var(--acadia-space-6);
-}
-#income-workspace h1 {
-  font-size: var(--acadia-type-size-heading-large);
-  margin: 0;
-}
-#income-workspace h2 {
-  font-size: var(--acadia-type-size-heading-small);
-  margin: 0;
-}
-#income-workspace h3 {
-  font-size: var(--acadia-type-size-body);
-}
 .mercury-caption {
   color: var(--acadia-color-text-muted);
   font-size: var(--acadia-type-size-small);
@@ -41,21 +27,9 @@
 .mercury-metric-band > div { display: grid; align-content: start; gap: var(--acadia-space-1); min-width: 0; }
 .mercury-metric-band dt { color: var(--acadia-color-text-muted); font-size: var(--acadia-type-size-small); }
 .mercury-metric-band dd { margin: 0; font-family: var(--acadia-font-expression); font-variant-numeric: tabular-nums; font-size: var(--acadia-type-size-heading-small); }
-.mercury-income-summary { grid-template-columns: repeat(5, minmax(0, 1fr)); }
-.mercury-income-summary .mercury-income-balance { grid-column: 1 / -1; padding-block-end: var(--acadia-space-3); border-block-end: 1px solid var(--acadia-color-border); }
-.mercury-income-summary .mercury-primary-metric { font-size: var(--acadia-type-size-title); }
-.mercury-income-summary .mercury-caption { font-size: var(--acadia-type-size-small); font-family: var(--acadia-font-body); }
-.mercury-income-summary > div:not(:first-child):not(:nth-child(2)) { border-inline-start: 1px solid var(--acadia-color-border); padding-inline-start: var(--acadia-space-3); }
-.mercury-income-navigation, .mercury-section-toolbar { display: flex; align-items: center; flex-wrap: wrap; justify-content: space-between; gap: var(--acadia-space-2); }
-.mercury-income-navigation { margin-block-start: calc(-1 * var(--acadia-space-3)); }
-.mercury-income-sections { display: grid; gap: var(--acadia-space-6); }
+.mercury-section-toolbar { display: flex; align-items: center; flex-wrap: wrap; justify-content: space-between; gap: var(--acadia-space-2); }
 .mercury-section-toolbar { margin-block: var(--acadia-space-3); }
 .mercury-section-search { width: min(100%, 24rem); }
-.mercury-income-source-row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(8rem, auto) minmax(8rem, auto) auto; gap: var(--acadia-space-3); align-items: center; padding-block: var(--acadia-space-2); border-block-start: 1px solid var(--acadia-color-border); }
-.mercury-income-source-row > div:not(.acadia-row-actions) { display: grid; gap: var(--acadia-space-1); min-width: 0; }
-.mercury-income-source-row small { color: var(--acadia-color-text-muted); font-size: var(--acadia-type-size-small); }
-.mercury-income-source-row strong { font-size: var(--acadia-type-size-body); overflow-wrap: anywhere; }
-.mercury-record-cadence, .mercury-record-total { text-align: end; font-variant-numeric: tabular-nums; }
 .mercury-comparison-table { width: 100%; }
 .mercury-comparison-table th, .mercury-comparison-table td { padding: var(--acadia-space-2); }
 .mercury-comparison-table th:first-child, .mercury-comparison-table td:first-child { padding-inline-start: 0; }
@@ -166,17 +140,7 @@
   }
 }
 @media (max-width: 47.98rem) {
-  .mercury-primary-metric, .mercury-income-summary .mercury-primary-metric { font-size: var(--acadia-type-size-heading-large); }
-  #income-workspace .acadia-page-header-pattern-section-intro { order: 0; }
-  :is(#income-workspace) .acadia-page-header-pattern-section { display: flex; flex-wrap: wrap; justify-content: space-between; gap: var(--acadia-space-1); }
-  .mercury-income-summary { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .mercury-income-summary > div:not(:first-child):not(:nth-child(2)) { border-inline-start: 0; padding-inline-start: 0; }
-  .mercury-income-summary > div:not(:first-child) { padding-block-end: var(--acadia-space-2); border-block-end: 1px solid var(--acadia-color-border); }
-  .mercury-income-source-row { grid-template-columns: minmax(0, 1fr) auto; gap: var(--acadia-space-2); }
-  .mercury-income-source-row .mercury-record-identity { grid-column: 1; grid-row: 1; }
-  .mercury-income-source-row .acadia-row-actions { grid-column: 2; grid-row: 1; }
-  .mercury-income-source-row .mercury-record-cadence { grid-column: 1; text-align: start; }
-  .mercury-income-source-row .mercury-record-total { grid-column: 2; }
+  .mercury-primary-metric { font-size: var(--acadia-type-size-heading-large); }
   .mercury-comparison-table, .mercury-comparison-table tbody { display: block; }
   .mercury-comparison-table thead { display: none; }
   .mercury-comparison-table tr { display: grid; grid-template-columns: minmax(0, 1fr); padding-block: var(--acadia-space-2); border-block-start: 1px solid var(--acadia-color-border); }
@@ -187,13 +151,8 @@
   .mercury-comparison-table td[data-label="Actions"] { justify-content: end; }
 }
 
-.mercury-income-sections > section { min-width: 0; }
 .mercury-comparison-table { table-layout: fixed; }
 .mercury-comparison-table :is(th, td) { white-space: normal; overflow-wrap: anywhere; }
-@media (min-width: 48rem) and (max-width: 79.98rem) {
-  .mercury-income-summary { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-  .mercury-income-summary > div:nth-child(5) { border-inline-start: 0; padding-inline-start: 0; }
-}
 .mercury-comparison-table tbody th { background: transparent; text-transform: none; letter-spacing: normal; }
 
 /* Keep Acadia's form actions above Mercury's persistent phone navigation. */

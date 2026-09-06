@@ -801,17 +801,21 @@
         ? displayCurrency(annualCents / 100)
         : isLoading ? "Loading…" : "Not set";
       const yieldRate = row.distributionYieldRate;
-      const yieldDisplay = Number.isFinite(yieldRate) ? percentage.format(yieldRate) : isLoading ? "Loading…" : "Not set";
-      const card = document.createElement("tr");
-      card.innerHTML = `<th scope="row"><strong>${escapeHtml(row.asset.symbol || row.asset.name)}</strong><small>${escapeHtml(row.asset.name || instrumentLabel(row.asset.instrumentType))}</small></th><td data-label="Estimated annual income">${amount}</td><td data-label="Annual yield">${yieldDisplay}</td>`;
+      const yieldDisplay = Number.isFinite(yieldRate) ? `${percentage.format(yieldRate)} yield` : isLoading ? "Loading yield…" : "Yield not set";
+      const card = document.createElement("article");
+      card.className = "acadia-object-card-header";
+      card.setAttribute("role", "listitem");
+      card.innerHTML = `<div class="acadia-read-only"><strong>${escapeHtml(row.asset.symbol || row.asset.name)}</strong><small class="acadia-text-muted">${escapeHtml(row.asset.symbol && row.asset.name !== row.asset.symbol ? row.asset.name : instrumentLabel(row.asset.instrumentType))}</small></div><div class="acadia-read-only"><strong title="${Number.isSafeInteger(annualCents) ? escapeHtml(preciseCurrency.format(annualCents / 100)) : amount}">${amount}</strong><small class="acadia-text-muted">${yieldDisplay}</small></div>`;
       return card;
     }));
     setText("#income-dividends-count", `${matchingRows.length} ${matchingRows.length === 1 ? "source" : "sources"}`);
     $("#income-dividends-empty").hidden = rows.length > 0;
-    grid.closest(".mercury-income-table-wrap").hidden = rows.length === 0;
+    $("#income-dividends-records").hidden = rows.length === 0;
+    $("#income-dividends-clear").hidden = rows.length > 0 || !$("#income-dividends-search").value.trim();
     if (!rows.length) {
       const hasEligible = summary.rows.some((row) => row.asset.instrumentType !== "crypto");
       $("#income-dividends-empty").querySelector("strong").textContent = hasEligible ? "No matching dividend sources" : "No dividend sources";
+      $("#income-dividends-empty").querySelector("p").textContent = hasEligible ? "Try another search or clear it to see all sources." : "Add holdings with dividend data in Portfolio.";
     }
   }
   function matchingIncomeSources(rows) {
@@ -824,15 +828,16 @@
     grid.replaceChildren(...matchingRows.map((row) => {
       const source = row.source;
       const card = document.createElement("article");
-      card.className = "mercury-income-source-row";
+      card.className = "acadia-card is-content";
       card.setAttribute("role", "listitem");
-      card.innerHTML = `<div class="mercury-record-identity"><strong>${escapeHtml(source.name)}</strong><small>${escapeHtml(incomeTypeLabel(source.incomeType))}</small></div><div class="mercury-record-cadence"><strong>${planningValue(source.amountCents)}</strong><small>${INCOME_FREQUENCIES[source.frequency].label}</small></div><div class="mercury-record-total"><strong>${planningValue(row.periodIncomeCents)}</strong><small>per ${incomePeriodLabel()}</small></div><div class="acadia-row-actions"><button class="acadia-button acadia-button-quiet" type="button" data-edit-income-source="${escapeHtml(source.id)}" aria-label="Edit ${escapeHtml(source.name)}">Edit</button><button class="acadia-icon-action" type="button" data-delete-income-source="${escapeHtml(source.id)}" aria-label="Delete ${escapeHtml(source.name)}"><i class="fa-solid fa-trash acadia-icon" aria-hidden="true"></i></button></div>`;
+      card.innerHTML = `<div class="acadia-card-content acadia-stack"><div class="acadia-page-header-pattern-actions"><div class="acadia-read-only"><strong>${escapeHtml(source.name)}</strong><small class="acadia-text-muted">${escapeHtml(incomeTypeLabel(source.incomeType))}</small></div><div class="acadia-row-actions"><button class="acadia-button acadia-button-quiet" type="button" data-edit-income-source="${escapeHtml(source.id)}" aria-label="Edit ${escapeHtml(source.name)}">Edit</button><button class="acadia-icon-action" style="--acadia-icon-action-size: var(--acadia-target-size-touch)" type="button" data-delete-income-source="${escapeHtml(source.id)}" aria-label="Delete ${escapeHtml(source.name)}"><i class="fa-solid fa-trash acadia-icon" aria-hidden="true"></i></button></div></div><div class="acadia-read-only"><strong class="acadia-card-metric-value">${planningValue(row.periodIncomeCents)} <small class="acadia-text-muted">/ ${incomePeriodLabel()}</small></strong><small class="acadia-text-muted">${planningValue(source.amountCents)} · ${INCOME_FREQUENCIES[source.frequency].label}</small></div></div>`;
       return card;
     }));
     grid.querySelectorAll("[data-edit-income-source]").forEach((control) => control.addEventListener("click", () => openIncomeSourceDialog(control.dataset.editIncomeSource)));
     grid.querySelectorAll("[data-delete-income-source]").forEach((control) => control.addEventListener("click", () => openDeleteIncomeSourceDialog(control.dataset.deleteIncomeSource)));
     setText("#income-sources-count", `${matchingRows.length} ${matchingRows.length === 1 ? "source" : "sources"}`);
     $("#income-sources-empty").hidden = matchingRows.length > 0;
+    $("#income-sources-clear").hidden = matchingRows.length > 0 || !$("#income-sources-search").value.trim();
     if (!matchingRows.length) {
       const title = $("#income-sources-empty").querySelector("strong");
       const copy = $("#income-sources-empty").querySelector("p");
@@ -841,7 +846,7 @@
         : state.incomeSources.length ? "No matching income sources" : "No income sources yet";
       copy.textContent = !state.incomeSourcesAvailable
         ? "Saved income sources could not be loaded. Try reloading the page."
-        : "Add expected recurring income to include it in your planning totals.";
+        : state.incomeSources.length ? "Try another search or clear it to see all sources." : "Add expected recurring income to your plan.";
     }
   }
   function budgetCategoryModel(category) {
@@ -875,6 +880,7 @@
     list.querySelectorAll("[data-delete-budget-category]").forEach((control) => control.addEventListener("click", () => openDeleteBudgetCategoryDialog(control.dataset.deleteBudgetCategory)));
     setText("#income-budget-count", `${matchingRows.length} ${matchingRows.length === 1 ? "category" : "categories"}`);
     $("#income-budget-empty").hidden = matchingRows.length > 0;
+    $("#income-budget-clear").hidden = matchingRows.length > 0 || !$("#income-budget-search").value.trim();
     list.closest(".mercury-income-table-wrap").hidden = matchingRows.length === 0;
     if (!matchingRows.length) {
       const title = $("#income-budget-empty").querySelector("strong");
@@ -884,7 +890,7 @@
         : state.budgetCategories.length ? "No matching budget categories" : "No budget categories yet";
       copy.textContent = !state.budgetCategoriesAvailable
         ? "Saved budget categories could not be loaded. Try reloading the page."
-        : "Add monthly category limits to build your spending plan.";
+        : state.budgetCategories.length ? "Try another search or clear it to see all categories." : "Add monthly category limits to your spending plan.";
     }
   }
   function renderIncome(summary) {
@@ -895,6 +901,8 @@
     $("#asset-workspace").hidden = true;
     setActiveNavigation("income");
     const view = window.location.hash === "#income/budget" ? "budget" : "overview";
+    $("#add-income").hidden = view !== "overview";
+    $("#add-budget-category").hidden = view !== "budget";
     document.querySelectorAll("[data-income-view]").forEach((control) => {
       const active = control.dataset.incomeView === view;
       control.classList.toggle("is-active", active);
@@ -910,7 +918,7 @@
     const planning = planningPosition(summary, state.incomePeriod);
     for (const [id, key] of [["total", "expectedCents"], ["earned", "recurringCents"], ["passive", "passiveCents"], ["expenses", "spendingCents"], ["investing", "investingCents"], ["balance", "balanceCents"]]) setText(`#income-${id}`, planningValue(planning[key]));
     setText("#income-balance-period", `/ ${incomePeriodLabel()}`);
-    setText("#income-balance-status", planning.balanceCents === null ? "Complete income and allocation data is needed" : planning.balanceCents < 0 ? "Planned allocations exceed expected income" : planning.balanceCents === 0 ? "Expected income is fully allocated" : "After planned spending and investing");
+    setText("#income-balance-status", planning.balanceCents === null ? "Complete income and allocation data is needed" : planning.balanceCents < 0 ? "Planned allocations exceed expected income" : planning.balanceCents === 0 ? (planning.expectedCents === 0 && planning.spendingCents === 0 && planning.investingCents === 0 ? "Add income to start your plan" : "Expected income is fully allocated") : "After planned spending and investing");
     renderIncomeDividends(summary);
     renderIncomeSources(summarizeIncomeSources(state.incomeSources.map(incomeSourceModel), state.incomePeriod));
     renderBudgetCategories(summarizeBudgetCategories(state.budgetCategories.map(budgetCategoryModel), state.incomePeriod));
@@ -2133,6 +2141,12 @@
   $("#asset-manual-value").addEventListener("input", renderQuickQuotePreview);
   $("#portfolio-search").addEventListener("input", render);
   ["#income-dividends-search", "#income-sources-search", "#income-budget-search"].forEach((selector) => $(selector).addEventListener("input", render));
+  ["dividends", "sources", "budget"].forEach((section) => $(`#income-${section}-clear`).addEventListener("click", () => {
+    const search = $(`#income-${section}-search`);
+    search.value = "";
+    render();
+    search.focus();
+  }));
   $("#add-income").addEventListener("click", () => openIncomeSourceDialog());
   $("#close-income-source-dialog").addEventListener("click", closeIncomeSourceDialog);
   $("#cancel-income-source-dialog").addEventListener("click", closeIncomeSourceDialog);

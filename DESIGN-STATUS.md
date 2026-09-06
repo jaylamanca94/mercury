@@ -2,7 +2,9 @@
 
 **Last reviewed:** 2026-09-06
 
-10 implemented canonical flows have design and automated coverage at varying depths; private export remains deferred. This pass refines Portfolio hierarchy and editing continuity without adding product flows.
+10 implemented canonical flows have design and automated coverage at varying depths; private export remains deferred. This pass refines Income hierarchy, source access and search recovery without adding product flows.
+
+Income now leads with Planned balance and a grouped three-input summary. Source cards sit alongside compact annual dividend records on larger screens and stack on phones. Add income/category follows the active view; no-match recovery clears only the relevant search. First-field focus, saved edits, cancellation, failed drafts, category shares, Month/Year and route continuity were checked locally. All 130 tests pass; responsive containment was measured at 2560/1920/1440/1024/768/390/320px. See `automation/design/2026-09-06/income-review.md`. No new financial calculations or persistence paths.
 
 Portfolio now uses a stronger investment headline and three-column Acadia asset cards with prominent values. Recurring forms one compact list alongside Property, with aligned section headers and equity-led property cards. Phone layouts stack naturally. Recurring Edit focuses Contribution; returning from asset details restores the corresponding Portfolio control.
 

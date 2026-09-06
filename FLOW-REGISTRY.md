@@ -1,6 +1,6 @@
 # Mercury Flow Registry
 
-> **10 implemented canonical flows; all have design and automated coverage at varying depths. One deferred export boundary. This pass refines Portfolio hierarchy and editing focus; no flows added. Remote and physical-device acceptance gaps remain below.**
+> **10 implemented canonical flows; all have design and automated coverage at varying depths. One deferred export boundary. This pass refines Income hierarchy, record access and search recovery; no flows added. Remote and physical-device acceptance gaps remain below.**
 
 **Last reviewed:** 2026-09-06
 
@@ -15,8 +15,8 @@
 | Build daily value history | Implemented; requires configured snapshot service. | Scheduled close → one daily account snapshot → history line after 30 distinct recorded dates in the selected range. | No snapshots; one snapshot; 4/29 compact; 30 or more; schedule before close; idempotent daily upsert; failure. | New York date, market-close gate and latest-quote valuation tests. |
 | Export private Brokerage data | Protected boundary retained; not exposed on Home. | A future private recovery surface may offer an owner-only JSON copy of holdings, quotes and snapshots. | Signed-in owner export. | Client export contract; RLS database acceptance required after migration. |
 
-| Plan expected income | Implemented. | Income Overview → monthly balance and annual dividend evidence → scoped source search → Edit → Save/Cancel. | All saved cadences; Year/Month; complete/partial dividends; failed saves with retained drafts; unsaved-dismissal confirmation; pending-write lock; validation; confirmed deletion; focus restoration. | Shared pure planning tests and isolated dialog persistence tests; authenticated review reported separately. |
-| Set category spending totals | Implemented. | Income → Budget or direct `#income/budget` → monthly category/share → Edit → Save/Cancel. | Empty; filtered; duplicate names; monthly values with Year summary; delete confirmation; unsaved-dismissal confirmation; pending-write lock; browser Back/Forward. | Budget domain tests and isolated browser interaction checks. |
+| Plan expected income | Implemented. | Income Overview → monthly balance → source cards alongside annual dividend evidence → scoped search → Edit → Save/Cancel; Add income from the header. | All saved cadences; Year/Month; complete/partial dividends; failed saves with retained drafts; unsaved-dismissal confirmation; pending-write lock; validation; confirmed deletion; focus restoration. | Shared pure planning tests and isolated dialog persistence tests; authenticated review reported separately. |
+| Set category spending totals | Implemented. | Income → Budget or direct `#income/budget` → Add category in the header, or monthly category/share → Edit → Save/Cancel. | Empty; filtered; duplicate names; monthly values with Year summary; delete confirmation; unsaved-dismissal confirmation; pending-write lock; browser Back/Forward. | Budget domain tests and isolated browser interaction checks. |
 | Review current trajectory | Implemented; unchanged in this pass. | Plan → existing Base plan assumptions, horizons and projections. | Existing saved assumptions and property context; protected drafts and locked pending saves. | Existing Plan calculation/rendering checks; native pressed-button horizon semantics and isolated assumption save verified. |
 
 ## Required acceptance gates
@@ -46,3 +46,7 @@ The existing Add holding, asset deletion, expected income, Budget, Plan and supp
 ## Portfolio design follow-through — 2026-09-06
 
 Portfolio now composes existing Acadia Title, Grid, Content Card, Object List, Read Only and Icon Action primitives to improve value hierarchy and group recurring/property context. Recurring Edit focuses Contribution; asset Back restores a matching Portfolio control. No stylesheet or financial calculation changes. 130 tests pass, including route-focus coverage. Isolated responsive and interaction evidence is recorded in `automation/design/2026-09-06/portfolio-review.md`; remote owner-data and physical-device acceptance remain separate.
+
+## Income design follow-through — 2026-09-06
+
+The existing Income Overview and Budget flows now use a compact Acadia header, balance-led summary and view-specific primary action. Sources sit alongside annual dividend records on larger screens and precede them on phones. Clear search restores the relevant field without changing totals or category shares. Source/category entry focuses the first input; saves and cancellations preserve return focus. 130 tests pass. Responsive and local interaction evidence is recorded in `automation/design/2026-09-06/income-review.md`. No flows added; authenticated owner-data, physical-device and VoiceOver acceptance remain separate.

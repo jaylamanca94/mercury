@@ -224,7 +224,7 @@ test("Portfolio comparison retains source-backed return and yield while cards st
 
 test("Income is a functional planning workspace with live dividend coverage and saved recurring sources", () => {
   const incomeWorkspace = indexHtml.slice(indexHtml.indexOf('<section id="income-workspace"'), indexHtml.indexOf('<section id="plan-workspace"'));
-  assert.match(incomeWorkspace, /Planning estimates: expected gross amounts/);
+  assert.match(incomeWorkspace, /Gross planning estimates, including reinvested dividends/);
   assert.match(incomeWorkspace, /id="income-periods"/);
   assert.match(incomeWorkspace, /data-income-period="year"/);
   assert.match(incomeWorkspace, /data-income-period="month"/);
@@ -262,7 +262,7 @@ test("Income is a functional planning workspace with live dividend coverage and 
   assert.match(homeSource, /openDeleteIncomeSourceDialog/);
   assert.match(homeSource, /data-income-dividend-sort/);
   assert.match(styles, /\.mercury-comparison-table/);
-  assert.match(styles, /\.mercury-income-source-row/);
+  assert.match(incomeWorkspace, /id="income-overview-panel" class="acadia-grid"/);
   assert.match(styles, /@media \(max-width: 47\.98rem\)/);
   assert.match(readme, /monthly category-level spending limits/);
   assert.match(personalFinancePivot, /category-level only/);
