@@ -414,7 +414,7 @@ test("Portfolio uses Acadia disclosure, preview cards and native controls with c
   assert.match(workspace, /id="portfolio-summary-property-equity"/);
   assert.match(workspace, /id="portfolio-recurring-total"/);
   assert.match(workspace, /id="portfolio-allocation-disclosure" class="acadia-accordion-item"/);
-  assert.match(workspace, /id="portfolio-holdings-grid" class="acadia-device-grid"/);
+  assert.match(workspace, /id="portfolio-holdings-grid" class="acadia-grid"/);
   assert.match(workspace, /id="portfolio-reset-filters"/);
   assert.match(indexHtml, /id="property-dialog" class="acadia-dialog is-form-modal is-compact"/);
   assert.match(indexHtml, /id="delete-property-dialog" class="acadia-dialog is-form-modal is-compact"/);

@@ -141,9 +141,25 @@
   function routeIncome() { return ["#income", "#income/budget"].includes(window.location.hash); }
   function routePlan() { return window.location.hash === "#plan"; }
   let assetReturnHash = "#portfolio";
-  function navigateToAsset(id) {
+  let portfolioAssetNavigation = null;
+  function navigateToAsset(id, { section = "details" } = {}) {
     if (!routeAssetId()) assetReturnHash = window.location.hash || "#";
+    portfolioAssetNavigation = routePortfolio() ? { id, section } : null;
     window.location.hash = `asset/${encodeURIComponent(id)}`;
+  }
+  function restorePortfolioAssetFocus(previousHash) {
+    if (!portfolioAssetNavigation || previousHash === window.location.hash) return;
+    const { id, section } = portfolioAssetNavigation;
+    if (routeAssetId() === id) {
+      const hasHolding = state.holdings.some((holding) => holding.id === id);
+      $(section === "recurring" && hasHolding ? "#asset-detail-contribution" : "#asset-title").focus();
+    } else if (routePortfolio() && previousHash.startsWith("#asset/")) {
+      const selector = section === "recurring" ? "#portfolio-recurring-list [data-edit-id]" : "#portfolio-holdings-grid [data-holding-id]";
+      const target = [...document.querySelectorAll(selector)].find((element) => (element.dataset.editId || element.dataset.holdingId) === id);
+      (target || $("#portfolio-add-asset")).focus();
+    } else if (!routeAssetId()) {
+      portfolioAssetNavigation = null;
+    }
   }
   function navigateBackFromAsset() { leaveWorkspace(() => { window.location.hash = assetReturnHash; }); }
   function navigateHome() { window.location.hash = ""; }
@@ -379,7 +395,7 @@
       button.addEventListener("click", () => navigateToAsset(button.dataset.openAssetId));
     });
     container.querySelectorAll("[data-edit-id]").forEach((button) => {
-      button.addEventListener("click", () => navigateToAsset(button.dataset.editId));
+      button.addEventListener("click", () => navigateToAsset(button.dataset.editId, { section: button.dataset.assetSection || "details" }));
     });
   }
   function openHoldingFromEvent(event) {
@@ -410,7 +426,7 @@
       card.tabIndex = 0;
       card.setAttribute("role", "link");
       card.setAttribute("aria-label", `Open ${title} asset details, ${holdingValueLabel(row)}`);
-      card.innerHTML = `<div class="acadia-card-header"><div class="acadia-card-content-title-row"><h3>${escapeHtml(title)}</h3><span class="acadia-card-content-caption" title="${row.marketValueCents === null ? "Needs valuation" : escapeHtml(preciseCurrency.format(row.marketValueCents / 100))}">${escapeHtml(holdingValueLabel(row))}</span></div><p>${escapeHtml(classification)}</p></div><div class="acadia-card-content"><small class="acadia-text-muted">${escapeHtml(detail)}</small></div>`;
+      card.innerHTML = `<div class="acadia-card-header"><div class="acadia-card-content-title-row"><h3>${escapeHtml(title)}</h3><span class="acadia-text-muted">${escapeHtml(classification)}</span></div></div><div class="acadia-card-content acadia-read-only"><strong class="acadia-card-metric-value" title="${row.marketValueCents === null ? "Needs valuation" : escapeHtml(preciseCurrency.format(row.marketValueCents / 100))}">${escapeHtml(holdingValueLabel(row))}</strong><small class="acadia-text-muted">${escapeHtml(detail)}</small></div>`;
       card.addEventListener("click", openHoldingFromEvent);
       card.addEventListener("keydown", keyOpenHolding);
       return card;
@@ -497,10 +513,7 @@
     list.innerHTML = assets.map((asset) => {
       const title = asset.symbol || asset.name;
       const cadence = asset.contributionFrequency === "monthly" ? "Monthly" : "Weekly";
-      const retirement = asset.isRetirement
-        ? '<span class="acadia-badge acadia-badge-grey acadia-badge-round acadia-badge-small">Retirement</span>'
-        : "";
-      return `<article class="acadia-section-header" role="listitem"><div class="acadia-read-only"><div class="acadia-cluster"><strong>${escapeHtml(title)}</strong>${retirement}</div><span class="acadia-text-muted">${escapeHtml(displayCurrency(asset.contributionCents / 100))} · ${cadence.toLowerCase()}</span></div><button class="acadia-button acadia-button-quiet" type="button" data-edit-id="${escapeHtml(asset.id)}" aria-label="Edit recurring investment for ${escapeHtml(title)}">Edit</button></article>`;
+      return `<article class="acadia-object-card-header" role="listitem"><div class="acadia-read-only"><strong>${escapeHtml(title)}</strong><span class="acadia-text-muted">${escapeHtml(displayCurrency(asset.contributionCents / 100))} · ${cadence.toLowerCase()}</span></div><button class="acadia-button acadia-button-quiet" type="button" data-edit-id="${escapeHtml(asset.id)}" data-asset-section="recurring" aria-label="Edit recurring investment for ${escapeHtml(title)}">Edit</button></article>`;
     }).join("");
     bindPortfolioHoldingActions(list);
     $("#portfolio-recurring-empty").hidden = assets.length > 0;
@@ -618,6 +631,7 @@
     });
   }
   function renderPropertySort() {
+    $("#portfolio-property-sort").hidden = state.properties.length < 2 || !state.propertiesAvailable;
     const labels = { value: "Value", name: "Name" };
     setText("#portfolio-property-sort-label", labels[state.propertySort]);
     document.querySelectorAll("[data-property-sort]").forEach((control) => {
@@ -632,7 +646,7 @@
       const card = document.createElement("article");
       card.className = "acadia-card is-content";
       card.setAttribute("aria-label", `${model.name}${model.location ? `, ${model.location}` : ""}, market value ${displayCurrency(model.currentValueCents / 100)}, mortgage balance ${displayCurrency(model.mortgageBalanceCents / 100)}, equity ${displayCurrency(equityCents / 100)}`);
-      card.innerHTML = `<div class="acadia-card-actions" role="group" aria-label="Actions for ${escapeHtml(model.name)}"><details class="acadia-action-menu"><summary class="acadia-action-menu-trigger acadia-icon-action" aria-label="Actions for ${escapeHtml(model.name)}"><i class="fa-solid fa-ellipsis acadia-icon" aria-hidden="true"></i></summary><div class="acadia-action-menu-panel"><button class="acadia-action-menu-item" type="button" data-edit-property-id="${escapeHtml(model.id)}">Edit property</button><div class="acadia-action-menu-divider"></div><button class="acadia-action-menu-item is-danger" type="button" data-delete-property-id="${escapeHtml(model.id)}">Delete property</button></div></details></div><div class="acadia-card-header"><h3>${escapeHtml(model.name)}</h3>${model.location ? `<p>${escapeHtml(model.location)}</p>` : ""}</div><div class="acadia-card-content"><div class="acadia-stack"><div class="acadia-read-only"><span class="acadia-text-muted">Market value</span><strong>${escapeHtml(displayCurrency(model.currentValueCents / 100))}</strong></div><div class="acadia-read-only"><span class="acadia-text-muted">Mortgage balance</span><strong>${escapeHtml(displayCurrency(model.mortgageBalanceCents / 100))}</strong></div><div class="acadia-read-only"><span class="acadia-text-muted">Equity</span><strong>${escapeHtml(displayCurrency(equityCents / 100))}</strong></div></div></div>`;
+      card.innerHTML = `<div class="acadia-card-actions" role="group" aria-label="Actions for ${escapeHtml(model.name)}"><details class="acadia-action-menu"><summary class="acadia-action-menu-trigger acadia-icon-action" aria-label="Actions for ${escapeHtml(model.name)}"><i class="fa-solid fa-ellipsis acadia-icon" aria-hidden="true"></i></summary><div class="acadia-action-menu-panel"><button class="acadia-action-menu-item" type="button" data-edit-property-id="${escapeHtml(model.id)}">Edit property</button><div class="acadia-action-menu-divider"></div><button class="acadia-action-menu-item is-danger" type="button" data-delete-property-id="${escapeHtml(model.id)}">Delete property</button></div></details></div><div class="acadia-card-header"><h3>${escapeHtml(model.name)}</h3>${model.location ? `<p>${escapeHtml(model.location)}</p>` : ""}</div><div class="acadia-card-content acadia-stack"><div class="acadia-read-only"><span class="acadia-text-muted">Equity</span><strong class="acadia-card-metric-value">${escapeHtml(displayCurrency(equityCents / 100))}</strong></div><div class="acadia-read-only-grid"><div class="acadia-read-only"><span class="acadia-text-muted">Market value</span><strong>${escapeHtml(displayCurrency(model.currentValueCents / 100))}</strong></div><div class="acadia-read-only"><span class="acadia-text-muted">Mortgage balance</span><strong>${escapeHtml(displayCurrency(model.mortgageBalanceCents / 100))}</strong></div></div></div>`;
       return card;
     }));
     grid.querySelectorAll("[data-edit-property-id]").forEach((button) => {
@@ -1235,6 +1249,7 @@
       leaveWorkspace(() => { window.location.hash = destination; render(); });
       return;
     }
+    const previousHash = lastRenderedHash;
     lastRenderedHash = window.location.hash;
     if (!routeAssetId()) renderedAssetId = null;
     const isPortfolio = routePortfolio();
@@ -1252,6 +1267,7 @@
     else renderHome(summary);
     const pageTitle = routeAssetId() ? $("#asset-title").textContent : routePortfolio() ? "Portfolio" : routeIncome() ? (window.location.hash === "#income/budget" ? "Budget" : "Income") : routePlan() ? "Plan" : "Home";
     document.title = `Mercury | ${pageTitle}`;
+    restorePortfolioAssetFocus(previousHash);
     $("#main-content").setAttribute("aria-busy", "false");
     if (focusAttribute && !focused.isConnected) {
       const replacement = document.querySelector(`[${focusAttribute}="${CSS.escape(focusValue)}"]`);

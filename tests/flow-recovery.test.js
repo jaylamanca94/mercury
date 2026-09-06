@@ -31,7 +31,7 @@ function controller() {
     fetch:async()=>({ok:false,json:async()=>({error:'provider unavailable'})}),
   });
   const source = fs.readFileSync(require.resolve('../brokerage.js'),'utf8').replace('  initialise();',
-    '  window.testController = {state,render,renderHistory,renderAsset,canQuote,lookupQuote,saveQuickAsset,navigateToAsset,navigateBackFromAsset,routeAssetId,openFormDialog,hasPendingWrite,hasUnsavedWork,matchingPortfolioHoldingRows,sortHoldingRows,holdingValueLabel,renderPortfolioView,renderPortfolioSummary,detailHolding};');
+    '  window.testController = {state,render,restorePortfolioAssetFocus,renderHistory,renderAsset,canQuote,lookupQuote,saveQuickAsset,navigateToAsset,navigateBackFromAsset,routeAssetId,openFormDialog,hasPendingWrite,hasUnsavedWork,matchingPortfolioHoldingRows,sortHoldingRows,holdingValueLabel,renderPortfolioView,renderPortfolioSummary,detailHolding};');
   vm.runInContext(source,context);
   const api=window.testController;
   api.state.client={auth:{getSession:async()=>({data:{session:{access_token:'isolated-test'}}})}};
@@ -378,5 +378,31 @@ test('Home expands only for a complete recorded trend and returns to its compact
     assert.equal(node('#history-trend').hidden,!expected);
     assert.equal(node('#history-building').hidden,expected);
     if(!expected)assert.equal(node('#history-trend').innerHTML,'');
+  }
+});
+
+test('Portfolio asset entry focuses its task and restores the originating card or recurring action',()=>{
+  for (const section of ['details','recurring']) {
+    const {api,node,window,document}=controller();
+    api.state.holdings=[{id:'test'}];
+    const focused=[];
+    node('#asset-title').focus=()=>focused.push('title');
+    node('#asset-detail-contribution').focus=()=>focused.push('contribution');
+    node('#portfolio-add-asset').focus=()=>focused.push('add');
+    const card={dataset:{holdingId:'test'},focus:()=>focused.push('card')};
+    const recurring={dataset:{editId:'test'},focus:()=>focused.push('recurring')};
+    document.querySelectorAll=(selector)=>selector.includes('recurring-list')?[recurring]:[card];
+    api.navigateToAsset('test',{section});
+    window.location.hash='#asset/test'; // Native Location normalises the leading hash.
+    api.restorePortfolioAssetFocus('#portfolio');
+    assert.deepEqual(focused,[section==='recurring'?'contribution':'title']);
+    api.restorePortfolioAssetFocus(window.location.hash);
+    assert.equal(focused.length,1,'background refresh must not steal focus');
+    window.location.hash='#portfolio';
+    api.restorePortfolioAssetFocus('#asset/test');
+    assert.equal(focused.at(-1),section==='recurring'?'recurring':'card');
+    document.querySelectorAll=()=>[];
+    api.restorePortfolioAssetFocus('#asset/test');
+    assert.equal(focused.at(-1),'add','removed or filtered records have a safe return target');
   }
 });
