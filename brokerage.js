@@ -268,6 +268,7 @@
     renderPerformancePeriods();
     setMovement("#performance-rate", performance.changeRate, (value) => `(${displaySignedPercentage(value)})`, { hideWhenUnavailable: true });
     setMovement("#performance-amount", performance.changeCents, movementCurrency, { hideWhenUnavailable: true });
+    $("#home-history-card").classList.toggle("is-dashboard-trend", performance.showTrend);
     $("#history-building").hidden = performance.showTrend;
     trend.hidden = !performance.showTrend;
     setText("#history-building", `History building · ${performance.recordedDays} of 30 days`);
@@ -697,13 +698,18 @@
     const netWorthCents = currentNetWorthCents(summary);
     setText("#metric-value", netWorthCents === null ? "Not set" : displayCurrency(netWorthCents / 100));
     $("#metric-value").title = netWorthCents === null ? "Complete valuations are unavailable" : currency.format(netWorthCents / 100);
+    const missingValuations = state.holdings.length - summary.rows.length;
+    $("#home-valuation-status").hidden = netWorthCents !== null;
+    setText("#home-valuation-status", missingValuations
+      ? `${missingValuations} ${missingValuations === 1 ? "asset needs" : "assets need"} a valuation. Review Portfolio.`
+      : !state.propertiesAvailable ? "Property values unavailable" : "Account values unavailable");
     const estimatesComplete = state.configured && Boolean(state.account) && summary.rows.length === state.holdings.length;
     const growth = estimatesComplete ? summary.totalExpectedAnnualGrowthCents : null;
     const passive = estimatesComplete && state.providerMetricsPending.size === 0 ? summary.totalEstimatedAnnualIncomeCents : null;
     setText("#home-growth", growth === null ? "Not set" : displayCurrency(growth / 100));
     setText("#home-passive-income", passive === null ? "Not set" : displayCurrency(passive / 100));
-    setText("#home-growth-context", growth === null ? "Add return assumptions in Portfolio" : "From saved return assumptions");
-    setText("#home-passive-context", state.providerMetricsPending.size ? "Loading dividend estimates…" : passive === null ? "Incomplete dividend coverage" : "Estimated annual dividends");
+    setText("#home-growth-context", missingValuations ? "Incomplete valuation coverage" : growth === null ? "Add return assumptions in Portfolio" : "From saved return assumptions");
+    setText("#home-passive-context", missingValuations ? "Incomplete valuation coverage" : state.providerMetricsPending.size ? "Loading dividend estimates…" : passive === null ? "Incomplete dividend coverage" : "Estimated from saved yields");
     renderHistory();
     const dailyMovementComplete = summary.rows.length === state.holdings.length;
     setMovement("#metric-change-value", dailyMovementComplete ? summary.totalDayChangeCents : null, movementCurrency);

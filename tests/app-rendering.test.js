@@ -68,7 +68,8 @@ test("Home composes a minimal Acadia dashboard", () => {
   assert.match(indexHtml, /id="performance-periods" class="acadia-tabs" role="tablist"/);
   assert.match(indexHtml, /data-performance-period="3m"[\s\S]*data-performance-period="6m"[\s\S]*data-performance-period="1y"[\s\S]*data-performance-period="all"/);
   assert.match(indexHtml, /id="history-panel"[^>]*role="tabpanel"/);
-  assert.match(indexHtml, /class="acadia-card is-content is-dashboard-trend"/);
+  assert.match(indexHtml, /id="home-history-card" class="acadia-card is-content"/);
+  assert.match(homeSource, /classList\.toggle\("is-dashboard-trend", performance\.showTrend\)/);
 
   assert.match(indexHtml, /id="home-allocation"/);
   assert.match(indexHtml, /id="holdings-grid" class="acadia-device-grid"[^>]*role="list"/);
@@ -287,7 +288,7 @@ test("Plan is a separate Base-plan projection workspace with aligned portfolio c
   assert.match(indexHtml, /id="plan-assumptions-dialog"/);
   assert.match(indexHtml, /id="property-dialog"/);
   assert.match(indexHtml, /<script src="plan\.js\?v=20260904-portfolio-dashboard-v1"><\/script>/);
-  assert.match(indexHtml, /<script src="brokerage\.js\?v=20260905-portfolio-refinement-v1"><\/script>/);
+  assert.match(indexHtml, /<script src="brokerage\.js\?v=20260905-home-refinement-v1"><\/script>/);
   assert.match(homeSource, /function routePlan\(\)/);
   assert.match(homeSource, /function renderPlan\(summary\)/);
   assert.match(homeSource, /function renderPlanChart/);

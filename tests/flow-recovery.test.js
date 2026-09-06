@@ -31,7 +31,7 @@ function controller() {
     fetch:async()=>({ok:false,json:async()=>({error:'provider unavailable'})}),
   });
   const source = fs.readFileSync(require.resolve('../brokerage.js'),'utf8').replace('  initialise();',
-    '  window.testController = {state,render,renderAsset,canQuote,lookupQuote,saveQuickAsset,navigateToAsset,navigateBackFromAsset,routeAssetId,openFormDialog,hasPendingWrite,hasUnsavedWork,matchingPortfolioHoldingRows,sortHoldingRows,holdingValueLabel,renderPortfolioView,renderPortfolioSummary,detailHolding};');
+    '  window.testController = {state,render,renderHistory,renderAsset,canQuote,lookupQuote,saveQuickAsset,navigateToAsset,navigateBackFromAsset,routeAssetId,openFormDialog,hasPendingWrite,hasUnsavedWork,matchingPortfolioHoldingRows,sortHoldingRows,holdingValueLabel,renderPortfolioView,renderPortfolioSummary,detailHolding};');
   vm.runInContext(source,context);
   const api=window.testController;
   api.state.client={auth:{getSession:async()=>({data:{session:{access_token:'isolated-test'}}})}};
@@ -363,4 +363,20 @@ test('a missing quote can be repaired with manual price or total value, without 
   api.state.quotes=[{holding_id:'missing',price_cents:6000,as_of:'2026-09-05T00:00:00Z'}];
   node('#asset-detail-form').fields={shares:'25',valuationBasis:'shares-and-price',manualPrice:'50'};
   assert.equal(api.detailHolding(holding).manual_price_cents,null);
+});
+
+test('Home expands only for a complete recorded trend and returns to its compact state',()=>{
+  const {api,node}=controller();
+  let expanded=false;
+  node('#home-history-card').classList.toggle=(name,value)=>{if(name==='is-dashboard-trend')expanded=value};
+  node('#history-trend').replaceChildren=()=>{node('#history-trend').innerHTML=''};
+  const snapshots=Array.from({length:30},(_,i)=>({snapshot_date:new Date(Date.UTC(2026,7,i+1)).toISOString().slice(0,10),total_value_cents:100000+i*100}));
+  for(const [records,expected] of [[snapshots.slice(0,29),false],[snapshots,true],[snapshots.slice(0,5),false],[[],false]]) {
+    api.state.snapshots=records;
+    api.renderHistory();
+    assert.equal(expanded,expected);
+    assert.equal(node('#history-trend').hidden,!expected);
+    assert.equal(node('#history-building').hidden,expected);
+    if(!expected)assert.equal(node('#history-trend').innerHTML,'');
+  }
 });
