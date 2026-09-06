@@ -43,6 +43,12 @@ Use this file as the visual and interaction source of truth for Mercury. Keep th
 - Read the form before disabling controls during persistence. Keep fields and Cancel locked while saving, prevent duplicate writes, then show `Changes saved` or a recoverable error with the draft intact. Reapply manual-valuation field availability afterwards.
 - Use Acadia Summary Measures for the investment profile so return/yield labels and values have distinct hierarchy. No financial calculations or Home composition changes.
 
+## Form-dialog containment — 2026-09-06
+
+- All entry/edit/delete form dialogs use Acadia's existing `is-form-modal is-compact` composition. Keep the standard discard-changes dialog unchanged.
+- Map `--acadia-target-size-compact` to `--acadia-target-size-touch` on these dialogs so fields and actions retain 44px targets. Compose action rows with Acadia Cluster to wrap long labels inside the content padding.
+- Reuse native dialog scrolling for long forms. Keep Close/Cancel, pending-write protection, unsaved confirmation, retained failed drafts and focus restoration intact. Desktop/tablet fields use the shared two-column grid; phones use one column. No local visual overrides.
+
 ## Brokerage MVP visual contract
 
 - Use the provided Brokerage sheet as the information model: summary metrics first, then holdings-value, allocation, annual-income, and history charts, followed by the core calculation table.

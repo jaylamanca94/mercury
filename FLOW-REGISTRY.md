@@ -1,8 +1,8 @@
 # Mercury Flow Registry
 
-> **10 implemented canonical flows; all have design and automated coverage at varying depths. One deferred export boundary. This pass refines Home hierarchy and its existing destinations; no flows added. Remote and physical-device acceptance gaps remain below.**
+> **10 implemented canonical flows; all have design and automated coverage at varying depths. One deferred export boundary. This pass completes compact form-dialog containment and touch target consistency; no flows added. Remote and physical-device acceptance gaps remain below.**
 
-**Last reviewed:** 2026-09-05
+**Last reviewed:** 2026-09-06
 
 | Flow | Product status | Meaningful entry → successful outcome | Major states | QA coverage |
 | --- | --- | --- | --- | --- |
@@ -38,3 +38,7 @@ Current active flows were reviewed in the signed-in production session and an is
 ## Continuity research follow-through — 2026-09-05
 
 Current code and the canonical flow inventory were reviewed; isolated browser evidence covers Home, Portfolio, manual Add, asset Back/draft retention, Income, Budget and Plan. All persistence dialogs have deferred failure/duplicate-submit controller coverage. Native confirmation verified in 390px and 320px embedded viewports. `npm run check`: 124 tests. Authenticated production writes, magic-link redemption/expiry, scheduled snapshots and second-user RLS are not newly accepted by this pass. See `automation/research/latest.md` for the full coverage matrix and remaining boundaries.
+
+## Form-dialog design follow-through — 2026-09-06
+
+The existing Add holding, asset deletion, expected income, Budget, Plan and supporting Property dialog compositions now consistently use Acadia compact forms, 44px touch tokens and wrapping action rows. Income/Plan saves, retained drafts after failure, Keep editing, deletion cancellation and keyboard return focus were checked locally. 129 tests pass. Measured 320/390/768/1440px responsive checks are documented in `automation/design/2026-09-06/review.md`. No canonical flows added; remote persistence and physical-device gates remain open.

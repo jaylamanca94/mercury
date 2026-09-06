@@ -441,7 +441,7 @@ test("the Asset page uses Acadia primary details and an advanced disclosure", ()
 
 test("an owner can delete an asset only after an explicit Acadia confirmation", () => {
   assert.match(indexHtml, /id="asset-delete" class="acadia-action-menu-item is-danger"/);
-  assert.match(indexHtml, /id="delete-asset-dialog" class="acadia-dialog is-form-modal"/);
+  assert.match(indexHtml, /id="delete-asset-dialog" class="acadia-dialog is-form-modal is-compact"/);
   assert.match(indexHtml, /id="confirm-delete-asset" class="acadia-button acadia-button-danger"/);
   assert.match(indexHtml, /Historical portfolio snapshots stay unchanged/);
   assert.match(homeSource, /function openDeleteAssetDialog/);
