@@ -1,6 +1,6 @@
 # Mercury Flow Registry
 
-> **10 implemented canonical flows; all have design and automated coverage at varying depths. One deferred export boundary. This pass refines Income hierarchy, record access and search recovery; no flows added. Remote and physical-device acceptance gaps remain below.**
+> **10 implemented canonical flows; all have design and automated coverage at varying depths. One deferred export boundary. This pass refines Plan hierarchy, assumption access and missing-input recovery; no flows added. Remote and physical-device acceptance gaps remain below.**
 
 **Last reviewed:** 2026-09-06
 
@@ -17,7 +17,7 @@
 
 | Plan expected income | Implemented. | Income Overview → monthly balance → source cards alongside annual dividend evidence → scoped search → Edit → Save/Cancel; Add income from the header. | All saved cadences; Year/Month; complete/partial dividends; failed saves with retained drafts; unsaved-dismissal confirmation; pending-write lock; validation; confirmed deletion; focus restoration. | Shared pure planning tests and isolated dialog persistence tests; authenticated review reported separately. |
 | Set category spending totals | Implemented. | Income → Budget or direct `#income/budget` → Add category in the header, or monthly category/share → Edit → Save/Cancel. | Empty; filtered; duplicate names; monthly values with Year summary; delete confirmation; unsaved-dismissal confirmation; pending-write lock; browser Back/Forward. | Budget domain tests and isolated browser interaction checks. |
-| Review current trajectory | Implemented; unchanged in this pass. | Plan → existing Base plan assumptions, horizons and projections. | Existing saved assumptions and property context; protected drafts and locked pending saves. | Existing Plan calculation/rendering checks; native pressed-button horizon semantics and isolated assumption save verified. |
+| Review current trajectory | Implemented; refined 2026-09-06. | Plan → compact input readiness → Edit assumptions or Review Portfolio → paired outlooks → 5Y/10Y/20Y. | Missing return/yield; loading/unavailable settings; incomplete valuation with stale-chart clearing and repair; inherited/override sources; zero holdings; property context; retained failed drafts, guarded dismissal and pending-save lock. | 131 checks, including valuation-loss/recovery regression; isolated browser assumption save, source inheritance, horizon selection, valuation repair and focus restoration. |
 
 ## Required acceptance gates
 
@@ -50,3 +50,7 @@ Portfolio now composes existing Acadia Title, Grid, Content Card, Object List, R
 ## Income design follow-through — 2026-09-06
 
 The existing Income Overview and Budget flows now use a compact Acadia header, balance-led summary and view-specific primary action. Sources sit alongside annual dividend records on larger screens and precede them on phones. Clear search restores the relevant field without changing totals or category shares. Source/category entry focuses the first input; saves and cancellations preserve return focus. 130 tests pass. Responsive and local interaction evidence is recorded in `automation/design/2026-09-06/income-review.md`. No flows added; authenticated owner-data, physical-device and VoiceOver acceptance remain separate.
+
+## Plan design follow-through — 2026-09-06
+
+The existing Base plan now shows current inputs before paired future-value and annual-income cards, with one compact readiness message when inputs are missing. Assumptions identify their source and share one contextual Edit action. Incomplete investment valuations clear and hide stale projections; Review Portfolio supports repair and return. Property equity remains separate. 131 tests pass. Seven-width containment, light/dark rendering and local save/recovery evidence are recorded in `automation/design/2026-09-06/plan-review.md`. No canonical flows or financial domain calculations added; authenticated owner-data and physical-device/VoiceOver acceptance remain separate.

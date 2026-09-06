@@ -31,7 +31,7 @@ function controller() {
     fetch:async()=>({ok:false,json:async()=>({error:'provider unavailable'})}),
   });
   const source = fs.readFileSync(require.resolve('../brokerage.js'),'utf8').replace('  initialise();',
-    '  window.testController = {state,render,restorePortfolioAssetFocus,renderHistory,renderAsset,canQuote,lookupQuote,saveQuickAsset,navigateToAsset,navigateBackFromAsset,routeAssetId,openFormDialog,hasPendingWrite,hasUnsavedWork,matchingPortfolioHoldingRows,sortHoldingRows,holdingValueLabel,renderPortfolioView,renderPortfolioSummary,detailHolding};');
+    '  window.testController = {state,render,renderPlan,restorePortfolioAssetFocus,renderHistory,renderAsset,canQuote,lookupQuote,saveQuickAsset,navigateToAsset,navigateBackFromAsset,routeAssetId,openFormDialog,hasPendingWrite,hasUnsavedWork,matchingPortfolioHoldingRows,sortHoldingRows,holdingValueLabel,renderPortfolioView,renderPortfolioSummary,detailHolding};');
   vm.runInContext(source,context);
   const api=window.testController;
   api.state.client={auth:{getSession:async()=>({data:{session:{access_token:'isolated-test'}}})}};
@@ -405,4 +405,38 @@ test('Portfolio asset entry focuses its task and restores the originating card o
     api.restorePortfolioAssetFocus('#asset/test');
     assert.equal(focused.at(-1),'add','removed or filtered records have a safe return target');
   }
+});
+
+test('Plan clears stale projections when valuation coverage is incomplete and recovers after repair',()=>{
+  const {api,node}=controller();
+  api.state.planDataAvailable=true;
+  api.state.holdings=[{contribution_cents:null},{contribution_cents:null}];
+  api.state.planSettings={expected_annual_return_rate:.05,distribution_yield_rate:.02,distribution_policy:'reinvest'};
+  for(const id of ['#plan-value-axis','#plan-income-axis']) node(id).replaceChildren=()=>{node(id).innerHTML=''};
+  const summary={rows:[{},{}],totalMarketValueCents:5000000,weeklyContributionRate:0};
+  api.renderPlan(summary);
+  assert.equal(node('#plan-outlook').hidden,false);
+  assert.match(node('#plan-value-chart').innerHTML,/<svg/);
+  const completeValue=node('#plan-projected-value').textContent;
+  api.renderPlan({...summary,rows:[{}]});
+  assert.equal(node('#plan-outlook').hidden,true);
+  assert.equal(node('#plan-value-chart').innerHTML,'');
+  assert.equal(node('#plan-income-chart').innerHTML,'');
+  assert.equal(node('#plan-current-value').textContent,'Not set');
+  assert.equal(node('#plan-projected-value').textContent,'Not set');
+  assert.equal(node('#plan-review-portfolio').hidden,false);
+  assert.match(node('#plan-readiness-copy').textContent,/1 asset needs a valuation/);
+  api.renderPlan(summary);
+  assert.equal(node('#plan-outlook').hidden,false);
+  assert.equal(node('#plan-readiness').hidden,true);
+  assert.equal(node('#plan-projected-value').textContent,completeValue);
+  api.state.planSettings.expected_annual_return_rate=null;
+  api.renderPlan(summary);
+  assert.equal(node('#plan-outlook').hidden,true);
+  assert.equal(node('#plan-readiness-copy').textContent,'Set an expected annual return to see your outlook.');
+  assert.equal(node('#plan-review-portfolio').hidden,true);
+  api.state.planDataAvailable=false;
+  api.renderPlan(summary);
+  assert.equal(node('#edit-plan-assumptions').disabled,true);
+  assert.equal(node('#plan-readiness-title').textContent,'Plan unavailable');
 });

@@ -2,7 +2,9 @@
 
 **Last reviewed:** 2026-09-06
 
-10 implemented canonical flows have design and automated coverage at varying depths; private export remains deferred. This pass refines Income hierarchy, source access and search recovery without adding product flows.
+10 implemented canonical flows have design and automated coverage at varying depths; private export remains deferred. This pass refines Plan hierarchy, assumption access and missing-input recovery without adding product flows.
+
+Plan now leads with current investment inputs and pairs both available outlooks. One compact readiness message replaces empty chart panels; incomplete valuations withhold and clear projections until repaired. Assumptions identify Plan overrides and Portfolio inheritance, with one contextual Edit action. Seven widths from 320px to 2560px have no horizontal overflow. Local checks cover horizon selection, saves, inheritance, failed drafts, focus restoration, loading/unavailable/empty states and valuation repair. All 131 tests pass; see `automation/design/2026-09-06/plan-review.md`. The projection domain, providers and persistence paths are unchanged.
 
 Income now leads with Planned balance and a grouped three-input summary. Source cards sit alongside compact annual dividend records on larger screens and stack on phones. Add income/category follows the active view; no-match recovery clears only the relevant search. First-field focus, saved edits, cancellation, failed drafts, category shares, Month/Year and route continuity were checked locally. All 130 tests pass; responsive containment was measured at 2560/1920/1440/1024/768/390/320px. See `automation/design/2026-09-06/income-review.md`. No new financial calculations or persistence paths.
 

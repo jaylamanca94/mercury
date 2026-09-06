@@ -34,7 +34,8 @@ test("Home consumes Acadia without a Mercury presentation layer", () => {
   assert.match(indexHtml, /id="home-workspace" class="acadia-stack acadia-home-dashboard" hidden/);
   assert.match(indexHtml, /id="portfolio-workspace" class="acadia-stack mercury-workspace" hidden/);
   assert.match(indexHtml, /id="income-workspace" class="acadia-stack mercury-workspace" hidden/);
-  assert.match(indexHtml, /id="plan-workspace" class="acadia-stack mercury-workspace" hidden aria-live="polite"/);
+  assert.match(indexHtml, /id="plan-workspace" class="acadia-stack mercury-workspace" hidden>/);
+  assert.match(indexHtml, /id="plan-readiness"[^>]*role="status"/);
   assert.match(indexHtml, /id="asset-workspace" class="acadia-stack mercury-workspace" hidden aria-live="polite"/);
   assert.match(acadiaStyles, /\[data-acadia-page-frame="spacious"\]/);
   assert.match(acadiaStyles, /\.acadia-card\.is-dashboard-trend/);

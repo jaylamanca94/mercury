@@ -973,10 +973,10 @@
     const endpoints = $(endpointsSelector);
     const summary = $(summarySelector);
     if (!points.length) {
-      chart.innerHTML = `<span class="acadia-card-trend-empty">${unavailableText}</span>`;
-      chart.setAttribute("aria-label", `${label} unavailable until return and yield assumptions are set`);
+      chart.innerHTML = "";
+      chart.setAttribute("aria-label", `${label}: ${unavailableText}`);
       axis.replaceChildren();
-      endpoints.textContent = "Not set";
+      endpoints.textContent = "";
       summary.textContent = `${label}: ${unavailableText}`;
       return;
     }
@@ -992,8 +992,8 @@
     const firstValue = displayCurrency(first[key] / 100);
     const lastValue = displayCurrency(last[key] / 100);
     chart.setAttribute("aria-label", `${label}: ${firstValue} now to ${lastValue} in year ${last.year}.`);
-    axis.innerHTML = `<span>Now</span><span>Year ${Math.round(last.year / 2)}</span><span>Year ${last.year}</span>`;
-    endpoints.innerHTML = `<span><small>Now</small><strong>${firstValue}</strong></span><span><small>Year ${last.year}</small><strong>${lastValue}</strong></span>`;
+    axis.innerHTML = `<span>Now</span><span>Year ${last.year}</span>`;
+    endpoints.innerHTML = `<span class="acadia-text-muted">From ${firstValue} now</span>`;
     summary.textContent = `${label}: ${firstValue} now and ${lastValue} in year ${last.year}.`;
   }
   function renderPlan(summary) {
@@ -1005,18 +1005,30 @@
     setActiveNavigation("plan");
     const plan = planProjection(summary);
     const { assumptions, projection } = plan;
-    const points = state.planDataAvailable ? projection.points : [];
+    const missingValuations = state.holdings.length - summary.rows.length;
+    const valuationComplete = missingValuations === 0;
+    const ready = state.planDataAvailable && valuationComplete && projection.available;
+    const points = ready ? projection.points : [];
     const finalPoint = points.at(-1);
     const metricsLoading = state.providerMetricsPending.size > 0;
-    const unavailableText = !state.planDataAvailable
-      ? "Apply the latest private Plan schema migration to view this workspace."
-      : metricsLoading
-        ? "Loading current portfolio metrics…"
-        : "Set return and yield assumptions to view this projection.";
-    setText("#plan-current-value", displayCurrency(summary.totalMarketValueCents / 100));
+    const missingReturn = !Number.isFinite(assumptions.expectedAnnualReturnRate);
+    const missingYield = !Number.isFinite(assumptions.distributionYieldRate);
+    const unavailableText = !state.planDataAvailable ? "Plan settings are unavailable. Try reloading the page."
+      : !valuationComplete ? `${missingValuations} ${missingValuations === 1 ? "asset needs" : "assets need"} a valuation before an outlook can be calculated.`
+        : metricsLoading && !projection.available ? "Loading current portfolio metrics…"
+          : missingReturn && missingYield ? "Set an expected annual return and dividend yield to see your outlook."
+            : missingReturn ? "Set an expected annual return to see your outlook."
+              : "Set a dividend yield to see your outlook.";
+    $("#plan-readiness").hidden = ready;
+    $("#plan-outlook").hidden = !ready;
+    $("#plan-review-portfolio").hidden = valuationComplete;
+    setText("#plan-readiness-title", !state.planDataAvailable ? "Plan unavailable" : !valuationComplete ? "Complete your portfolio values" : metricsLoading && !projection.available ? "Loading your outlook" : "Complete your assumptions");
+    setText("#plan-readiness-copy", unavailableText);
+    setText("#plan-current-value", valuationComplete ? displayCurrency(summary.totalMarketValueCents / 100) : "Not set");
     setText("#plan-projected-value-label", `Projected in ${state.planHorizon} years`);
-    setText("#plan-projected-value", state.planDataAvailable && projection.available ? displayCurrency(finalPoint.investmentValueCents / 100) : metricsLoading ? "Loading…" : "Not set");
-    setText("#plan-projected-income", state.planDataAvailable && projection.available ? displayCurrency(finalPoint.projectedIncomeCents / 100) : metricsLoading ? "Loading…" : "Not set");
+    setText("#plan-projected-income-label", `Annual distributions in ${state.planHorizon} years`);
+    setText("#plan-projected-value", ready ? displayCurrency(finalPoint.investmentValueCents / 100) : "Not set");
+    setText("#plan-projected-income", ready ? displayCurrency(finalPoint.projectedIncomeCents / 100) : "Not set");
     document.querySelectorAll("[data-plan-horizon]").forEach((control) => {
       const active = Number(control.dataset.planHorizon) === state.planHorizon;
       control.classList.toggle("is-active", active);
@@ -1024,20 +1036,12 @@
     });
     renderPlanChart({ chartSelector: "#plan-value-chart", axisSelector: "#plan-value-axis", endpointsSelector: "#plan-value-endpoints", summarySelector: "#plan-value-summary", points, key: "investmentValueCents", label: "Projected investment value", unavailableText });
     renderPlanChart({ chartSelector: "#plan-income-chart", axisSelector: "#plan-income-axis", endpointsSelector: "#plan-income-endpoints", summarySelector: "#plan-income-summary", points, key: "projectedIncomeCents", label: "Projected portfolio income", unavailableText });
-    setText("#plan-assumption-current-value", displayCurrency(summary.totalMarketValueCents / 100));
     setText("#plan-assumption-contributions", `${displayCurrency(plan.annualContributionCents / 100)} / year`);
     setText("#plan-assumption-return", Number.isFinite(assumptions.expectedAnnualReturnRate) ? percentage.format(assumptions.expectedAnnualReturnRate) : "Not set");
     setText("#plan-assumption-yield", Number.isFinite(assumptions.distributionYieldRate) ? percentage.format(assumptions.distributionYieldRate) : metricsLoading ? "Loading…" : "Not set");
     setText("#plan-assumption-policy", policyLabel(assumptions.distributionPolicy));
-    const missingReturn = !Number.isFinite(assumptions.expectedAnnualReturnRate);
-    const missingYield = !Number.isFinite(assumptions.distributionYieldRate);
-    setText("#plan-assumptions-status", !state.planDataAvailable
-      ? "Apply the latest private Plan schema migration to save assumptions and home details."
-      : projection.available ? "Plan-only overrides take precedence over Portfolio values."
-        : metricsLoading ? "Loading current Portfolio yield coverage."
-          : missingReturn && missingYield ? "Set a return and yield assumption to create a projection."
-            : missingReturn ? "Set a Base plan return assumption to create a projection."
-              : "Set a Base plan yield assumption to create a projection.");
+    setText("#plan-return-source", missingReturn ? "Set in Edit assumptions" : assumptions.usesReturnOverride ? "Plan override" : "From Portfolio");
+    setText("#plan-yield-source", missingYield ? metricsLoading ? "From Portfolio" : "Set in Edit assumptions" : assumptions.usesYieldOverride ? "Plan override" : "From Portfolio");
     $("#edit-plan-assumptions").disabled = !state.planDataAvailable;
     document.querySelectorAll("[data-open-plan-assumptions]").forEach((button) => { button.disabled = !state.planDataAvailable; });
     const propertyCount = state.properties.length;
