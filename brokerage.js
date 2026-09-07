@@ -1299,13 +1299,13 @@
     $("#manual-price-field").hidden = manual;
     $("#manual-value-field").hidden = !manual;
     $("#asset-shares").required = !manual;
+    $("#asset-shares-field").hidden = manual;
     renderQuickQuotePreview();
   }
-  function setQuickAddStatus(message, { quiet = false } = {}) {
+  function setQuickAddStatus(message) {
     const status = $("#quote-form-status");
     status.textContent = message || "";
     status.hidden = !message;
-    status.classList.toggle("acadia-sr-only", Boolean(message) && quiet);
   }
   function quickPreviewPriceCents() {
     if (state.pendingQuote) return state.pendingQuote.priceCents;
@@ -1313,21 +1313,16 @@
     return Number.isSafeInteger(manualPriceCents) && manualPriceCents >= 0 ? manualPriceCents : null;
   }
   function renderQuickQuotePreview() {
-    if (manualValuation()) {
-      const manualValueCents = cents(getFormValue($("#asset-form"), "manualValue"));
-      setText("#asset-price-preview", "—");
-      setText(
-        "#asset-value-preview",
-        Number.isSafeInteger(manualValueCents) && manualValueCents >= 0
-          ? displayCurrency(manualValueCents / 100)
-          : "—",
-      );
-      return;
-    }
-    const priceCents = quickPreviewPriceCents();
-    const valueCents = calculateQuotePreviewValueCents($("#asset-shares").value, priceCents);
-    setText("#asset-price-preview", priceCents === null ? "—" : displayCurrency(priceCents / 100));
-    setText("#asset-value-preview", valueCents === null ? "—" : displayCurrency(valueCents / 100));
+    const manual = manualValuation();
+    const priceCents = manual ? null : quickPreviewPriceCents();
+    const valueCents = manual
+      ? cents(getFormValue($("#asset-form"), "manualValue"))
+      : calculateQuotePreviewValueCents($("#asset-shares").value, priceCents);
+    const hasValue = Number.isSafeInteger(valueCents) && valueCents >= 0;
+    $("#asset-quote-preview").hidden = priceCents === null && !hasValue;
+    $("#asset-price-preview-field").hidden = manual;
+    setText("#asset-price-preview", priceCents === null ? "—" : preciseCurrency.format(priceCents / 100));
+    setText("#asset-value-preview", hasValue ? preciseCurrency.format(valueCents / 100) : "—");
   }
   function invalidateQuickQuote() {
     state.quoteRequestId += 1;
@@ -1343,6 +1338,8 @@
     $("#manual-fallback").hidden = true;
     $("#asset-manual-price").value = "";
     $("#asset-manual-value").value = "";
+    $("#asset-valuation-basis").value = "shares-and-price";
+    syncQuickValuationFields();
   }
   let quickAssetId = null;
   function openQuickAdd() {
@@ -1350,6 +1347,7 @@
     quickAssetId = crypto.randomUUID();
     const form = $("#asset-form");
     form.reset();
+    $("#asset-recurring-options").open = false;
     clearTimeout(state.quoteTimer);
     invalidateQuickQuote();
     clearManualFallback();
@@ -1395,8 +1393,7 @@
       clearManualFallback();
       renderQuickQuotePreview();
       setQuickAddStatus(
-        `${preciseCurrency.format(quote.priceCents / 100)} from ${quote.source}. As of ${dateLabel(quote.asOf)}.`,
-        { quiet: true },
+        `${quote.source} · ${dateLabel(quote.asOf)}`,
       );
       return quote;
     } catch (error) {

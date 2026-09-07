@@ -31,7 +31,7 @@ function controller() {
     fetch:async()=>({ok:false,json:async()=>({error:'provider unavailable'})}),
   });
   const source = fs.readFileSync(require.resolve('../brokerage.js'),'utf8').replace('  initialise();',
-    '  window.testController = {state,render,renderPlan,restorePortfolioAssetFocus,renderHistory,renderAsset,canQuote,lookupQuote,saveQuickAsset,navigateToAsset,navigateBackFromAsset,routeAssetId,openFormDialog,hasPendingWrite,hasUnsavedWork,matchingPortfolioHoldingRows,sortHoldingRows,holdingValueLabel,renderPortfolioView,renderPortfolioSummary,detailHolding};');
+    '  window.testController = {state,render,renderPlan,renderQuickQuotePreview,restorePortfolioAssetFocus,renderHistory,renderAsset,canQuote,lookupQuote,saveQuickAsset,navigateToAsset,navigateBackFromAsset,routeAssetId,openFormDialog,hasPendingWrite,hasUnsavedWork,matchingPortfolioHoldingRows,sortHoldingRows,holdingValueLabel,renderPortfolioView,renderPortfolioSummary,detailHolding};');
   vm.runInContext(source,context);
   const api=window.testController;
   api.state.client={auth:{getSession:async()=>({data:{session:{access_token:'isolated-test'}}})}};
@@ -439,4 +439,32 @@ test('Plan clears stale projections when valuation coverage is incomplete and re
   api.renderPlan(summary);
   assert.equal(node('#edit-plan-assumptions').disabled,true);
   assert.equal(node('#plan-readiness-title').textContent,'Plan unavailable');
+});
+
+
+test('quick-add previews exact amounts and discards manual valuation mode for a new symbol',()=>{
+  const {api,node}=controller();
+  const basis=node('#asset-valuation-basis');basis.name='valuationBasis';basis.value='shares-and-price';
+  const price=node('#asset-manual-price');price.name='manualPrice';price.value='100.23';
+  const value=node('#asset-manual-value');value.name='manualValue';
+  node('#asset-form').elements=[basis,price,value];
+  node('#asset-shares').value='2.5';
+  api.renderQuickQuotePreview();
+  assert.equal(node('#asset-price-preview').textContent,'$100.23');
+  assert.equal(node('#asset-value-preview').textContent,'$250.58');
+  assert.equal(node('#asset-quote-preview').hidden,false);
+  basis.value='manual-value';value.value='12500.50';
+  api.renderQuickQuotePreview();
+  assert.equal(node('#asset-price-preview-field').hidden,true);
+  assert.equal(node('#asset-value-preview').textContent,'$12,500.50');
+  node('#asset-valuation-basis').value='manual-value';
+  node('#asset-manual-value').value='12500.50';
+  node('#asset-symbol').value='NEW';
+  node('#asset-shares').value='';
+  node('#asset-symbol').listeners.input();
+  assert.equal(node('#asset-valuation-basis').value,'shares-and-price');
+  assert.equal(node('#asset-manual-value').value,'');
+  assert.equal(node('#manual-fallback').hidden,true);
+  assert.equal(node('#asset-quote-preview').hidden,true);
+  assert.equal(node('#asset-value-preview').textContent,'—');
 });

@@ -2,7 +2,9 @@
 
 **Last reviewed:** 2026-09-06
 
-10 implemented canonical flows have design and automated coverage at varying depths; private export remains deferred. This pass refines Plan hierarchy, assumption access and missing-input recovery without adding product flows.
+10 implemented canonical flows have design and automated coverage at varying depths; private export remains deferred. This pass refines Add Asset entry, quote preview and manual recovery without adding product flows.
+
+Add Asset now puts Symbol/Shares first, reveals precise price/value previews when available and uses an Acadia Accordion for optional recurring investments. Manual recovery stays beside the core inputs; changing symbols resets prior manual valuation. Local quote/manual saves, recurring/Retirement, failure/retry, pending-save lock and Home/Portfolio focus checks pass. The empty dialog is 428px high on desktop and 498px on phones, with no horizontal overflow at seven widths from 320px to 2560px and 44px controls. All 132 tests pass; see `automation/design/2026-09-06/add-asset-review.md`. No schema, provider or financial-domain changes.
 
 Plan now leads with current investment inputs and pairs both available outlooks. One compact readiness message replaces empty chart panels; incomplete valuations withhold and clear projections until repaired. Assumptions identify Plan overrides and Portfolio inheritance, with one contextual Edit action. Seven widths from 320px to 2560px have no horizontal overflow. Local checks cover horizon selection, saves, inheritance, failed drafts, focus restoration, loading/unavailable/empty states and valuation repair. All 131 tests pass; see `automation/design/2026-09-06/plan-review.md`. The projection domain, providers and persistence paths are unchanged.
 
