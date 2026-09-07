@@ -13,7 +13,7 @@ function controller() {
       validity: {valid: true}, elements: [], dataset: {}, listeners: {},
       classList: {toggle() {}, add() {}, remove() {}},
       addEventListener(type, callback) { this.listeners[type] = callback; },
-      querySelectorAll() { return []; }, replaceChildren() {}, setAttribute() {}, hasAttribute() { return false; }, focus() {},
+      querySelectorAll() { return []; }, replaceChildren() {}, setAttribute() {}, hasAttribute() { return false; }, focus() {}, scrollIntoView() {},
       showModal() { this.open = true; }, close() { this.open = false; this.listeners.close?.(); },
     });
     return nodes.get(selector);
@@ -31,7 +31,7 @@ function controller() {
     fetch:async()=>({ok:false,json:async()=>({error:'provider unavailable'})}),
   });
   const source = fs.readFileSync(require.resolve('../brokerage.js'),'utf8').replace('  initialise();',
-    '  window.testController = {state,render,renderPlan,renderQuickQuotePreview,refreshCurrentAssetPrice,restorePortfolioAssetFocus,renderHistory,renderAsset,canQuote,lookupQuote,saveQuickAsset,navigateToAsset,navigateBackFromAsset,routeAssetId,openFormDialog,hasPendingWrite,hasUnsavedWork,matchingPortfolioHoldingRows,sortHoldingRows,holdingValueLabel,renderPortfolioView,renderPortfolioSummary,detailHolding};');
+    '  window.testController = {state,render,missingIncomeYieldRows,renderIncomeYieldRecovery,renderPlan,renderQuickQuotePreview,refreshCurrentAssetPrice,restorePortfolioAssetFocus,renderHistory,renderAsset,canQuote,lookupQuote,saveQuickAsset,navigateToAsset,navigateBackFromAsset,routeAssetId,openFormDialog,hasPendingWrite,hasUnsavedWork,matchingPortfolioHoldingRows,sortHoldingRows,holdingValueLabel,renderPortfolioView,renderPortfolioSummary,detailHolding};');
   vm.runInContext(source,context);
   const api=window.testController;
   api.state.client={auth:{getSession:async()=>({data:{session:{access_token:'isolated-test'}}})}};
@@ -606,4 +606,44 @@ test('acknowledged asset deletion returns to Portfolio without a reload racing t
   window.location.hash='#portfolio';api.render();
   assert.equal(window.location.hash,'#portfolio');
   assert.equal(node('#portfolio-workspace').hidden,false);
+});
+
+
+test('Income yield recovery excludes complete, zero, crypto and still-loading estimates',()=>{
+  const {api,node}=controller();
+  const row=(id,income,type='stock')=>({asset:{id,instrumentType:type},estimatedAnnualIncomeCents:income});
+  api.state.providerMetricsPending.add('loading');
+  const summary={rows:[row('missing',null),row('zero',0),row('complete',100),row('crypto',null,'crypto'),row('loading',null)]};
+  assert.deepEqual(Array.from(api.missingIncomeYieldRows(summary),r=>r.asset.id),['missing']);
+  node('#income-dividends-search').value='unrelated';
+  api.renderIncomeYieldRecovery(summary);
+  assert.equal(node('#income-review-yields').hidden,false);
+  assert.equal(node('#income-yield-recovery-copy').textContent,'1 holding needs a dividend yield.');
+  api.renderIncomeYieldRecovery({rows:[row('zero',0)]});
+  assert.equal(node('#income-yield-recovery').hidden,true);
+  assert.equal(node('#income-review-yields').hidden,true);
+});
+
+test('Income yield entry opens the advanced field and returns focus without changing period or search',()=>{
+  for(const origin of ['#income','#income/budget']) {
+    const {api,node,window,document}=controller();
+    window.location.hash=origin;api.state.holdings=[{id:'test'}];api.state.incomePeriod='year';
+    node('#income-dividends-search').value='FUND';
+    const focused=[],disclosure={open:false};
+    node('#asset-detail-yield').closest=()=>disclosure;
+    node('#asset-detail-yield').focus=()=>focused.push('yield');
+    node('#income-review-yields').focus=()=>focused.push('summary');
+    node('#income-dividends-search').focus=()=>focused.push('search');
+    node('#income-budget-tab').focus=()=>focused.push('budget');
+    document.activeElement=node('#income-review-yields');
+    api.navigateToAsset('test',{section:'yield'});window.location.hash='#asset/test';
+    api.restorePortfolioAssetFocus(origin);
+    assert.equal(disclosure.open,true);assert.deepEqual(focused,['yield']);
+    api.restorePortfolioAssetFocus('#asset/test');assert.equal(focused.length,1);
+    api.navigateBackFromAsset();assert.equal(window.location.hash,origin);
+    api.restorePortfolioAssetFocus('#asset/test');assert.equal(focused.at(-1),'summary');
+    node('#income-review-yields').hidden=true;api.restorePortfolioAssetFocus('#asset/test');
+    assert.equal(focused.at(-1),origin==='#income'?'search':'budget');
+    assert.equal(api.state.incomePeriod,'year');assert.equal(node('#income-dividends-search').value,'FUND');
+  }
 });

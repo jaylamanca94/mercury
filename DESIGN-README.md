@@ -477,3 +477,10 @@ When a UX detail, UI pattern, visual utility, chart treatment, component behavio
 - Retain acknowledged holding/quote writes in memory if the subsequent account reload fails. Explain that saving succeeded and syncing needs a page reload. Do not offer Add again for a committed holding.
 - A successful deletion updates the local holding/quote collections and returns directly to Portfolio; do not run a redundant read while the deletion dialog's navigation guard is still pending.
 - Property add/edit starts at Property name, consistent with Income and Budget first-field focus. Existing dismissal, pending-write and return-focus protections remain active.
+
+## Income yield recovery — 2026-09-07
+
+- When a valued, non-crypto holding has no annual dividend estimate and its provider metrics are no longer loading, show a quiet missing-yield count and Review yields action beneath the shared Income summary. Count the full portfolio regardless of dividend search. Keep unavailable totals honest; never infer a zero yield.
+- Review yields opens the first affected holding; each affected dividend row also offers Set yield with the holding in its accessible name. Reuse Acadia Cluster, quiet Button, Read Only and the existing asset Accordion; no new styles or dialog.
+- Open More details and focus Manual distribution yield on entry. Centre the focused field and return control in view to avoid the phone dock. Preserve Income Overview/Budget, Month/Year and search state; Back restores the invoking action or the relevant search/tab if the action is gone after repair. Background renders preserve row-action focus without reopening the asset field.
+- Valid zero income, available provider estimates, crypto and still-loading provider metrics do not prompt for a missing yield. Missing valuations and unavailable source/category collections remain separate recovery concerns. Saving still uses the existing explicit Save/Cancel, failure retention and unsaved-navigation protection.

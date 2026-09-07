@@ -2,7 +2,9 @@
 
 **Last reviewed:** 2026-09-07
 
-10 implemented canonical flows have design and automated coverage at varying depths; private export remains deferred. This pass resolves partial Add outcomes, price recovery and the asset-deletion return route without adding product flows.
+10 implemented canonical flows have design and automated coverage at varying depths; private export remains deferred. This pass adds direct missing-yield recovery within Income and Asset editing.
+
+Income now offers Review yields beside incomplete summaries and Set yield on affected dividend rows. Both reveal and focus the existing manual-yield field, then preserve Income subview, period, search and return focus. The prompt clears after repair; zero/provider-backed income and pending metrics do not trigger it. 142 checks pass, with local desktop light/dark and phone/tablet recovery coverage. See `automation/design/2026-09-07/review.md`.
 
 An acknowledged holding now opens in asset details even when quote storage or account reloading fails. Recovery explains what saved, offers Retry price/manual valuation, prevents duplicate refreshes and preserves drafts. Successful deletion returns directly to Portfolio; Property entry focuses its first field. Local browser evidence covers these changes and the main planning routes. All 140 tests pass. Recovery has no overflow at 390px/320px and retains 44px targets. See `automation/research/latest.md`; authenticated production acceptance remains Vercel-login-gated.
 
@@ -23,5 +25,5 @@ Income, Plan and the remaining deletion dialogs now use Acadia compact form comp
 ## Next design opportunities
 
 1. **Recover from session expiry during edits.** Verify real magic-link redemption and expired-session recovery using a disposable authenticated account; preserve the task while respecting private-data boundaries.
-2. **Make incomplete Income estimates easier to resolve.** The local audit shows honest Not set totals when a holding lacks yield; improve the path from that summary to the specific missing input without implying complete income coverage.
+2. **Resolve other incomplete Income inputs.** Missing-yield repair is now direct. Review missing valuations and unavailable source/category reads next, so remaining Not set totals identify their distinct causes.
 3. **Review long forms with the software keyboard.** Responsive browser checks pass; verify focused-field visibility, scrolling and action reachability on a physical phone.

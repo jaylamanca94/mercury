@@ -142,12 +142,30 @@
   function routePlan() { return window.location.hash === "#plan"; }
   let assetReturnHash = "#portfolio";
   let portfolioAssetNavigation = null;
+  let incomeAssetNavigation = null;
   function navigateToAsset(id, { section = "details" } = {}) {
     if (!routeAssetId()) assetReturnHash = window.location.hash || "#";
     portfolioAssetNavigation = routePortfolio() ? { id, section } : null;
+    incomeAssetNavigation = routeIncome() && section === "yield" ? { id, returnHash: window.location.hash, fromSummary: document.activeElement === $("#income-review-yields") } : null;
     window.location.hash = `asset/${encodeURIComponent(id)}`;
   }
   function restorePortfolioAssetFocus(previousHash) {
+    if (incomeAssetNavigation && previousHash !== window.location.hash) {
+      const { id, returnHash, fromSummary } = incomeAssetNavigation;
+      if (routeAssetId() === id) {
+        if (state.holdings.some((holding) => holding.id === id)) {
+          const field = $("#asset-detail-yield");
+          field.closest("details").open = true;
+          field.focus();
+          field.scrollIntoView({ block: "center" });
+        } else $("#asset-title").focus();
+      } else if (window.location.hash === returnHash && previousHash.startsWith("#asset/")) {
+        const target = fromSummary ? $("#income-review-yields") : [...document.querySelectorAll("[data-review-income-yield]")].find((element) => element.dataset.reviewIncomeYield === id);
+        const returnTarget = target && !target.hidden ? target : $(returnHash === "#income/budget" ? "#income-budget-tab" : "#income-dividends-search");
+        returnTarget.focus();
+        returnTarget.scrollIntoView({ block: "center" });
+      } else if (!routeAssetId()) incomeAssetNavigation = null;
+    }
     if (!portfolioAssetNavigation || previousHash === window.location.hash) return;
     const { id, section } = portfolioAssetNavigation;
     if (routeAssetId() === id) {
@@ -789,6 +807,19 @@
       control.setAttribute("aria-checked", String(control.dataset.incomeDividendSort === state.incomeDividendSort));
     });
   }
+  function missingIncomeYieldRows(summary) {
+    return summary.rows.filter((row) => row.asset.instrumentType !== "crypto"
+      && row.estimatedAnnualIncomeCents === null && !state.providerMetricsPending.has(row.asset.id));
+  }
+  function renderIncomeYieldRecovery(summary) {
+    const rows = missingIncomeYieldRows(summary);
+    $("#income-yield-recovery").hidden = rows.length === 0;
+    $("#income-review-yields").hidden = rows.length === 0;
+    setText("#income-yield-recovery-copy", `${rows.length} ${rows.length === 1 ? "holding needs" : "holdings need"} a dividend yield.`);
+    $("#income-review-yields").onclick = () => {
+      if (rows.length) navigateToAsset(rows[0].asset.id, { section: "yield" });
+    };
+  }
   function renderIncomeDividends(summary) {
     renderIncomeDividendSort();
     const matchingRows = matchingIncomeDividendRows(summary);
@@ -806,6 +837,17 @@
       card.className = "acadia-object-card-header";
       card.setAttribute("role", "listitem");
       card.innerHTML = `<div class="acadia-read-only"><strong>${escapeHtml(row.asset.symbol || row.asset.name)}</strong><small class="acadia-text-muted">${escapeHtml(row.asset.symbol && row.asset.name !== row.asset.symbol ? row.asset.name : instrumentLabel(row.asset.instrumentType))}</small></div><div class="acadia-read-only"><strong title="${Number.isSafeInteger(annualCents) ? escapeHtml(preciseCurrency.format(annualCents / 100)) : amount}">${amount}</strong><small class="acadia-text-muted">${yieldDisplay}</small></div>`;
+      if (annualCents === null && !isLoading) {
+        card.classList.add("acadia-cluster");
+        const action = document.createElement("button");
+        action.type = "button";
+        action.className = "acadia-button acadia-button-quiet";
+        action.dataset.reviewIncomeYield = row.asset.id;
+        action.textContent = "Set yield";
+        action.setAttribute("aria-label", `Set dividend yield for ${row.asset.symbol || row.asset.name}`);
+        action.addEventListener("click", () => navigateToAsset(row.asset.id, { section: "yield" }));
+        card.append(action);
+      }
       return card;
     }));
     setText("#income-dividends-count", `${matchingRows.length} ${matchingRows.length === 1 ? "source" : "sources"}`);
@@ -918,6 +960,7 @@
     const planning = planningPosition(summary, state.incomePeriod);
     for (const [id, key] of [["total", "expectedCents"], ["earned", "recurringCents"], ["passive", "passiveCents"], ["expenses", "spendingCents"], ["investing", "investingCents"], ["balance", "balanceCents"]]) setText(`#income-${id}`, planningValue(planning[key]));
     setText("#income-balance-period", `/ ${incomePeriodLabel()}`);
+    renderIncomeYieldRecovery(summary);
     setText("#income-balance-status", planning.balanceCents === null ? "Complete income and allocation data is needed" : planning.balanceCents < 0 ? "Planned allocations exceed expected income" : planning.balanceCents === 0 ? (planning.expectedCents === 0 && planning.spendingCents === 0 && planning.investingCents === 0 ? "Add income to start your plan" : "Expected income is fully allocated") : "After planned spending and investing");
     renderIncomeDividends(summary);
     renderIncomeSources(summarizeIncomeSources(state.incomeSources.map(incomeSourceModel), state.incomePeriod));
@@ -1291,7 +1334,7 @@
     if (isPortfolio && !renderedPortfolio) state.portfolioView = "cards";
     renderedPortfolio = isPortfolio;
     const focused = document.activeElement;
-    const focusAttribute = ["data-edit-income-source", "data-edit-budget-category", "data-delete-income-source", "data-delete-budget-category"].find((attribute) => focused?.hasAttribute(attribute));
+    const focusAttribute = ["data-edit-income-source", "data-edit-budget-category", "data-delete-income-source", "data-delete-budget-category", "data-review-income-yield"].find((attribute) => focused?.hasAttribute(attribute));
     const focusValue = focusAttribute ? focused.getAttribute(focusAttribute) : null;
     setControlsDisabled(!state.configured);
     const summary = portfolio();
@@ -1306,7 +1349,7 @@
     $("#main-content").setAttribute("aria-busy", "false");
     if (focusAttribute && !focused.isConnected) {
       const replacement = document.querySelector(`[${focusAttribute}="${CSS.escape(focusValue)}"]`);
-      (replacement || $(focusAttribute.includes("budget") ? "#add-budget-category" : "#add-income")).focus();
+      (replacement || $(focusAttribute === "data-review-income-yield" ? "#income-dividends-search" : focusAttribute.includes("budget") ? "#add-budget-category" : "#add-income")).focus();
     }
   }
 
