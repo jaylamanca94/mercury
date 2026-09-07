@@ -2,6 +2,8 @@
 
 **Last reviewed:** 2026-09-07
 
+Add asset now hugs content in Safari instead of stretching to viewport height. Native Safari verifies 560 × 428px collapsed / 560 × 528px expanded; desktop-browser tablet and narrow-phone sizing/scrolling pass. 151 checks pass. See `automation/design/2026-09-07/add-asset-sizing.md`.
+
 10 implemented canonical flows have design and automated coverage at varying depths; private export remains deferred. This pass adds direct missing-yield recovery within Income and Asset editing.
 
 Income now offers Review yields beside incomplete summaries and Set yield on affected dividend rows. Both reveal and focus the existing manual-yield field, then preserve Income subview, period, search and return focus. The prompt clears after repair; zero/provider-backed income and pending metrics do not trigger it. 142 checks pass, with local desktop light/dark and phone/tablet recovery coverage. See `automation/design/2026-09-07/review.md`.

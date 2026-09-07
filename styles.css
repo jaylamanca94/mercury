@@ -1,6 +1,14 @@
 @import url("acadia.css?v=20260903-home-overview-v1");
 
 /* Page composition only; the shared Acadia primitives and tokens stay canonical. */
+/* Safari stretches a grid dialog between opposing block insets. Anchor the
+   content-sized Add asset dialog at the viewport centre; Acadia caps overflow. */
+#asset-dialog {
+  height: auto;
+  inset-block: 50% auto;
+  transform: translateY(-50%);
+}
+
 .mercury-caption {
   color: var(--acadia-color-text-muted);
   font-size: var(--acadia-type-size-small);
