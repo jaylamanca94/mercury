@@ -26,16 +26,28 @@ function latestQuotes(quotes) {
 function totalValueCents(holdings, quotes) {
   const quoteByHolding = latestQuotes(quotes);
   return holdings.reduce((total, holding) => {
-    if (holding.valuation_basis === "manual-value") return total + holding.manual_value_cents;
     const quote = quoteByHolding[holding.id];
     const unitPrice = quote?.price_cents ?? holding.manual_price_cents;
-    return total + (unitPrice === null || unitPrice === undefined ? 0 : Math.round(Number(holding.shares) * unitPrice));
+    const validMoney = (value) => Number.isSafeInteger(value) && value >= 0;
+    let value;
+    if (holding.valuation_basis === "manual-value" && validMoney(holding.manual_value_cents)) {
+      value = holding.manual_value_cents;
+    } else if (holding.valuation_basis === "shares-and-price" && validMoney(unitPrice)
+      && holding.shares !== null && holding.shares !== undefined && holding.shares !== ""
+      && Number.isFinite(Number(holding.shares)) && Number(holding.shares) >= 0) {
+      value = Math.round(Number(holding.shares) * unitPrice);
+    }
+    if (!validMoney(value) || !validMoney(total + value)) {
+      throw new Error("History was not updated because a holding has a missing or invalid valuation. Review Portfolio and try again.");
+    }
+    return total + value;
   }, 0);
 }
 
 async function supabase(path, { method = "GET", body } = {}) {
   const response = await fetch(`${process.env.SUPABASE_URL}/rest/v1/${path}`, {
     method,
+    signal: AbortSignal.timeout(10000),
     headers: {
       apikey: process.env.SUPABASE_SERVICE_ROLE_KEY,
       Authorization: `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY}`,
@@ -65,11 +77,17 @@ async function recordAccountSnapshot(account) {
 
 module.exports = async function handler(request, response) {
   response.setHeader("Cache-Control", "no-store");
-  const isCron = request.headers.authorization === `Bearer ${process.env.CRON_SECRET}`;
-  const user = isCron ? null : await currentUser(request);
-  if (!isCron && !user) return response.status(401).json({ error: "Sign in is required to refresh history." });
   if (request.method !== "POST" && request.method !== "GET") return response.status(405).json({ error: "Use POST or scheduled GET." });
-  if (!process.env.SUPABASE_SERVICE_ROLE_KEY) return response.status(503).json({ error: "Snapshots are not configured yet." });
+  const cronSecret = process.env.CRON_SECRET;
+  const isCron = Boolean(cronSecret?.trim()) && request.headers.authorization === `Bearer ${cronSecret}`;
+  let user;
+  try {
+    user = isCron ? null : await currentUser(request);
+  } catch {
+    return response.status(503).json({ error: "Authentication is temporarily unavailable. Try again." });
+  }
+  if (!isCron && !user) return response.status(401).json({ error: "Sign in is required to refresh history." });
+  if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) return response.status(503).json({ error: "Snapshots are not configured yet." });
   if (isCron && !isAfterMarketClose()) return response.status(202).json({ skipped: true, reason: "Awaiting New York market close." });
 
   try {

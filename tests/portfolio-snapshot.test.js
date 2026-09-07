@@ -21,3 +21,25 @@ test("calculates one account snapshot from the latest quote or an explicit manua
   );
   assert.equal(total, 376250);
 });
+
+test("snapshot totals reject missing, negative and unsafe values rather than recording partial history", () => {
+  for (const holding of [
+    { valuation_basis: "shares-and-price", shares: "10", manual_price_cents: null },
+    { valuation_basis: "shares-and-price", shares: "-1", manual_price_cents: 100 },
+    { valuation_basis: "shares-and-price", shares: null, manual_price_cents: 100 },
+    { valuation_basis: "shares-and-price", shares: "Infinity", manual_price_cents: 100 },
+    { valuation_basis: "manual-value", manual_value_cents: null },
+    { valuation_basis: "manual-value", manual_value_cents: -1 },
+    { valuation_basis: "manual-value", manual_value_cents: Number.MAX_SAFE_INTEGER + 1 },
+  ]) assert.throws(() => _internals.totalValueCents([holding], []), /missing or invalid valuation/);
+  assert.throws(() => _internals.totalValueCents([
+    { valuation_basis: "manual-value", manual_value_cents: Number.MAX_SAFE_INTEGER },
+    { valuation_basis: "manual-value", manual_value_cents: 1 },
+  ], []), /missing or invalid valuation/);
+});
+
+test("snapshot totals preserve explicit zero, empty accounts and fractional manual-price values", () => {
+  assert.equal(_internals.totalValueCents([], []), 0);
+  assert.equal(_internals.totalValueCents([{ valuation_basis: "manual-value", manual_value_cents: 0 }], []), 0);
+  assert.equal(_internals.totalValueCents([{ valuation_basis: "shares-and-price", shares: "1.5", manual_price_cents: 101 }], []), 152);
+});

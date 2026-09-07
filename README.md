@@ -22,7 +22,7 @@ Add asset keeps Symbol and Shares first, with optional recurring investments in 
 
 - `/api/config` exposes only Supabase's public URL and anonymous key.
 - `/api/portfolio/quotes` requires a signed-in user and calls Twelve Data server-side. It caches successful prices for five minutes and provider distribution data for one day; unavailable distribution data never invalidates a price quote.
-- `/api/portfolio/snapshot` accepts the Vercel cron secret or a signed-in owner. It upserts one daily account snapshot after the America/New_York market close.
+- `/api/portfolio/snapshot` accepts the Vercel cron secret or a signed-in owner. Scheduled requests require a nonblank cron secret and upsert one daily account snapshot after the America/New_York market close. Missing or invalid holding valuations reject the write and preserve existing history. Authentication and snapshot storage requests time out after ten seconds; authentication outages return a retryable 503 response.
 - Browser writes are limited by Supabase RLS. Provider and service-role credentials never reach the browser.
 
 ## Development and checks

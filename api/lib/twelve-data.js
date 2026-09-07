@@ -19,8 +19,11 @@ function normaliseSymbol(symbol, instrumentType) {
 }
 
 function dollarsToCents(value, field) {
+  if ((typeof value !== "string" && typeof value !== "number") || String(value).trim() === "") {
+    throw new Error(`Twelve Data returned no usable ${field}.`);
+  }
   const amount = Number(value);
-  if (!Number.isFinite(amount) || amount < 0) throw new Error(`Twelve Data returned no usable ${field}.`);
+  if (!Number.isFinite(amount) || amount < 0 || !Number.isSafeInteger(Math.round(amount * 100))) throw new Error(`Twelve Data returned no usable ${field}.`);
   return Math.round(amount * 100);
 }
 

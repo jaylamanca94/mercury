@@ -206,3 +206,10 @@ test("includes source-backed annualised performance only when requested", async 
     else process.env.TWELVE_DATA_API_KEY = originalKey;
   }
 });
+
+test("provider prices reject blanks, nulls, booleans and unsafe cent values without fabricating zero", () => {
+  for (const price of [null, undefined, "", "   ", false, true, [], {}, "1e100"]) {
+    assert.throws(() => _internals.mapQuote({ price }, "VT"), /no usable price/);
+  }
+  assert.equal(_internals.mapQuote({ price: "0" }, "VT").priceCents, 0);
+});

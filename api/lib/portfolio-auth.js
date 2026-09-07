@@ -11,16 +11,22 @@ async function currentUser(request) {
   if (!token || !supabaseUrl || !supabaseAnonKey) return null;
 
   const response = await fetch(`${supabaseUrl}/auth/v1/user`, {
+    signal: AbortSignal.timeout(10000),
     headers: { apikey: supabaseAnonKey, Authorization: `Bearer ${token}` },
   });
-  if (!response.ok) return null;
-  return response.json();
+  if (response.status === 401 || response.status === 403) return null;
+  if (!response.ok) throw new Error("Authentication is temporarily unavailable.");
+  const user = await response.json();
+  return typeof user?.id === "string" && /^[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$/i.test(user.id) ? user : null;
 }
 
 function requireUser(request, response) {
   return currentUser(request).then((user) => {
     if (user) return user;
     response.status(401).json({ error: "Sign in is required for brokerage data." });
+    return null;
+  }).catch(() => {
+    response.status(503).json({ error: "Authentication is temporarily unavailable. Try again." });
     return null;
   });
 }
