@@ -2,6 +2,8 @@
 
 **Last reviewed:** 2026-09-07
 
+Plan now derives its return baseline and dividend yield from holdings without requiring manual rates. Plan settings presents calculated values first, with optional overrides and historical provenance. 155 checks pass; isolated browser verification covers automatic outlook, saving/clearing an override, missing return coverage, dark/light desktop and 320/390/768px containment. See `automation/design/2026-09-07/plan-automatic-rates.md`.
+
 Add asset now hugs content in Safari instead of stretching to viewport height. Native Safari verifies 560 × 428px collapsed / 560 × 528px expanded; desktop-browser tablet and narrow-phone sizing/scrolling pass. 151 checks pass. See `automation/design/2026-09-07/add-asset-sizing.md`.
 
 10 implemented canonical flows have design and automated coverage at varying depths; private export remains deferred. This pass adds direct missing-yield recovery within Income and Asset editing.

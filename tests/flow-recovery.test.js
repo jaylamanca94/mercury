@@ -504,12 +504,29 @@ test('Plan clears stale projections when valuation coverage is incomplete and re
   api.state.planSettings.expected_annual_return_rate=null;
   api.renderPlan(summary);
   assert.equal(node('#plan-outlook').hidden,true);
-  assert.equal(node('#plan-readiness-copy').textContent,'Set an expected annual return to see your outlook.');
-  assert.equal(node('#plan-review-portfolio').hidden,true);
+  assert.equal(node('#plan-readiness-copy').textContent,'Annual return data is missing for some holdings. Review Portfolio to complete coverage.');
+  assert.equal(node('#plan-review-portfolio').hidden,false);
   api.state.planDataAvailable=false;
   api.renderPlan(summary);
   assert.equal(node('#edit-plan-assumptions').disabled,true);
   assert.equal(node('#plan-readiness-title').textContent,'Plan unavailable');
+});
+
+test('Plan contains unsupported historical rates for cash distribution policies and recovers',()=>{
+  const {api,node}=controller();
+  api.state.planDataAvailable=true;
+  api.state.holdings=[{contribution_cents:null}];
+  api.state.planSettings={expected_annual_return_rate:null,distribution_yield_rate:null,distribution_policy:'hold-cash'};
+  for(const id of ['#plan-value-axis','#plan-income-axis']) node(id).replaceChildren=()=>{node(id).innerHTML=''};
+  const summary={rows:[{marketValueCents:10000,asset:{historicalAnnualizedReturnRate:-.99}}],totalMarketValueCents:10000,distributionYieldRate:.02,weeklyContributionRate:0};
+  api.renderPlan(summary);
+  assert.equal(node('#plan-outlook').hidden,true);
+  assert.equal(node('#plan-readiness-title').textContent,'Outlook unavailable');
+  assert.match(node('#plan-readiness-copy').textContent,/selected distribution policy/);
+  api.state.planSettings.distribution_policy='reinvest';
+  api.renderPlan(summary);
+  assert.equal(node('#plan-outlook').hidden,false);
+  assert.equal(node('#plan-readiness').hidden,true);
 });
 
 

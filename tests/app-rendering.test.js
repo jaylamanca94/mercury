@@ -288,8 +288,8 @@ test("Plan is a separate Base-plan projection workspace with aligned portfolio c
   assert.match(planWorkspace, /Included in net worth, not in investment or portfolio-income projections/);
   assert.match(indexHtml, /id="plan-assumptions-dialog"/);
   assert.match(indexHtml, /id="property-dialog"/);
-  assert.match(indexHtml, /<script src="plan\.js\?v=20260904-portfolio-dashboard-v1"><\/script>/);
-  assert.match(indexHtml, /<script src="brokerage\.js\?v=20260905-home-refinement-v1"><\/script>/);
+  assert.match(indexHtml, /<script src="plan\.js\?v=20260907-plan-automatic-v1"><\/script>/);
+  assert.match(indexHtml, /<script src="brokerage\.js\?v=20260907-plan-automatic-v1"><\/script>/);
   assert.match(homeSource, /function routePlan\(\)/);
   assert.match(homeSource, /function renderPlan\(summary\)/);
   assert.match(homeSource, /function renderPlanChart/);

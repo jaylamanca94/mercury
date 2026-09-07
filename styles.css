@@ -2,8 +2,9 @@
 
 /* Page composition only; the shared Acadia primitives and tokens stay canonical. */
 /* Safari stretches a grid dialog between opposing block insets. Anchor the
-   content-sized Add asset dialog at the viewport centre; Acadia caps overflow. */
-#asset-dialog {
+   content-sized form dialog at the viewport centre; Acadia caps overflow. */
+#asset-dialog,
+#plan-assumptions-dialog {
   height: auto;
   inset-block: 50% auto;
   transform: translateY(-50%);

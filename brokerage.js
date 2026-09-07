@@ -989,19 +989,23 @@
         legacyWeeklyAllocationRate: summary.weeklyContributionRate,
       },
     );
-    return {
-      assumptions,
-      annualContributionCents,
-      projection: projectPortfolio({
+    let projection;
+    try {
+      projection = projectPortfolio({
         currentValueCents: summary.totalMarketValueCents,
         annualContributionCents,
         expectedAnnualReturnRate: assumptions.expectedAnnualReturnRate,
         distributionYieldRate: assumptions.distributionYieldRate,
         distributionPolicy: assumptions.distributionPolicy,
         horizonYears: state.planHorizon,
-      }),
-    };
+      });
+    } catch (error) {
+      if (error.name !== "PlanValidationError") throw error;
+      projection = { available: false, points: [], reason: "These rates cannot be projected with the selected distribution policy. Review Plan settings." };
+    }
+    return { assumptions, annualContributionCents, projection };
   }
+
   function policyLabel(value) {
     return ({
       reinvest: "Reinvest",
@@ -1058,14 +1062,15 @@
     const missingYield = !Number.isFinite(assumptions.distributionYieldRate);
     const unavailableText = !state.planDataAvailable ? "Plan settings are unavailable. Try reloading the page."
       : !valuationComplete ? `${missingValuations} ${missingValuations === 1 ? "asset needs" : "assets need"} a valuation before an outlook can be calculated.`
+        : projection.reason ? projection.reason
         : metricsLoading && !projection.available ? "Loading current portfolio metrics…"
-          : missingReturn && missingYield ? "Set an expected annual return and dividend yield to see your outlook."
-            : missingReturn ? "Set an expected annual return to see your outlook."
-              : "Set a dividend yield to see your outlook.";
+          : missingReturn && missingYield ? "Return and dividend data are missing for some holdings. Review Portfolio to complete coverage."
+            : missingReturn ? "Annual return data is missing for some holdings. Review Portfolio to complete coverage."
+              : "Dividend data is missing for some holdings. Review Portfolio to complete coverage.";
     $("#plan-readiness").hidden = ready;
     $("#plan-outlook").hidden = !ready;
-    $("#plan-review-portfolio").hidden = valuationComplete;
-    setText("#plan-readiness-title", !state.planDataAvailable ? "Plan unavailable" : !valuationComplete ? "Complete your portfolio values" : metricsLoading && !projection.available ? "Loading your outlook" : "Complete your assumptions");
+    $("#plan-review-portfolio").hidden = (valuationComplete && !(missingReturn || missingYield)) || metricsLoading || !state.planDataAvailable;
+    setText("#plan-readiness-title", !state.planDataAvailable ? "Plan unavailable" : !valuationComplete ? "Complete your portfolio values" : metricsLoading && !projection.available ? "Loading your outlook" : projection.reason ? "Outlook unavailable" : "Portfolio data incomplete");
     setText("#plan-readiness-copy", unavailableText);
     setText("#plan-current-value", valuationComplete ? displayCurrency(summary.totalMarketValueCents / 100) : "Not set");
     setText("#plan-projected-value-label", `Projected in ${state.planHorizon} years`);
@@ -1083,8 +1088,8 @@
     setText("#plan-assumption-return", Number.isFinite(assumptions.expectedAnnualReturnRate) ? percentage.format(assumptions.expectedAnnualReturnRate) : "Not set");
     setText("#plan-assumption-yield", Number.isFinite(assumptions.distributionYieldRate) ? percentage.format(assumptions.distributionYieldRate) : metricsLoading ? "Loading…" : "Not set");
     setText("#plan-assumption-policy", policyLabel(assumptions.distributionPolicy));
-    setText("#plan-return-source", missingReturn ? "Set in Edit assumptions" : assumptions.usesReturnOverride ? "Plan override" : "From Portfolio");
-    setText("#plan-yield-source", missingYield ? metricsLoading ? "From Portfolio" : "Set in Edit assumptions" : assumptions.usesYieldOverride ? "Plan override" : "From Portfolio");
+    setText("#plan-return-source", missingReturn ? metricsLoading ? "Loading portfolio returns…" : "Portfolio data incomplete" : assumptions.usesReturnOverride ? "Plan override" : assumptions.usesHistoricalReturn ? "Value-weighted · historical returns" : "Value-weighted · holding assumptions");
+    setText("#plan-yield-source", missingYield ? metricsLoading ? "Loading portfolio yields…" : "Portfolio data incomplete" : assumptions.usesYieldOverride ? "Plan override" : "From Portfolio");
     $("#edit-plan-assumptions").disabled = !state.planDataAvailable;
     document.querySelectorAll("[data-open-plan-assumptions]").forEach((button) => { button.disabled = !state.planDataAvailable; });
     const propertyCount = state.properties.length;
@@ -1897,6 +1902,13 @@
     const settings = planSettingsModel(state.planSettings);
     const form = $("#plan-assumptions-form");
     form.reset();
+    const summary = portfolio();
+    const automatic = resolvePlanAssumptions({}, summary);
+    const complete = summary.rows.length === state.holdings.length;
+    setText("#plan-calculated-return", complete && automatic.expectedAnnualReturnRate !== null ? percentage.format(automatic.expectedAnnualReturnRate) : "Unavailable");
+    setText("#plan-calculated-yield", complete && automatic.distributionYieldRate !== null ? percentage.format(automatic.distributionYieldRate) : "Unavailable");
+    setText("#plan-calculated-return-source", automatic.usesHistoricalReturn ? "Value-weighted historical returns; not a forecast." : "Value-weighted holding assumptions.");
+    $("#plan-rate-overrides").open = settings?.expectedAnnualReturnRate != null || settings?.distributionYieldRate != null;
     $("#plan-expected-return").value = settings?.expectedAnnualReturnRate === null || !settings
       ? ""
       : settings.expectedAnnualReturnRate * 100;
@@ -1905,6 +1917,7 @@
       : settings.distributionYieldRate * 100;
     $("#plan-distribution-policy").value = settings?.distributionPolicy || "reinvest";
     setText("#plan-assumptions-form-status", "");
+    $("#plan-assumptions-form-status").hidden = true;
     $("#plan-assumptions-dialog").hidden = false;
     openFormDialog("#plan-assumptions-dialog");
   }
@@ -1934,6 +1947,7 @@
       render();
     } catch (error) {
       setText("#plan-assumptions-form-status", error.message || "The Base plan assumptions could not be saved.");
+      $("#plan-assumptions-form-status").hidden = false;
     } finally {
       save.disabled = false;
       save.textContent = "Save";

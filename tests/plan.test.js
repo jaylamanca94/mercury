@@ -183,3 +183,43 @@ test("net worth combines investment value with all property equity", () => {
   assert.equal(totalNetWorthCents(0, [properties[1]]), -15_000_00);
   assert.throws(() => totalNetWorthCents(-1, []), PlanValidationError);
 });
+
+
+test('Plan automatically weights available historical returns by holding value', () => {
+  const summary = {expectedAnnualReturnRate:null, distributionYieldRate:0.0184, rows:[
+    {marketValueCents:75000,asset:{expectedAnnualReturnRate:null,historicalAnnualizedReturnRate:0.08}},
+    {marketValueCents:25000,asset:{expectedAnnualReturnRate:null,historicalAnnualizedReturnRate:0.04}},
+  ]};
+  const result=resolvePlanAssumptions({},summary);
+  assert.equal(result.expectedAnnualReturnRate,0.07);
+  assert.equal(result.distributionYieldRate,0.0184);
+  assert.equal(result.usesHistoricalReturn,true);
+  assert.equal(result.usesReturnOverride,false);
+  assert.equal(projectPortfolio({currentValueCents:100000,annualContributionCents:0,...result}).available,true);
+  summary.rows[0].marketValueCents=25000;
+  assert.equal(resolvePlanAssumptions({},summary).expectedAnnualReturnRate,0.06);
+});
+
+test('Plan respects holding assumptions and explicit zero while filling gaps from history',()=>{
+  const summary={rows:[
+    {marketValueCents:50000,asset:{expectedAnnualReturnRate:0,historicalAnnualizedReturnRate:0.3}},
+    {marketValueCents:50000,asset:{expectedAnnualReturnRate:null,historicalAnnualizedReturnRate:-0.04}},
+    {marketValueCents:0,asset:{expectedAnnualReturnRate:null,historicalAnnualizedReturnRate:null}},
+  ]};
+  assert.equal(resolvePlanAssumptions({},summary).expectedAnnualReturnRate,-0.02);
+  const override=resolvePlanAssumptions({expectedAnnualReturnRate:0},summary);
+  assert.equal(override.expectedAnnualReturnRate,0);
+  assert.equal(override.usesHistoricalReturn,false);
+  assert.equal(override.usesReturnOverride,true);
+});
+
+test('Plan never normalises missing or unsupported historical coverage into a complete return',()=>{
+  for(const missing of [null,undefined,NaN,Infinity,1.5]) {
+    const summary={rows:[
+      {marketValueCents:90000,asset:{historicalAnnualizedReturnRate:0.1}},
+      {marketValueCents:10000,asset:{historicalAnnualizedReturnRate:missing}},
+    ]};
+    assert.equal(resolvePlanAssumptions({},summary).expectedAnnualReturnRate,null);
+  }
+  assert.equal(resolvePlanAssumptions({}, {rows:[]}).expectedAnnualReturnRate,null);
+});

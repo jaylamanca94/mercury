@@ -126,12 +126,24 @@ function weeklyEquivalentRecurringContributionCents(holdings) {
 
 function resolvePlanAssumptions(settings, portfolioSummary) {
   const normalized = normalizePlanSettings(settings || {});
+  const valuedRows = (portfolioSummary.rows || []).filter((row) => row.marketValueCents > 0);
+  let portfolioReturn = portfolioSummary.expectedAnnualReturnRate ?? null;
+  let usesHistoricalReturn = false;
+  if (portfolioReturn === null && valuedRows.length) {
+    const rates = valuedRows.map((row) => row.asset.expectedAnnualReturnRate ?? row.asset.historicalAnnualizedReturnRate ?? null);
+    if (rates.every((rate) => Number.isFinite(rate) && rate >= -1 && rate <= 1)) {
+      const totalValue = valuedRows.reduce((total, row) => total + row.marketValueCents, 0);
+      portfolioReturn = valuedRows.reduce((total, row, index) => total + row.marketValueCents * rates[index], 0) / totalValue;
+      usesHistoricalReturn = valuedRows.some((row) => row.asset.expectedAnnualReturnRate == null);
+    }
+  }
   return Object.freeze({
-    expectedAnnualReturnRate: normalized.expectedAnnualReturnRate ?? portfolioSummary.expectedAnnualReturnRate ?? null,
+    expectedAnnualReturnRate: normalized.expectedAnnualReturnRate ?? portfolioReturn,
     distributionYieldRate: normalized.distributionYieldRate ?? portfolioSummary.distributionYieldRate ?? null,
     distributionPolicy: normalized.distributionPolicy,
     usesReturnOverride: normalized.expectedAnnualReturnRate !== null,
     usesYieldOverride: normalized.distributionYieldRate !== null,
+    usesHistoricalReturn: normalized.expectedAnnualReturnRate === null && usesHistoricalReturn,
   });
 }
 
