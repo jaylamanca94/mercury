@@ -1,96 +1,110 @@
-# Mercury flow audit — continuity follow-through
+# Mercury flow audit — saved outcomes and recovery
 
-Reviewed 2026-09-05 against main `7d04404`, followed by the changes in this report. The prior run guided prioritisation; all evidence below comes from this run. No owner records, schema or credentials were modified. Browser data is explicitly labelled disposable local test data.
+Reviewed 2026-09-07 against clean, fetched main `9c3441b`, then the scoped changes below. Prior research guided prioritisation; current screenshots, interactions and tests are the evidence. All financial browser data is disposable local fixture data. No owner records, schema, credentials or provider configuration were changed.
 
-## Outcome
+## Outcome and prioritised findings
 
-The most consequential reproduced issue was silent draft loss: change asset shares, press Back, reopen the asset, and the saved shares replace the draft. Income forms likewise dismissed changed values immediately with Escape. Pending modal writes only disabled the submit button, allowing dismissal, field changes or another submission while the original request was unresolved.
+- **P1 fixed — partial Add reported as unsaved.** Enter QA / 2 shares, obtain the isolated quote, then fail quote storage after the holding succeeds. Add stayed open with a generic save error (02); Cancel claimed the changes had not been saved (03). Add now closes once the holding is acknowledged and opens the saved asset with explicit missing-price recovery (04). A failed account reload retains acknowledged values and explains the sync failure separately. Failed holding writes still preserve their draft and reuse identity.
+- **P1 fixed — successful deletion led to Asset unavailable.** A reload rendered the Portfolio hash while the deletion dialog was still marked pending; the navigation guard restored the deleted asset route. The acknowledged deletion now updates local holdings/quotes and navigates directly to Portfolio (15), restoring Add asset focus. Historical snapshots are untouched.
+- **P2 fixed — misleading first-price refresh errors and duplicate retries.** A failure used to claim a last successful quote remained even when none existed. Missing-price recovery now offers Retry price/manual valuation, reports the actual automatic-price state, rejects duplicate refreshes and keeps late messages on the correct asset. A saved quote remains available if the following account reload fails. Successful retry restores heading focus; typed drafts remain intact.
+- **P2 fixed — Property started on Close.** The first focused control was Close property form. Entry now focuses Property name, matching other forms.
+- **P2 retained — incomplete Income repair is indirect.** Adding a holding without a yield makes dependent income totals Not set; the dividend list identifies the missing yield, but the summary does not lead directly to its asset. Values are honest; consider a focused repair path in the next design pass.
 
-Implemented one shared protection pattern across the existing flows:
+## Canonical-flow coverage
 
-- Asset Back, workspace navigation, external navigation and sign-out protect unsaved work. Changed forms offer **Keep editing** or **Discard changes**. Pristine forms leave immediately.
-- Add asset, Income, Budget, Plan and Property protect Close, Cancel and Escape when changed. Keep editing returns to the existing fields.
-- All nine entry/edit/delete dialogs prevent duplicate submission, lock inputs and dismissal while saving, expose `aria-busy`, then restore the draft and controls on failure. A dialog cannot reopen while its prior request is still settling.
-- Quick Add keeps its submitted values available during asynchronous quote lookup, even while controls are disabled.
-- Reload/close uses the browser's native unsaved-work warning where supported. No financial drafts are written to local/session storage.
-- Skip to content focuses the existing main region without triggering the hash router.
-- The new confirmation uses the existing Acadia standard dialog. Its footer wraps at narrow widths; no stylesheet or financial-calculation changes.
-
-## Canonical flow coverage
-
-| Step | Flow and current health | Evidence and limits |
+| Step | Flow and current health | Current evidence and limits |
 | --- | --- | --- |
-| 1 | Sign in — local gating/send recovery covered; remote acceptance open | Existing controller checks rerun. Current production deployment redirects this browser to Vercel sign-in. Real magic-link delivery, redemption and expired-session recovery not completed. |
-| 2 | Understand position — local read path healthy | Current Home screenshot, explicit history-building state, investment allocation, property equity and honest missing metrics. Domain/history suite passes. |
-| 3 | Portfolio — local navigation healthy | Current Cards/summary/allocation/property read path captured; asset entry verified. Existing filter/sort/view tests pass; not every combination repeated in this browser. |
-| 4 | Add a holding — manual recovery and completion verified | Unsupported provider exposes fallback immediately. Entered 3 shares and a $25 manual price; saved asset shows $75 and correct source semantics. Deferred lookup test checks locked fields preserve input values. |
-| 5 | Refresh an automatic quote — regression coverage passes; live provider acceptance open | Provider-failure/manual-fallback browser path and adapter tests. No successful current-run Twelve Data call or production timestamp-refresh acceptance. |
-| 6 | Edit/delete an asset — navigation and pending-write protections improved | Reproduced loss, then verified page Back, Keep editing, retained values and discard. Browser Back, repeated Back after Keep editing, and Discard to Portfolio were verified after fixing a queued native close-event race. Asset save failure and all four deletion-dialog duplicate/pending/error states have controller tests. No owner deletion performed. |
-| 7 | Expected income — save/dismissal/failure flow verified locally | Changed 2000 to 2200, saved, observed updated planning values and focus on invoking Edit. Changed again to 2300 with delayed failure: Escape did not dismiss; error restored Save and retained 2300. Keep editing after Escape restored field focus. |
-| 8 | Budget — local save flow verified | Changed monthly category from 500 to 600; saved row, planned balance and Edit focus updated. Deferred failure/duplicate guard covered by controller tests. |
-| 9 | Base plan — local save flow verified | Changed the illustrative return assumption from 5% to 6%; saved assumption and projections updated. Pending/failure handling covered by controller tests. |
-| 10 | Daily history — automated coverage; remote schedule acceptance open | Market-close/date/idempotency/history tests pass; Home shows honest zero-date history. No scheduled production execution verified. |
-| Boundary | Private export — deferred, unchanged | No visible export surface added. Owner isolation/export contents require authenticated RLS acceptance. |
-| Supporting flow | Property — controller coverage strengthened | Portfolio property entry/read path captured. Update payload, pending duplicate prevention and failure restoration tested. Creation/deletion browser paths were not repeated this run. |
+| 1 | Sign in — local gating and failure recovery healthy; remote completion open | Browser fixture hides private workspaces, retains the entered email and restores Send magic link after failure (16). Controller route/send tests pass. Live deployment redirects to Vercel login (10); actual email delivery/redemption/expiry and session recovery were not accepted. |
+| 2 | Understand current position — local read path healthy | Home (01) shows explicitly recorded five-day history, investment allocation and separate property equity. Domain checks cover distinct-date gates and incomplete totals. |
+| 3 | Manage Portfolio — local browsing/recovery healthy | Search produced No matching assets while the investment total stayed unchanged (06); Clear filters restored records; Table opened; revisiting reset to Cards. Corrected deletion yielded five assets and restored Add asset focus (15). |
+| 4 | Add a holding — partial persistence repaired | Current browser reproduced the misleading save/discard states (02/03), then verified the saved-record destination (04). Controller tests cover thrown quote errors, failed holding writes, identity reuse and failed reload after acknowledged writes. |
+| 5 | Retrieve/refresh quote — local recovery healthy; live provider open | Failed retry retains the saved asset. Enabling only fixture quote storage then retrying restores the automatic price (12), hides recovery and focuses the asset heading. Controller tests cover duplicate requests, late responses, retained drafts and read failure after quote commit. No live Twelve Data result claimed. |
+| 6 | Edit/delete asset — manual repair and deletion return repaired | Manual price 25 × 2 shares saved as 50 and removed the warning (05). Deletion confirmation focuses Cancel and names its consequences (14); disposable deletion returns to updated Portfolio (15). Existing pending/failure/unsaved-draft tests pass. |
+| 7 | Plan expected income — local editing healthy | Income exposes an honest incomplete-dividend state (07). Changed the isolated biweekly source from 2000 to 2200; saved cadence retained, monthly earned/other income became 4766.67 and focus returned to Edit. No bank-confirmed income claim. |
+| 8 | Set spending totals — local editing healthy | Budget category changed from 500 to 600; monthly total/share updated and Edit focus returned (08). Existing duplicate-name and pending/error tests pass. |
+| 9 | Review trajectory — local navigation/editing healthy | 5Y updates pressed state, chart summaries and endpoints (09); saving a 6% illustrative return updated the outlook. Existing missing-valuation/assumption tests pass. This is fixture arithmetic, not financial guidance. |
+| 10 | Build daily history — automated coverage; live schedule open | Snapshot date, market-close and idempotency tests pass. Home shows 5 of 30 days; no production cron run newly verified. |
+| Supporting | Property — local creation healthy; focus improved | Disposable property 1000 value / 0 debt saved, equity increased by 1000 and Add property regained focus (11). Reopened the final form and verified Property name has initial focus. |
+| Deferred | Private export — unchanged boundary | No exposed export UI was added. Owner-only export and second-user RLS require authenticated acceptance. |
 
-## Research informing the changes
+## Research applied
 
-- [W3C: Let users go back](https://www.w3.org/WAI/WCAG2/supplemental/patterns/o4p02-back-undo/) explains why back navigation should preserve entered work. Mercury retains the current draft and asks only when leaving would lose it.
-- [W3C form notifications](https://www.w3.org/WAI/tutorials/forms/notifications/) recommends concise, understandable feedback for pending work, errors and success. Existing visible errors and save labels remain associated with the form.
-- [W3C modal dialog pattern](https://www.w3.org/WAI/ARIA/apg/patterns/dialog-modal/) informed a labelled native dialog, focus on the safe action and return to the originating field. Keyboard and focus observations are limited checks, not accessibility certification.
-- [YNAB editing patterns](https://support.ynab.com/en_us/how-to-edit-and-delete-transactions-BJG4oS1s) retain an explicit Save action. This supports preserving Mercury's existing Save/Cancel model; no transaction features or autosave were introduced.
+- [W3C form notifications](https://www.w3.org/WAI/tutorials/forms/notifications/) recommends clear success/error feedback with useful recovery instructions. Applied to distinguish the saved holding from the failed quote and to place recovery beside the saved record.
+- [W3C success feedback technique G199](https://www.w3.org/WAI/WCAG21/Techniques/general/G199) supports explicitly confirming successful submission. Mercury now acknowledges successful writes even if a later dependent operation fails.
+- [YNAB editing guidance](https://support.ynab.com/en_us/how-to-edit-and-delete-transactions-BJG4oS1s) retains explicit Save when editing. This supports preserving Mercury's deliberate Save/Cancel model. Competitive reference only; no transaction/autosave features introduced.
 
-## Current-run screenshots
+## Current screenshots and layout evidence
 
-All screenshots were captured from the current browser and inspected. Older intermediate confirmation styling is not release evidence. The phone captures use a 390px/320px iframe because the browser viewport override did not change the measured main-tab width. This is responsive CSS evidence, not physical-device verification.
+The screenshots below were captured and inspected during this run. The broad workspace views use a 1280px browser viewport. The viewport override again had no measurable effect, so the phone checks use 390px and 320px embedded documents. Both report equal document scroll/client widths (390/390 and 320/320), with 44px Retry price buttons. This is responsive CSS evidence, not physical-device or software-keyboard acceptance. Acadia status, button and focus styles remain canonical; no stylesheet overrides or purple accent introduced.
 
-1. **Home — healthy read path.**
+### 1. Home — clear recorded-data state
 
-![Home](screenshots/2026-09-05-continuity/01-home.png)
+![Home — clear recorded-data state](2026-09-07/01-home.png)
 
-2. **Income — clear planning context and explicit editing.**
+### 2. Before — generic failure after holding commit
 
-![Income](screenshots/2026-09-05-continuity/02-income.png)
+![Before — generic failure after holding commit](2026-09-07/02-partial-save-before.png)
 
-3. **Pending save — dismissal and fields locked.**
+### 3. Before — inaccurate unsaved confirmation
 
-![Pending save](screenshots/2026-09-05-continuity/05-save-pending.png)
+![Before — inaccurate unsaved confirmation](2026-09-07/03-misleading-discard-before.png)
 
-4. **Save failure — entered value retained and retry available.**
+### 4. After — saved holding with price recovery
 
-![Save failure](screenshots/2026-09-05-continuity/06-save-failure.png)
+![After — saved holding with price recovery](2026-09-07/04-partial-save-recovery.png)
 
-5. **Budget and Plan — successful local save paths; source-backed calculations unchanged.**
+### 5. Manual repair — saved valuation restored
 
-![Budget](screenshots/2026-09-05-continuity/07-budget.png)
+![Manual repair — saved valuation restored](2026-09-07/05-manual-repair.png)
 
-![Plan](screenshots/2026-09-05-continuity/08-plan.png)
+### 6. Portfolio — clear filter recovery
 
-6. **Portfolio and Add — existing organisation retained; manual asset completed.**
+![Portfolio — clear filter recovery](2026-09-07/06-portfolio-no-matches.png)
 
-![Portfolio](screenshots/2026-09-05-continuity/09-portfolio.png)
+### 7. Income — honest incomplete coverage
 
-![Manual asset saved](screenshots/2026-09-05-continuity/13-added-asset.png)
+![Income — honest incomplete coverage](2026-09-07/07-income.png)
 
-7. **Navigation confirmation — safe initial focus, full actions at narrow widths.**
+### 8. Budget — saved category update
 
-![Desktop confirmation](screenshots/2026-09-05-continuity/10-asset-navigation-guard.png)
+![Budget — saved category update](2026-09-07/08-budget.png)
 
-![390px confirmation](screenshots/2026-09-05-continuity/11-phone-discard.png)
+### 9. Plan — selected horizon updates outlook
 
-![320px confirmation](screenshots/2026-09-05-continuity/12-320-discard.png)
+![Plan — selected horizon updates outlook](2026-09-07/09-plan.png)
 
-At 320px the inner content width was 305px including the desktop scrollbar allowance; dialog bounds were 7.5–297.5px, and both buttons were 44px high. No confirmation overflow. The standard Acadia teal focus treatment and red destructive action remain intact.
+### 10. Production — Vercel authentication boundary
 
-## Remaining findings and acceptance limits
+![Production — Vercel authentication boundary](2026-09-07/10-production-access.png)
 
-- **High priority: real auth recovery and private persistence.** Vercel login prevents authenticated production flow acceptance in this browser. The connector returned no projects and could not resolve the deployment; GitHub deployment records remain available. Real email redemption/expiry, second-user isolation, authenticated CRUD and scheduled snapshots need independent evidence.
-- **Partial Add persistence remains a boundary.** Holding and quote writes are separate. Same-dialog retry reuses identity; a quote-storage failure followed by cancellation still needs deliberate reconciliation. This pass prevents cancellation while requests are pending, not rollback of an already successful write.
-- **Existing form-dialog mobile sizing needs follow-through.** The non-compact shared form composition includes padding outside its width. A confirmation built with that modifier exceeded the 320px viewport, so the new confirmation uses Acadia's standard dialog. Existing form compositions should receive focused shared-system review.
-- Browser-history behaviour outside the tested in-app browser, full VoiceOver, physical-device keyboard/safe-area behaviour and forced mobile process termination remain unverified. `beforeunload` is best effort and does not guarantee recovery after a forced exit.
+### 11. Property — disposable creation reflected in equity
 
-## Validation and publication
+![Property — disposable creation reflected in equity](2026-09-07/11-property.png)
 
-`npm run check`: **124 tests pass**, including eight new behavioural regressions for navigation/unload, asset saves, modal drafts, modal writes, deferred Quick Add, deletion concurrency Skip to content and queued confirmation-close events. `git diff --check` passes. Publication status is recorded after push below.
+### 12. Retry — automatic price restored
 
-**Published — 2026-09-05 19:37 UTC.** The founder directly approved publication and instructed agents to always commit and push completed work. Implementation `99a9033`, the historical blocker record `19b0b55`, and standing agent instructions `b392dac` were pushed successfully to `origin/main`. The earlier automatic approval rejection was resolved by direct user confirmation; no alternative publication mechanism was used. Root `AGENTS.md` and `AGENT-README.md` now make the completion requirement explicit for ordinary tasks and automation runs. Git publication does not establish authenticated production acceptance; the limits above remain applicable.
+![Retry — automatic price restored](2026-09-07/12-quote-repaired.png)
+
+### 13. Phone widths — contained recovery
+
+![Phone widths — contained recovery](2026-09-07/13-phone-recovery.png)
+
+### 14. Delete — safe initial focus and clear consequence
+
+![Delete — safe initial focus and clear consequence](2026-09-07/14-delete-confirmation.png)
+
+### 15. After deletion — updated Portfolio
+
+![After deletion — updated Portfolio](2026-09-07/15-deletion-return.png)
+
+### 16. Sign in — failure retains email and retry
+
+![Sign in — failure retains email and retry](2026-09-07/16-sign-in-recovery.png)
+
+## Validation, publication and remaining boundaries
+
+`npm run check`: **140 passing tests**. Nine new behavioural tests replace one obsolete partial-Add expectation, for a net eight tests beyond the prior 132. `git diff --check` passes. Local browser verification covers the named steps above; runtime fixtures and responsive scaffolding are excluded from publication.
+
+All 10 canonical flows were reviewed through current source/tests; accessible local flows were walked in the browser. This is not a complete authenticated production acceptance pass. The current production deployment for `9c3441b` reports success in GitHub, but its browser URL redirects to Vercel login. Live magic links/session expiry, owner CRUD, provider quote results, second-user RLS, export isolation, scheduled snapshots, VoiceOver and physical-phone keyboard behaviour remain unverified. No new Supabase changes were needed.
+
+The scoped implementation, flow/design documentation and this evidence record are ready for the authorised main-branch commit/push. Final commit and remote verification are recorded in the automation result and memory after publication.

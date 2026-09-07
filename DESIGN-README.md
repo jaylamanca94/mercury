@@ -37,7 +37,7 @@ Use this file as the visual and interaction source of truth for Mercury. Keep th
 - Quote lookup waits for entered valid shares. The first failed lookup reveals manual price/total-value recovery immediately. Changing shares preserves a manual fallback already being edited.
 - Background quote/metric rendering may update summaries, but must not overwrite the current asset form. Explicit Cancel reloads saved values. The asset Back control returns to its entry route, defaulting to Portfolio for direct links.
 - Use a native pressed-button group for Plan horizon choices, with `aria-pressed`. These choices change a projection parameter rather than select tab panels. Route titles reflect the current workspace or asset.
-- Retrying Add within the same dialog reuses the holding ID and quote identity so partial persistence cannot create another holding. Closing the dialog and opening a new one starts a new entry.
+- Retrying a failed holding write within the same Add dialog reuses its identity. Once the holding write is acknowledged, close Add and open the saved asset even if quote storage or account reloading fails. Explain each outcome separately; never describe a committed holding as an unsaved draft. Missing prices expose Retry price and the existing manual valuation fields. Keep acknowledged values visible after reload failure, with an explicit sync message.
 
 ## Asset editing refinement — 2026-09-05
 
@@ -469,3 +469,11 @@ When a UX detail, UI pattern, visual utility, chart treatment, component behavio
 - Protect page Back, workspace links, modal Close/Cancel/Escape and browser unload. Pristine forms do not prompt. Browser unload protection is best effort and does not preserve drafts after a forced close or mobile process termination. Private drafts stay in memory only.
 - All nine persistence dialogs reject duplicate submissions, disable their fields and dismissal controls during the request, expose busy state, and restore controls after failure. Read the submitted form values before disabling fields, including Add asset's asynchronous quote fallback. Do not reopen a dialog while its previous request is still settling.
 - Skip to content moves focus and scrolls the current main region without changing the workspace route.
+
+## Saved-asset recovery — 2026-09-07
+
+- Use an existing Acadia warning Status Row above asset details for missing-price recovery. Say Asset saved after partial Add, with Retry price and manual-valuation guidance; otherwise say Price needed. Do not treat a missing price as zero or alter valuation arithmetic.
+- Lock both price-refresh entry points during a request. Feedback stays with the requested asset; late responses never write messages into another asset. Preserve edited fields. Successful retry removes the warning and restores focus to the asset title when the initiating retry button disappears.
+- Retain acknowledged holding/quote writes in memory if the subsequent account reload fails. Explain that saving succeeded and syncing needs a page reload. Do not offer Add again for a committed holding.
+- A successful deletion updates the local holding/quote collections and returns directly to Portfolio; do not run a redundant read while the deletion dialog's navigation guard is still pending.
+- Property add/edit starts at Property name, consistent with Income and Budget first-field focus. Existing dismissal, pending-write and return-focus protections remain active.

@@ -1064,6 +1064,8 @@
   function assetRow(holding, summary) {
     return summary.rows.find((row) => row.asset.id === holding.id) || null;
   }
+  const assetSaveNotices = new Map();
+  let refreshingAssetId = null;
   let renderedAssetId = null;
   let assetFormBaseline = "";
   let savingAssetId = null;
@@ -1071,6 +1073,10 @@
     return JSON.stringify(Array.from($("#asset-detail-form").elements)
       .filter((element) => element.name)
       .map((element) => [element.name, element.type === "checkbox" ? element.checked : String(element.value)]));
+  }
+  function setAssetRecoveryFeedback(message) {
+    setText("#asset-recovery-feedback", message);
+    $("#asset-recovery-feedback").hidden = !message;
   }
   function setAssetEditStatus(message) {
     setText("#asset-detail-status", message);
@@ -1098,6 +1104,7 @@
     $("#asset-not-found").hidden = Boolean(holding);
     $("#asset-quote-card").hidden = !holding;
     $("#asset-content > .acadia-dashboard-main").hidden = !holding;
+    $("#asset-recovery").hidden = true;
     if (!holding) {
       setText("#asset-title", "Asset unavailable");
       setText("#asset-subtitle", "This asset is not available in your current Brokerage account.");
@@ -1126,9 +1133,25 @@
     setText("#asset-quote-source", quote?.source || (holding.manual_price_cents !== null ? "Manual price" : "No quote recorded."));
     setText("#asset-quote-asof", quote?.as_of ? `As of ${dateLabel(quote.as_of)}` : "No as-of time");
 
+    const needsPrice = asset.unitPriceCents === null && !hasManualValuation;
+    const notice = assetSaveNotices.get(id);
+    $("#asset-recovery").hidden = !needsPrice && !notice?.reloadFailed;
+    setText("#asset-recovery-title", notice ? "Asset saved" : "Price needed");
+    setText("#asset-recovery-copy", [
+      needsPrice ? (notice?.quoteFailed
+        ? "Its automatic price could not be saved. Retry the price or enter a manual valuation in Details."
+        : "Retry the automatic price or enter a manual valuation in Details.") : "",
+      notice?.reloadFailed ? "Account data could not be reloaded. Your saved asset is shown; reload the page to retry syncing." : "",
+    ].filter(Boolean).join(" "));
+    $("#asset-retry-price").hidden = !needsPrice || !holding.symbol;
+    $("#asset-retry-price").disabled = Boolean(refreshingAssetId);
+    $("#asset-refresh-price").disabled = Boolean(refreshingAssetId);
+    setText("#asset-retry-price", refreshingAssetId === id ? "Retrying…" : "Retry price");
+
     // Refresh the summary without replacing a draft while provider data arrives.
     if (renderedAssetId === id && !resetForm) return;
     renderedAssetId = id;
+    setAssetRecoveryFeedback("");
     const setValue = (selector, value) => { $(selector).value = value ?? ""; };
     $("#asset-detail-form").hidden = false;
     setDetailFormDisabled(false);
@@ -1468,20 +1491,33 @@
       const holding = quickHolding();
       const { error } = await state.client.from("holdings").upsert(holding, { onConflict: "id" });
       if (error) throw error;
+      // The holding is committed. Quote storage and reloading are separate
+      // outcomes and must never send the owner back through Add again.
+      state.holdings = [...state.holdings.filter((entry) => entry.id !== holding.id), holding];
+      const notice = { quoteFailed: false, reloadFailed: false };
       if (state.pendingQuote) {
-        const { error: quoteError } = await state.client.from("holding_quotes").upsert({
+        const savedQuote = {
           holding_id: holding.id,
           price_cents: state.pendingQuote.priceCents,
           previous_close_cents: state.pendingQuote.priorCloseCents,
           ...quoteDividendFields(holding.id, state.pendingQuote),
           source: state.pendingQuote.source,
           as_of: state.pendingQuote.asOf,
-        }, { onConflict: "holding_id,as_of" });
-        if (quoteError) throw quoteError;
+        };
+        try {
+          const { error: quoteError } = await state.client.from("holding_quotes")
+            .upsert(savedQuote, { onConflict: "holding_id,as_of" });
+          if (quoteError) throw quoteError;
+          state.quotes = [...state.quotes.filter((quote) =>
+            quote.holding_id !== holding.id || quote.as_of !== savedQuote.as_of), savedQuote];
+        } catch {
+          notice.quoteFailed = true;
+        }
       }
       $("#asset-dialog").close();
-      await loadData();
-      setText("#data-status", "Saved to your private Brokerage account.");
+      try { await loadData(); } catch { notice.reloadFailed = true; }
+      if (notice.quoteFailed || notice.reloadFailed) assetSaveNotices.set(holding.id, notice);
+      setText("#data-status", "Asset saved to your private Brokerage account.");
       navigateToAsset(holding.id);
     } catch (error) {
       setQuickAddStatus(error.message || "This asset could not be saved.");
@@ -1619,8 +1655,9 @@
       state.holdings = state.holdings.filter((entry) => entry.id !== holding.id);
       state.quotes = state.quotes.filter((quote) => quote.holding_id !== holding.id);
       closeDeleteAssetDialog();
+      // The acknowledged deletion is already reflected locally. A reload here
+      // would render the new route before the dialog pending guard unlocks.
       window.location.hash = "portfolio";
-      await loadData();
       setText("#data-status", `${holding.symbol || holding.name || "Asset"} deleted from your private Brokerage account.`);
     } catch (error) {
       setText("#delete-asset-status", error.message || "This asset could not be deleted.");
@@ -1879,6 +1916,7 @@
     }
     $("#property-dialog").hidden = false;
     openFormDialog("#property-dialog");
+    $("#property-name").focus();
   }
   function closePropertyDialog() { $("#property-dialog").close(); }
   async function saveProperty(event) {
@@ -2004,25 +2042,52 @@
   }
   async function refreshCurrentAssetPrice() {
     const holding = state.holdings.find((entry) => entry.id === routeAssetId());
+    if (refreshingAssetId) return;
     if (!holding || holding.valuation_basis !== VALUATION_BASES.SHARES_AND_PRICE || !holding.symbol) {
       return setAssetEditStatus("This asset does not have an automatic price to refresh.");
     }
+    const focusOnRetry = document.activeElement === $("#asset-retry-price");
     try {
+      refreshingAssetId = holding.id;
+      renderAsset();
       setAssetEditStatus("Refreshing price…");
+      setAssetRecoveryFeedback("Refreshing price…");
       const quote = await requestQuote(holding.symbol, holding.instrument_type);
-      const { error } = await state.client.from("holding_quotes").upsert({
+      const savedQuote = {
         holding_id: holding.id,
         price_cents: quote.priceCents,
         previous_close_cents: quote.priorCloseCents,
         ...quoteDividendFields(holding.id, quote),
         source: quote.source,
         as_of: quote.asOf,
-      }, { onConflict: "holding_id,as_of" });
+      };
+      const { error } = await state.client.from("holding_quotes").upsert(savedQuote, { onConflict: "holding_id,as_of" });
       if (error) throw error;
-      await loadData();
-      setAssetEditStatus("Price refreshed.");
+      state.quotes = [...state.quotes.filter((entry) =>
+        entry.holding_id !== holding.id || entry.as_of !== savedQuote.as_of), savedQuote];
+      let reloaded = true;
+      try { await loadData(); } catch { reloaded = false; }
+      if (reloaded) assetSaveNotices.delete(holding.id);
+      else assetSaveNotices.set(holding.id, { quoteFailed: false, reloadFailed: true });
+      if (routeAssetId() === holding.id) {
+        setAssetEditStatus(reloaded ? "Price refreshed." : "Price saved. Reload the page to retry syncing account data.");
+        setAssetRecoveryFeedback("");
+      }
     } catch (error) {
-      setAssetEditStatus(`${error.message} Last successful quote remains in place.`);
+      if (routeAssetId() === holding.id) {
+        const recovery = latestQuotes()[holding.id]
+          ? "Last successful quote remains in place."
+          : "No automatic price has been saved. Retry or enter a manual valuation.";
+        const message = `${error.message || "Price refresh failed."} ${recovery}`;
+        setAssetEditStatus(message);
+        setAssetRecoveryFeedback(message);
+      }
+    } finally {
+      refreshingAssetId = null;
+      if (routeAssetId()) {
+        renderAsset();
+        if (routeAssetId() === holding.id && focusOnRetry && $("#asset-recovery").hidden) $("#asset-title").focus();
+      }
     }
   }
   async function hydrateProviderMetrics() {
@@ -2257,6 +2322,7 @@
   $("#asset-detail-form").addEventListener("change", () => syncAssetEditState({ announce: true }));
   $("#asset-detail-valuation-basis").addEventListener("change", syncDetailValuationFields);
   $("#asset-refresh-price").addEventListener("click", refreshCurrentAssetPrice);
+  $("#asset-retry-price").addEventListener("click", refreshCurrentAssetPrice);
   $("#asset-delete").addEventListener("click", openDeleteAssetDialog);
   $("#cancel-delete-asset").addEventListener("click", closeDeleteAssetDialog);
   $("#delete-asset-dialog").addEventListener("close", () => { $("#delete-asset-dialog").hidden = true; });

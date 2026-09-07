@@ -1,8 +1,10 @@
 # Mercury — Design Status
 
-**Last reviewed:** 2026-09-06
+**Last reviewed:** 2026-09-07
 
-10 implemented canonical flows have design and automated coverage at varying depths; private export remains deferred. This pass refines Add Asset entry, quote preview and manual recovery without adding product flows.
+10 implemented canonical flows have design and automated coverage at varying depths; private export remains deferred. This pass resolves partial Add outcomes, price recovery and the asset-deletion return route without adding product flows.
+
+An acknowledged holding now opens in asset details even when quote storage or account reloading fails. Recovery explains what saved, offers Retry price/manual valuation, prevents duplicate refreshes and preserves drafts. Successful deletion returns directly to Portfolio; Property entry focuses its first field. Local browser evidence covers these changes and the main planning routes. All 140 tests pass. Recovery has no overflow at 390px/320px and retains 44px targets. See `automation/research/latest.md`; authenticated production acceptance remains Vercel-login-gated.
 
 Add Asset now puts Symbol/Shares first, reveals precise price/value previews when available and uses an Acadia Accordion for optional recurring investments. Manual recovery stays beside the core inputs; changing symbols resets prior manual valuation. Local quote/manual saves, recurring/Retirement, failure/retry, pending-save lock and Home/Portfolio focus checks pass. The empty dialog is 428px high on desktop and 498px on phones, with no horizontal overflow at seven widths from 320px to 2560px and 44px controls. All 132 tests pass; see `automation/design/2026-09-06/add-asset-review.md`. No schema, provider or financial-domain changes.
 
@@ -21,5 +23,5 @@ Income, Plan and the remaining deletion dialogs now use Acadia compact form comp
 ## Next design opportunities
 
 1. **Recover from session expiry during edits.** Verify real magic-link redemption and expired-session recovery using a disposable authenticated account; preserve the task while respecting private-data boundaries.
-2. **Clarify partial Add persistence.** Holding and quote writes remain separate. Same-dialog retry reuses identity, but cancellation after the holding succeeds and quote storage fails still needs a deliberate reconciliation flow.
+2. **Make incomplete Income estimates easier to resolve.** The local audit shows honest Not set totals when a holding lacks yield; improve the path from that summary to the specific missing input without implying complete income coverage.
 3. **Review long forms with the software keyboard.** Responsive browser checks pass; verify focused-field visibility, scrolling and action reachability on a physical phone.

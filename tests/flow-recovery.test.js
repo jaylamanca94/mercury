@@ -13,7 +13,7 @@ function controller() {
       validity: {valid: true}, elements: [], dataset: {}, listeners: {},
       classList: {toggle() {}, add() {}, remove() {}},
       addEventListener(type, callback) { this.listeners[type] = callback; },
-      setAttribute() {}, hasAttribute() { return false; }, focus() {},
+      querySelectorAll() { return []; }, replaceChildren() {}, setAttribute() {}, hasAttribute() { return false; }, focus() {},
       showModal() { this.open = true; }, close() { this.open = false; this.listeners.close?.(); },
     });
     return nodes.get(selector);
@@ -31,11 +31,11 @@ function controller() {
     fetch:async()=>({ok:false,json:async()=>({error:'provider unavailable'})}),
   });
   const source = fs.readFileSync(require.resolve('../brokerage.js'),'utf8').replace('  initialise();',
-    '  window.testController = {state,render,renderPlan,renderQuickQuotePreview,restorePortfolioAssetFocus,renderHistory,renderAsset,canQuote,lookupQuote,saveQuickAsset,navigateToAsset,navigateBackFromAsset,routeAssetId,openFormDialog,hasPendingWrite,hasUnsavedWork,matchingPortfolioHoldingRows,sortHoldingRows,holdingValueLabel,renderPortfolioView,renderPortfolioSummary,detailHolding};');
+    '  window.testController = {state,render,renderPlan,renderQuickQuotePreview,refreshCurrentAssetPrice,restorePortfolioAssetFocus,renderHistory,renderAsset,canQuote,lookupQuote,saveQuickAsset,navigateToAsset,navigateBackFromAsset,routeAssetId,openFormDialog,hasPendingWrite,hasUnsavedWork,matchingPortfolioHoldingRows,sortHoldingRows,holdingValueLabel,renderPortfolioView,renderPortfolioSummary,detailHolding};');
   vm.runInContext(source,context);
   const api=window.testController;
   api.state.client={auth:{getSession:async()=>({data:{session:{access_token:'isolated-test'}}})}};
-  return {api,node,window,document};
+  return {api,node,window,document,context};
 }
 
 test('signed-out route changes show only authentication and disable private creation',()=>{
@@ -100,21 +100,92 @@ test('sign-in submission prevents duplicate sends and recovers from a thrown fai
 });
 
 
-test('retrying after a quote-write failure reuses the same holding id',async()=>{
-  const {api,node}=controller();const writes=[];
-  api.state.account={id:'account'};
-  api.state.pendingQuote={priceCents:1234,priorCloseCents:1200,source:'Test',asOf:'2026-09-05T00:00:00Z',instrumentType:'stock'};
-  node('#asset-form').fields={symbol:'TEST',shares:'2',valuationBasis:'shares-and-price'};
-  api.state.client.from=(table)=>({upsert:async(payload)=>{
-    writes.push({table,payload});return {error:table==='holding_quotes'?{message:'Quote storage unavailable'}:null};
-  }});
+function quickSaveFixture({quoteFailure = false, readFailure = false, holdingFailure = false} = {}) {
+  const view = controller(); const {api, node, window} = view; const writes = [];
+  api.state.account = {id: 'account'};
+  api.state.pendingQuote = {priceCents:1234,priorCloseCents:1200,source:'Test',asOf:'2026-09-07T00:00:00Z',instrumentType:'stock'};
+  node('#asset-form').fields = {symbol:'TEST',shares:'2',valuationBasis:'shares-and-price'};
+  api.openFormDialog('#asset-dialog');
+  // Keep aggregate rendering on the minimal auth DOM; detail rendering is exercised explicitly.
+  api.state.configured = true;
+  const db = {holdings:[], holding_quotes:[], accounts:[api.state.account]};
+  api.state.client.from = table => {
+    const q = {select(){return q},eq(){return q},order(){return q},maybeSingle(){return q},
+      then(resolve,reject){return Promise.resolve({data:db[table] || [],error:readFailure ? {message:'Read unavailable'} : null}).then(resolve,reject)},
+      async upsert(payload) {
+        writes.push({table,payload});
+        if (table === 'holdings' && holdingFailure) return {error:{message:'Holding unavailable'}};
+        if (table === 'holding_quotes' && quoteFailure) throw new Error('Quote storage unavailable');
+        db[table].push(payload); return {error:null};
+      }}; return q;
+  };
+  return {...view,writes,db};
+}
+
+test('partial Add completes once, opens the committed holding and exposes price recovery',async()=>{
+  const {api,node,window,writes,db}=quickSaveFixture({quoteFailure:true});
   await api.saveQuickAsset({preventDefault(){}});
-  await api.saveQuickAsset({preventDefault(){}});
-  const holdings=writes.filter(w=>w.table==='holdings');
-  assert.equal(holdings.length,2);assert.equal(holdings[0].payload.id,holdings[1].payload.id);
-  assert.equal(node('#save-asset').disabled,false);
-  assert.equal(node('#quote-form-status').textContent,'Quote storage unavailable');
+  assert.equal(writes.filter(w=>w.table==='holdings').length,1);
+  assert.equal(db.holdings.length,1);
+  assert.equal(node('#asset-dialog').open,false);
+  assert.equal(api.state.holdings[0].id,db.holdings[0].id);
+  assert.equal(api.state.quotes.length,0);
+  // Native browser location normalises an assigned fragment with '#'.
+  window.location.hash='#'+window.location.hash;
+  api.renderAsset();
+  assert.equal(node('#asset-recovery').hidden,false);
+  assert.equal(node('#asset-recovery-title').textContent,'Asset saved');
+  assert.match(node('#asset-recovery-copy').textContent,/automatic price could not be saved/);
+  assert.equal(node('#asset-manual-valuation').hidden,false);
+  assert.equal(node('#discard-changes-dialog').open,undefined);
 });
+
+test('failed account reload after Add preserves acknowledged holding and quote without offering Add again',async()=>{
+  const {api,node,window}=quickSaveFixture({readFailure:true});
+  await api.saveQuickAsset({preventDefault(){}});
+  assert.equal(api.state.holdings.length,1);assert.equal(api.state.quotes.length,1);
+  assert.equal(node('#asset-dialog').open,false);
+  window.location.hash='#'+window.location.hash;api.renderAsset();
+  assert.equal(node('#asset-price').textContent,'$12.34');
+  assert.match(node('#asset-recovery-copy').textContent,/reload the page/);
+  assert.equal(node('#asset-retry-price').hidden,true);
+});
+
+test('holding failure keeps the Add draft retryable and never stores its quote',async()=>{
+  const {api,node,writes}=quickSaveFixture({holdingFailure:true});
+  await api.saveQuickAsset({preventDefault(){}});
+  await api.saveQuickAsset({preventDefault(){}});
+  assert.equal(writes.length,2);assert.equal(writes[0].payload.id,writes[1].payload.id);
+  assert.equal(node('#asset-dialog').open,true);assert.equal(api.state.holdings.length,0);
+  assert.equal(node('#save-asset').disabled,false);
+  assert.equal(node('#quote-form-status').textContent,'Holding unavailable');
+});
+
+test('price recovery prevents duplicate requests and never claims a nonexistent prior quote',async()=>{
+  const {api,node,window}=quickSaveFixture({quoteFailure:true});
+  await api.saveQuickAsset({preventDefault(){}});
+  window.location.hash='#'+window.location.hash;api.renderAsset();
+  let finish,calls=0;
+  api.state.client.auth.getSession=()=>{calls++;return new Promise(resolve=>{finish=resolve})};
+  const first=api.refreshCurrentAssetPrice();
+  await api.refreshCurrentAssetPrice();
+  assert.equal(calls,1);assert.equal(node('#asset-retry-price').disabled,true);
+  finish({data:{session:{access_token:'test'}}});await first;
+  assert.match(node('#asset-recovery-feedback').textContent,/No automatic price has been saved/);
+  assert.doesNotMatch(node('#asset-recovery-feedback').textContent,/Last successful quote/);
+  assert.equal(node('#asset-retry-price').disabled,false);
+});
+
+test('manual repair clears missing-price recovery while background rendering preserves a draft',async()=>{
+  const {api,node,window}=quickSaveFixture({quoteFailure:true});
+  await api.saveQuickAsset({preventDefault(){}});
+  window.location.hash='#'+window.location.hash;api.renderAsset();
+  node('#asset-detail-shares').value='7';api.renderAsset();
+  assert.equal(node('#asset-detail-shares').value,'7');
+  api.state.holdings[0].manual_price_cents=2500;api.renderAsset({resetForm:true});
+  assert.equal(node('#asset-recovery').hidden,true);
+});
+
 
 function editableAsset() {
   const view=controller(); const {api,node,window}=view;
@@ -467,4 +538,72 @@ test('quick-add previews exact amounts and discards manual valuation mode for a 
   assert.equal(node('#manual-fallback').hidden,true);
   assert.equal(node('#asset-quote-preview').hidden,true);
   assert.equal(node('#asset-value-preview').textContent,'—');
+});
+
+
+test('successful price retry writes only a quote and hides recovery without replacing a draft',async()=>{
+  const {api,node,window,context,writes,db}=quickSaveFixture({quoteFailure:true});
+  await api.saveQuickAsset({preventDefault(){}});
+  window.location.hash='#'+window.location.hash;api.renderAsset();
+  node('#asset-detail-shares').value='7';
+  context.fetch=async()=>({ok:true,json:async()=>({priceCents:2500,source:'Test',asOf:'2026-09-07T12:00:00Z'})});
+  const originalFrom=api.state.client.from;
+  api.state.client.from=table=>{
+    const q=originalFrom(table);
+    if(table==='holding_quotes')q.upsert=async payload=>{db.holding_quotes.push(payload);return {error:null}};
+    return q;
+  };
+  await api.refreshCurrentAssetPrice();
+  assert.equal(writes.filter(w=>w.table==='holdings').length,1);
+  assert.equal(node('#asset-recovery').hidden,true);
+  assert.equal(node('#asset-detail-shares').value,'7');
+  assert.equal(node('#asset-price').textContent,'$25.00');
+  assert.equal(node('#asset-detail-status').textContent,'Price refreshed.');
+});
+
+test('a failed refresh on a departed asset cannot write feedback into the next asset',async()=>{
+  const {api,node,window,context}=quickSaveFixture({quoteFailure:true});
+  await api.saveQuickAsset({preventDefault(){}});
+  window.location.hash='#'+window.location.hash;api.renderAsset();
+  let finish,started;const requested=new Promise(resolve=>{started=resolve});
+  context.fetch=()=>new Promise(resolve=>{finish=resolve;started()});
+  const refresh=api.refreshCurrentAssetPrice();await requested;
+  api.state.holdings.push({...api.state.holdings[0],id:'another',symbol:'NEXT'});
+  window.location.hash='#asset/another';api.renderAsset();
+  finish({ok:false,json:async()=>({error:'Old asset request failed'})});await refresh;
+  assert.equal(node('#asset-title').textContent,'NEXT');
+  assert.equal(node('#asset-recovery-feedback').textContent,'');
+  assert.equal(node('#asset-detail-status').textContent,'');
+});
+
+
+test('a saved retry quote remains visible if account reloading fails afterwards',async()=>{
+  const {api,node,window,context}=quickSaveFixture({readFailure:true});
+  await api.saveQuickAsset({preventDefault(){}});
+  window.location.hash='#'+window.location.hash;api.renderAsset();
+  context.fetch=async()=>({ok:true,json:async()=>({priceCents:2500,source:'Test',asOf:'2026-09-07T12:00:00Z'})});
+  await api.refreshCurrentAssetPrice();
+  assert.equal(node('#asset-price').textContent,'$25.00');
+  assert.match(node('#asset-detail-status').textContent,/Price saved/);
+  assert.match(node('#asset-recovery-copy').textContent,/reload the page/);
+  assert.equal(node('#asset-retry-price').hidden,true);
+});
+
+
+test('acknowledged asset deletion returns to Portfolio without a reload racing the pending guard',async()=>{
+  const {api,node,window}=editableAsset();let reads=0;
+  api.state.account={id:'account'};
+  api.state.quotes=[{holding_id:'test',price_cents:10000}];
+  api.state.client.from=()=>({delete(){return this},eq(){return this},select(){return this},
+    maybeSingle:async()=>({data:{id:'test'},error:null}),order(){reads++;throw new Error('Unexpected reload')}});
+  api.openFormDialog('#delete-asset-dialog');
+  await node('#delete-asset-form').listeners.submit({preventDefault(){}});
+  assert.equal(reads,0);
+  assert.equal(api.state.holdings.length,0);assert.equal(api.state.quotes.length,0);
+  assert.equal(node('#delete-asset-dialog').open,false);
+  assert.equal(api.hasPendingWrite(),false);
+  assert.equal(window.location.hash,'portfolio');
+  window.location.hash='#portfolio';api.render();
+  assert.equal(window.location.hash,'#portfolio');
+  assert.equal(node('#portfolio-workspace').hidden,false);
 });
