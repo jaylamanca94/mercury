@@ -26,7 +26,7 @@ function controller() {
   };
   window.history = {pushState(_state, _title, hash) { window.location.hash = hash.startsWith('#') ? hash : ''; }};
   const context = vm.createContext({window,document,Intl,Date,Number,Set,Map,console,
-    setTimeout,clearTimeout,crypto:require('node:crypto').webcrypto,
+    setTimeout,clearTimeout,AbortController,crypto:require('node:crypto').webcrypto,
     FormData: class { constructor(form) { this.values = {...form.fields}; form.elements.filter(field => field.name && !field.disabled).forEach(field => { this.values[field.name] = field.value; }); } get(key) { return this.values[key] ?? null; } },
     fetch:async()=>({ok:false,json:async()=>({error:'provider unavailable'})}),
   });
@@ -781,4 +781,61 @@ test('Income retry times out stalled reads and ignores their later result', asyn
   pending.forEach(p=>p.done({data:[{id:'late'}],error:null})); await Promise.resolve();
   assert.equal(api.state.incomeSources.length, 0);
   assert.equal(api.state.incomeSourcesAvailable, false);
+});
+
+function timedQuoteController() {
+  const view = controller();
+  let expire;
+  view.context.setTimeout = (callback, ms) => {assert.equal(ms, 25000); expire = callback; return 1;};
+  view.context.clearTimeout = () => {};
+  view.node('#asset-symbol').value = 'TIMEOUT';
+  view.node('#asset-shares').value = '2';
+  view.node('#manual-fallback').hidden = true;
+  return {...view, expire:()=>expire()};
+}
+
+test('quote timeout releases a stalled session and prevents its late provider request', async () => {
+  const {api,node,context,expire} = timedQuoteController();
+  let finishSession, calls = 0;
+  api.state.client.auth.getSession = () => new Promise(resolve => {finishSession = resolve;});
+  context.fetch = async () => {calls++; return {ok:true,json:async()=>({priceCents:100})};};
+  const pending = api.lookupQuote();
+  expire(); await pending;
+  assert.equal(node('#manual-fallback').hidden, false);
+  assert.equal(node('#asset-symbol').value, 'TIMEOUT');
+  assert.equal(node('#asset-shares').value, '2');
+  finishSession({data:{session:{access_token:'late-local-test'}}});
+  await Promise.resolve(); await Promise.resolve();
+  assert.equal(calls, 0);
+  assert.equal(api.state.pendingQuote, null);
+});
+
+test('quote timeout aborts transport, ignores late success and keeps manual recovery usable', async () => {
+  const {api,node,context,expire} = timedQuoteController();
+  let finish, signal;
+  let started;
+  const ready = new Promise(resolve => {started=resolve;});
+  context.fetch = (_url, options) => {signal = options.signal; started(); return new Promise(resolve => {finish=resolve;});};
+  const pending = api.lookupQuote();
+  await ready;
+  expire(); await pending;
+  assert.equal(signal.aborted, true);
+  assert.equal(node('#manual-fallback').hidden, false);
+  finish({ok:true,json:async()=>({priceCents:99900})});
+  await Promise.resolve(); await Promise.resolve();
+  assert.equal(api.state.pendingQuote, null);
+  assert.match(node('#quote-form-status').textContent, /Enter a manual price or total value/);
+});
+
+test('a stalled quote response body times out without exposing a superseded symbol fallback', async () => {
+  const {api,node,context,expire} = timedQuoteController();
+  let started;
+  const ready = new Promise(resolve => {started=resolve;});
+  context.fetch = async () => ({ok:true,json:()=>{started(); return new Promise(()=>{});}});
+  const pending = api.lookupQuote();
+  await ready;
+  api.state.quoteRequestId++; node('#asset-symbol').value='NEW';
+  expire(); await pending;
+  assert.equal(node('#manual-fallback').hidden, true);
+  assert.equal(api.state.pendingQuote, null);
 });

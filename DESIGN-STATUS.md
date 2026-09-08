@@ -2,6 +2,8 @@
 
 **Last reviewed:** 2026-09-08
 
+Quote lookup now releases stalled requests into the existing Acadia manual/retry recovery, retaining the draft. Optional provider failures preserve valid prices. See `automation/review/2026-09-08/reliability/review.md`; this is reliability follow-through without a visual redesign.
+
 Portfolio now leads with one precise selected-group total, compact group navigation and minimal identity/value cards using canonical Acadia composition. Tablet retains the sidebar; phones use a native selector. Table responds to its container with labelled object cards. 162 checks pass, with local seven-width containment, light/dark review, search continuity, keyboard entry/return and incomplete/empty state checks. See `automation/design/2026-09-08/portfolio-refinement.md`.
 
 Income now identifies unavailable reads and missing valuations, with in-page Retry data and direct Manual price repair. 159 checks pass; desktop and 320/390/768px embedded recovery plus keyboard focus pass locally. See `automation/review/2026-09-08/review.md`. Production browser acceptance remains Vercel-login-gated.

@@ -6,6 +6,8 @@ Use this file as the visual and interaction source of truth for Mercury. Keep th
 
 ## Active dashboard design contract
 
+- Quote lookup must end in a usable price or existing retry/manual-valuation recovery. Preserve Symbol, Shares, other draft values and focus on timeout; do not add another dialog or replace an optional-data failure with a zero estimate. Browser quote work has a 25-second ceiling including session recovery.
+
 - Keep canonical `acadia.css` and font assets unchanged. Mercury owns page composition and financial semantics in `styles.css` and `dashboard.js`; use Acadia dashboard, progress, table, tabs, dialog, status, navigation and control patterns.
 - Use 48px section spacing, 24px module padding, 16px record spacing and 8px label/value gaps. Page titles are 32px, section titles 24px, primary metrics 40px (32px on phones), object titles 16px and labels 12–14px. Put metric bands on the canvas with internal dividers; reserve borders for meaningful modules. Counts remain neutral. Pair movement colour with Up, Down or No change.
 - Home uses only existing Acadia classes: Home Dashboard, Dashboard Layout/Main, Dashboard Trend, Chart List/Progress, Content Card, Read Only, Rule Grid, Cluster and Asset Preview Card. Use the existing responsive Device Grid for asset cards (four on wide desktop, two on tablet, one on phones). Do not add Home overrides to `styles.css`. No visible Home title, monthly planning breakdown or review feed.

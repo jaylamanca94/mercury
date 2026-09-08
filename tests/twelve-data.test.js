@@ -213,3 +213,109 @@ test("provider prices reject blanks, nulls, booleans and unsafe cent values with
   }
   assert.equal(_internals.mapQuote({ price: "0" }, "VT").priceCents, 0);
 });
+
+function timedProvider(t, fetcher) {
+  const key = process.env.TWELVE_DATA_API_KEY;
+  process.env.TWELVE_DATA_API_KEY = 'test-key';
+  t.after(() => {
+    if (key === undefined) delete process.env.TWELVE_DATA_API_KEY;
+    else process.env.TWELVE_DATA_API_KEY = key;
+  });
+  const deadlines = [];
+  t.mock.method(AbortSignal, 'timeout', (ms) => {
+    const controller = new AbortController();
+    deadlines.push({ms, controller});
+    return controller.signal;
+  });
+  t.mock.method(global, 'fetch', fetcher);
+  return deadlines;
+}
+function stalled(signal) {
+  return new Promise((_, reject) => {
+    if (signal.aborted) reject(signal.reason);
+    else signal.addEventListener('abort', () => reject(signal.reason), {once:true});
+  });
+}
+const testQuote = {close:'100', previous_close:'99', datetime:'2026-09-08T20:00:00Z'};
+
+test('a stalled quote aborts and a later retry succeeds without caching failure', async (t) => {
+  let signal;
+  const deadlines = timedProvider(t, async (_url, options) => {
+    signal = options.signal;
+    return stalled(signal);
+  });
+  const pending = getQuote({symbol:'TIMEOUTPRICE', instrumentType:'crypto'});
+  const rejected = assert.rejects(pending, /timed out/);
+  assert.deepEqual(deadlines.map(d => d.ms), [10000, 4000]);
+  deadlines[1].controller.abort();
+  await rejected;
+  assert.equal(signal.aborted, true);
+  t.mock.method(global, 'fetch', async () => ({ok:true, json:async()=>testQuote}));
+  assert.equal((await getQuote({symbol:'TIMEOUTPRICE', instrumentType:'crypto'})).priceCents, 10000);
+});
+
+test('provider deadlines also abort a stalled JSON response body', async (t) => {
+  const deadlines = timedProvider(t, async (_url, {signal}) => ({ok:true, json:()=>stalled(signal)}));
+  const rejected = assert.rejects(getQuote({symbol:'TIMEOUTBODY', instrumentType:'crypto'}), /timed out/);
+  await Promise.resolve();
+  deadlines[1].controller.abort();
+  await rejected;
+});
+
+test('optional statistics timeout falls back to distribution history and preserves the price', async (t) => {
+  let started;
+  const ready = new Promise(resolve => {started = resolve});
+  const deadlines = timedProvider(t, async (url, {signal}) => {
+    const path = new URL(url).pathname;
+    if (path === '/quote') return {ok:true, json:async()=>testQuote};
+    if (path === '/statistics') {started(); return stalled(signal);}
+    return {ok:true, json:async()=>({chart:{result:[{events:{dividends:{a:{amount:1.5}}}}]}})};
+  });
+  const pending = getQuote({symbol:'TIMEOUTSTATS', instrumentType:'stock'});
+  await ready;
+  deadlines.at(-1).controller.abort();
+  const quote = await pending;
+  assert.equal(quote.priceCents, 10000);
+  assert.equal(quote.annualDividendCents, 150);
+});
+
+test('the whole lookup budget stops optional fallbacks without discarding a usable price', async (t) => {
+  let started;
+  const ready = new Promise(resolve => {started = resolve});
+  const paths = [];
+  const deadlines = timedProvider(t, async (url, {signal}) => {
+    const path = new URL(url).pathname; paths.push(path);
+    if (path === '/quote') return {ok:true, json:async()=>testQuote};
+    started(); return stalled(signal);
+  });
+  const pending = getQuote({symbol:'TOTALBUDGET', instrumentType:'stock', includeMetrics:true});
+  await ready; deadlines[0].controller.abort();
+  const quote = await pending;
+  assert.equal(quote.priceCents, 10000);
+  assert.equal(quote.distributionYieldRate, null);
+  assert.equal(quote.annualizedReturnRate, null);
+  assert.deepEqual(paths, ['/quote', '/statistics']);
+});
+
+test('an exhausted lookup budget never starts a second crypto symbol request', async (t) => {
+  let calls = 0;
+  const deadlines = timedProvider(t, async (_url, {signal}) => {calls++; return stalled(signal);});
+  const rejected = assert.rejects(getQuote({symbol:'TOTALPAIR', instrumentType:'other'}), /timed out/);
+  deadlines[0].controller.abort();
+  await rejected;
+  assert.equal(calls, 1);
+});
+
+test('background portfolio metrics release stalled requests and omit upstream diagnostics', async (t) => {
+  const {getPortfolioMetrics} = require('../api/lib/twelve-data');
+  const deadlines = timedProvider(t, async (_url, {signal}) => stalled(signal));
+  const rejected = assert.rejects(getPortfolioMetrics({symbol:'METRICSTIMEOUT', instrumentType:'stock'}), /timed out/);
+  deadlines[1].controller.abort();
+  await rejected;
+  t.mock.method(global, 'fetch', async () => {throw new Error('https://provider.invalid/?apikey=private-value');});
+  await assert.rejects(getPortfolioMetrics({symbol:'METRICSERROR', instrumentType:'stock'}), error => {
+    assert.match(error.message, /temporarily unavailable/);
+    assert.doesNotMatch(error.message, /apikey|private-value/);
+    return true;
+  });
+});

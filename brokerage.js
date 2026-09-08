@@ -1537,14 +1537,29 @@
     return data.session?.access_token;
   }
   async function requestQuote(symbol, instrumentType = "other", { includeMetrics = false } = {}) {
-    const token = await sessionToken();
-    const metricsQuery = includeMetrics ? "&includeMetrics=1" : "";
-    const response = await fetch(`/api/portfolio/quotes?symbol=${encodeURIComponent(symbol)}&instrumentType=${encodeURIComponent(instrumentType)}${metricsQuery}`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    const data = await response.json();
-    if (!response.ok) throw new Error(data.error || "Quote lookup failed.");
-    return data;
+    const controller = new AbortController();
+    let timer;
+    try {
+      return await Promise.race([
+        (async () => {
+          const token = await sessionToken();
+          if (controller.signal.aborted) throw new Error("Quote lookup timed out.");
+          const metricsQuery = includeMetrics ? "&includeMetrics=1" : "";
+          const response = await fetch(`/api/portfolio/quotes?symbol=${encodeURIComponent(symbol)}&instrumentType=${encodeURIComponent(instrumentType)}${metricsQuery}`, {
+            headers: { Authorization: `Bearer ${token}` }, signal: controller.signal,
+          });
+          const data = await response.json();
+          if (!response.ok) throw new Error(data.error || "Quote lookup failed.");
+          return data;
+        })(),
+        new Promise((_, reject) => {
+          timer = setTimeout(() => {
+            reject(new Error("Price lookup timed out. Try again or enter a manual valuation."));
+            controller.abort();
+          }, 25000);
+        }),
+      ]);
+    } finally { clearTimeout(timer); }
   }
   function canQuote() {
     return Boolean($("#asset-symbol").value.trim())

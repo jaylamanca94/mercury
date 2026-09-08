@@ -1,11 +1,28 @@
 const QUOTE_CACHE_TTL_MS = 5 * 60 * 1000;
 const DISTRIBUTION_CACHE_TTL_MS = 24 * 60 * 60 * 1000;
 const PERFORMANCE_CACHE_TTL_MS = 24 * 60 * 60 * 1000;
+const PROVIDER_TIMEOUT_MS = 4000;
+const LOOKUP_TIMEOUT_MS = 10000;
 const quoteCache = new Map();
 const distributionCache = new Map();
 const performanceCache = new Map();
 const portfolioMetricsCache = new Map();
 const CRYPTO_TICKERS = new Set(["BTC", "ETH", "SOL", "LINK", "AVAX", "SHIB", "ETC"]);
+
+async function fetchProviderJson(url, signal, headers = { Accept: "application/json" }) {
+  // Keep the same lookup budget across optional sources and symbol fallbacks.
+  signal.throwIfAborted();
+  const requestSignal = AbortSignal.any([signal, AbortSignal.timeout(PROVIDER_TIMEOUT_MS)]);
+  try {
+    const response = await fetch(url, { headers, signal: requestSignal });
+    if (!response.ok) throw new Error("Market data is temporarily unavailable. Try again.");
+    return await response.json();
+  } catch {
+    if (requestSignal.aborted) throw new Error("Market data timed out. Try again or enter a manual valuation.");
+    // Transport errors can include provider URLs containing server credentials.
+    throw new Error("Market data is temporarily unavailable. Try again.");
+  }
+}
 
 function isCryptoSymbol(value, instrumentType) {
   return instrumentType === "crypto" || value.includes("/") || CRYPTO_TICKERS.has(value);
@@ -163,15 +180,13 @@ async function getPortfolioMetrics({ symbol, instrumentType }) {
 
   const yahooSymbol = normalisedSymbol.replace("/USD", "-USD");
   const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(yahooSymbol)}?range=5y&interval=1mo&events=div`;
-  const response = await fetch(url, {
-    headers: { Accept: "application/json", "User-Agent": "Mercury portfolio source bridge" },
-  });
-  if (!response.ok) throw new Error("Historical market data is unavailable for this asset.");
+  const payload = await fetchProviderJson(url, AbortSignal.timeout(LOOKUP_TIMEOUT_MS),
+    { Accept: "application/json", "User-Agent": "Mercury portfolio source bridge" });
   const value = {
     symbol: normalisedSymbol,
     instrumentType: resolvedInstrumentType,
     source: "Yahoo Finance",
-    ...mapYahooPortfolioMetrics(await response.json(), resolvedInstrumentType),
+    ...mapYahooPortfolioMetrics(payload, resolvedInstrumentType),
   };
   portfolioMetricsCache.set(cacheKey, { value, savedAt: Date.now() });
   return value;
@@ -183,14 +198,13 @@ async function getQuote({ symbol, instrumentType, includeMetrics = false }) {
   const cacheKey = `${resolvedInstrumentType}:${normalisedSymbol}`;
   const cached = quoteCache.get(cacheKey);
   if (!process.env.TWELVE_DATA_API_KEY) throw new Error("Quotes are not configured yet.");
+  const signal = AbortSignal.timeout(LOOKUP_TIMEOUT_MS);
 
   async function fetchQuote(providerSymbol) {
     const url = new URL("https://api.twelvedata.com/quote");
     url.searchParams.set("symbol", providerSymbol);
     url.searchParams.set("apikey", process.env.TWELVE_DATA_API_KEY);
-    const response = await fetch(url, { headers: { Accept: "application/json" } });
-    if (!response.ok) throw new Error("The quote provider is unavailable. Your last successful quote is retained.");
-    return mapQuote(await response.json(), providerSymbol);
+    return mapQuote(await fetchProviderJson(url, signal), providerSymbol);
   }
 
   async function fetchDistribution(providerSymbol, priceCents, resolvedType) {
@@ -207,13 +221,10 @@ async function getQuote({ symbol, instrumentType, includeMetrics = false }) {
       const url = new URL("https://api.twelvedata.com/statistics");
       url.searchParams.set("symbol", providerSymbol);
       url.searchParams.set("apikey", process.env.TWELVE_DATA_API_KEY);
-      const response = await fetch(url, { headers: { Accept: "application/json" } });
-      if (response.ok) {
-        const value = mapDistribution(await response.json(), priceCents);
-        if (value.annualDividendCents !== null || value.distributionYieldRate !== null) {
-          distributionCache.set(providerSymbol, { value, savedAt: Date.now() });
-          return value;
-        }
+      const value = mapDistribution(await fetchProviderJson(url, signal), priceCents);
+      if (value.annualDividendCents !== null || value.distributionYieldRate !== null) {
+        distributionCache.set(providerSymbol, { value, savedAt: Date.now() });
+        return value;
       }
     } catch {
       // Statistics are optional; the cash-distribution history below is the live fallback.
@@ -222,11 +233,9 @@ async function getQuote({ symbol, instrumentType, includeMetrics = false }) {
     try {
       const yahooSymbol = providerSymbol.replace("/USD", "-USD");
       const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(yahooSymbol)}?range=1y&interval=1d&events=div`;
-      const response = await fetch(url, {
-        headers: { Accept: "application/json", "User-Agent": "Mercury portfolio source bridge" },
-      });
-      if (!response.ok) return { annualDividendCents: null, distributionYieldRate: null };
-      const value = mapYahooDistribution(await response.json(), priceCents);
+      const payload = await fetchProviderJson(url, signal,
+        { Accept: "application/json", "User-Agent": "Mercury portfolio source bridge" });
+      const value = mapYahooDistribution(payload, priceCents);
       if (value.annualDividendCents !== null || value.distributionYieldRate !== null) {
         distributionCache.set(providerSymbol, { value, savedAt: Date.now() });
       }
@@ -249,13 +258,10 @@ async function getQuote({ symbol, instrumentType, includeMetrics = false }) {
       url.searchParams.set("order", "asc");
       url.searchParams.set("adjust", "dividends");
       url.searchParams.set("apikey", process.env.TWELVE_DATA_API_KEY);
-      const response = await fetch(url, { headers: { Accept: "application/json" } });
-      if (response.ok) {
-        const value = annualizedReturn((await response.json())?.values);
-        if (value.annualizedReturnRate !== null) {
-          performanceCache.set(providerSymbol, { value, savedAt: Date.now() });
-          return value;
-        }
+      const value = annualizedReturn((await fetchProviderJson(url, signal))?.values);
+      if (value.annualizedReturnRate !== null) {
+        performanceCache.set(providerSymbol, { value, savedAt: Date.now() });
+        return value;
       }
     } catch {
       // Mutual-fund history is not available for every Twelve Data plan or symbol.
@@ -264,11 +270,8 @@ async function getQuote({ symbol, instrumentType, includeMetrics = false }) {
     try {
       const yahooSymbol = providerSymbol.replace("/USD", "-USD");
       const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(yahooSymbol)}?range=5y&interval=1mo`;
-      const response = await fetch(url, {
-        headers: { Accept: "application/json", "User-Agent": "Mercury portfolio source bridge" },
-      });
-      if (!response.ok) return { annualizedReturnRate: null, annualizedReturnYears: null };
-      const value = mapYahooPerformance(await response.json());
+      const value = mapYahooPerformance(await fetchProviderJson(url, signal,
+        { Accept: "application/json", "User-Agent": "Mercury portfolio source bridge" }));
       if (value.annualizedReturnRate !== null) performanceCache.set(providerSymbol, { value, savedAt: Date.now() });
       return value;
     } catch {
@@ -290,7 +293,7 @@ async function getQuote({ symbol, instrumentType, includeMetrics = false }) {
     return value;
   } catch (error) {
     const canTryUsdPair = (!instrumentType || instrumentType === "other") && !normalisedSymbol.includes("/");
-    if (!canTryUsdPair) throw error;
+    if (!canTryUsdPair || signal.aborted) throw error;
     const cryptoSymbol = `${normalisedSymbol}/USD`;
     const value = await enrichQuote(cryptoSymbol, "crypto");
     quoteCache.set(cacheKey, { value, savedAt: Date.now() });

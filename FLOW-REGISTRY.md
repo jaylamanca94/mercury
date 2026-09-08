@@ -1,6 +1,6 @@
 # Mercury Flow Registry
 
-> **10 implemented canonical flows; all have design and automated coverage at varying depths. One deferred export boundary. This pass adds Income read retry and direct valuation repair; no flows added. Remote and physical-device acceptance gaps remain below.**
+> **10 implemented canonical flows; all have design and automated coverage at varying depths. One deferred export boundary. Quote lookup now releases stalled providers/session waits into existing recovery; no flows added. Remote and physical-device acceptance gaps remain below.**
 
 **Last reviewed:** 2026-09-08
 
@@ -78,3 +78,7 @@ No flows added. Daily history now rejects incomplete/invalid valuations; cron ac
 ## Income recovery follow-through — 2026-09-08
 
 Income Overview/Budget now distinguish unavailable sources/categories, missing valuations and loading/yield coverage. Retry data reads only failed account-scoped collections, preserves partial success and releases stalled reads after ten seconds; late results cannot populate a signed-out/different account. Review valuations opens the existing manual-price field and preserves the Income return route. No flows added. 159 checks pass; desktop and 320/390/768px embedded recovery, keyboard failure/success focus and valuation Save/Back pass locally. See `automation/review/2026-09-08/review.md`. Production browser acceptance remains Vercel-login-gated.
+
+## Quote deadline and release-gate follow-through — 2026-09-08
+
+10 implemented canonical flows unchanged. Add asset, saved-asset quote refresh and background metrics now have bounded lookup waits. Server requests receive four seconds per provider call within a shared ten-second lookup budget; the browser allows 25 seconds including session/authentication before aborting. A failed optional dividend/history request preserves a usable quote; a late response cannot replace timed-out manual recovery or a newer symbol. Existing Acadia form, status, retry and valuation controls are reused. Vercel runs `npm run check` before publication. See `automation/review/2026-09-08/reliability/review.md` for current evidence and remaining gates.
