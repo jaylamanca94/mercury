@@ -27,7 +27,7 @@
     totalNetWorthCents,
     weeklyEquivalentRecurringContributionCents,
   } = window.MercuryPlan;
-  const { summarizePlanningPosition, summarizeHoldingAllocation, summarizeDashboardHistory } = window.MercuryDashboard;
+  const { investmentGroup, summarizeInvestmentGroups, summarizePlanningPosition, summarizeHoldingAllocation, summarizeDashboardHistory } = window.MercuryDashboard;
   const $ = (selector) => document.querySelector(selector);
   const currency = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 });
   const compactCurrency = new Intl.NumberFormat("en-US", {
@@ -495,16 +495,17 @@
     $("#holdings-empty").hidden = topAssets.length > 0;
   }
 
-  function matchingPortfolioHoldingRows(summary) {
-    const search = $("#portfolio-search").value.trim().toLowerCase();
+  function portfolioHoldingRows(summary) {
     // Keep saved holdings reachable even when their valuation is unavailable.
     const valued = new Map(summary.rows.map((row) => [row.asset.id, row]));
-    const rows = state.holdings.map((holding) => valued.get(holding.id)
+    return state.holdings.map((holding) => valued.get(holding.id)
       || { asset: holdingAsset(holding), marketValueCents: null });
-    return rows.filter((row) => {
+  }
+  function matchingPortfolioHoldingRows(summary) {
+    const search = $("#portfolio-search").value.trim().toLowerCase();
+    return portfolioHoldingRows(summary).filter((row) => {
       const matchesFilter = state.portfolioFilter === "all"
-        || (state.portfolioFilter === "crypto" && row.asset.instrumentType === "crypto")
-        || (state.portfolioFilter === "retirement" && row.asset.isRetirement);
+        || investmentGroup(row.asset) === state.portfolioFilter;
       const matchesSearch = `${row.asset.symbol || ""} ${row.asset.name || ""} ${row.asset.instrumentType}`.toLowerCase().includes(search);
       return matchesFilter && matchesSearch;
     });
@@ -547,7 +548,33 @@
       }
     });
   }
-  function renderPortfolioFilters() {
+  function renderPortfolioFilters(summary) {
+    const groups = summarizeInvestmentGroups(portfolioHoldingRows(summary));
+    for (const group of groups) {
+      const selected = group.id === state.portfolioFilter;
+      const value = group.valueCents === null ? "Needs valuation" : preciseCurrency.format(group.valueCents / 100);
+      const count = `${group.count} ${group.count === 1 ? "asset" : "assets"}`;
+      const share = group.allocationRate === null ? "" : `${new Intl.NumberFormat("en-US", { style: "percent", maximumFractionDigits: 1 }).format(group.allocationRate)} of investments`;
+      const coverage = group.missingCount ? `${group.missingCount} ${group.missingCount === 1 ? "asset needs" : "assets need"} a valuation` : "";
+      const meta = [count, share, coverage].filter(Boolean).join(" · ");
+      const button = $(`[data-investment-group="${group.id}"]`);
+      button.classList.toggle("is-active", selected);
+      button.setAttribute("aria-pressed", String(selected));
+      setText(`#portfolio-group-${group.id}-value`, value);
+      setText(`#portfolio-group-${group.id}-meta`, meta);
+      const progress = $(`#portfolio-group-${group.id}-progress`);
+      progress.hidden = group.allocationRate === null || group.id === "all";
+      progress.value = group.allocationRate ?? 0;
+      $(`#portfolio-filter option[value="${group.id}"]`).textContent = `${group.name} · ${value}`;
+      if (selected) {
+        setText("#portfolio-holdings-title", group.name);
+        setText("#portfolio-group-mobile-meta", meta);
+        const mobileProgress = $("#portfolio-group-mobile-progress");
+        mobileProgress.hidden = group.allocationRate === null || group.id === "all";
+        mobileProgress.value = group.allocationRate ?? 0;
+      }
+    }
+    $("#portfolio-group-coverage").hidden = groups[0].missingCount === 0;
     $("#portfolio-filter").value = state.portfolioFilter;
   }
   function renderPortfolioView(hasRows) {
@@ -603,7 +630,7 @@
   }
   function renderPortfolioHoldings(summary) {
     renderPortfolioHoldingSort();
-    renderPortfolioFilters();
+    renderPortfolioFilters(summary);
     const matchingRows = matchingPortfolioHoldingRows(summary);
     const rows = sortHoldingRows(matchingRows, state.portfolioSort);
     const grid = $("#portfolio-holdings-grid");
@@ -2374,6 +2401,12 @@
   $("#portfolio-filter").addEventListener("change", (event) => {
     state.portfolioFilter = event.target.value;
     render();
+  });
+  document.querySelectorAll("[data-investment-group]").forEach((control) => {
+    control.addEventListener("click", () => {
+      state.portfolioFilter = control.dataset.investmentGroup;
+      render();
+    });
   });
   $("#portfolio-reset-filters").addEventListener("click", () => {
     state.portfolioFilter = "all";

@@ -1,6 +1,33 @@
 @import url("acadia.css?v=20260903-home-overview-v1");
 
 /* Page composition only; the shared Acadia primitives and tokens stay canonical. */
+/* Investment groups compose Acadia Side Nav, Read Only and Progress primitives. */
+.mercury-investment-layout {
+  display: grid;
+  grid-template-columns: 16rem minmax(0, 1fr);
+  gap: var(--acadia-space-3);
+  align-items: start;
+}
+.mercury-investment-sidebar { box-sizing: border-box; inline-size: 100%; }
+.mercury-investment-main { min-width: 0; }
+.mercury-investment-group { text-align: start; }
+.mercury-investment-group.acadia-side-nav-link > span {
+  white-space: normal;
+  overflow: visible;
+}
+.mercury-investment-group small { font-weight: var(--acadia-font-weight-regular); }
+.mercury-investment-group progress[hidden],
+.mercury-investment-mobile progress[hidden],
+.mercury-investment-mobile { display: none; }
+#portfolio-holdings-grid { --acadia-grid-columns: 2; }
+@media (min-width: 100rem) {
+  #portfolio-holdings-grid { --acadia-grid-columns: 3; }
+}
+@media (max-width: 63.98rem) {
+  .mercury-investment-layout { grid-template-columns: minmax(0, 1fr); }
+  .mercury-investment-sidebar { display: none; }
+  .mercury-investment-mobile { display: grid; }
+}
 /* Safari stretches a grid dialog between opposing block insets. Anchor the
    content-sized form dialog at the viewport centre; Acadia caps overflow. */
 #asset-dialog,
@@ -62,6 +89,11 @@
 .mercury-portfolio-table-wrap td:last-child {
   text-align: right;
   width: 3rem;
+}
+
+.mercury-portfolio-table-wrap {
+  box-sizing: border-box;
+  position: relative;
 }
 
 .mercury-portfolio-asset-identity {

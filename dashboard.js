@@ -6,6 +6,27 @@ const DashboardPlan = typeof module !== "undefined" ? require("./plan") : window
 const DashboardPortfolio = typeof module !== "undefined" ? require("./portfolio") : window.MercuryPortfolio;
 const HISTORY_MINIMUM_DAYS = 30;
 
+function investmentGroup(asset) {
+  return asset.isRetirement ? "retirement" : asset.instrumentType === "crypto" ? "crypto" : "brokerage";
+}
+
+function summarizeInvestmentGroups(rows) {
+  const groups = [
+    { id: "all", name: "All investments" },
+    { id: "brokerage", name: "Brokerage" },
+    { id: "retirement", name: "Retirement" },
+    { id: "crypto", name: "Crypto" },
+  ].map((group) => {
+    const members = group.id === "all" ? rows : rows.filter((row) => investmentGroup(row.asset) === group.id);
+    const missingCount = members.filter((row) => !Number.isSafeInteger(row.marketValueCents) || row.marketValueCents < 0).length;
+    return { ...group, count: members.length, missingCount,
+      valueCents: missingCount ? null : members.reduce((sum, row) => sum + row.marketValueCents, 0) };
+  });
+  const total = groups[0].valueCents;
+  return groups.map((group) => ({ ...group,
+    allocationRate: total > 0 && group.valueCents !== null ? group.valueCents / total : null }));
+}
+
 function summarizePlanningPosition({ sources = [], categories = [], holdings = [], passiveAnnualCents = null,
   sourcesAvailable = true, categoriesAvailable = true, holdingsAvailable = true, passiveAvailable = true,
   period = "month" } = {}) {
@@ -52,6 +73,6 @@ function summarizeDashboardHistory(snapshots, period = "all") {
     positions: dates.map((date) => duration ? ((date - dates[0]) / duration) * 100 : 0) };
 }
 
-const dashboardContract = { HISTORY_MINIMUM_DAYS, summarizePlanningPosition, summarizeHoldingAllocation, summarizeDashboardHistory };
+const dashboardContract = { HISTORY_MINIMUM_DAYS, investmentGroup, summarizeInvestmentGroups, summarizePlanningPosition, summarizeHoldingAllocation, summarizeDashboardHistory };
 if (typeof module !== "undefined") module.exports = dashboardContract;
 if (typeof window !== "undefined") window.MercuryDashboard = dashboardContract;

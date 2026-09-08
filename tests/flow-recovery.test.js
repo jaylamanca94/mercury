@@ -370,7 +370,7 @@ test('a queued close event cannot hide a newly reopened discard confirmation', (
 });
 
 
-test('Portfolio retains unvalued holdings in search and overlapping classification filters',()=>{
+test('Portfolio retains unvalued holdings in search and mutually exclusive investment groups',()=>{
   const {api,node}=controller();
   const base={instrument_type:'stock',valuation_basis:'shares-and-price',shares:10,manual_price_cents:null,manual_value_cents:null};
   api.state.holdings=[{...base,id:'known',symbol:'KNOWN'}, {...base,id:'missing',symbol:'MISSING',instrument_type:'crypto',is_retirement:true}];
@@ -382,10 +382,12 @@ test('Portfolio retains unvalued holdings in search and overlapping classificati
   assert.equal(api.holdingValueLabel(rows[1]),'Needs valuation');
   assert.equal(api.sortHoldingRows(rows)[0].asset.id,'known');
   assert.equal(api.sortHoldingRows(rows,'name')[1].asset.id,'missing');
-  for(const filter of ['crypto','retirement']) {
-    api.state.portfolioFilter=filter;
-    assert.equal(api.matchingPortfolioHoldingRows(summary)[0].asset.id,'missing');
-  }
+  api.state.portfolioFilter='brokerage';
+  assert.equal(api.matchingPortfolioHoldingRows(summary)[0].asset.id,'known');
+  api.state.portfolioFilter='crypto';
+  assert.equal(api.matchingPortfolioHoldingRows(summary).length,0);
+  api.state.portfolioFilter='retirement';
+  assert.equal(api.matchingPortfolioHoldingRows(summary)[0].asset.id,'missing');
   node('#portfolio-search').value='known';
   assert.equal(api.matchingPortfolioHoldingRows(summary).length,0);
   api.state.portfolioFilter='all';

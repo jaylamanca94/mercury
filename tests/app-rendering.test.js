@@ -39,7 +39,7 @@ test("Home consumes Acadia without a Mercury presentation layer", () => {
   assert.match(indexHtml, /id="asset-workspace" class="acadia-stack mercury-workspace" hidden aria-live="polite"/);
   assert.match(acadiaStyles, /\[data-acadia-page-frame="spacious"\]/);
   assert.match(acadiaStyles, /\.acadia-card\.is-dashboard-trend/);
-  assert.doesNotMatch(indexHtml, /brokerage-/);
+  assert.doesNotMatch(indexHtml, /class="[^"]*brokerage-/);
   assert.doesNotMatch(homeSource, /new window\.Chart|Chart\.js/);
 });
 
@@ -289,7 +289,7 @@ test("Plan is a separate Base-plan projection workspace with aligned portfolio c
   assert.match(indexHtml, /id="plan-assumptions-dialog"/);
   assert.match(indexHtml, /id="property-dialog"/);
   assert.match(indexHtml, /<script src="plan\.js\?v=20260907-plan-automatic-v1"><\/script>/);
-  assert.match(indexHtml, /<script src="brokerage\.js\?v=20260907-plan-automatic-v1"><\/script>/);
+  assert.match(indexHtml, /<script src="brokerage\.js\?v=20260908-investment-groups"><\/script>/);
   assert.match(homeSource, /function routePlan\(\)/);
   assert.match(homeSource, /function renderPlan\(summary\)/);
   assert.match(homeSource, /function renderPlanChart/);
@@ -358,7 +358,7 @@ test("Home never falls back to fabricated assets and Portfolio is a functional r
   assert.match(homeSource, /portfolioFilter/);
   assert.match(homeSource, /portfolioSort/);
   assert.match(homeSource, /matchingPortfolioHoldingRows/);
-  assert.match(homeSource, /state\.portfolioFilter === "retirement" && row\.asset\.isRetirement/);
+  assert.match(homeSource, /investmentGroup\(row\.asset\) === state\.portfolioFilter/);
   assert.match(homeSource, /renderPortfolioHoldings/);
   assert.match(homeSource, /function renderProperties\(\)/);
   assert.match(homeSource, /function saveProperty\(event\)/);

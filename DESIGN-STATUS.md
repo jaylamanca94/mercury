@@ -2,6 +2,8 @@
 
 **Last reviewed:** 2026-09-08
 
+Portfolio now has a selectable investment-group sidebar with exact values, counts and shares, plus a compact tablet/phone selector. Brokerage, Retirement and Crypto reconcile without overlap; search and Cards/Table retain their state. 161 checks pass, with local seven-width light/dark browser containment and keyboard/coverage verification. See `automation/design/2026-09-08/investment-groups.md`.
+
 Income now identifies unavailable reads and missing valuations, with in-page Retry data and direct Manual price repair. 159 checks pass; desktop and 320/390/768px embedded recovery plus keyboard focus pass locally. See `automation/review/2026-09-08/review.md`. Production browser acceptance remains Vercel-login-gated.
 
 Plan now derives its return baseline and dividend yield from holdings without requiring manual rates. Plan settings presents calculated values first, with optional overrides and historical provenance. 155 checks pass; isolated browser verification covers automatic outlook, saving/clearing an override, missing return coverage, dark/light desktop and 320/390/768px containment. See `automation/design/2026-09-07/plan-automatic-rates.md`.

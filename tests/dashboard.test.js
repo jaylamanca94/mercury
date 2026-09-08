@@ -4,6 +4,31 @@ const { summarizePlanningPosition: plan, summarizeHoldingAllocation: allocation,
 const source = (frequency, amountCents = 10001) => ({ id: frequency, name: frequency, incomeType: 'employment', frequency, amountCents });
 const category = { id: 'bills', name: 'Bills', monthlyAmountCents: 50001 };
 
+const { summarizeInvestmentGroups: investmentGroups } = require('../dashboard');
+const groupRow = (instrumentType, isRetirement, marketValueCents) => ({ asset: { instrumentType, isRetirement }, marketValueCents });
+test('investment groups reconcile cents and counts with retirement crypto counted once', () => {
+  const groups = investmentGroups([
+    groupRow('etf', false, 12345), groupRow('other', false, 102),
+    groupRow('stock', true, 23456), groupRow('crypto', true, 789),
+    groupRow('crypto', false, 4567), groupRow('cash', false, 0),
+  ]);
+  assert.deepEqual(groups.map(g => [g.id, g.count, g.valueCents]), [
+    ['all', 6, 41259], ['brokerage', 3, 12447], ['retirement', 2, 24245], ['crypto', 1, 4567],
+  ]);
+  assert.equal(groups.slice(1).reduce((n,g) => n + g.valueCents, 0), groups[0].valueCents);
+  assert.ok(Math.abs(groups.slice(1).reduce((n,g) => n + g.allocationRate, 0) - 1) < 1e-12);
+});
+test('missing group valuations withhold affected totals and every share, retaining complete group amounts', () => {
+  const groups = investmentGroups([groupRow('stock', false, 10000), groupRow('crypto', true, null), groupRow('stock', true, 30000)]);
+  assert.deepEqual(groups.map(g => g.valueCents), [null, 10000, null, 0]);
+  assert.deepEqual(groups.map(g => g.missingCount), [1, 0, 1, 0]);
+  assert.ok(groups.every(g => g.allocationRate === null));
+  for (const rows of [[], [groupRow('cash', false, 0)]]) {
+    const empty = investmentGroups(rows);
+    assert.ok(empty.every(g => g.valueCents === 0 && g.allocationRate === null));
+  }
+});
+
 test('planning uses all source cadences and reconciles converted components before subtraction', () => {
   const input = { sources: ['weekly', 'biweekly', 'twiceMonthly', 'monthly'].map(f => source(f)), categories: [category], passiveAnnualCents: 10001,
     holdings: [{ contributionCents: 10001, contributionFrequency: 'weekly' }, { contributionCents: 12345, contributionFrequency: 'monthly' }] };
