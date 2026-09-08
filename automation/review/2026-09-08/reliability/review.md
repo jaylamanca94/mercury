@@ -55,6 +55,7 @@ Migration tracking compares local versions with `supabase_migrations.schema_migr
 - New tests cover stalled transport, stalled JSON, shared budget exhaustion, optional-source fallback, successful retry after timeout, sanitised transport diagnostics, stalled browser session, late completion and superseded symbols.
 - Current automated coverage spans all 10 canonical flows at varying depths. Browser and remote evidence are deliberately reported separately above.
 - `git diff --check` passes. Final commit, remote SHA and deployment status are recorded in the automation completion.
+- The first hosted build ran all 171 checks successfully, then failed because enabling a build command made Vercel expect a `public` directory. The release configuration now explicitly keeps the existing static output at `.`. This was a publication-configuration failure, not a test failure; final redeployment is verified separately.
 
 ## Captured evidence
 

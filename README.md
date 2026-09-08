@@ -30,7 +30,7 @@ Add asset keeps Symbol and Shares first, with optional recurring investments in 
 No package installation is needed for the dependency-free checks.
 
 - `npm test` — domain, quote-adapter, and snapshot behaviour.
-- `npm run check` — syntax checks followed by the test suite. Vercel runs this command as its build gate for Git-triggered preview and production publication; failed checks prevent the new deployment from publishing.
+- `npm run check` — syntax checks followed by the test suite. Vercel runs this command as its build gate for Git-triggered preview and production publication; failed checks prevent the new deployment from publishing. The output directory is explicitly `.` because this static application serves the repository-root assets and has no generated `public` folder.
 
 ## Key files
 
