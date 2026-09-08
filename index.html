@@ -12,7 +12,7 @@
     <link rel="preload" href="fonts/Syncopate-Regular.ttf" as="font" type="font/ttf" crossorigin>
     <link rel="preload" href="fonts/Syncopate-Bold.ttf" as="font" type="font/ttf" crossorigin>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" referrerpolicy="no-referrer">
-    <link rel="stylesheet" href="styles.css?v=20260908-investment-groups">
+    <link rel="stylesheet" href="styles.css?v=20260908-portfolio-refined">
   </head>
   <body class="acadia-app">
     <a class="acadia-skip-link" href="#main-content">Skip to content</a>
@@ -66,66 +66,61 @@
 
       <section id="portfolio-workspace" class="acadia-stack mercury-workspace" hidden>
         <header class="acadia-page-header-pattern is-title-only"><div class="acadia-page-header-pattern-actions"><h1 class="acadia-page-header-pattern-title">Portfolio</h1><button id="portfolio-add-asset" class="acadia-button acadia-button-primary" type="button"><i class="fa-solid fa-plus acadia-icon" aria-hidden="true"></i> Add asset</button></div></header>
-        <div id="portfolio-summary" class="acadia-read-only" role="group" aria-label="Portfolio summary">
-          <span class="acadia-text-muted">Investment value</span><strong id="portfolio-summary-investments" class="acadia-title">$0</strong>
-          <small id="portfolio-valuation-status" class="acadia-text-muted" hidden></small>
-        </div>
         <section class="acadia-stack" aria-label="Portfolio holdings and property">
-          <div class="mercury-investment-layout">
-            <aside class="acadia-side-nav mercury-investment-sidebar" aria-labelledby="portfolio-groups-title">
-              <h2 id="portfolio-groups-title" class="acadia-side-nav-heading">Investment groups</h2>
-              <div class="acadia-side-nav-section" role="group" aria-label="Filter investments by group">
-                <button class="acadia-side-nav-link mercury-investment-group is-active" type="button" data-investment-group="all" aria-pressed="true" aria-controls="portfolio-investment-results">
-                  <span class="acadia-read-only"><span>All investments</span><strong id="portfolio-group-all-value" class="acadia-card-metric-value">$0.00</strong><small id="portfolio-group-all-meta" class="acadia-text-muted">0 assets</small><span class="acadia-card-progress"><progress id="portfolio-group-all-progress" max="1" value="0" aria-hidden="true" hidden></progress></span></span>
-                </button>
-                <button class="acadia-side-nav-link mercury-investment-group" type="button" data-investment-group="brokerage" aria-pressed="false" aria-controls="portfolio-investment-results">
-                  <span class="acadia-read-only"><span>Brokerage</span><strong id="portfolio-group-brokerage-value" class="acadia-card-metric-value">$0.00</strong><small id="portfolio-group-brokerage-meta" class="acadia-text-muted">0 assets</small><span class="acadia-card-progress"><progress id="portfolio-group-brokerage-progress" max="1" value="0" aria-hidden="true" hidden></progress></span></span>
-                </button>
-                <button class="acadia-side-nav-link mercury-investment-group" type="button" data-investment-group="retirement" aria-pressed="false" aria-controls="portfolio-investment-results">
-                  <span class="acadia-read-only"><span>Retirement</span><strong id="portfolio-group-retirement-value" class="acadia-card-metric-value">$0.00</strong><small id="portfolio-group-retirement-meta" class="acadia-text-muted">0 assets</small><span class="acadia-card-progress"><progress id="portfolio-group-retirement-progress" max="1" value="0" aria-hidden="true" hidden></progress></span></span>
-                </button>
-                <button class="acadia-side-nav-link mercury-investment-group" type="button" data-investment-group="crypto" aria-pressed="false" aria-controls="portfolio-investment-results">
-                  <span class="acadia-read-only"><span>Crypto</span><strong id="portfolio-group-crypto-value" class="acadia-card-metric-value">$0.00</strong><small id="portfolio-group-crypto-meta" class="acadia-text-muted">0 assets</small><span class="acadia-card-progress"><progress id="portfolio-group-crypto-progress" max="1" value="0" aria-hidden="true" hidden></progress></span></span>
-                </button>
+          <div class="acadia-app-workspace acadia-grid">
+            <aside id="portfolio-group-sidebar" class="acadia-stack" aria-label="Investment groups">
+              <div class="acadia-app-sidebar-nav" role="group" aria-label="Filter investments by group">
+                <a href="#portfolio" role="button" class="acadia-side-nav-link is-active" data-investment-group="all" aria-pressed="true" aria-controls="portfolio-investment-results">
+                  <span class="acadia-read-only"><span>All investments</span><strong id="portfolio-group-all-value" hidden>$0</strong><small id="portfolio-group-all-meta" class="acadia-text-muted">0 assets</small><span class="acadia-card-progress"><progress id="portfolio-group-all-progress" max="1" value="0" aria-hidden="true" hidden></progress></span></span>
+                </a>
+                <a href="#portfolio" role="button" class="acadia-side-nav-link" data-investment-group="brokerage" aria-pressed="false" aria-controls="portfolio-investment-results">
+                  <span class="acadia-read-only"><span>Brokerage</span><strong id="portfolio-group-brokerage-value">$0</strong><small id="portfolio-group-brokerage-meta" class="acadia-text-muted">0 assets</small><span class="acadia-card-progress"><progress id="portfolio-group-brokerage-progress" max="1" value="0" aria-hidden="true" hidden></progress></span></span>
+                </a>
+                <a href="#portfolio" role="button" class="acadia-side-nav-link" data-investment-group="retirement" aria-pressed="false" aria-controls="portfolio-investment-results">
+                  <span class="acadia-read-only"><span>Retirement</span><strong id="portfolio-group-retirement-value">$0</strong><small id="portfolio-group-retirement-meta" class="acadia-text-muted">0 assets</small><span class="acadia-card-progress"><progress id="portfolio-group-retirement-progress" max="1" value="0" aria-hidden="true" hidden></progress></span></span>
+                </a>
+                <a href="#portfolio" role="button" class="acadia-side-nav-link" data-investment-group="crypto" aria-pressed="false" aria-controls="portfolio-investment-results">
+                  <span class="acadia-read-only"><span>Crypto</span><strong id="portfolio-group-crypto-value">$0</strong><small id="portfolio-group-crypto-meta" class="acadia-text-muted">0 assets</small><span class="acadia-card-progress"><progress id="portfolio-group-crypto-progress" max="1" value="0" aria-hidden="true" hidden></progress></span></span>
+                </a>
               </div>
-              <small class="acadia-text-muted">Grouped by your saved holdings. Retirement includes any retirement crypto.</small>
-              <small id="portfolio-group-coverage" class="acadia-text-muted" hidden>Percentages are unavailable until every asset has a valuation.</small>
+              <small id="portfolio-group-coverage" class="acadia-text-muted" hidden>Complete valuations to see allocation.</small>
             </aside>
-            <div class="acadia-read-only mercury-investment-mobile">
-              <label class="acadia-label" for="portfolio-filter">Investment group</label>
-              <select id="portfolio-filter" class="acadia-control" aria-label="Filter investments"><option value="all">All investments</option><option value="brokerage">Brokerage</option><option value="retirement">Retirement</option><option value="crypto">Crypto</option></select>
-              <small id="portfolio-group-mobile-meta" class="acadia-text-muted">0 assets</small>
-              <div class="acadia-card-progress"><progress id="portfolio-group-mobile-progress" max="1" value="0" aria-hidden="true" hidden></progress></div>
-            </div>
-          <div class="acadia-stack mercury-investment-main">
+          <div class="acadia-dashboard-main">
           <section id="portfolio-investment-results" class="acadia-stack" aria-labelledby="portfolio-holdings-title">
             <div class="acadia-page-header-pattern-actions">
-              <div class="acadia-cluster"><h2 id="portfolio-holdings-title" class="acadia-page-header-pattern-section-title">Investments</h2><span id="portfolio-holdings-count" class="acadia-text-muted" role="status">0 assets</span></div>
+              <div class="acadia-read-only" id="portfolio-summary" role="group" aria-label="Selected investment group">
+                <h2 id="portfolio-holdings-title" class="acadia-page-header-pattern-section-title">All investments</h2>
+                <strong id="portfolio-summary-investments" class="acadia-title">$0.00</strong>
+                <div class="acadia-cluster"><span id="portfolio-holdings-count" class="acadia-text-muted" role="status">0 assets</span><span id="portfolio-group-share" class="acadia-text-muted" hidden></span></div>
+                <small id="portfolio-valuation-status" class="acadia-text-muted" hidden></small>
+              </div>
               <div id="portfolio-view-tabs" class="acadia-tabs" role="tablist" aria-label="Investment view">
                 <button id="portfolio-cards-tab" class="acadia-tab is-active" type="button" role="tab" data-portfolio-view="cards" aria-controls="portfolio-cards-panel" aria-selected="true" tabindex="0">Cards</button>
                 <button id="portfolio-table-tab" class="acadia-tab" type="button" role="tab" data-portfolio-view="table" aria-controls="portfolio-table-panel" aria-selected="false" tabindex="-1">Table</button>
               </div>
             </div>
+            <div id="portfolio-group-mobile" class="acadia-read-only" hidden><label class="acadia-label" for="portfolio-filter">Investment group</label><select id="portfolio-filter" class="acadia-control" aria-label="Filter investments"><option value="all">All investments</option><option value="brokerage">Brokerage</option><option value="retirement">Retirement</option><option value="crypto">Crypto</option></select></div>
             <div id="portfolio-investments-toolbar" class="acadia-page-header-pattern-section" role="group" aria-label="Find and organise investments">
               <label class="acadia-search-control"><span class="acadia-sr-only">Search assets</span><input class="acadia-control" id="portfolio-search" type="search" placeholder="Search assets"><i class="fa-solid fa-magnifying-glass acadia-icon acadia-control-icon" aria-hidden="true"></i></label>
               <div class="acadia-cluster">
               <label><span class="acadia-sr-only">Sort investments</span><select id="portfolio-holding-sort" class="acadia-control" aria-label="Sort investments"><option value="value">Highest value</option><option value="name">Name A–Z</option><option value="updated">Recently updated</option></select></label></div>
             </div>
-            <div id="portfolio-cards-panel" class="acadia-stack" role="tabpanel" aria-labelledby="portfolio-cards-tab"><div id="portfolio-holdings-grid" class="acadia-grid"></div></div>
+            <div id="portfolio-cards-panel" class="acadia-stack" role="tabpanel" aria-labelledby="portfolio-cards-tab"><div id="portfolio-holdings-grid" class="acadia-device-grid"></div></div>
             <div id="portfolio-table-panel" class="acadia-stack" role="tabpanel" aria-labelledby="portfolio-table-tab" hidden>
-              <div id="portfolio-holdings-table-wrap" class="acadia-table-wrap mercury-portfolio-table-wrap" data-acadia-component-table>
+              <div class="acadia-table-responsive"><div class="acadia-table-wide"><div id="portfolio-holdings-table-wrap" class="acadia-table-wrap" data-acadia-component-table tabindex="0" role="region" aria-label="Investment comparison" aria-describedby="portfolio-table-help">
                 <table id="portfolio-holdings-table" class="acadia-table is-compact">
                   <caption class="acadia-sr-only">Portfolio investments</caption>
                   <thead><tr><th data-portfolio-table-sort-heading="name"><button class="acadia-table-sort" type="button" data-portfolio-table-sort="name">Asset <i class="fa-solid fa-arrow-up acadia-icon" aria-hidden="true"></i></button></th><th>Price</th><th>Shares</th><th>Return</th><th>Yield</th><th data-portfolio-table-sort-heading="value" aria-sort="descending"><button class="acadia-table-sort" type="button" data-portfolio-table-sort="value">Value <i class="fa-solid fa-arrow-down acadia-icon" aria-hidden="true"></i></button></th><th data-portfolio-table-sort-heading="updated"><button class="acadia-table-sort" type="button" data-portfolio-table-sort="updated">Updated <i class="fa-solid fa-arrow-down acadia-icon" aria-hidden="true"></i></button></th><th><span class="acadia-sr-only">Actions</span></th></tr></thead>
                   <tbody id="portfolio-holdings-table-body"></tbody>
                 </table>
               </div>
-              <div id="portfolio-holdings-object-list" class="acadia-object-list mercury-portfolio-object-list" aria-label="Portfolio investments"></div>
+              <small id="portfolio-table-help" class="acadia-text-muted">Scroll to compare all details.</small></div>
+              <div id="portfolio-holdings-object-list" class="acadia-table-mobile acadia-object-list" aria-label="Portfolio investments"></div></div>
             </div>
             <div id="portfolio-holdings-empty" class="acadia-status-row is-info"><span class="acadia-status-icon" aria-hidden="true"><i class="fa-solid fa-circle-info acadia-icon"></i></span><div><strong id="portfolio-holdings-empty-title">No assets yet</strong><p id="portfolio-holdings-empty-copy">Add an asset to begin your private Brokerage portfolio.</p><button id="portfolio-reset-filters" class="acadia-button acadia-button-quiet" type="button" hidden>Clear filters</button></div></div>
           </section>
           <details id="portfolio-allocation-disclosure" class="acadia-accordion-item">
-            <summary id="portfolio-allocation-title" class="acadia-accordion-summary">Investment allocation</summary>
+            <summary id="portfolio-allocation-title" class="acadia-accordion-summary">Portfolio allocation</summary>
             <div class="acadia-accordion-panel"><div id="portfolio-allocation" class="acadia-stack"></div></div>
           </details>
           </div>
@@ -254,7 +249,7 @@
     <script src="portfolio.js?v=20260904-home-overview-v2"></script>
     <script src="income.js?v=20260904-budget-v1"></script>
     <script src="plan.js?v=20260907-plan-automatic-v1"></script>
-    <script src="dashboard.js?v=20260908-investment-groups"></script>
-    <script src="brokerage.js?v=20260908-investment-groups"></script>
+    <script src="dashboard.js?v=20260908-portfolio-refined"></script>
+    <script src="brokerage.js?v=20260908-portfolio-refined"></script>
   </body>
 </html>

@@ -289,7 +289,7 @@ test("Plan is a separate Base-plan projection workspace with aligned portfolio c
   assert.match(indexHtml, /id="plan-assumptions-dialog"/);
   assert.match(indexHtml, /id="property-dialog"/);
   assert.match(indexHtml, /<script src="plan\.js\?v=20260907-plan-automatic-v1"><\/script>/);
-  assert.match(indexHtml, /<script src="brokerage\.js\?v=20260908-investment-groups"><\/script>/);
+  assert.match(indexHtml, /<script src="brokerage\.js\?v=20260908-portfolio-refined"><\/script>/);
   assert.match(homeSource, /function routePlan\(\)/);
   assert.match(homeSource, /function renderPlan\(summary\)/);
   assert.match(homeSource, /function renderPlanChart/);
@@ -381,7 +381,7 @@ test("Portfolio investments switch between shared Cards and Table presentations"
   assert.match(portfolioWorkspace, /id="portfolio-table-panel"[^>]*role="tabpanel"[^>]*aria-labelledby="portfolio-table-tab"[^>]*hidden/);
   assert.match(portfolioWorkspace, /id="portfolio-holdings-table" class="acadia-table is-compact"/);
   assert.match(portfolioWorkspace, /id="portfolio-holdings-table-body"/);
-  assert.match(portfolioWorkspace, /id="portfolio-holdings-object-list" class="acadia-object-list mercury-portfolio-object-list"/);
+  assert.match(portfolioWorkspace, /id="portfolio-holdings-object-list" class="acadia-table-mobile acadia-object-list"/);
   ["Asset", "Price", "Shares", "Return", "Yield", "Value", "Updated", "Actions"].forEach((label) => {
     assert.match(portfolioWorkspace, new RegExp(`>${label}(?: |<)`));
   });
@@ -400,9 +400,9 @@ test("Portfolio investments switch between shared Cards and Table presentations"
   assert.match(homeSource, /event\.key === "End"/);
   assert.match(homeSource, /Dividend yield not applicable/);
   assert.match(homeSource, /acadia-object-card/);
-  assert.match(styles, /\.mercury-portfolio-view-panel\[hidden\]/);
-  assert.match(styles, /@media \(max-width: 47\.98rem\)[\s\S]*\.mercury-portfolio-table-wrap \{\s*display: none;/);
-  assert.match(styles, /@media \(max-width: 47\.98rem\)[\s\S]*\.mercury-portfolio-object-list \{\s*display: grid;/);
+  assert.doesNotMatch(styles, /mercury-portfolio|mercury-investment/);
+  assert.match(portfolioWorkspace, /acadia-table-responsive/);
+  assert.match(portfolioWorkspace, /acadia-table-wide/);
   assert.match(readme, /matching Cards or Table views/);
   assert.match(designReadme, /Cards and Table preserve search/);
   assert.match(productReadme, /Cards and Table are peer views/);
@@ -415,7 +415,7 @@ test("Portfolio uses Acadia disclosure, preview cards and native controls with c
   assert.match(workspace, /id="portfolio-summary-property-equity"/);
   assert.match(workspace, /id="portfolio-recurring-total"/);
   assert.match(workspace, /id="portfolio-allocation-disclosure" class="acadia-accordion-item"/);
-  assert.match(workspace, /id="portfolio-holdings-grid" class="acadia-grid"/);
+  assert.match(workspace, /id="portfolio-holdings-grid" class="acadia-device-grid"/);
   assert.match(workspace, /id="portfolio-reset-filters"/);
   assert.match(indexHtml, /id="property-dialog" class="acadia-dialog is-form-modal is-compact"/);
   assert.match(indexHtml, /id="delete-property-dialog" class="acadia-dialog is-form-modal is-compact"/);

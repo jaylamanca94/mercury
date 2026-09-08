@@ -412,13 +412,29 @@ test('Portfolio view switches preserve sort and filters and keep mobile sorting 
 
 test('Portfolio incomplete valuation is explained without showing a partial total',()=>{
   const {api,node}=controller();api.state.holdings=[{id:'known'},{id:'missing'}];
-  api.renderPortfolioSummary({rows:[{}],totalMarketValueCents:20000});
-  assert.equal(node('#portfolio-summary-investments').textContent,'Not set');
+  api.renderPortfolioSummary({rows:[{asset:{id:'known'},marketValueCents:20000}],totalMarketValueCents:20000});
+  assert.equal(node('#portfolio-summary-investments').textContent,'—');
   assert.equal(node('#portfolio-valuation-status').hidden,false);
   assert.equal(node('#portfolio-valuation-status').textContent,'1 asset needs a valuation');
-  api.renderPortfolioSummary({rows:[{},{}],totalMarketValueCents:40000});
+  api.renderPortfolioSummary({rows:[{asset:{id:'known'},marketValueCents:20000},{asset:{id:'missing'},marketValueCents:20000}],totalMarketValueCents:40000});
   assert.equal(node('#portfolio-valuation-status').hidden,true);
-  assert.equal(node('#portfolio-summary-investments').textContent,'$400');
+  assert.equal(node('#portfolio-summary-investments').textContent,'$400.00');
+});
+
+test('selected Portfolio group keeps its complete value through search and explains incomplete portfolio allocation',()=>{
+  const {api,node}=controller();
+  api.state.holdings=[{id:'retirement',is_retirement:true},{id:'missing'}];
+  api.state.portfolioFilter='retirement';
+  node('#portfolio-search').value='no match';
+  api.renderPortfolioSummary({rows:[{asset:{id:'retirement',isRetirement:true},marketValueCents:29500000}]});
+  assert.equal(node('#portfolio-summary-investments').textContent,'$295,000.00');
+  assert.equal(node('#portfolio-group-share').hidden,true);
+  assert.equal(node('#portfolio-valuation-status').hidden,false);
+  assert.equal(node('#portfolio-valuation-status').textContent,'Complete portfolio valuations to see allocation.');
+  api.renderPortfolioSummary({rows:[{asset:{id:'retirement',isRetirement:true},marketValueCents:29500000},{asset:{id:'missing'},marketValueCents:20500000}]});
+  assert.equal(node('#portfolio-summary-investments').textContent,'$295,000.00');
+  assert.equal(node('#portfolio-group-share').textContent,'59% of portfolio');
+  assert.equal(node('#portfolio-valuation-status').hidden,true);
 });
 
 

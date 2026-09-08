@@ -1,33 +1,7 @@
 @import url("acadia.css?v=20260903-home-overview-v1");
+@import url("acadia-table.css?v=20260908-acadia-3d29f94");
 
 /* Page composition only; the shared Acadia primitives and tokens stay canonical. */
-/* Investment groups compose Acadia Side Nav, Read Only and Progress primitives. */
-.mercury-investment-layout {
-  display: grid;
-  grid-template-columns: 16rem minmax(0, 1fr);
-  gap: var(--acadia-space-3);
-  align-items: start;
-}
-.mercury-investment-sidebar { box-sizing: border-box; inline-size: 100%; }
-.mercury-investment-main { min-width: 0; }
-.mercury-investment-group { text-align: start; }
-.mercury-investment-group.acadia-side-nav-link > span {
-  white-space: normal;
-  overflow: visible;
-}
-.mercury-investment-group small { font-weight: var(--acadia-font-weight-regular); }
-.mercury-investment-group progress[hidden],
-.mercury-investment-mobile progress[hidden],
-.mercury-investment-mobile { display: none; }
-#portfolio-holdings-grid { --acadia-grid-columns: 2; }
-@media (min-width: 100rem) {
-  #portfolio-holdings-grid { --acadia-grid-columns: 3; }
-}
-@media (max-width: 63.98rem) {
-  .mercury-investment-layout { grid-template-columns: minmax(0, 1fr); }
-  .mercury-investment-sidebar { display: none; }
-  .mercury-investment-mobile { display: grid; }
-}
 /* Safari stretches a grid dialog between opposing block insets. Anchor the
    content-sized form dialog at the viewport centre; Acadia caps overflow. */
 #asset-dialog,
@@ -75,66 +49,6 @@
 .mercury-comparison-table thead th:not(:first-child) { text-align: end; }
 .mercury-comparison-table .acadia-row-actions { justify-content: end; }
 .mercury-income-table-wrap { border: 0; background: transparent; box-shadow: none; }
-.mercury-portfolio-view-panel[hidden] {
-  display: none;
-}
-
-#portfolio-holdings-grid[hidden],
-.mercury-portfolio-table-wrap[hidden],
-.mercury-portfolio-object-list[hidden] {
-  display: none;
-}
-
-.mercury-portfolio-table-wrap th:last-child,
-.mercury-portfolio-table-wrap td:last-child {
-  text-align: right;
-  width: 3rem;
-}
-
-.mercury-portfolio-table-wrap {
-  box-sizing: border-box;
-  position: relative;
-}
-
-.mercury-portfolio-asset-identity {
-  display: grid;
-  gap: 0.125rem;
-  min-width: 8rem;
-}
-
-.mercury-portfolio-asset-link.acadia-button {
-  justify-content: flex-start;
-}
-
-.mercury-portfolio-object-list {
-  display: none;
-}
-
-.mercury-portfolio-object-metrics {
-  display: grid;
-  gap: var(--acadia-space-2);
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  margin: 0;
-}
-
-.mercury-portfolio-object-metrics > div {
-  display: grid;
-  gap: 0.125rem;
-}
-
-.mercury-portfolio-object-metrics dd {
-  margin: 0;
-}
-
-@media (max-width: 47.98rem) {
-  .mercury-portfolio-table-wrap {
-    display: none;
-  }
-
-  .mercury-portfolio-object-list {
-    display: grid;
-  }
-}
 @media (max-width: 47.98rem) {
   .mercury-primary-metric { font-size: var(--acadia-type-size-heading-large); }
   .mercury-comparison-table, .mercury-comparison-table tbody { display: block; }
