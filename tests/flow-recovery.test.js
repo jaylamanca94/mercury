@@ -31,7 +31,7 @@ function controller() {
     fetch:async()=>({ok:false,json:async()=>({error:'provider unavailable'})}),
   });
   const source = fs.readFileSync(require.resolve('../brokerage.js'),'utf8').replace('  initialise();',
-    '  window.testController = {state,render,missingIncomeYieldRows,renderIncomeYieldRecovery,renderPlan,renderQuickQuotePreview,refreshCurrentAssetPrice,restorePortfolioAssetFocus,renderHistory,renderAsset,canQuote,lookupQuote,saveQuickAsset,navigateToAsset,navigateBackFromAsset,routeAssetId,openFormDialog,hasPendingWrite,hasUnsavedWork,matchingPortfolioHoldingRows,sortHoldingRows,holdingValueLabel,renderPortfolioView,renderPortfolioSummary,detailHolding};');
+    '  window.testController = {state,render,renderIncomeRecovery,retryIncomeData,missingIncomeYieldRows,renderIncomeYieldRecovery,renderPlan,renderQuickQuotePreview,refreshCurrentAssetPrice,restorePortfolioAssetFocus,renderHistory,renderAsset,canQuote,lookupQuote,saveQuickAsset,navigateToAsset,navigateBackFromAsset,routeAssetId,openFormDialog,hasPendingWrite,hasUnsavedWork,matchingPortfolioHoldingRows,sortHoldingRows,holdingValueLabel,renderPortfolioView,renderPortfolioSummary,detailHolding};');
   vm.runInContext(source,context);
   const api=window.testController;
   api.state.client={auth:{getSession:async()=>({data:{session:{access_token:'isolated-test'}}})}};
@@ -663,4 +663,104 @@ test('Income yield entry opens the advanced field and returns focus without chan
     assert.equal(focused.at(-1),origin==='#income'?'search':'budget');
     assert.equal(api.state.incomePeriod,'year');assert.equal(node('#income-dividends-search').value,'FUND');
   }
+});
+
+
+test('Income explains missing valuations independently of dividend yields and opens the repair field', () => {
+  const {api, node, window, document} = controller();
+  api.state.configured = true; api.state.user = {id:'owner'}; api.state.account = {id:'account'};
+  api.state.holdings = [{id:'missing'}, {id:'valued'}];
+  window.location.hash = '#income/budget';
+  const summary = {rows:[{asset:{id:'valued',instrumentType:'stock'},estimatedAnnualIncomeCents:100}]};
+  assert.equal(api.renderIncomeRecovery(summary), '1 holding needs a valuation');
+  assert.equal(node('#income-retry-data').hidden, true);
+  assert.equal(node('#income-review-valuations').hidden, false);
+  node('#income-review-valuations').onclick();
+  window.location.hash = '#asset/missing';
+  let focused = '';
+  node('#asset-detail-manual-price').closest = () => null;
+  node('#asset-detail-manual-price').focus = () => {focused = 'price';};
+  api.restorePortfolioAssetFocus('#income/budget');
+  assert.equal(focused, 'price');
+  api.state.holdings = [{id:'valued'}];
+  api.renderIncomeRecovery(summary);
+  assert.equal(node('#income-review-valuations').hidden, true);
+  node('#income-budget-tab').focus = () => {focused = 'budget';};
+  api.navigateBackFromAsset();
+  api.restorePortfolioAssetFocus('#asset/missing');
+  assert.equal(window.location.hash, '#income/budget');
+  assert.equal(focused, 'budget');
+});
+
+function incomeReadRecoveryController() {
+  const harness = controller();
+  const {api, window} = harness;
+  api.state.configured = true; api.state.user = {id:'owner'}; api.state.account = {id:'account'};
+  api.state.incomeSourcesAvailable = false; api.state.budgetCategoriesAvailable = false;
+  // Keep rendering on a different route to exercise late reads without navigating back to Income.
+  window.location.hash = '#asset/missing';
+  const calls = [];
+  const pending = [];
+  api.state.client.from = table => {
+    const query = {select:()=>query, order:()=>query, eq(key,value) {calls.push({table,key,value});return query;},
+      then(resolve,reject) {return new Promise((done,fail)=>pending.push({table,done,fail})).then(resolve,reject);}};
+    return query;
+  };
+  return {...harness,calls,pending};
+}
+
+test('Income retry reads only failed account collections, blocks duplicates and preserves successful partial recovery', async () => {
+  const {api,node,window,calls,pending} = incomeReadRecoveryController();
+  node('#income-sources-search').value = 'salary'; api.state.incomePeriod = 'year';
+  const first = api.retryIncomeData(); await Promise.resolve();
+  await api.retryIncomeData();
+  assert.equal(calls.length, 2);
+  assert.equal(calls.every(call=>call.key==='account_id' && call.value==='account'), true);
+  assert.equal(api.state.incomeReloadPending, true);
+  pending.find(p=>p.table==='income_sources').done({data:[{id:'salary'}],error:null});
+  pending.find(p=>p.table==='budget_categories').fail(new Error('Offline'));
+  await first;
+  assert.equal(api.state.incomeSourcesAvailable, true);
+  assert.equal(api.state.incomeSources[0].id, 'salary');
+  assert.equal(api.state.budgetCategoriesAvailable, false);
+  assert.equal(api.state.incomeReloadFailed, true);
+  assert.equal(api.state.incomeReloadPending, false);
+  const retry = api.retryIncomeData(); await Promise.resolve();
+  assert.equal(calls.length, 3);
+  assert.equal(calls[2].table, 'budget_categories');
+  pending[2].done({data:[],error:null}); await retry;
+  assert.equal(api.state.budgetCategoriesAvailable, true);
+  assert.equal(api.state.incomeReloadFailed, false);
+  assert.equal(node('#income-sources-search').value, 'salary');
+  assert.equal(api.state.incomePeriod, 'year');
+  assert.equal(window.location.hash, '#asset/missing');
+});
+
+test('Income retry retains unavailable state for API failures and refuses late cross-account data', async () => {
+  const {api,pending} = incomeReadRecoveryController();
+  const first = api.retryIncomeData(); await Promise.resolve();
+  pending.forEach(p=>p.done({data:null,error:{message:'Not authorised'}})); await first;
+  assert.equal(api.state.incomeSourcesAvailable, false);
+  assert.equal(api.state.budgetCategoriesAvailable, false);
+  assert.equal(api.state.incomeReloadFailed, true);
+  const second = api.retryIncomeData(); await Promise.resolve();
+  api.state.user = null;
+  pending.slice(2).forEach(p=>p.done({data:[{id:'private'}],error:null})); await second;
+  assert.equal(api.state.incomeSources.length, 0);
+  assert.equal(api.state.budgetCategories.length, 0);
+  assert.equal(api.state.incomeReloadPending, false);
+});
+
+test('Income retry times out stalled reads and ignores their later result', async () => {
+  const {api,pending,context} = incomeReadRecoveryController();
+  const timers = [];
+  context.setTimeout = callback => {timers.push(callback);return timers.length;};
+  context.clearTimeout = () => {};
+  const retry = api.retryIncomeData(); await Promise.resolve();
+  timers.forEach(callback=>callback()); await retry;
+  assert.equal(api.state.incomeReloadPending, false);
+  assert.equal(api.state.incomeReloadFailed, true);
+  pending.forEach(p=>p.done({data:[{id:'late'}],error:null})); await Promise.resolve();
+  assert.equal(api.state.incomeSources.length, 0);
+  assert.equal(api.state.incomeSourcesAvailable, false);
 });

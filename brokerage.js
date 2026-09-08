@@ -44,7 +44,7 @@
   const wholePercentage = new Intl.NumberFormat("en-US", { style: "percent", maximumFractionDigits: 0 });
   const state = {
     client: null, user: null, account: null, accounts: [], holdings: [], quotes: [], snapshots: [], incomeSources: [], incomeSourcesAvailable: true, budgetCategories: [], budgetCategoriesAvailable: true, planSettings: null, properties: [], propertiesAvailable: true, planDataAvailable: true,
-    providerMetrics: {}, providerMetricsPending: new Set(), configured: false, pendingQuote: null, quoteTimer: null, quoteRequestId: 0, portfolioFilter: "all", portfolioSort: "value", portfolioView: "cards", propertySort: "value", performancePeriod: "all", incomePeriod: "month", incomeDividendSort: "value", planHorizon: 10, incomeSourceDialogId: null, incomeSourceDeleteId: null, budgetCategoryDialogId: null, budgetCategoryDeleteId: null, propertyDialogId: null, propertyDeleteId: null,
+    incomeReloadPending: false, incomeReloadFailed: false, providerMetrics: {}, providerMetricsPending: new Set(), configured: false, pendingQuote: null, quoteTimer: null, quoteRequestId: 0, portfolioFilter: "all", portfolioSort: "value", portfolioView: "cards", propertySort: "value", performancePeriod: "all", incomePeriod: "month", incomeDividendSort: "value", planHorizon: 10, incomeSourceDialogId: null, incomeSourceDeleteId: null, budgetCategoryDialogId: null, budgetCategoryDeleteId: null, propertyDialogId: null, propertyDeleteId: null,
   };
 
   function cents(value) {
@@ -146,21 +146,22 @@
   function navigateToAsset(id, { section = "details" } = {}) {
     if (!routeAssetId()) assetReturnHash = window.location.hash || "#";
     portfolioAssetNavigation = routePortfolio() ? { id, section } : null;
-    incomeAssetNavigation = routeIncome() && section === "yield" ? { id, returnHash: window.location.hash, fromSummary: document.activeElement === $("#income-review-yields") } : null;
+    incomeAssetNavigation = routeIncome() && ["yield", "valuation"].includes(section) ? { id, section, returnHash: window.location.hash, fromSummary: document.activeElement === $("#income-review-yields") } : null;
     window.location.hash = `asset/${encodeURIComponent(id)}`;
   }
   function restorePortfolioAssetFocus(previousHash) {
     if (incomeAssetNavigation && previousHash !== window.location.hash) {
-      const { id, returnHash, fromSummary } = incomeAssetNavigation;
+      const { id, section, returnHash, fromSummary } = incomeAssetNavigation;
       if (routeAssetId() === id) {
         if (state.holdings.some((holding) => holding.id === id)) {
-          const field = $("#asset-detail-yield");
-          field.closest("details").open = true;
+          const field = $(section === "valuation" ? "#asset-detail-manual-price" : "#asset-detail-yield");
+          const disclosure = field.closest("details");
+          if (disclosure) disclosure.open = true;
           field.focus();
           field.scrollIntoView({ block: "center" });
         } else $("#asset-title").focus();
       } else if (window.location.hash === returnHash && previousHash.startsWith("#asset/")) {
-        const target = fromSummary ? $("#income-review-yields") : [...document.querySelectorAll("[data-review-income-yield]")].find((element) => element.dataset.reviewIncomeYield === id);
+        const target = section === "valuation" ? $("#income-review-valuations") : fromSummary ? $("#income-review-yields") : [...document.querySelectorAll("[data-review-income-yield]")].find((element) => element.dataset.reviewIncomeYield === id);
         const returnTarget = target && !target.hidden ? target : $(returnHash === "#income/budget" ? "#income-budget-tab" : "#income-dividends-search");
         returnTarget.focus();
         returnTarget.scrollIntoView({ block: "center" });
@@ -811,6 +812,73 @@
     return summary.rows.filter((row) => row.asset.instrumentType !== "crypto"
       && row.estimatedAnnualIncomeCents === null && !state.providerMetricsPending.has(row.asset.id));
   }
+  function renderIncomeRecovery(summary) {
+    const valuedIds = new Set(summary.rows.map((row) => row.asset.id));
+    const missing = state.holdings.filter((holding) => !valuedIds.has(holding.id));
+    const unavailable = [];
+    if (!state.incomeSourcesAvailable) unavailable.push("Income sources");
+    if (!state.budgetCategoriesAvailable) unavailable.push("Budget categories");
+    const canRecover = state.configured && Boolean(state.user) && Boolean(state.account);
+    const retry = $("#income-retry-data");
+    retry.hidden = !canRecover || unavailable.length === 0;
+    retry.disabled = state.incomeReloadPending;
+    retry.textContent = state.incomeReloadPending ? "Retrying…" : "Retry data";
+    const review = $("#income-review-valuations");
+    review.hidden = !canRecover || missing.length === 0;
+    review.onclick = () => {
+      if (missing.length) navigateToAsset(missing[0].id, { section: "valuation" });
+    };
+    $("#income-data-recovery").hidden = retry.hidden && review.hidden;
+    const reasons = unavailable.map((label) => `${label} ${state.incomeReloadPending ? "loading" : state.incomeReloadFailed ? "still unavailable; try again" : "unavailable"}`);
+    if (missing.length) reasons.push(`${missing.length} ${missing.length === 1 ? "holding needs" : "holdings need"} a valuation`);
+    if (state.providerMetricsPending.size) reasons.push("Dividend data loading");
+    else if (missingIncomeYieldRows(summary).length) reasons.push("Dividend yields need review");
+    return reasons.join(" · ") || "Complete income and allocation data is needed";
+  }
+
+  async function retryIncomeData() {
+    if (state.incomeReloadPending || !state.configured || !state.user || !state.account || hasPendingWrite()) return;
+    const collections = [
+      ["income_sources", "incomeSources", "incomeSourcesAvailable"],
+      ["budget_categories", "budgetCategories", "budgetCategoriesAvailable"],
+    ].filter(([, , available]) => !state[available]);
+    if (!collections.length) return;
+    const account = state.account;
+    const user = state.user;
+    const client = state.client;
+    const startedOnRetry = document.activeElement === $("#income-retry-data");
+    state.incomeReloadPending = true;
+    state.incomeReloadFailed = false;
+    render();
+    try {
+      const results = await Promise.allSettled(collections.map(async ([table]) => {
+        let timer;
+        try {
+          return await Promise.race([
+            client.from(table).select("*").eq("account_id", account.id).order("created_at"),
+            new Promise((_, reject) => { timer = setTimeout(() => reject(new Error("Read timed out")), 10000); }),
+          ]);
+        } finally { clearTimeout(timer); }
+      }));
+      // A late response must never populate a different or signed-out account.
+      if (state.account !== account || state.user !== user || state.client !== client) return;
+      results.forEach((result, index) => {
+        const [, records, available] = collections[index];
+        if (result.status === "fulfilled" && !result.value.error && Array.isArray(result.value.data)) {
+          state[records] = result.value.data;
+          state[available] = true;
+        } else state.incomeReloadFailed = true;
+      });
+    } finally {
+      const restoreFocus = document.activeElement === $("#income-retry-data") || (startedOnRetry && document.activeElement === document.body);
+      state.incomeReloadPending = false;
+      render();
+      if (restoreFocus && routeIncome() && state.user === user && state.account === account) {
+        $($("#income-retry-data").hidden ? "#income-summary" : "#income-retry-data").focus();
+      }
+    }
+  }
+
   function renderIncomeYieldRecovery(summary) {
     const rows = missingIncomeYieldRows(summary);
     $("#income-yield-recovery").hidden = rows.length === 0;
@@ -887,7 +955,7 @@
         ? "Income sources are unavailable"
         : state.incomeSources.length ? "No matching income sources" : "No income sources yet";
       copy.textContent = !state.incomeSourcesAvailable
-        ? "Saved income sources could not be loaded. Try reloading the page."
+        ? (state.configured ? "Saved income sources could not be loaded. Use Retry data above." : "Private sync is not configured.")
         : state.incomeSources.length ? "Try another search or clear it to see all sources." : "Add expected recurring income to your plan.";
     }
   }
@@ -931,7 +999,7 @@
         ? "Budget categories are unavailable"
         : state.budgetCategories.length ? "No matching budget categories" : "No budget categories yet";
       copy.textContent = !state.budgetCategoriesAvailable
-        ? "Saved budget categories could not be loaded. Try reloading the page."
+        ? (state.configured ? "Saved budget categories could not be loaded. Use Retry data above." : "Private sync is not configured.")
         : state.budgetCategories.length ? "Try another search or clear it to see all categories." : "Add monthly category limits to your spending plan.";
     }
   }
@@ -960,8 +1028,9 @@
     const planning = planningPosition(summary, state.incomePeriod);
     for (const [id, key] of [["total", "expectedCents"], ["earned", "recurringCents"], ["passive", "passiveCents"], ["expenses", "spendingCents"], ["investing", "investingCents"], ["balance", "balanceCents"]]) setText(`#income-${id}`, planningValue(planning[key]));
     setText("#income-balance-period", `/ ${incomePeriodLabel()}`);
+    const recoveryMessage = renderIncomeRecovery(summary);
     renderIncomeYieldRecovery(summary);
-    setText("#income-balance-status", planning.balanceCents === null ? "Complete income and allocation data is needed" : planning.balanceCents < 0 ? "Planned allocations exceed expected income" : planning.balanceCents === 0 ? (planning.expectedCents === 0 && planning.spendingCents === 0 && planning.investingCents === 0 ? "Add income to start your plan" : "Expected income is fully allocated") : "After planned spending and investing");
+    setText("#income-balance-status", planning.balanceCents === null ? recoveryMessage : planning.balanceCents < 0 ? "Planned allocations exceed expected income" : planning.balanceCents === 0 ? (planning.expectedCents === 0 && planning.spendingCents === 0 && planning.investingCents === 0 ? "Add income to start your plan" : "Expected income is fully allocated") : "After planned spending and investing");
     renderIncomeDividends(summary);
     renderIncomeSources(summarizeIncomeSources(state.incomeSources.map(incomeSourceModel), state.incomePeriod));
     renderBudgetCategories(summarizeBudgetCategories(state.budgetCategories.map(budgetCategoryModel), state.incomePeriod));
@@ -2218,6 +2287,8 @@
       showUnconfigured(`Private sync is unavailable: ${error.message}`);
     }
   }
+
+  $("#income-retry-data").addEventListener("click", retryIncomeData);
 
   $("#magic-link-form").addEventListener("submit", async (event) => {
     event.preventDefault();

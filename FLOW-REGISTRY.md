@@ -1,8 +1,8 @@
 # Mercury Flow Registry
 
-> **10 implemented canonical flows; all have design and automated coverage at varying depths. One deferred export boundary. This pass resolves partial Add outcomes, price recovery and the asset-deletion return route; no flows added. Remote and physical-device acceptance gaps remain below.**
+> **10 implemented canonical flows; all have design and automated coverage at varying depths. One deferred export boundary. This pass adds Income read retry and direct valuation repair; no flows added. Remote and physical-device acceptance gaps remain below.**
 
-**Last reviewed:** 2026-09-07
+**Last reviewed:** 2026-09-08
 
 | Flow | Product status | Meaningful entry → successful outcome | Major states | QA coverage |
 | --- | --- | --- | --- | --- |
@@ -74,3 +74,7 @@ All 10 implemented canonical flows and the deferred export boundary received a c
 ## Technical health follow-through — 2026-09-07
 
 No flows added. Daily history now rejects incomplete/invalid valuations; cron access fails closed when its secret is absent. Protected endpoints return controlled auth-outage responses. Malformed provider prices cannot become zero quotes. 151 checks pass. Live database-role read isolation and rolled-back trigger checks passed; see `automation/technical/2026-09-07/review.md` for evidence and prioritised release risks.
+
+## Income recovery follow-through — 2026-09-08
+
+Income Overview/Budget now distinguish unavailable sources/categories, missing valuations and loading/yield coverage. Retry data reads only failed account-scoped collections, preserves partial success and releases stalled reads after ten seconds; late results cannot populate a signed-out/different account. Review valuations opens the existing manual-price field and preserves the Income return route. No flows added. 159 checks pass; desktop and 320/390/768px embedded recovery, keyboard failure/success focus and valuation Save/Back pass locally. See `automation/review/2026-09-08/review.md`. Production browser acceptance remains Vercel-login-gated.
