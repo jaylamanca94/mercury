@@ -31,7 +31,7 @@ function controller() {
     fetch:async()=>({ok:false,json:async()=>({error:'provider unavailable'})}),
   });
   const source = fs.readFileSync(require.resolve('../brokerage.js'),'utf8').replace('  initialise();',
-    '  window.testController = {state,render,renderIncomeRecovery,retryIncomeData,missingIncomeYieldRows,renderIncomeYieldRecovery,renderPlan,renderQuickQuotePreview,refreshCurrentAssetPrice,restorePortfolioAssetFocus,renderHistory,renderAsset,canQuote,lookupQuote,saveQuickAsset,navigateToAsset,navigateBackFromAsset,routeAssetId,openFormDialog,hasPendingWrite,hasUnsavedWork,matchingPortfolioHoldingRows,sortHoldingRows,holdingValueLabel,renderPortfolioView,renderPortfolioSummary,detailHolding};');
+    '  window.testController = {state,render,renderHomeGrowth,renderIncomeRecovery,retryIncomeData,missingIncomeYieldRows,renderIncomeYieldRecovery,renderPlan,renderQuickQuotePreview,refreshCurrentAssetPrice,restorePortfolioAssetFocus,renderHistory,renderAsset,canQuote,lookupQuote,saveQuickAsset,navigateToAsset,navigateBackFromAsset,routeAssetId,openFormDialog,hasPendingWrite,hasUnsavedWork,matchingPortfolioHoldingRows,sortHoldingRows,holdingValueLabel,renderPortfolioView,renderPortfolioSummary,detailHolding};');
   vm.runInContext(source,context);
   const api=window.testController;
   api.state.client={auth:{getSession:async()=>({data:{session:{access_token:'isolated-test'}}})}};
@@ -857,4 +857,48 @@ test('clearing Portfolio search preserves selected group, view and sort and retu
   assert.equal(api.state.portfolioView,'table');
   assert.equal(api.state.portfolioSort,'name');
   assert.equal(focused,true);
+});
+
+
+test('Home growth automatically uses historical returns and ignores manual return assumptions',()=>{
+  const {api,node}=controller();
+  api.state.configured=true;api.state.account={id:'account'};
+  const assets=[
+    {id:'a',symbol:'A',assetType:'Fund',valuationBasis:'manual-value',manualValueCents:750000,historicalAnnualizedReturnRate:0.08,expectedAnnualReturnRate:0.5},
+    {id:'b',symbol:'B',assetType:'Fund',valuationBasis:'manual-value',manualValueCents:250000,historicalAnnualizedReturnRate:0.04,expectedAnnualReturnRate:0.5},
+  ];
+  api.state.holdings=assets;
+  const summary=require('../portfolio').summarizePortfolio(assets);
+  assert.equal(summary.totalEstimatedAnnualGrowthCents,70000);
+  assert.equal(summary.totalExpectedAnnualGrowthCents,500000);
+  api.renderHomeGrowth(summary);
+  assert.equal(node('#home-growth').textContent,'$700');
+  assert.equal(node('#home-growth-context').textContent,'Based on historical returns · Not a forecast');
+  api.renderHomeGrowth(require('../portfolio').summarizePortfolio(assets.map(a=>({...a,expectedAnnualReturnRate:null}))));
+  assert.equal(node('#home-growth').textContent,'$700');
+  for(const rate of [0,-0.05]) {
+    api.renderHomeGrowth(require('../portfolio').summarizePortfolio(assets.map(a=>({...a,historicalAnnualizedReturnRate:rate}))));
+    assert.equal(node('#home-growth').textContent,rate===0?'$0':'-$500');
+  }
+});
+
+test('Home growth withholds incomplete history and valuations and recovers after loading',()=>{
+  const {api,node}=controller();
+  api.state.configured=true;api.state.account={id:'account'};api.state.holdings=[{id:'a'},{id:'b'}];
+  const complete={rows:[{},{}],totalEstimatedAnnualGrowthCents:12300};
+  api.state.providerMetricsPending.add('a');api.renderHomeGrowth(complete);
+  assert.equal(node('#home-growth').textContent,'Loading…');
+  api.state.providerMetricsPending.clear();api.renderHomeGrowth(complete);
+  assert.equal(node('#home-growth').textContent,'$123');
+  api.renderHomeGrowth({...complete,totalEstimatedAnnualGrowthCents:null});
+  assert.equal(node('#home-growth').textContent,'Unavailable');
+  assert.match(node('#home-growth-context').textContent,/Historical returns unavailable/);
+  api.renderHomeGrowth({...complete,rows:[{}]});
+  assert.equal(node('#home-growth').textContent,'Unavailable');
+  assert.equal(node('#home-growth-context').textContent,'Incomplete valuation coverage');
+  api.state.holdings=[];api.renderHomeGrowth({rows:[],totalEstimatedAnnualGrowthCents:null});
+  assert.equal(node('#home-growth-context').textContent,'Add investments to see an estimate');
+  api.state.account=null;api.renderHomeGrowth(complete);
+  assert.equal(node('#home-growth').textContent,'Unavailable');
+  assert.equal(node('#home-growth-context').textContent,'Portfolio data unavailable');
 });

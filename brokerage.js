@@ -763,6 +763,20 @@
     node.innerHTML = allocation.rows.length ? allocation.rows.map((row) => `<div class="acadia-card-progress"><div class="acadia-card-progress-heading"><span>${escapeHtml(row.name)}</span><span>${percentage.format(row.allocationRate)}</span></div><progress value="${row.valueCents}" max="${allocation.totalValueCents}" aria-label="${escapeHtml(row.name)}: ${percentage.format(row.allocationRate)} of valued investments"></progress></div>`).join("") : '<p class="acadia-text-muted">No investment value yet</p>';
     if (allocation.unvaluedCount) node.insertAdjacentHTML("beforeend", `<small class="acadia-text-muted">${allocation.unvaluedCount} missing ${allocation.unvaluedCount === 1 ? "valuation" : "valuations"}</small>`);
   }
+  function renderHomeGrowth(summary) {
+    const missingValuations = summary.rows.length !== state.holdings.length;
+    const available = state.configured && Boolean(state.account) && !missingValuations;
+    const loading = available && state.providerMetricsPending.size > 0;
+    const growth = available && !loading ? summary.totalEstimatedAnnualGrowthCents : null;
+    setText("#home-growth", loading ? "Loading…" : growth === null ? "Unavailable" : displayCurrency(growth / 100));
+    setText("#home-growth-context", !state.configured || !state.account ? "Portfolio data unavailable"
+      : missingValuations ? "Incomplete valuation coverage"
+      : loading ? "Loading historical returns…"
+      : !state.holdings.length ? "Add investments to see an estimate"
+      : growth === null ? "Historical returns unavailable for some assets"
+      : "Based on historical returns · Not a forecast");
+  }
+
   function renderHome(summary) {
     $("#home-workspace").hidden = false;
     $("#portfolio-workspace").hidden = true;
@@ -779,11 +793,9 @@
       ? `${missingValuations} ${missingValuations === 1 ? "asset needs" : "assets need"} a valuation. Review Portfolio.`
       : !state.propertiesAvailable ? "Property values unavailable" : "Account values unavailable");
     const estimatesComplete = state.configured && Boolean(state.account) && summary.rows.length === state.holdings.length;
-    const growth = estimatesComplete ? summary.totalExpectedAnnualGrowthCents : null;
     const passive = estimatesComplete && state.providerMetricsPending.size === 0 ? summary.totalEstimatedAnnualIncomeCents : null;
-    setText("#home-growth", growth === null ? "Not set" : displayCurrency(growth / 100));
+    renderHomeGrowth(summary);
     setText("#home-passive-income", passive === null ? "Not set" : displayCurrency(passive / 100));
-    setText("#home-growth-context", missingValuations ? "Incomplete valuation coverage" : growth === null ? "Add return assumptions in Portfolio" : "From saved return assumptions");
     setText("#home-passive-context", missingValuations ? "Incomplete valuation coverage" : state.providerMetricsPending.size ? "Loading dividend estimates…" : passive === null ? "Incomplete dividend coverage" : "Estimated from saved yields");
     renderHistory();
     const dailyMovementComplete = summary.rows.length === state.holdings.length;

@@ -82,3 +82,8 @@ Income Overview/Budget now distinguish unavailable sources/categories, missing v
 ## Quote deadline and release-gate follow-through — 2026-09-08
 
 10 implemented canonical flows unchanged. Add asset, saved-asset quote refresh and background metrics now have bounded lookup waits. Server requests receive four seconds per provider call within a shared ten-second lookup budget; the browser allows 25 seconds including session/authentication before aborting. A failed optional dividend/history request preserves a usable quote; a late response cannot replace timed-out manual recovery or a newer symbol. Existing Acadia form, status, retry and valuation controls are reused. Vercel runs `npm run check` before publication. See `automation/review/2026-09-08/reliability/review.md` for current evidence and remaining gates.
+
+
+## Home annual growth — 2026-09-10
+
+Home now reads the existing automatic historical-growth aggregate rather than the manually entered expected-return aggregate. Current holding values weight provider annualised history; property and manual holding/Plan assumptions do not contribute. Pending metrics show Loading; missing valuations/history show Unavailable with a contextual explanation. No manual-return entry is requested. Tests cover automatic-only values, manual independence, zero/negative returns, incomplete coverage and loading recovery. All 174 checks pass; isolated browser checks confirm the amount and recovery at 1440px, with 768px and 390px containment. Provider availability and authenticated personal-account results were not newly verified.
