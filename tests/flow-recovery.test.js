@@ -428,11 +428,13 @@ test('selected Portfolio group keeps its complete value through search and expla
   node('#portfolio-search').value='no match';
   api.renderPortfolioSummary({rows:[{asset:{id:'retirement',isRetirement:true},marketValueCents:29500000}]});
   assert.equal(node('#portfolio-summary-investments').textContent,'$295,000.00');
+  assert.equal(node('#portfolio-holdings-count').textContent,'1 asset');
   assert.equal(node('#portfolio-group-share').hidden,true);
   assert.equal(node('#portfolio-valuation-status').hidden,false);
   assert.equal(node('#portfolio-valuation-status').textContent,'Complete portfolio valuations to see allocation.');
   api.renderPortfolioSummary({rows:[{asset:{id:'retirement',isRetirement:true},marketValueCents:29500000},{asset:{id:'missing'},marketValueCents:20500000}]});
   assert.equal(node('#portfolio-summary-investments').textContent,'$295,000.00');
+  assert.equal(node('#portfolio-holdings-count').textContent,'1 asset');
   assert.equal(node('#portfolio-group-share').textContent,'59% of portfolio');
   assert.equal(node('#portfolio-valuation-status').hidden,true);
 });
@@ -838,4 +840,21 @@ test('a stalled quote response body times out without exposing a superseded symb
   expire(); await pending;
   assert.equal(node('#manual-fallback').hidden, true);
   assert.equal(api.state.pendingQuote, null);
+});
+
+
+test('clearing Portfolio search preserves selected group, view and sort and returns to search',()=>{
+  const {api,node}=controller();
+  api.render();
+  api.state.portfolioFilter='retirement';
+  api.state.portfolioView='table';
+  api.state.portfolioSort='name';
+  node('#portfolio-search').value='no match';
+  let focused=false;node('#portfolio-search').focus=()=>{focused=true};
+  node('#portfolio-clear-search').listeners.click();
+  assert.equal(node('#portfolio-search').value,'');
+  assert.equal(api.state.portfolioFilter,'retirement');
+  assert.equal(api.state.portfolioView,'table');
+  assert.equal(api.state.portfolioSort,'name');
+  assert.equal(focused,true);
 });

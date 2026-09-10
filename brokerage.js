@@ -442,11 +442,12 @@
         : row.asset.valuationBasis === VALUATION_BASES.MANUAL_VALUE ? "Manual valuation"
         : holdingSharesLabel(row, true);
       card.className = "acadia-card is-content is-interactive";
+      card.style.setProperty("--acadia-content-card-padding", "var(--acadia-section-padding-dense)");
       card.dataset.holdingId = row.asset.id;
       card.tabIndex = 0;
       card.setAttribute("role", "link");
-      card.setAttribute("aria-label", `Open ${title} asset details, ${holdingValueLabel(row)}`);
-      card.innerHTML = `<div class="acadia-card-header"><div class="acadia-object-card-header"><div class="acadia-card-content-title-row"><h3>${escapeHtml(title)}</h3></div><strong class="acadia-read-only-value" title="${row.marketValueCents === null ? "Needs valuation" : escapeHtml(preciseCurrency.format(row.marketValueCents / 100))}">${escapeHtml(holdingValueLabel(row))}</strong></div><p>${escapeHtml([classification, detail].filter(Boolean).join(" · "))}</p></div>`;
+      card.setAttribute("aria-label", `Open ${title} asset details, ${row.marketValueCents === null ? "Needs valuation" : preciseCurrency.format(row.marketValueCents / 100)}`);
+      card.innerHTML = `<div class="acadia-read-only"><div class="acadia-object-card-header"><strong>${escapeHtml(title)}</strong><strong class="acadia-read-only-value" title="${row.marketValueCents === null ? "Needs valuation" : escapeHtml(preciseCurrency.format(row.marketValueCents / 100))}">${escapeHtml(holdingValueLabel(row))}</strong></div><small class="acadia-text-muted">${escapeHtml([classification, detail].filter(Boolean).join(" · "))}</small></div>`;
       card.addEventListener("click", openHoldingFromEvent);
       card.addEventListener("keydown", keyOpenHolding);
       return card;
@@ -520,6 +521,7 @@
     const groups = summarizeInvestmentGroups(portfolioHoldingRows(summary));
     const group = groups.find((item) => item.id === state.portfolioFilter);
     const missingCount = group.missingCount;
+    setText("#portfolio-holdings-count", `${group.count} ${group.count === 1 ? "asset" : "assets"}`);
     $("#portfolio-valuation-status").hidden = groups[0].missingCount === 0;
     setText("#portfolio-valuation-status", missingCount > 0
       ? `${missingCount} ${missingCount === 1 ? "asset needs" : "assets need"} a valuation`
@@ -598,6 +600,7 @@
     $("#portfolio-holdings-grid").hidden = !hasRows;
     $("#portfolio-holdings-table-wrap").hidden = !hasRows;
     $("#portfolio-holdings-object-list").hidden = !hasRows;
+    $("#portfolio-table-help").hidden = !hasRows;
   }
   function selectPortfolioView(view, { focus = false } = {}) {
     if (!["cards", "table"].includes(view)) return;
@@ -645,15 +648,19 @@
     renderHoldingCards(grid, rows);
     renderPortfolioTable(rows);
     renderPortfolioView(rows.length > 0);
-    setText("#portfolio-holdings-count", `${matchingRows.length} ${matchingRows.length === 1 ? "asset" : "assets"}`);
+    const searching = Boolean($("#portfolio-search").value.trim());
+    $("#portfolio-search-feedback").hidden = !searching;
+    setText("#portfolio-search-count", searching ? `${rows.length} ${rows.length === 1 ? "match" : "matches"}` : "");
     $("#portfolio-holdings-empty").hidden = rows.length > 0;
-    $("#portfolio-reset-filters").hidden = rows.length > 0 || (!$("#portfolio-search").value && state.portfolioFilter === "all");
+    $("#portfolio-reset-filters").hidden = rows.length > 0 || searching || state.portfolioFilter === "all";
+    setText("#portfolio-reset-filters", "View all investments");
     if (!rows.length) {
       const hasAssets = state.holdings.length > 0;
-      setText("#portfolio-holdings-empty-title", hasAssets ? "No matching assets" : "No assets yet");
-      setText("#portfolio-holdings-empty-copy", hasAssets
-        ? "Adjust your search or filter to see a different investment."
-        : "Add an asset to begin your private Brokerage workspace.");
+      const groupName = summarizeInvestmentGroups(portfolioHoldingRows(summary)).find((group) => group.id === state.portfolioFilter).name;
+      setText("#portfolio-holdings-empty-title", searching ? "No matching assets" : hasAssets ? `No ${groupName.toLowerCase()} assets` : "No assets yet");
+      setText("#portfolio-holdings-empty-copy", searching
+        ? `Try another name or symbol${state.portfolioFilter === "all" ? "." : ` in ${groupName.toLowerCase()}.`}`
+        : hasAssets ? "Choose another group or add an asset." : "Add your first investment to get started.");
     }
   }
 
@@ -2435,6 +2442,11 @@
     control.addEventListener("keydown", (event) => {
       if (event.key === " ") { event.preventDefault(); control.click(); }
     });
+  });
+  $("#portfolio-clear-search").addEventListener("click", () => {
+    $("#portfolio-search").value = "";
+    render();
+    $("#portfolio-search").focus();
   });
   $("#portfolio-reset-filters").addEventListener("click", () => {
     state.portfolioFilter = "all";

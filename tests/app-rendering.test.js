@@ -289,7 +289,7 @@ test("Plan is a separate Base-plan projection workspace with aligned portfolio c
   assert.match(indexHtml, /id="plan-assumptions-dialog"/);
   assert.match(indexHtml, /id="property-dialog"/);
   assert.match(indexHtml, /<script src="plan\.js\?v=20260907-plan-automatic-v1"><\/script>/);
-  assert.match(indexHtml, /<script src="brokerage\.js\?v=20260908-quote-deadlines"><\/script>/);
+  assert.match(indexHtml, /<script src="brokerage\.js\?v=20260910-portfolio-polish"><\/script>/);
   assert.match(homeSource, /function routePlan\(\)/);
   assert.match(homeSource, /function renderPlan\(summary\)/);
   assert.match(homeSource, /function renderPlanChart/);
@@ -382,9 +382,10 @@ test("Portfolio investments switch between shared Cards and Table presentations"
   assert.match(portfolioWorkspace, /id="portfolio-holdings-table" class="acadia-table is-compact"/);
   assert.match(portfolioWorkspace, /id="portfolio-holdings-table-body"/);
   assert.match(portfolioWorkspace, /id="portfolio-holdings-object-list" class="acadia-table-mobile acadia-object-list"/);
-  ["Asset", "Price", "Shares", "Return", "Yield", "Value", "Updated", "Actions"].forEach((label) => {
+  ["Asset", "Price", "Shares", "Return", "Yield", "Value", "Updated"].forEach((label) => {
     assert.match(portfolioWorkspace, new RegExp(`>${label}(?: |<)`));
   });
+  assert.match(portfolioWorkspace, /<th aria-label="Actions"><\/th>/);
   assert.doesNotMatch(propertySection, /data-portfolio-view|portfolio-holdings-table/);
 
   assert.match(homeSource, /portfolioView: "cards"/);
