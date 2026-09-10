@@ -760,7 +760,7 @@
   function renderHomeAllocation() {
     const allocation = summarizeHoldingAllocation(state.holdings.map(holdingAsset));
     const node = $("#home-allocation");
-    node.innerHTML = allocation.rows.length ? allocation.rows.map((row) => `<div class="acadia-card-progress"><div class="acadia-card-progress-heading"><span>${escapeHtml(row.name)}</span><span>${percentage.format(row.allocationRate)}</span></div><progress value="${row.valueCents}" max="${allocation.totalValueCents}" aria-label="${escapeHtml(row.name)}: ${percentage.format(row.allocationRate)} of valued investments"></progress></div>`).join("") : '<p class="acadia-text-muted">No investment value yet</p>';
+    node.innerHTML = allocation.rows.length ? allocation.rows.map((row) => `<div class="acadia-card-progress"><div class="acadia-card-progress-heading"><span>${escapeHtml(row.name)}</span><span>${wholePercentage.format(row.allocationRate)}</span></div><progress value="${row.valueCents}" max="${allocation.totalValueCents}" aria-label="${escapeHtml(row.name)}: ${wholePercentage.format(row.allocationRate)} of valued investments"></progress></div>`).join("") : '<p class="acadia-text-muted">No investment value yet</p>';
     if (allocation.unvaluedCount) node.insertAdjacentHTML("beforeend", `<small class="acadia-text-muted">${allocation.unvaluedCount} missing ${allocation.unvaluedCount === 1 ? "valuation" : "valuations"}</small>`);
   }
   function renderHomeGrowth(summary) {
