@@ -36,10 +36,15 @@ No package installation is needed for the dependency-free checks.
 
 - `dashboard.js` — pure shared planning, investment allocation and distinct-date history calculations.
 - `index.html`, `brokerage.js` — the private Home dashboard, hash-routed Portfolio, Income, and Plan workspaces, Asset pages, and simplified entry flows.
-- `acadia.css`, `acadia-table.css`, `fonts/` — the canonical Acadia stylesheet and font assets, vendored unchanged. `acadia-table.css` vendors the unmodified Table section from Acadia `3d29f94` for container-responsive Portfolio comparisons; `styles.css` adds only narrow Mercury page compositions. The shared `wide` plus `spacious` frame aligns Home, Portfolio and Asset desktop rails at 148px while retaining Acadia's smaller-device gutters.
+- `acadia.css`, `fonts/`, `assets/accordion-*.svg`, `assets/auth-divider.svg` — unchanged Acadia assets from published revision `d5408dd1df1840ff91727079f7270d6f9fd754ea`. `acadia-vendor.json` records their origin and hashes; the test suite checks integrity and that active Acadia class names have definitions. Table is included in the single stylesheet. `styles.css` contains only the phone editor action offset and the documented form box-sizing compatibility correction.
+- `theme.js` — Acadia theme behaviour adapted for Mercury's System default and browser theme-colour metadata. Account menus expose System/Light/Dark at every navigation breakpoint.
 - `portfolio.js`, `income.js`, `plan.js` — cent-based portfolio, recurring-income, monthly spending-plan, and Base-plan calculation contracts, also exposed to the browser.
 - `api/portfolio/` — protected quote and snapshot endpoints.
 - `supabase/migrations/` — account, holding, quote, snapshot, RLS, and per-asset contribution schema.
 - `supabase/README.md` — Supabase and environment setup.
 
 Mercury records and explains an owner’s portfolio; it does not offer investment advice, trading, or tax calculations.
+
+## Updating Acadia
+
+Use the published Acadia `main` revision, review its changelog and affected Component/Pattern contracts, then copy the complete stylesheet and its supporting assets without edits. Refresh `acadia-vendor.json` with the reviewed revision and hashes. Check for removed selectors and migrate their consumers before changing the pin; do not layer extracted component copies over an older stylesheet. Run `npm run check`, then verify the affected routes, themes, navigation boundaries, enlarged text, menus and forms in an isolated account. Record exceptions and evidence in `DESIGN-README.md` and the alignment review. Local unfinished Acadia edits are not a published dependency.

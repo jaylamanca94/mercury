@@ -15,7 +15,7 @@ const productReadme = fs.readFileSync(path.join(root, "PRODUCT-README.md"), "utf
 const personalFinancePivot = fs.readFileSync(path.join(root, "docs", "personal-finance-pivot.md"), "utf8");
 
 test("Home consumes Acadia without a Mercury presentation layer", () => {
-  assert.match(styles, /^@import url\("acadia\.css\?v=20260903-home-overview-v1"\);/);
+  assert.match(styles, /^@import url\("acadia\.css\?v=20260910-d5408dd"\);/);
   assert.match(acadiaStyles, /\.acadia-responsive-navbar/);
   assert.match(acadiaStyles, /\.acadia-card\.is-content/);
   assert.match(acadiaStyles, /\.acadia-dialog\.is-form-modal/);
@@ -31,12 +31,12 @@ test("Home consumes Acadia without a Mercury presentation layer", () => {
   assert.match(indexHtml, /data-acadia-layout="wide"/);
   assert.match(indexHtml, /data-acadia-page-frame="spacious"/);
   assert.match(indexHtml, /id="main-content" class="acadia-shell acadia-mobile-dock-safe-area"/);
-  assert.match(indexHtml, /id="home-workspace" class="acadia-stack acadia-home-dashboard" hidden/);
-  assert.match(indexHtml, /id="portfolio-workspace" class="acadia-stack mercury-workspace" hidden/);
-  assert.match(indexHtml, /id="income-workspace" class="acadia-stack mercury-workspace" hidden/);
-  assert.match(indexHtml, /id="plan-workspace" class="acadia-stack mercury-workspace" hidden>/);
+  assert.match(indexHtml, /id="home-workspace" class="acadia-stack" hidden/);
+  assert.match(indexHtml, /id="portfolio-workspace" class="acadia-stack" hidden/);
+  assert.match(indexHtml, /id="income-workspace" class="acadia-stack" hidden/);
+  assert.match(indexHtml, /id="plan-workspace" class="acadia-stack" hidden>/);
   assert.match(indexHtml, /id="plan-readiness"[^>]*role="status"/);
-  assert.match(indexHtml, /id="asset-workspace" class="acadia-stack mercury-workspace" hidden aria-live="polite"/);
+  assert.match(indexHtml, /id="asset-workspace" class="acadia-stack" hidden aria-live="polite"/);
   assert.match(acadiaStyles, /\[data-acadia-page-frame="spacious"\]/);
   assert.match(acadiaStyles, /\.acadia-card\.is-dashboard-trend/);
   assert.doesNotMatch(indexHtml, /class="[^"]*brokerage-/);
@@ -73,7 +73,7 @@ test("Home composes a minimal Acadia dashboard", () => {
   assert.match(homeSource, /classList\.toggle\("is-dashboard-trend", performance\.showTrend\)/);
 
   assert.match(indexHtml, /id="home-allocation"/);
-  assert.match(indexHtml, /id="holdings-grid" class="acadia-device-grid"[^>]*role="list"/);
+  assert.match(indexHtml, /id="holdings-grid" class="acadia-grid"[^>]*role="list"/);
   assert.match(indexHtml, /id="history-building"/);
   assert.doesNotMatch(indexHtml, /--acadia-card-trend-height: 16rem/);
   assert.match(indexHtml, /id="holdings-count"/);
@@ -129,7 +129,7 @@ test("Home uses genuine performance history and ranks holdings with properties",
   assert.match(homeSource, /acadia-card-trend-baseline/);
   assert.match(homeSource, /kind: "property"/);
   assert.match(homeSource, /propertyEquityCents\(model\)/);
-  assert.match(homeSource, /acadia-asset-preview-card/);
+  assert.match(homeSource, /acadia-card is-content/);
   assert.doesNotMatch(styles, /#home-workspace|mercury-home|mercury-command-grid/);
   assert.match(indexHtml, /id="home-add-asset"/);
   assert.match(homeSource, /Retirement/);
@@ -262,9 +262,10 @@ test("Income is a functional planning workspace with live dividend coverage and 
   assert.match(homeSource, /openDeleteBudgetCategoryDialog/);
   assert.match(homeSource, /openDeleteIncomeSourceDialog/);
   assert.match(homeSource, /data-income-dividend-sort/);
-  assert.match(styles, /\.mercury-comparison-table/);
+  assert.match(incomeWorkspace, /id="income-budget-results" class="acadia-table-responsive"/);
+  assert.match(incomeWorkspace, /id="income-budget-cards" class="acadia-table-mobile acadia-object-list"/);
   assert.match(incomeWorkspace, /id="income-overview-panel" class="acadia-grid"/);
-  assert.match(styles, /@media \(max-width: 47\.98rem\)/);
+  assert.match(styles, /@media \(max-width: 767px\)/);
   assert.match(readme, /monthly category-level spending limits/);
   assert.match(personalFinancePivot, /category-level only/);
 });
@@ -289,7 +290,7 @@ test("Plan is a separate Base-plan projection workspace with aligned portfolio c
   assert.match(indexHtml, /id="plan-assumptions-dialog"/);
   assert.match(indexHtml, /id="property-dialog"/);
   assert.match(indexHtml, /<script src="plan\.js\?v=20260907-plan-automatic-v1"><\/script>/);
-  assert.match(indexHtml, /<script src="brokerage\.js\?v=20260910-home-allocation"><\/script>/);
+  assert.match(indexHtml, /<script src="brokerage\.js\?v=20260910-acadia-alignment"><\/script>/);
   assert.match(homeSource, /function routePlan\(\)/);
   assert.match(homeSource, /function renderPlan\(summary\)/);
   assert.match(homeSource, /function renderPlanChart/);
@@ -302,8 +303,8 @@ test("Plan is a separate Base-plan projection workspace with aligned portfolio c
 });
 
 test("the quick add dialog matches the compact Figma flow and keeps manual recovery secondary", () => {
-  assert.match(indexHtml, /id="asset-dialog" class="acadia-dialog is-form-modal is-compact"/);
-  assert.match(acadiaStyles, /\.acadia-dialog\.is-form-modal:not\(\[open\]\) \{\s*display: none;/);
+  assert.match(indexHtml, /id="asset-dialog" class="acadia-dialog is-form-modal"/);
+  assert.match(acadiaStyles, /dialog\.acadia-dialog:not\(\[open\]\) \{\s*display: none;/);
   assert.match(indexHtml, /id="asset-symbol"/);
   assert.match(indexHtml, /id="asset-symbol"[^>]*autofocus/);
   assert.match(indexHtml, /id="asset-shares"/);
@@ -311,17 +312,12 @@ test("the quick add dialog matches the compact Figma flow and keeps manual recov
   assert.match(indexHtml, /id="asset-price-preview"/);
   assert.match(indexHtml, /id="asset-value-preview"/);
   assert.match(indexHtml, /id="asset-recurring" name="contribution"/);
-  assert.match(indexHtml, /class="acadia-control-leading-affix"[^>]*>\$<\/span>/);
+  assert.match(indexHtml, /for="asset-recurring">Amount \(\$\)/);
   assert.match(indexHtml, /id="asset-frequency" name="contributionFrequency"/);
-  assert.match(indexHtml, /class="acadia-choice acadia-dialog-choice"/);
+  assert.match(indexHtml, /class="acadia-choice"/);
   assert.match(indexHtml, /id="asset-retirement" name="isRetirement" type="checkbox"/);
   assert.doesNotMatch(indexHtml, /id="asset-dialog-description"/);
   assert.match(indexHtml, /id="manual-fallback"[^>]* hidden/);
-  assert.match(acadiaStyles, /\.acadia-dialog\.is-form-modal\.is-compact[\s\S]*padding: calc\(2rem - 1px\);[\s\S]*width: min\(35rem/);
-  assert.match(acadiaStyles, /\.acadia-read-only-grid[\s\S]*grid-template-columns: repeat\(2/);
-  assert.match(acadiaStyles, /\.acadia-dialog-field-grid,\s*\.acadia-read-only-grid \{\s*grid-template-columns: 1fr;/);
-  assert.match(acadiaStyles, /\.acadia-dialog-choice[\s\S]*width: calc\(\(100% - 1\.5rem\) \/ 2\)/);
-  assert.match(acadiaStyles, /@media[\s\S]*\.acadia-dialog-choice \{\s*width: 100%;/);
   assert.match(homeSource, /scheduleQuote/);
   assert.match(homeSource, /showManualFallback/);
   assert.match(homeSource, /requestId !== state\.quoteRequestId/);
@@ -342,7 +338,7 @@ test("Home never falls back to fabricated assets and Portfolio is a functional r
   assert.match(homeSource, /routePortfolio/);
   assert.match(homeSource, /renderPortfolio/);
   assert.match(homeSource, /setActiveNavigation\("portfolio"\)/);
-  assert.match(indexHtml, /id="portfolio-workspace" class="acadia-stack mercury-workspace" hidden/);
+  assert.match(indexHtml, /id="portfolio-workspace" class="acadia-stack" hidden/);
   assert.match(indexHtml, /id="portfolio-search"/);
   assert.match(indexHtml, /id="portfolio-add-asset"/);
   assert.match(indexHtml, /id="portfolio-holding-sort"/);
@@ -365,7 +361,7 @@ test("Home never falls back to fabricated assets and Portfolio is a functional r
   assert.match(homeSource, /function deleteProperty\(event\)/);
   assert.match(homeSource, /totalPropertyEquity\(\)/);
   assert.doesNotMatch(portfolioWorkspace, /Holdings remain on Home for now|Portfolio workspace is on its way|acadia-card-trend|<svg/);
-  assert.match(indexHtml, /id="asset-workspace" class="acadia-stack mercury-workspace" hidden/);
+  assert.match(indexHtml, /id="asset-workspace" class="acadia-stack" hidden/);
   assert.match(indexHtml, /id="asset-back"/);
   assert.match(indexHtml, /id="asset-detail-form"/);
 });
@@ -385,7 +381,7 @@ test("Portfolio investments switch between shared Cards and Table presentations"
   ["Asset", "Price", "Shares", "Return", "Yield", "Value", "Updated"].forEach((label) => {
     assert.match(portfolioWorkspace, new RegExp(`>${label}(?: |<)`));
   });
-  assert.match(portfolioWorkspace, /<th aria-label="Actions"><\/th>/);
+  assert.match(portfolioWorkspace, /<th scope="col" aria-label="Actions"><\/th>/);
   assert.doesNotMatch(propertySection, /data-portfolio-view|portfolio-holdings-table/);
 
   assert.match(homeSource, /portfolioView: "cards"/);
@@ -416,10 +412,10 @@ test("Portfolio uses Acadia disclosure, preview cards and native controls with c
   assert.match(workspace, /id="portfolio-summary-property-equity"/);
   assert.match(workspace, /id="portfolio-recurring-total"/);
   assert.match(workspace, /id="portfolio-allocation-disclosure" class="acadia-accordion-item"/);
-  assert.match(workspace, /id="portfolio-holdings-grid" class="acadia-device-grid"/);
+  assert.match(workspace, /id="portfolio-holdings-grid" class="acadia-grid"/);
   assert.match(workspace, /id="portfolio-reset-filters"/);
-  assert.match(indexHtml, /id="property-dialog" class="acadia-dialog is-form-modal is-compact"/);
-  assert.match(indexHtml, /id="delete-property-dialog" class="acadia-dialog is-form-modal is-compact"/);
+  assert.match(indexHtml, /id="property-dialog" class="acadia-dialog is-form-modal"/);
+  assert.match(indexHtml, /id="delete-property-dialog" class="acadia-dialog is-form-modal"/);
   assert.match(workspace, /select id="portfolio-holding-sort"[^>]*aria-label="Sort investments"/);
   assert.doesNotMatch(workspace, /mercury-portfolio-summary|mercury-portfolio-toolbar|mercury-holding-card/);
   for (const name of ["accordion-plus.svg", "accordion-minus.svg"]) {
@@ -443,7 +439,7 @@ test("the Asset page uses Acadia primary details and an advanced disclosure", ()
 
 test("an owner can delete an asset only after an explicit Acadia confirmation", () => {
   assert.match(indexHtml, /id="asset-delete" class="acadia-action-menu-item is-danger"/);
-  assert.match(indexHtml, /id="delete-asset-dialog" class="acadia-dialog is-form-modal is-compact"/);
+  assert.match(indexHtml, /id="delete-asset-dialog" class="acadia-dialog is-form-modal"/);
   assert.match(indexHtml, /id="confirm-delete-asset" class="acadia-button acadia-button-danger"/);
   assert.match(indexHtml, /Historical portfolio snapshots stay unchanged/);
   assert.match(homeSource, /function openDeleteAssetDialog/);

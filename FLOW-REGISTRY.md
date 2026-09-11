@@ -87,3 +87,7 @@ Income Overview/Budget now distinguish unavailable sources/categories, missing v
 ## Home annual growth — 2026-09-10
 
 Home now reads the existing automatic historical-growth aggregate rather than the manually entered expected-return aggregate. Current holding values weight provider annualised history; property and manual holding/Plan assumptions do not contribute. Pending metrics show Loading; missing valuations/history show Unavailable with a contextual explanation. No manual-return entry is requested. Tests cover automatic-only values, manual independence, zero/negative returns, incomplete coverage and loading recovery. All 174 checks pass; isolated browser checks confirm the amount and recovery at 1440px, with 768px and 390px containment. Provider availability and authenticated personal-account results were not newly verified.
+
+## Acadia alignment — 2026-09-10
+
+No financial flows added. Home, Portfolio, Income/Budget, Plan, asset editing and their dialogs now consume the reviewed Acadia snapshot. Budget follows the canonical Table/Object Card container transition with visible-action focus continuity. Account menus expose appearance on all devices; disclosure and modal triggers follow current accessibility contracts. Financial persistence and provider logic are unchanged. See `automation/design/2026-09-10/acadia-alignment.md` for local verification and remaining acceptance boundaries.

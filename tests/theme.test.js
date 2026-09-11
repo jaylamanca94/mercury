@@ -4,7 +4,7 @@ const path = require("node:path");
 const test = require("node:test");
 const vm = require("node:vm");
 
-function createThemeContext({ systemDark = true } = {}) {
+function createThemeContext({ systemDark = true, readableStorage = false } = {}) {
   let clickHandler = null;
   const rootAttributes = new Map([["data-bs-theme", ""]]);
   const root = {
@@ -70,6 +70,7 @@ function createThemeContext({ systemDark = true } = {}) {
     window: {
       localStorage: {
         getItem() {
+          if (readableStorage) return null;
           throw new Error("localStorage blocked");
         },
         removeItem() {
@@ -116,4 +117,12 @@ test("theme toggle keeps working when localStorage is unavailable", () => {
   context.clickToggle();
   assert.equal(context.getTheme(), "dark");
   assert.equal(context.toggle["aria-pressed"], "true");
+});
+
+test("theme retains the current choice when storage reads work but writes are denied", () => {
+  const context = createThemeContext({ systemDark: true, readableStorage: true });
+  context.clickToggle();
+  assert.equal(context.getTheme(), "light");
+  context.clickToggle();
+  assert.equal(context.getTheme(), "dark");
 });

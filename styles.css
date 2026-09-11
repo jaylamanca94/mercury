@@ -1,73 +1,16 @@
-@import url("acadia.css?v=20260903-home-overview-v1");
-@import url("acadia-table.css?v=20260908-acadia-3d29f94");
+@import url("acadia.css?v=20260910-d5408dd");
 
-/* Page composition only; the shared Acadia primitives and tokens stay canonical. */
-/* Safari stretches a grid dialog between opposing block insets. Anchor the
-   content-sized form dialog at the viewport centre; Acadia caps overflow. */
-#asset-dialog,
-#plan-assumptions-dialog {
-  height: auto;
-  inset-block: 50% auto;
-  transform: translateY(-50%);
-}
-
-.mercury-caption {
-  color: var(--acadia-color-text-muted);
-  font-size: var(--acadia-type-size-small);
-  line-height: 1.5;
-  margin: 0;
-}
-.mercury-primary-metric {
-  font-family: var(--acadia-font-expression);
-  font-size: var(--acadia-type-size-title);
-  font-weight: var(--acadia-font-weight-medium);
-  line-height: 1.2;
-  margin: var(--acadia-space-1) 0 0;
-  font-variant-numeric: tabular-nums;
-}
-.mercury-allocation { margin-block-start: var(--acadia-space-3); }
-.mercury-allocation-rows { display: grid; gap: var(--acadia-space-2); }
-.mercury-allocation .acadia-card-progress { min-width: 0; }
-.mercury-allocation .acadia-card-progress-heading { font-size: var(--acadia-type-size-small); gap: var(--acadia-space-2); }
-.mercury-allocation .acadia-card-progress-heading > span:first-child { overflow-wrap: anywhere; }
-.mercury-allocation-amount { display: flex; gap: var(--acadia-space-2); white-space: nowrap; font-variant-numeric: tabular-nums; }
-.mercury-allocation-amount > span { color: var(--acadia-color-text-muted); min-width: 3.5rem; text-align: end; }
-.mercury-allocation > p { margin-block-start: var(--acadia-space-2); }
-.mercury-metric-band { display: grid; gap: var(--acadia-space-3); padding: 0; margin: 0; }
-.mercury-metric-band > div { display: grid; align-content: start; gap: var(--acadia-space-1); min-width: 0; }
-.mercury-metric-band dt { color: var(--acadia-color-text-muted); font-size: var(--acadia-type-size-small); }
-.mercury-metric-band dd { margin: 0; font-family: var(--acadia-font-expression); font-variant-numeric: tabular-nums; font-size: var(--acadia-type-size-heading-small); }
-.mercury-section-toolbar { display: flex; align-items: center; flex-wrap: wrap; justify-content: space-between; gap: var(--acadia-space-2); }
-.mercury-section-toolbar { margin-block: var(--acadia-space-3); }
-.mercury-section-search { width: min(100%, 24rem); }
-.mercury-comparison-table { width: 100%; }
-.mercury-comparison-table th, .mercury-comparison-table td { padding: var(--acadia-space-2); }
-.mercury-comparison-table th:first-child, .mercury-comparison-table td:first-child { padding-inline-start: 0; }
-.mercury-comparison-table tbody th { font-size: var(--acadia-type-size-body); font-weight: var(--acadia-font-weight-medium); overflow-wrap: anywhere; }
-.mercury-comparison-table small { display: block; color: var(--acadia-color-text-muted); font-size: var(--acadia-type-size-caption); font-weight: var(--acadia-font-weight-regular); margin-block-start: var(--acadia-space-1); }
-.mercury-comparison-table td { text-align: end; font-variant-numeric: tabular-nums; }
-.mercury-comparison-table thead th:not(:first-child) { text-align: end; }
-.mercury-comparison-table .acadia-row-actions { justify-content: end; }
-.mercury-income-table-wrap { border: 0; background: transparent; box-shadow: none; }
-@media (max-width: 47.98rem) {
-  .mercury-primary-metric { font-size: var(--acadia-type-size-heading-large); }
-  .mercury-comparison-table, .mercury-comparison-table tbody { display: block; }
-  .mercury-comparison-table thead { display: none; }
-  .mercury-comparison-table tr { display: grid; grid-template-columns: minmax(0, 1fr); padding-block: var(--acadia-space-2); border-block-start: 1px solid var(--acadia-color-border); }
-  .mercury-comparison-table tbody th, .mercury-comparison-table td { display: flex; flex-wrap: wrap; justify-content: space-between; gap: var(--acadia-space-1); padding: var(--acadia-space-1) 0; border: 0; background: transparent; }
-  .mercury-comparison-table tbody th { display: block; text-align: start; }
-  .mercury-comparison-table td::before { content: attr(data-label); color: var(--acadia-color-text-muted); font-size: var(--acadia-type-size-small); }
-  .mercury-comparison-table td[data-label="Actions"]::before { content: none; }
-  .mercury-comparison-table td[data-label="Actions"] { justify-content: end; }
-}
-
-.mercury-comparison-table { table-layout: fixed; }
-.mercury-comparison-table :is(th, td) { white-space: normal; overflow-wrap: anywhere; }
-.mercury-comparison-table tbody th { background: transparent; text-transform: none; letter-spacing: normal; }
-
-/* Keep Acadia's form actions above Mercury's persistent phone navigation. */
+/* Product composition exception: keep the asset editor's sticky actions above
+   Mercury's persistent phone navigation. Acadia owns the action anatomy. */
 @media (max-width: 767px) {
   #asset-detail-form .acadia-form-actions {
     bottom: var(--acadia-mobile-dock-clearance);
   }
+}
+
+/* Acadia d5408dd gives direct form children width plus focus-ring padding.
+   Include that padding in the declared width to avoid horizontal dialog scroll.
+   Remove when the canonical form sizing includes border-box. */
+.acadia-dialog.is-form-modal > .acadia-dialog-form {
+  box-sizing: border-box;
 }

@@ -7,17 +7,18 @@
       : null;
 
   function isThemeMode(value) {
-    return value === "light" || value === "dark";
+    return value === "light" || value === "dark" || value === "system";
   }
 
   function getStoredTheme() {
     try {
       const storedTheme = window.localStorage.getItem(storageKey);
-      return isThemeMode(storedTheme) ? storedTheme : "system";
+      if (isThemeMode(storedTheme)) return storedTheme;
     } catch (_) {
-      const currentTheme = root.getAttribute("data-acadia-theme");
-      return isThemeMode(currentTheme) ? currentTheme : "system";
+      // Keep the current preference usable when browser storage is unavailable.
     }
+    const currentTheme = root.getAttribute("data-acadia-theme");
+    return isThemeMode(currentTheme) ? currentTheme : "system";
   }
 
   function getSystemTheme() {
@@ -25,7 +26,7 @@
   }
 
   function getEffectiveTheme(mode) {
-    return isThemeMode(mode) ? mode : getSystemTheme();
+    return mode === "light" || mode === "dark" ? mode : getSystemTheme();
   }
 
   function themeColorFor(effectiveTheme) {

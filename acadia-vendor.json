@@ -1,0 +1,50 @@
+{
+  "repository": "https://github.com/jaylamanca94/acadia",
+  "revision": "d5408dd1df1840ff91727079f7270d6f9fd754ea",
+  "files": {
+    "acadia.css": {
+      "source": "src/acadia.css",
+      "sha256": "3e59f933316840a372ab76e8d9ab9a332b8e014bcd0fcb715b02d615f5f342b2"
+    },
+    "fonts/Syncopate-Bold.ttf": {
+      "source": "src/fonts/Syncopate-Bold.ttf",
+      "sha256": "17d45e01c6b8389c22313f6a03d4af93742e074c8f75b17baf75b1903efbb800"
+    },
+    "fonts/GeistMono-Italic-Variable.woff2": {
+      "source": "src/fonts/GeistMono-Italic-Variable.woff2",
+      "sha256": "1c5134ba2a75039ee12c1aacc8bce550111bc8298034a8149a541c20fc838217"
+    },
+    "fonts/Geist-Variable.woff2": {
+      "source": "src/fonts/Geist-Variable.woff2",
+      "sha256": "e24cec106619c03f0b3519e31b9bc55e0d5e926b6a95b8d798cd8cef215b1505"
+    },
+    "fonts/GeistMono-Variable.woff2": {
+      "source": "src/fonts/GeistMono-Variable.woff2",
+      "sha256": "5f687a5dd4c87da13deaff9f6b9503d5e62249ff501265a96b134565f9aa8c87"
+    },
+    "fonts/Geist-Italic-Variable.woff2": {
+      "source": "src/fonts/Geist-Italic-Variable.woff2",
+      "sha256": "3780dca0ebbde4276d9bddec81c1d6f97b2795d5bc7d5d20cede71221bdebc14"
+    },
+    "fonts/Syncopate-Regular.ttf": {
+      "source": "src/fonts/Syncopate-Regular.ttf",
+      "sha256": "c15e610bacc736494e2dcdb9907b200e1e2ae9e6c22effb0db6ff3bc7e412860"
+    },
+    "fonts/LICENSE-Geist.txt": {
+      "source": "src/fonts/LICENSE-Geist.txt",
+      "sha256": "930853ee1daa68554d9e35c8a9175affb74f699fad9a5da6ee5ebe76379d9137"
+    },
+    "assets/accordion-plus.svg": {
+      "source": "src/assets/accordion-plus.svg",
+      "sha256": "bb038194adaab565428aed5ffa8fb850f54b87e54605d92f4c9ade9431e48375"
+    },
+    "assets/accordion-minus.svg": {
+      "source": "src/assets/accordion-minus.svg",
+      "sha256": "587006b203446002a6c628de93214f3b77605f86507362dadae3f43a24d221cb"
+    },
+    "assets/auth-divider.svg": {
+      "source": "src/assets/auth-divider.svg",
+      "sha256": "1b0af7a694de4dc52666aaed9e0351bb8e7f99199fcf13ec4c34415fae7e4940"
+    }
+  }
+}

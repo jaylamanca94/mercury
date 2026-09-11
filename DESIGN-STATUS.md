@@ -1,6 +1,8 @@
 # Mercury — Design Status
 
-**Last reviewed:** 2026-09-08
+**Last reviewed:** 2026-09-10
+
+Acadia alignment now uses one published snapshot with integrity and selector checks, supported static-value compositions, canonical Budget Table/Object Cards, current form modals and navigation/menu targets. Read `automation/design/2026-09-10/acadia-alignment.md` for current evidence; older counts and component names below are historical.
 
 Quote lookup now releases stalled requests into the existing Acadia manual/retry recovery, retaining the draft. Optional provider failures preserve valid prices. See `automation/review/2026-09-08/reliability/review.md`; this is reliability follow-through without a visual redesign.
 

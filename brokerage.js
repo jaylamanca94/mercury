@@ -403,7 +403,7 @@
     const retirement = row.asset.isRetirement
       ? '<span class="acadia-badge acadia-badge-grey acadia-badge-round acadia-badge-small">Retirement</span>'
       : "";
-    return `<div class="acadia-read-only"><div class="acadia-cluster"><button class="acadia-button acadia-button-quiet" type="button" data-open-asset-id="${escapeHtml(row.asset.id)}">${escapeHtml(title)}</button>${retirement}</div><small class="acadia-text-muted">${escapeHtml(secondary)}</small></div>`;
+    return `<div class="acadia-field"><div class="acadia-cluster"><button class="acadia-button acadia-button-quiet" type="button" data-open-asset-id="${escapeHtml(row.asset.id)}">${escapeHtml(title)}</button>${retirement}</div><small class="acadia-text-muted">${escapeHtml(secondary)}</small></div>`;
   }
   function holdingActionMenuMarkup(row) {
     const title = row.asset.symbol || row.asset.name;
@@ -447,7 +447,7 @@
       card.tabIndex = 0;
       card.setAttribute("role", "link");
       card.setAttribute("aria-label", `Open ${title} asset details, ${row.marketValueCents === null ? "Needs valuation" : preciseCurrency.format(row.marketValueCents / 100)}`);
-      card.innerHTML = `<div class="acadia-read-only"><div class="acadia-object-card-header"><strong>${escapeHtml(title)}</strong><strong class="acadia-read-only-value" title="${row.marketValueCents === null ? "Needs valuation" : escapeHtml(preciseCurrency.format(row.marketValueCents / 100))}">${escapeHtml(holdingValueLabel(row))}</strong></div><small class="acadia-text-muted">${escapeHtml([classification, detail].filter(Boolean).join(" · "))}</small></div>`;
+      card.innerHTML = `<div class="acadia-field"><div class="acadia-object-card-header"><strong>${escapeHtml(title)}</strong><strong class="acadia-lead" title="${row.marketValueCents === null ? "Needs valuation" : escapeHtml(preciseCurrency.format(row.marketValueCents / 100))}">${escapeHtml(holdingValueLabel(row))}</strong></div><small class="acadia-text-muted">${escapeHtml([classification, detail].filter(Boolean).join(" · "))}</small></div>`;
       card.addEventListener("click", openHoldingFromEvent);
       card.addEventListener("keydown", keyOpenHolding);
       return card;
@@ -465,7 +465,7 @@
     const topAssets = candidates.slice(0, 4);
     grid.replaceChildren(...topAssets.map((candidate) => {
       const item = document.createElement("article");
-      item.className = "acadia-card is-content is-interactive acadia-asset-preview-card";
+      item.className = "acadia-card is-content is-interactive";
       item.setAttribute("role", "button");
       item.tabIndex = 0;
       const isHolding = candidate.kind === "holding";
@@ -480,6 +480,7 @@
         : `Market value ${displayCurrency(candidate.model.currentValueCents / 100)} · Mortgage ${displayCurrency(candidate.model.mortgageBalanceCents / 100)}`;
       item.innerHTML = `<div class="acadia-card-header"><div class="acadia-card-content-title-row"><h3>${escapeHtml(title)}</h3><span class="acadia-card-content-caption" title="${escapeHtml(currency.format(candidate.valueCents / 100))}">${escapeHtml(displayCurrency(candidate.valueCents / 100))}</span></div><p>${escapeHtml(classification)}</p></div><div class="acadia-card-content"><small class="acadia-text-muted">${escapeHtml(detail)}</small></div>`;
       item.setAttribute("aria-label", isHolding ? `Open ${title} asset details` : `Edit ${title} property`);
+      if (!isHolding) item.dataset.propertyId = candidate.model.id;
       const open = () => isHolding ? navigateToAsset(row.asset.id) : openPropertyDialog(candidate.model.id);
       item.addEventListener("click", open);
       item.addEventListener("keydown", (event) => {
@@ -542,7 +543,7 @@
     list.innerHTML = assets.map((asset) => {
       const title = asset.symbol || asset.name;
       const cadence = asset.contributionFrequency === "monthly" ? "Monthly" : "Weekly";
-      return `<article class="acadia-object-card-header" role="listitem"><div class="acadia-read-only"><strong>${escapeHtml(title)}</strong><span class="acadia-text-muted">${escapeHtml(displayCurrency(asset.contributionCents / 100))} · ${cadence.toLowerCase()}</span></div><button class="acadia-button acadia-button-quiet" type="button" data-edit-id="${escapeHtml(asset.id)}" data-asset-section="recurring" aria-label="Edit recurring investment for ${escapeHtml(title)}">Edit</button></article>`;
+      return `<article class="acadia-object-card-header" role="listitem"><div class="acadia-field"><strong>${escapeHtml(title)}</strong><span class="acadia-text-muted">${escapeHtml(displayCurrency(asset.contributionCents / 100))} · ${cadence.toLowerCase()}</span></div><button class="acadia-button acadia-button-quiet" type="button" data-edit-id="${escapeHtml(asset.id)}" data-asset-section="recurring" aria-label="Edit recurring investment for ${escapeHtml(title)}">Edit</button></article>`;
     }).join("");
     bindPortfolioHoldingActions(list);
     $("#portfolio-recurring-empty").hidden = assets.length > 0;
@@ -634,7 +635,7 @@
     objectList.innerHTML = rows.map((row) => {
       const metrics = holdingMetricSummary(row);
       const updated = holdingUpdatedLabel(row);
-      return `<article class="acadia-object-card"><div class="acadia-object-card-header">${holdingIdentityMarkup(row)}<div class="acadia-object-actions">${holdingActionMenuMarkup(row)}</div></div><div class="acadia-object-meta"><span>Updated ${escapeHtml(updated.label)}</span></div><div class="acadia-cluster"><div class="acadia-read-only"><span class="acadia-field-hint">Price</span><strong>${escapeHtml(holdingPriceLabel(row))}</strong></div><div class="acadia-read-only"><span class="acadia-field-hint">Shares</span><strong>${escapeHtml(holdingSharesLabel(row))}</strong></div><div class="acadia-read-only"><span class="acadia-field-hint">Return</span><strong aria-label="${escapeHtml(metrics.returnLabel)}: ${escapeHtml(metrics.returnValue)}">${escapeHtml(metrics.returnValue)}</strong></div><div class="acadia-read-only"><span class="acadia-field-hint">Yield</span><strong aria-label="${escapeHtml(metrics.yieldLabel)}: ${escapeHtml(metrics.yieldValue)}">${escapeHtml(metrics.yieldValue)}</strong></div><div class="acadia-read-only"><span class="acadia-field-hint">Value</span><strong>${escapeHtml(holdingValueLabel(row))}</strong></div></div></article>`;
+      return `<article class="acadia-object-card"><div class="acadia-object-card-header">${holdingIdentityMarkup(row)}<div class="acadia-object-actions">${holdingActionMenuMarkup(row)}</div></div><div class="acadia-object-meta"><span>Updated ${escapeHtml(updated.label)}</span></div><div class="acadia-cluster"><div class="acadia-field"><span class="acadia-field-hint">Price</span><strong>${escapeHtml(holdingPriceLabel(row))}</strong></div><div class="acadia-field"><span class="acadia-field-hint">Shares</span><strong>${escapeHtml(holdingSharesLabel(row))}</strong></div><div class="acadia-field"><span class="acadia-field-hint">Return</span><strong aria-label="${escapeHtml(metrics.returnLabel)}: ${escapeHtml(metrics.returnValue)}">${escapeHtml(metrics.returnValue)}</strong></div><div class="acadia-field"><span class="acadia-field-hint">Yield</span><strong aria-label="${escapeHtml(metrics.yieldLabel)}: ${escapeHtml(metrics.yieldValue)}">${escapeHtml(metrics.yieldValue)}</strong></div><div class="acadia-field"><span class="acadia-field-hint">Value</span><strong>${escapeHtml(holdingValueLabel(row))}</strong></div></div></article>`;
     }).join("");
     bindPortfolioHoldingActions(tableBody);
     bindPortfolioHoldingActions(objectList);
@@ -696,7 +697,7 @@
     const labels = { value: "Value", name: "Name" };
     setText("#portfolio-property-sort-label", labels[state.propertySort]);
     document.querySelectorAll("[data-property-sort]").forEach((control) => {
-      control.setAttribute("aria-checked", String(control.dataset.propertySort === state.propertySort));
+      control.setAttribute("aria-pressed", String(control.dataset.propertySort === state.propertySort));
     });
   }
   function renderPropertyCards(properties) {
@@ -707,7 +708,7 @@
       const card = document.createElement("article");
       card.className = "acadia-card is-content";
       card.setAttribute("aria-label", `${model.name}${model.location ? `, ${model.location}` : ""}, market value ${displayCurrency(model.currentValueCents / 100)}, mortgage balance ${displayCurrency(model.mortgageBalanceCents / 100)}, equity ${displayCurrency(equityCents / 100)}`);
-      card.innerHTML = `<div class="acadia-card-actions" role="group" aria-label="Actions for ${escapeHtml(model.name)}"><details class="acadia-action-menu"><summary class="acadia-action-menu-trigger acadia-icon-action" aria-label="Actions for ${escapeHtml(model.name)}"><i class="fa-solid fa-ellipsis acadia-icon" aria-hidden="true"></i></summary><div class="acadia-action-menu-panel"><button class="acadia-action-menu-item" type="button" data-edit-property-id="${escapeHtml(model.id)}">Edit property</button><div class="acadia-action-menu-divider"></div><button class="acadia-action-menu-item is-danger" type="button" data-delete-property-id="${escapeHtml(model.id)}">Delete property</button></div></details></div><div class="acadia-card-header"><h3>${escapeHtml(model.name)}</h3>${model.location ? `<p>${escapeHtml(model.location)}</p>` : ""}</div><div class="acadia-card-content acadia-stack"><div class="acadia-read-only"><span class="acadia-text-muted">Equity</span><strong class="acadia-card-metric-value">${escapeHtml(displayCurrency(equityCents / 100))}</strong></div><div class="acadia-read-only-grid"><div class="acadia-read-only"><span class="acadia-text-muted">Market value</span><strong>${escapeHtml(displayCurrency(model.currentValueCents / 100))}</strong></div><div class="acadia-read-only"><span class="acadia-text-muted">Mortgage balance</span><strong>${escapeHtml(displayCurrency(model.mortgageBalanceCents / 100))}</strong></div></div></div>`;
+      card.innerHTML = `<div class="acadia-card-actions" role="group" aria-label="Actions for ${escapeHtml(model.name)}"><details class="acadia-action-menu"><summary class="acadia-action-menu-trigger acadia-icon-action" aria-label="Actions for ${escapeHtml(model.name)}"><i class="fa-solid fa-ellipsis acadia-icon" aria-hidden="true"></i></summary><div class="acadia-action-menu-panel"><button class="acadia-action-menu-item" type="button" data-edit-property-id="${escapeHtml(model.id)}">Edit property</button><div class="acadia-action-menu-divider"></div><button class="acadia-action-menu-item is-danger" type="button" data-delete-property-id="${escapeHtml(model.id)}">Delete property</button></div></details></div><div class="acadia-card-header"><h3>${escapeHtml(model.name)}</h3>${model.location ? `<p>${escapeHtml(model.location)}</p>` : ""}</div><div class="acadia-card-content acadia-stack"><div class="acadia-field"><span class="acadia-text-muted">Equity</span><strong class="acadia-card-metric-value">${escapeHtml(displayCurrency(equityCents / 100))}</strong></div><div class="acadia-grid"><div class="acadia-field"><span class="acadia-text-muted">Market value</span><strong>${escapeHtml(displayCurrency(model.currentValueCents / 100))}</strong></div><div class="acadia-field"><span class="acadia-text-muted">Mortgage balance</span><strong>${escapeHtml(displayCurrency(model.mortgageBalanceCents / 100))}</strong></div></div></div>`;
       return card;
     }));
     grid.querySelectorAll("[data-edit-property-id]").forEach((button) => {
@@ -859,7 +860,7 @@
     const labels = { value: "Value", name: "Name", yield: "Yield" };
     setText("#income-dividend-sort-label", labels[state.incomeDividendSort]);
     document.querySelectorAll("[data-income-dividend-sort]").forEach((control) => {
-      control.setAttribute("aria-checked", String(control.dataset.incomeDividendSort === state.incomeDividendSort));
+      control.setAttribute("aria-pressed", String(control.dataset.incomeDividendSort === state.incomeDividendSort));
     });
   }
   function missingIncomeYieldRows(summary) {
@@ -958,7 +959,7 @@
       const card = document.createElement("article");
       card.className = "acadia-object-card-header";
       card.setAttribute("role", "listitem");
-      card.innerHTML = `<div class="acadia-read-only"><strong>${escapeHtml(row.asset.symbol || row.asset.name)}</strong><small class="acadia-text-muted">${escapeHtml(row.asset.symbol && row.asset.name !== row.asset.symbol ? row.asset.name : instrumentLabel(row.asset.instrumentType))}</small></div><div class="acadia-read-only"><strong title="${Number.isSafeInteger(annualCents) ? escapeHtml(preciseCurrency.format(annualCents / 100)) : amount}">${amount}</strong><small class="acadia-text-muted">${yieldDisplay}</small></div>`;
+      card.innerHTML = `<div class="acadia-field"><strong>${escapeHtml(row.asset.symbol || row.asset.name)}</strong><small class="acadia-text-muted">${escapeHtml(row.asset.symbol && row.asset.name !== row.asset.symbol ? row.asset.name : instrumentLabel(row.asset.instrumentType))}</small></div><div class="acadia-field"><strong title="${Number.isSafeInteger(annualCents) ? escapeHtml(preciseCurrency.format(annualCents / 100)) : amount}">${amount}</strong><small class="acadia-text-muted">${yieldDisplay}</small></div>`;
       if (annualCents === null && !isLoading) {
         card.classList.add("acadia-cluster");
         const action = document.createElement("button");
@@ -994,7 +995,7 @@
       const card = document.createElement("article");
       card.className = "acadia-card is-content";
       card.setAttribute("role", "listitem");
-      card.innerHTML = `<div class="acadia-card-content acadia-stack"><div class="acadia-page-header-pattern-actions"><div class="acadia-read-only"><strong>${escapeHtml(source.name)}</strong><small class="acadia-text-muted">${escapeHtml(incomeTypeLabel(source.incomeType))}</small></div><div class="acadia-row-actions"><button class="acadia-button acadia-button-quiet" type="button" data-edit-income-source="${escapeHtml(source.id)}" aria-label="Edit ${escapeHtml(source.name)}">Edit</button><button class="acadia-icon-action" style="--acadia-icon-action-size: var(--acadia-target-size-touch)" type="button" data-delete-income-source="${escapeHtml(source.id)}" aria-label="Delete ${escapeHtml(source.name)}"><i class="fa-solid fa-trash acadia-icon" aria-hidden="true"></i></button></div></div><div class="acadia-read-only"><strong class="acadia-card-metric-value">${planningValue(row.periodIncomeCents)} <small class="acadia-text-muted">/ ${incomePeriodLabel()}</small></strong><small class="acadia-text-muted">${planningValue(source.amountCents)} · ${INCOME_FREQUENCIES[source.frequency].label}</small></div></div>`;
+      card.innerHTML = `<div class="acadia-card-content acadia-stack"><div class="acadia-page-header-pattern-actions"><div class="acadia-field"><strong>${escapeHtml(source.name)}</strong><small class="acadia-text-muted">${escapeHtml(incomeTypeLabel(source.incomeType))}</small></div><div class="acadia-row-actions"><button class="acadia-button acadia-button-quiet" type="button" data-edit-income-source="${escapeHtml(source.id)}" aria-label="Edit ${escapeHtml(source.name)}">Edit</button><button class="acadia-icon-action" style="--acadia-icon-action-size: var(--acadia-target-size-touch)" type="button" data-delete-income-source="${escapeHtml(source.id)}" aria-label="Delete ${escapeHtml(source.name)}"><i class="fa-solid fa-trash acadia-icon" aria-hidden="true"></i></button></div></div><div class="acadia-field"><strong class="acadia-card-metric-value">${planningValue(row.periodIncomeCents)} <small class="acadia-text-muted">/ ${incomePeriodLabel()}</small></strong><small class="acadia-text-muted">${planningValue(source.amountCents)} · ${INCOME_FREQUENCIES[source.frequency].label}</small></div></div>`;
       return card;
     }));
     grid.querySelectorAll("[data-edit-income-source]").forEach((control) => control.addEventListener("click", () => openIncomeSourceDialog(control.dataset.editIncomeSource)));
@@ -1034,18 +1035,30 @@
   function renderBudgetCategories(budgetSummary) {
     const matchingRows = matchingBudgetCategories(budgetSummary.rows);
     const list = $("#income-budget-list");
+    const cards = $("#income-budget-cards");
+    const actions = (category) => `<span class="acadia-row-actions"><button class="acadia-button acadia-button-quiet" type="button" data-edit-budget-category="${escapeHtml(category.id)}" aria-label="Edit ${escapeHtml(category.name)}">Edit</button><button class="acadia-icon-action" style="--acadia-icon-action-size: var(--acadia-target-size-touch)" type="button" data-delete-budget-category="${escapeHtml(category.id)}" aria-label="Delete ${escapeHtml(category.name)}"><i class="fa-solid fa-trash acadia-icon" aria-hidden="true"></i></button></span>`;
     list.replaceChildren(...matchingRows.map((row) => {
       const category = row.category;
       const item = document.createElement("tr");
-      item.innerHTML = `<th scope="row">${escapeHtml(category.name)}</th><td data-label="Monthly amount">${planningValue(category.monthlyAmountCents)}</td><td data-label="Share">${percentage.format(row.allocationRate)}</td><td data-label="Actions"><span class="acadia-row-actions"><button class="acadia-button acadia-button-quiet" type="button" data-edit-budget-category="${escapeHtml(category.id)}" aria-label="Edit ${escapeHtml(category.name)}">Edit</button><button class="acadia-icon-action" type="button" data-delete-budget-category="${escapeHtml(category.id)}" aria-label="Delete ${escapeHtml(category.name)}"><i class="fa-solid fa-trash acadia-icon" aria-hidden="true"></i></button></span></td>`;
+      item.innerHTML = `<th scope="row">${escapeHtml(category.name)}</th><td>${planningValue(category.monthlyAmountCents)}</td><td>${percentage.format(row.allocationRate)}</td><td>${actions(category)}</td>`;
       return item;
     }));
-    list.querySelectorAll("[data-edit-budget-category]").forEach((control) => control.addEventListener("click", () => openBudgetCategoryDialog(control.dataset.editBudgetCategory)));
-    list.querySelectorAll("[data-delete-budget-category]").forEach((control) => control.addEventListener("click", () => openDeleteBudgetCategoryDialog(control.dataset.deleteBudgetCategory)));
+    cards.replaceChildren(...matchingRows.map((row) => {
+      const category = row.category;
+      const card = document.createElement("article");
+      card.className = "acadia-object-card acadia-stack";
+      card.setAttribute("aria-label", category.name);
+      card.innerHTML = `<strong>${escapeHtml(category.name)}</strong><div class="acadia-grid"><div class="acadia-field"><span class="acadia-text-muted">Monthly amount</span><strong>${planningValue(category.monthlyAmountCents)}</strong></div><div class="acadia-field"><span class="acadia-text-muted">Share</span><strong>${percentage.format(row.allocationRate)}</strong></div></div>${actions(category)}`;
+      return card;
+    }));
+    [list, cards].forEach((container) => {
+      container.querySelectorAll("[data-edit-budget-category]").forEach((control) => control.addEventListener("click", () => openBudgetCategoryDialog(control.dataset.editBudgetCategory)));
+      container.querySelectorAll("[data-delete-budget-category]").forEach((control) => control.addEventListener("click", () => openDeleteBudgetCategoryDialog(control.dataset.deleteBudgetCategory)));
+    });
     setText("#income-budget-count", `${matchingRows.length} ${matchingRows.length === 1 ? "category" : "categories"}`);
     $("#income-budget-empty").hidden = matchingRows.length > 0;
     $("#income-budget-clear").hidden = matchingRows.length > 0 || !$("#income-budget-search").value.trim();
-    list.closest(".mercury-income-table-wrap").hidden = matchingRows.length === 0;
+    $("#income-budget-results").hidden = matchingRows.length === 0;
     if (!matchingRows.length) {
       const title = $("#income-budget-empty").querySelector("strong");
       const copy = $("#income-budget-empty").querySelector("p");
@@ -1396,12 +1409,61 @@
     const dialog = $(selector);
     const entry = protectedDialogs.get(dialog);
     if (entry) entry.baseline = formSnapshot(entry.form);
+    const trigger = entry?.openingTrigger || document.activeElement;
+    if (entry) entry.openingTrigger = null;
+    const menu = trigger?.closest?.(".acadia-action-menu");
+    if (entry) {
+      entry.returnFocus = menu?.querySelector("summary") || trigger;
+      entry.returnToMenu = Boolean(menu);
+      const attribute = ["data-edit-budget-category", "data-delete-budget-category", "data-edit-income-source", "data-delete-income-source", "data-edit-property-id", "data-delete-property-id"].find((name) => trigger?.hasAttribute(name));
+      entry.returnSelector = attribute ? `[${attribute}="${CSS.escape(trigger.getAttribute(attribute))}"]` : null;
+    }
+    document.querySelectorAll(".acadia-action-menu[open]").forEach((openMenu) => { openMenu.open = false; });
+    // Native dialogs restore to the visible summary, not a now-hidden action.
+    if (menu) menu.querySelector("summary")?.focus();
     dialog.showModal();
+    syncDialogTriggers();
+  }
+
+  const dialogTriggers = [
+    ["#home-add-asset, #portfolio-add-asset", "asset-dialog"],
+    ["#asset-delete", "delete-asset-dialog"],
+    ["#add-income, [data-edit-income-source]", "income-source-dialog"],
+    ["[data-delete-income-source]", "delete-income-source-dialog"],
+    ["#add-budget-category, [data-edit-budget-category]", "budget-category-dialog"],
+    ["[data-delete-budget-category]", "delete-budget-category-dialog"],
+    ["#edit-plan-assumptions, [data-open-plan-assumptions]", "plan-assumptions-dialog"],
+    ["#portfolio-add-property, [data-edit-property-id], [data-property-id]", "property-dialog"],
+    ["[data-delete-property-id]", "delete-property-dialog"],
+  ];
+  function syncDialogTriggers() {
+    dialogTriggers.forEach(([selector, id]) => {
+      document.querySelectorAll(selector).forEach((trigger) => {
+        trigger.setAttribute("aria-controls", id);
+        trigger.setAttribute("aria-haspopup", "dialog");
+        trigger.setAttribute("aria-expanded", String($("#" + id).open));
+      });
+    });
   }
   function protectDialog(dialogSelector, formSelector, submit) {
     const dialog = $(dialogSelector), form = $(formSelector);
     const entry = { dialog, form, baseline: "", pending: false };
     protectedDialogs.set(dialog, entry);
+    dialog.addEventListener("close", () => {
+      syncDialogTriggers();
+      let trigger = entry.returnFocus;
+      if (!trigger || document.querySelector("dialog[open]")) return;
+      if (entry.returnSelector) {
+        const matches = Array.from(document.querySelectorAll(entry.returnSelector));
+        const candidates = matches.map((control) => entry.returnToMenu ? control.closest(".acadia-action-menu")?.querySelector("summary") : control);
+        trigger = candidates.find((control) => control?.getClientRects().length) || trigger;
+      }
+      // The table and cards are peer renderings: restore only a visible control.
+      if (trigger.isConnected && trigger.getClientRects().length && !trigger.disabled) trigger.focus();
+      else if (dialog.id.includes("budget-category")) $("#add-budget-category").focus();
+      else if (dialog.id.includes("income-source")) $("#add-income").focus();
+      else if (dialog.id.includes("property")) $("#portfolio-add-property").focus();
+    });
     const dismiss = (event) => {
       if (entry.pending || dialogHasDraft(entry)) {
         event.preventDefault();
@@ -1471,12 +1533,13 @@
     else if (routeIncome()) renderIncome(summary);
     else if (routePlan()) renderPlan(summary);
     else renderHome(summary);
+    syncDialogTriggers();
     const pageTitle = routeAssetId() ? $("#asset-title").textContent : routePortfolio() ? "Portfolio" : routeIncome() ? (window.location.hash === "#income/budget" ? "Budget" : "Income") : routePlan() ? "Plan" : "Home";
     document.title = `Mercury | ${pageTitle}`;
     restorePortfolioAssetFocus(previousHash);
     $("#main-content").setAttribute("aria-busy", "false");
     if (focusAttribute && !focused.isConnected) {
-      const replacement = document.querySelector(`[${focusAttribute}="${CSS.escape(focusValue)}"]`);
+      const replacement = Array.from(document.querySelectorAll(`[${focusAttribute}="${CSS.escape(focusValue)}"]`)).find((control) => control.getClientRects().length);
       (replacement || $(focusAttribute === "data-review-income-yield" ? "#income-dividends-search" : focusAttribute.includes("budget") ? "#add-budget-category" : "#add-income")).focus();
     }
   }
@@ -2558,7 +2621,15 @@
     pendingDiscard = null;
     $("#discard-changes-dialog").hidden = true;
   });
+  // Capture the actual invoker: Safari does not focus every clicked button.
   document.addEventListener("click", (event) => {
+    const trigger = event.target.closest?.('[aria-haspopup="dialog"][aria-controls]');
+    if (!trigger || trigger.disabled) return;
+    const entry = protectedDialogs.get($("#" + trigger.getAttribute("aria-controls")));
+    if (entry) entry.openingTrigger = trigger;
+  }, true);
+  document.addEventListener("click", (event) => {
+    closeDisclosureAfterAction(event);
     const link = event.target.closest("a[href]");
     if (!link || event.defaultPrevented || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || link.target === "_blank") return;
     const href = link.getAttribute("href");
@@ -2581,5 +2652,31 @@
     event.returnValue = "";
   });
   window.addEventListener("hashchange", render);
+  // Acadia's native disclosure contract, delegated for rendered record menus.
+  document.addEventListener("pointerdown", (event) => {
+    document.querySelectorAll(".acadia-action-menu[open], .acadia-page-header-pattern-sort[open]").forEach((menu) => {
+      if (!menu.contains(event.target)) menu.open = false;
+    });
+  });
+  document.addEventListener("keydown", (event) => {
+    if (event.defaultPrevented || event.key !== "Escape") return;
+    const activeDialog = event.target.closest?.("dialog[open]");
+    document.querySelectorAll(".acadia-action-menu[open], .acadia-page-header-pattern-sort[open]").forEach((menu) => {
+      if (menu.closest("dialog[open]") !== activeDialog) return;
+      menu.open = false;
+      menu.querySelector("summary")?.focus();
+      event.preventDefault();
+    });
+  });
+  function closeDisclosureAfterAction(event) {
+    const action = event.target.closest?.(".acadia-action-menu-panel button, .acadia-action-menu-panel a, .acadia-page-header-pattern-sort-option");
+    if (!action || action.disabled || event.defaultPrevented) return;
+    const menu = action.closest?.("details");
+    if (!menu) return;
+    const hadFocus = document.activeElement === action;
+    menu.open = false;
+    if (hadFocus && !document.querySelector("dialog[open]")) menu.querySelector("summary")?.focus();
+  }
+  syncDialogTriggers();
   initialise();
 })();
