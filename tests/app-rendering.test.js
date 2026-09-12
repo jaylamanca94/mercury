@@ -56,9 +56,9 @@ test("Home composes a minimal Acadia dashboard", () => {
   assert.match(indexHtml, /class="acadia-dashboard-layout"/);
   assert.match(indexHtml, /id="metric-value"/);
   assert.match(indexHtml, /id="net-worth-label"[^>]*>Net worth</);
-  assert.match(indexHtml, /id="performance-amount"/);
-  assert.match(indexHtml, /id="performance-rate"/);
-  assert.match(indexHtml, /id="performance-context"[^>]*>Portfolio value change · All time</);
+  assert.match(indexHtml, /id="all-time-change-value"/);
+  assert.match(indexHtml, /id="all-time-change-rate"/);
+  assert.match(indexHtml, /id="performance-context"[^>]*>Portfolio history · All time</);
   assert.doesNotMatch(indexHtml, /id="home-planning-balance"|id="home-review-list"/);
   assert.match(indexHtml, /id="home-growth"/);
   assert.match(indexHtml, /id="home-passive-income"/);
@@ -165,8 +165,8 @@ test("large currency display values use the shared compact format", () => {
   assert.match(homeSource, /if \(!state\.propertiesAvailable \|\| summary\.rows\.length !== state\.holdings\.length\) return null/);
   assert.match(homeSource, /totalNetWorthCents\(summary\.totalMarketValueCents, state\.properties\.map\(propertyModel\)\)/);
   assert.match(homeSource, /netWorthCents === null \? "Not set" : displayCurrency\(netWorthCents \/ 100\)/);
-  assert.match(homeSource, /setMovement\("#metric-change-value", dailyMovementComplete \? summary\.totalDayChangeCents/);
-  assert.match(homeSource, /setMovement\("#metric-change-rate", dailyMovementComplete \? summary\.totalDayChangeRate/);
+  assert.match(homeSource, /setMovement\("#metric-change-value", dayCents/);
+  assert.match(homeSource, /setMovement\("#metric-change-rate", dayRate/);
   assert.match(homeSource, /function planningPosition/);
   assert.match(homeSource, /summarizePlanningPosition/);
   assert.match(homeSource, /row\.distributionYieldRate/);
@@ -290,7 +290,7 @@ test("Plan is a separate Base-plan projection workspace with aligned portfolio c
   assert.match(indexHtml, /id="plan-assumptions-dialog"/);
   assert.match(indexHtml, /id="property-dialog"/);
   assert.match(indexHtml, /<script src="plan\.js\?v=20260907-plan-automatic-v1"><\/script>/);
-  assert.match(indexHtml, /<script src="brokerage\.js\?v=20260910-acadia-alignment"><\/script>/);
+  assert.match(indexHtml, /<script src="brokerage\.js\?v=20260912-portfolio-changes"><\/script>/);
   assert.match(homeSource, /function routePlan\(\)/);
   assert.match(homeSource, /function renderPlan\(summary\)/);
   assert.match(homeSource, /function renderPlanChart/);

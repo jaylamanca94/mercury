@@ -27,7 +27,7 @@
     totalNetWorthCents,
     weeklyEquivalentRecurringContributionCents,
   } = window.MercuryPlan;
-  const { investmentGroup, summarizeInvestmentGroups, summarizePlanningPosition, summarizeHoldingAllocation, summarizeDashboardHistory } = window.MercuryDashboard;
+  const { investmentGroup, summarizeInvestmentGroups, summarizePlanningPosition, summarizeHoldingAllocation, summarizeDashboardHistory, summarizeAllTimeChange } = window.MercuryDashboard;
   const $ = (selector) => document.querySelector(selector);
   const currency = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 });
   const compactCurrency = new Intl.NumberFormat("en-US", {
@@ -272,7 +272,7 @@
     });
     const activeTab = document.querySelector(`[data-performance-period="${state.performancePeriod}"]`);
     $("#history-panel").setAttribute("aria-labelledby", activeTab.id);
-    setText("#performance-context", `Portfolio value change · ${periodLabels[state.performancePeriod]}`);
+    setText("#performance-context", `Portfolio history · ${periodLabels[state.performancePeriod]}`);
   }
   function selectPerformancePeriod(period, { focus = false } = {}) {
     const control = document.querySelector(`[data-performance-period="${period}"]`);
@@ -301,8 +301,6 @@
     const trend = $("#history-trend");
     const performance = summarizeDashboardHistory(state.snapshots, state.performancePeriod);
     renderPerformancePeriods();
-    setMovement("#performance-rate", performance.changeRate, (value) => `(${displaySignedPercentage(value)})`, { hideWhenUnavailable: true });
-    setMovement("#performance-amount", performance.changeCents, movementCurrency, { hideWhenUnavailable: true });
     $("#home-history-card").classList.toggle("is-dashboard-trend", performance.showTrend);
     $("#history-building").hidden = performance.showTrend;
     trend.hidden = !performance.showTrend;
@@ -778,6 +776,27 @@
       : "Based on historical returns · Not a forecast");
   }
 
+  function renderHomeChanges(summary) {
+    const complete = state.configured && Boolean(state.account) && summary.rows.length === state.holdings.length;
+    const lifetime = summarizeAllTimeChange(state.snapshots, complete ? summary.totalMarketValueCents : null);
+    setMovement("#all-time-change-value", lifetime.changeCents, movementCurrency);
+    setMovement("#all-time-change-rate", lifetime.changeRate, displaySignedPercentage, { hideWhenUnavailable: true });
+    setText("#all-time-change-context", !complete ? "Complete investment values unavailable"
+      : !lifetime.startDate ? "Awaiting first recorded value"
+      : `Since ${historyDateLabel(lifetime.startDate)}${lifetime.changeRate === null ? " · Percentage unavailable from $0" : ""}`);
+    const dayCents = complete ? summary.totalDayChangeCents : null;
+    const dayRate = complete ? summary.totalDayChangeRate : null;
+    setMovement("#metric-change-value", dayCents, movementCurrency);
+    setMovement("#metric-change-rate", dayRate, displaySignedPercentage, { hideWhenUnavailable: true });
+    setText("#day-change-context", !complete ? "Complete investment values unavailable"
+      : dayCents === null ? "Previous close unavailable for some investments"
+      : dayRate === null ? "Since previous market close · Percentage unavailable from $0"
+      : "Since previous market close");
+    for (const [selector, value] of [["#all-time-change-value", lifetime.changeCents], ["#metric-change-value", dayCents]]) {
+      $(selector).title = value === null ? "Change unavailable" : `${value > 0 ? "+" : ""}${preciseCurrency.format(value / 100)}`;
+    }
+  }
+
   function renderHome(summary) {
     $("#home-workspace").hidden = false;
     $("#portfolio-workspace").hidden = true;
@@ -799,9 +818,7 @@
     setText("#home-passive-income", passive === null ? "Not set" : displayCurrency(passive / 100));
     setText("#home-passive-context", missingValuations ? "Incomplete valuation coverage" : state.providerMetricsPending.size ? "Loading dividend estimates…" : passive === null ? "Incomplete dividend coverage" : "Estimated from saved yields");
     renderHistory();
-    const dailyMovementComplete = summary.rows.length === state.holdings.length;
-    setMovement("#metric-change-value", dailyMovementComplete ? summary.totalDayChangeCents : null, movementCurrency);
-    setMovement("#metric-change-rate", dailyMovementComplete ? summary.totalDayChangeRate : null, displaySignedPercentage, { hideWhenUnavailable: true });
+    renderHomeChanges(summary);
     setText("#portfolio-warnings", state.holdings.length ? summary.warnings.join(" ") : "");
     renderHoldings(summary);
     renderHomeAllocation();

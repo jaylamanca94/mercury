@@ -95,3 +95,21 @@ test('history uses actual elapsed dates and gates the selected range independent
   assert.equal(history(data,'3m').showTrend, false);
   assert.equal(history(data,'3m').recordedDays, 1);
 });
+
+
+const { summarizeAllTimeChange: allTimeChange } = require('../dashboard');
+test('all-time change compares current investments with the first distinct recorded date', () => {
+  const snapshots = [
+    {snapshot_date:'2026-09-02',total_value_cents:15000},
+    {snapshot_date:'2026-01-01',total_value_cents:9000,recorded_at:'2026-01-01T21:00:00Z'},
+    {snapshot_date:'2026-01-01',total_value_cents:10000,recorded_at:'2026-01-01T22:00:00Z'},
+  ];
+  for (const [current, change, rate] of [[11000,1000,0.1],[9000,-1000,-0.1],[10000,0,0],[0,-10000,-1]]) {
+    assert.deepEqual(allTimeChange(snapshots,current),{startDate:'2026-01-01',changeCents:change,changeRate:rate});
+  }
+  assert.equal(allTimeChange([snapshots[2]],11000).changeCents,1000);
+  assert.equal(allTimeChange([],11000).changeCents,null);
+  for(const current of [null,undefined,NaN,-1]) assert.equal(allTimeChange(snapshots,current).changeCents,null);
+  assert.deepEqual(allTimeChange([{snapshot_date:'2026-01-01',total_value_cents:0}],11000),
+    {startDate:'2026-01-01',changeCents:11000,changeRate:null});
+});

@@ -73,6 +73,15 @@ function summarizeDashboardHistory(snapshots, period = "all") {
     positions: dates.map((date) => duration ? ((date - dates[0]) / duration) * 100 : 0) };
 }
 
-const dashboardContract = { HISTORY_MINIMUM_DAYS, investmentGroup, summarizeInvestmentGroups, summarizePlanningPosition, summarizeHoldingAllocation, summarizeDashboardHistory };
+// The lifetime baseline is the first recorded investment value, independent of chart range.
+function summarizeAllTimeChange(snapshots, currentValueCents) {
+  const first = summarizeDashboardHistory(snapshots, "all").snapshots[0];
+  const available = first && Number.isSafeInteger(currentValueCents) && currentValueCents >= 0;
+  const changeCents = available ? currentValueCents - first.totalValueCents : null;
+  return { startDate: first?.snapshotDate ?? null, changeCents,
+    changeRate: available && first.totalValueCents > 0 ? changeCents / first.totalValueCents : null };
+}
+
+const dashboardContract = { HISTORY_MINIMUM_DAYS, investmentGroup, summarizeInvestmentGroups, summarizePlanningPosition, summarizeHoldingAllocation, summarizeDashboardHistory, summarizeAllTimeChange };
 if (typeof module !== "undefined") module.exports = dashboardContract;
 if (typeof window !== "undefined") window.MercuryDashboard = dashboardContract;
