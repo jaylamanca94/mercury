@@ -110,3 +110,7 @@ Verification: 179 checks pass. Seven-width local browser checks confirm visible 
 ## Curved Home history and grouped summary — 2026-09-12
 
 The founder moved all-time/day changes out of the graph card into the existing investment-summary card, ahead of annual growth/dividends. Home now imports the exact published Acadia curve utility; its geometry preserves all dated observations and uses bounded tangents. Metric arithmetic, chart-range independence, available-history states, stylesheet and storage are unchanged. Local 320/390/768/834/1440px checks, sparse/flat/falling/long histories and keyboard range changes pass; all 179 automated checks pass. See `automation/design/2026-09-12/home-curves.md`.
+
+### 2026-09-12 — Home refinement
+
+Home reuses Acadia dense Content Cards and the adaptive Page Header Section to bring the investment summary closer to the graph. Top assets adopts the existing Portfolio Field/Object Card Header composition and concise captions. Investment cards expose exact values as links, focus the asset heading on entry, and restore their Home card on Back with Add asset as a fallback when ranking changes. Existing chart geometry, financial calculations and persistence are unchanged. All 180 checks pass; isolated responsive and keyboard evidence is in `automation/design/2026-09-12/home-refinement.md`.

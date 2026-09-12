@@ -80,6 +80,22 @@ test('asset Back preserves Home and Portfolio origins, and malformed ids remain 
   window.location.hash='#asset/%broken';assert.equal(api.routeAssetId(),'%broken');
 });
 
+test('Home asset entry and Back restore keyboard focus, with a fallback for reranked cards',()=>{
+  const {api,node,window,document}=controller();
+  const focused=[];
+  const card={dataset:{holdingId:'test'},focus(){focused.push('card')}};
+  document.querySelectorAll=selector=>selector==='#holdings-grid [data-holding-id]'?[card]:[];
+  node('#asset-title').focus=()=>focused.push('title');
+  node('#home-add-asset').focus=()=>focused.push('add');
+  for(const origin of ['', '#']) {
+    window.location.hash=origin;api.navigateToAsset('test');window.location.hash='#asset/test';
+    api.restorePortfolioAssetFocus(origin);assert.equal(focused.at(-1),'title');
+    window.location.hash=origin;api.restorePortfolioAssetFocus('#asset/test');assert.equal(focused.at(-1),'card');
+  }
+  document.querySelectorAll=()=>[];
+  api.restorePortfolioAssetFocus('#asset/test');assert.equal(focused.at(-1),'add');
+});
+
 test('background asset rendering preserves a draft; explicit reset reloads saved shares',()=>{
   const {api,node,window}=controller();window.location.hash='#asset/test';
   api.state.holdings=[{id:'test',symbol:'TEST',name:'Test',instrument_type:'stock',allocation_category:'other',valuation_basis:'shares-and-price',shares:10,manual_price_cents:10000,manual_value_cents:null,expected_annual_return_rate:null,distribution_yield_rate:null,target_allocation_rate:null,weekly_contribution_rate:null,contribution_cents:null,contribution_frequency:null}];

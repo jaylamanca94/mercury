@@ -147,7 +147,8 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
   let incomeAssetNavigation = null;
   function navigateToAsset(id, { section = "details" } = {}) {
     if (!routeAssetId()) assetReturnHash = window.location.hash || "#";
-    portfolioAssetNavigation = routePortfolio() ? { id, section } : null;
+    const fromHome = ["", "#"].includes(window.location.hash);
+    portfolioAssetNavigation = routePortfolio() || fromHome ? { id, section, fromHome } : null;
     incomeAssetNavigation = routeIncome() && ["yield", "valuation"].includes(section) ? { id, section, returnHash: window.location.hash, fromSummary: document.activeElement === $("#income-review-yields") } : null;
     window.location.hash = `asset/${encodeURIComponent(id)}`;
   }
@@ -170,14 +171,14 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
       } else if (!routeAssetId()) incomeAssetNavigation = null;
     }
     if (!portfolioAssetNavigation || previousHash === window.location.hash) return;
-    const { id, section } = portfolioAssetNavigation;
+    const { id, section, fromHome } = portfolioAssetNavigation;
     if (routeAssetId() === id) {
       const hasHolding = state.holdings.some((holding) => holding.id === id);
       $(section === "recurring" && hasHolding ? "#asset-detail-contribution" : "#asset-title").focus();
-    } else if (routePortfolio() && previousHash.startsWith("#asset/")) {
-      const selector = section === "recurring" ? "#portfolio-recurring-list [data-edit-id]" : "#portfolio-holdings-grid [data-holding-id]";
+    } else if ((fromHome ? ["", "#"].includes(window.location.hash) : routePortfolio()) && previousHash.startsWith("#asset/")) {
+      const selector = fromHome ? "#holdings-grid [data-holding-id]" : section === "recurring" ? "#portfolio-recurring-list [data-edit-id]" : "#portfolio-holdings-grid [data-holding-id]";
       const target = [...document.querySelectorAll(selector)].find((element) => (element.dataset.editId || element.dataset.holdingId) === id);
-      (target || $("#portfolio-add-asset")).focus();
+      (target || $(fromHome ? "#home-add-asset" : "#portfolio-add-asset")).focus();
     } else if (!routeAssetId()) {
       portfolioAssetNavigation = null;
     }
@@ -480,9 +481,10 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
     grid.replaceChildren(...topAssets.map((candidate) => {
       const item = document.createElement("article");
       item.className = "acadia-card is-content is-interactive";
-      item.setAttribute("role", "button");
+      item.style.setProperty("--acadia-content-card-padding", "var(--acadia-section-padding-dense)");
       item.tabIndex = 0;
       const isHolding = candidate.kind === "holding";
+      item.setAttribute("role", isHolding ? "link" : "button");
       const row = candidate.row;
       const title = isHolding ? row.asset.symbol || row.asset.name : candidate.model.name;
       const classification = isHolding
@@ -490,11 +492,12 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
         : "Property equity";
       const detail = isHolding
         ? row.asset.valuationBasis === VALUATION_BASES.MANUAL_VALUE ? "Manual valuation"
-          : `${holdingPriceLabel(row)} price · ${holdingSharesLabel(row, true)}`
+          : holdingSharesLabel(row, true)
         : `Market value ${displayCurrency(candidate.model.currentValueCents / 100)} · Mortgage ${displayCurrency(candidate.model.mortgageBalanceCents / 100)}`;
-      item.innerHTML = `<div class="acadia-card-header"><div class="acadia-card-content-title-row"><h3>${escapeHtml(title)}</h3><span class="acadia-card-content-caption" title="${escapeHtml(currency.format(candidate.valueCents / 100))}">${escapeHtml(displayCurrency(candidate.valueCents / 100))}</span></div><p>${escapeHtml(classification)}</p></div><div class="acadia-card-content"><small class="acadia-text-muted">${escapeHtml(detail)}</small></div>`;
-      item.setAttribute("aria-label", isHolding ? `Open ${title} asset details` : `Edit ${title} property`);
-      if (!isHolding) item.dataset.propertyId = candidate.model.id;
+      item.innerHTML = `<div class="acadia-field"><div class="acadia-object-card-header"><strong>${escapeHtml(title)}</strong><strong class="acadia-lead" title="${escapeHtml(preciseCurrency.format(candidate.valueCents / 100))}">${escapeHtml(displayCurrency(candidate.valueCents / 100))}</strong></div><small class="acadia-text-muted">${escapeHtml(classification)} · ${escapeHtml(detail)}</small></div>`;
+      item.setAttribute("aria-label", `${isHolding ? `Open ${title} asset details` : `Edit ${title} property`}, ${preciseCurrency.format(candidate.valueCents / 100)}`);
+      if (isHolding) item.dataset.holdingId = row.asset.id;
+      else item.dataset.propertyId = candidate.model.id;
       const open = () => isHolding ? navigateToAsset(row.asset.id) : openPropertyDialog(candidate.model.id);
       item.addEventListener("click", open);
       item.addEventListener("keydown", (event) => {

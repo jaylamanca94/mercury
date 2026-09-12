@@ -2,6 +2,8 @@
 
 **Last reviewed:** 2026-09-12
 
+Home refinement tightens the overview with Acadia dense card padding and combines net worth/range tools into one adaptive header. Top assets now shares Portfolio’s compact neutral identity/value composition, exact accessible values and keyboard entry/return focus. All-time/day changes remain below the curved graph. Eight widths, light/dark, enlarged text, sparse/empty history and partial valuations pass in the isolated browser; all 180 automated checks pass. See `automation/design/2026-09-12/home-refinement.md`.
+
 Home now plots every available history date, including a first-record point, with a taller Acadia trend, dated endpoints and 44px history tabs. All-time/day changes now lead the investment-summary card below the graph, with annual growth/dividends beneath them. Curves reuse Acadia’s unchanged shared geometry utility. All four values remain independent of chart ranges. Seven widths, enlarged text, empty/sparse/flat/falling histories and keyboard navigation pass locally; all 179 checks pass. See `automation/design/2026-09-12/home-history.md`.
 
 Acadia alignment now uses one published snapshot with integrity and selector checks, supported static-value compositions, canonical Budget Table/Object Cards, current form modals and navigation/menu targets. Read `automation/design/2026-09-10/acadia-alignment.md` for current evidence; older counts and component names below are historical.
