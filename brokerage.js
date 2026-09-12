@@ -260,7 +260,6 @@
   }
 
   function renderPerformancePeriods() {
-    const periodLabels = { all: "All time", "1y": "1 year", "6m": "6 months", "3m": "3 months" };
     document.querySelectorAll("[data-performance-period]").forEach((control) => {
       const period = control.dataset.performancePeriod;
       const hasHistory = summarizeDashboardHistory(state.snapshots, period).recordedDays > 0;
@@ -272,7 +271,6 @@
     });
     const activeTab = document.querySelector(`[data-performance-period="${state.performancePeriod}"]`);
     $("#history-panel").setAttribute("aria-labelledby", activeTab.id);
-    setText("#performance-context", `Portfolio history · ${periodLabels[state.performancePeriod]}`);
   }
   function selectPerformancePeriod(period, { focus = false } = {}) {
     const control = document.querySelector(`[data-performance-period="${period}"]`);
@@ -303,13 +301,27 @@
     renderPerformancePeriods();
     $("#history-building").hidden = performance.showTrend;
     trend.hidden = !performance.showTrend;
-    setText("#history-building", `History building · ${performance.recordedDays} of 30 days`);
+    setText("#history-building", "Your history will appear after the first recorded value.");
+    const endpoints = $("#history-endpoints");
+    endpoints.hidden = !performance.showTrend;
     if (!performance.showTrend) {
       trend.replaceChildren();
-      setText("#history-summary", `${performance.recordedDays} distinct daily snapshots in this range. The full trend appears after 30 recorded days. Portfolio snapshots exclude property equity.`);
+      endpoints.replaceChildren();
+      trend.setAttribute("aria-label", "Portfolio value history unavailable");
+      setText("#history-summary", "No recorded portfolio values in this range.");
       return performance;
     }
     const values = performance.snapshots.map((point) => point.totalValueCents / 100);
+    const endpoint = (date, value) => `<span class="acadia-field"><span>${escapeHtml(displayCurrency(value))}</span><time datetime="${date}">${historyDateLabel(date)}</time></span>`;
+    endpoints.innerHTML = endpoint(performance.startDate, values[0])
+      + (values.length > 1 ? endpoint(performance.endDate, values.at(-1)) : "");
+    if (values.length === 1) {
+      trend.innerHTML = '<svg class="acadia-card-trend-chart is-primary" viewBox="0 0 100 100" aria-hidden="true"><circle class="acadia-card-trend-point" cx="50" cy="50" r="2.5"></circle></svg>';
+      const summary = `First recorded portfolio value: ${currency.format(values[0])} on ${historyDateLabel(performance.startDate)}. A line will appear with the next recorded value. Property equity is excluded.`;
+      trend.setAttribute("aria-label", summary);
+      setText("#history-summary", summary);
+      return performance;
+    }
     const minimum = Math.min(...values), maximum = Math.max(...values);
     const range = maximum - minimum;
     const points = values.map((value, index) => `${performance.positions[index]},${range ? 96 - ((value - minimum) / range) * 84 : 50}`);

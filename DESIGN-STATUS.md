@@ -1,6 +1,8 @@
 # Mercury — Design Status
 
-**Last reviewed:** 2026-09-10
+**Last reviewed:** 2026-09-12
+
+Home now plots every available history date, including a first-record point, with a taller Acadia trend, dated endpoints and 44px history tabs. All-time/day changes remain prominent and independent of chart ranges. Seven widths, enlarged text, empty/sparse/flat/falling histories and keyboard navigation pass locally; all 179 checks pass. See `automation/design/2026-09-12/home-history.md`.
 
 Acadia alignment now uses one published snapshot with integrity and selector checks, supported static-value compositions, canonical Budget Table/Object Cards, current form modals and navigation/menu targets. Read `automation/design/2026-09-10/acadia-alignment.md` for current evidence; older counts and component names below are historical.
 

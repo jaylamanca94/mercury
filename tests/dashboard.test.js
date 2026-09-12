@@ -76,23 +76,23 @@ test('allocation never treats missing prices as zero or creates percentages for 
 });
 
 const snapshots = count => Array.from({ length: count }, (_, i) => ({ snapshot_date: new Date(Date.UTC(2026, 0, i + 1)).toISOString().slice(0, 10), total_value_cents: 100000 + i * 100 }));
-test('history promotes exactly at 30 distinct dates and preserves sparse-range amounts', () => {
+test('history displays every available record and preserves sparse-range amounts', () => {
   for (const count of [0, 1, 4, 29, 30]) {
     const result = history(snapshots(count));
     assert.equal(result.recordedDays, count);
-    assert.equal(result.showTrend, count >= 30);
+    assert.equal(result.showTrend, count >= 1);
     assert.equal(result.changeCents, count < 2 ? null : (count - 1) * 100);
   }
   const duplicate = [...snapshots(29), { ...snapshots(29)[0], total_value_cents: 99999 }];
-  assert.equal(history(duplicate).showTrend, false);
+  assert.equal(history(duplicate).showTrend, true);
   assert.equal(history(duplicate).recordedDays, 29);
 });
-test('history uses actual elapsed dates and gates the selected range independently', () => {
+test('history uses actual elapsed dates and displays a single record in a shorter range', () => {
   const result = history([{snapshot_date:'2026-01-01',total_value_cents:100}, {snapshot_date:'2026-01-02',total_value_cents:200}, {snapshot_date:'2026-01-11',total_value_cents:200}]);
   assert.deepEqual(result.positions, [0,10,100]);
   const data = [...snapshots(30), {snapshot_date:'2026-09-01',total_value_cents:12345}];
   assert.equal(history(data,'all').showTrend, true);
-  assert.equal(history(data,'3m').showTrend, false);
+  assert.equal(history(data,'3m').showTrend, true);
   assert.equal(history(data,'3m').recordedDays, 1);
 });
 

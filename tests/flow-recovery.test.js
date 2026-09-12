@@ -456,16 +456,25 @@ test('a missing quote can be repaired with manual price or total value, without 
   assert.equal(api.detailHolding(holding).manual_price_cents,null);
 });
 
-test('Home expands only for a complete recorded trend and returns to its compact state',()=>{
+test('Home shows sparse history immediately and clears it when records are unavailable',()=>{
   const {api,node}=controller();
   node('#history-trend').replaceChildren=()=>{node('#history-trend').innerHTML=''};
   const snapshots=Array.from({length:30},(_,i)=>({snapshot_date:new Date(Date.UTC(2026,7,i+1)).toISOString().slice(0,10),total_value_cents:100000+i*100}));
-  for(const [records,expected] of [[snapshots.slice(0,29),false],[snapshots,true],[snapshots.slice(0,5),false],[[],false]]) {
+  for(const [records,expected] of [[snapshots.slice(0,1),true],[snapshots.slice(0,2),true],[snapshots.slice(0,11),true],[snapshots,true],[[],false]]) {
     api.state.snapshots=records;
     api.renderHistory();
     assert.equal(node('#history-trend').hidden,!expected);
     assert.equal(node('#history-building').hidden,expected);
+    assert.equal(node('#history-endpoints').hidden,!expected);
     if(!expected)assert.equal(node('#history-trend').innerHTML,'');
+    else if(records.length===1) {
+      assert.match(node('#history-trend').innerHTML,/<circle/);
+      assert.doesNotMatch(node('#history-trend').innerHTML,/polyline|polygon/);
+      assert.match(node('#history-summary').textContent,/First recorded portfolio value/);
+    } else {
+      assert.match(node('#history-trend').innerHTML,/polyline/);
+      assert.match(node('#history-endpoints').innerHTML,/datetime=/);
+    }
   }
 });
 

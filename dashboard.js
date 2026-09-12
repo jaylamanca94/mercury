@@ -4,7 +4,7 @@
 const DashboardIncome = typeof module !== "undefined" ? require("./income") : window.MercuryIncome;
 const DashboardPlan = typeof module !== "undefined" ? require("./plan") : window.MercuryPlan;
 const DashboardPortfolio = typeof module !== "undefined" ? require("./portfolio") : window.MercuryPortfolio;
-const HISTORY_MINIMUM_DAYS = 30;
+const HISTORY_MINIMUM_DAYS = 1;
 
 function investmentGroup(asset) {
   return asset.isRetirement ? "retirement" : asset.instrumentType === "crypto" ? "crypto" : "brokerage";

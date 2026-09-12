@@ -58,7 +58,7 @@ test("Home composes a minimal Acadia dashboard", () => {
   assert.match(indexHtml, /id="net-worth-label"[^>]*>Net worth</);
   assert.match(indexHtml, /id="all-time-change-value"/);
   assert.match(indexHtml, /id="all-time-change-rate"/);
-  assert.match(indexHtml, /id="performance-context"[^>]*>Portfolio history · All time</);
+  assert.match(indexHtml, /id="performance-context"[^>]*>Portfolio history</);
   assert.doesNotMatch(indexHtml, /id="home-planning-balance"|id="home-review-list"/);
   assert.match(indexHtml, /id="home-growth"/);
   assert.match(indexHtml, /id="home-passive-income"/);
@@ -290,7 +290,7 @@ test("Plan is a separate Base-plan projection workspace with aligned portfolio c
   assert.match(indexHtml, /id="plan-assumptions-dialog"/);
   assert.match(indexHtml, /id="property-dialog"/);
   assert.match(indexHtml, /<script src="plan\.js\?v=20260907-plan-automatic-v1"><\/script>/);
-  assert.match(indexHtml, /<script src="brokerage\.js\?v=20260912-portfolio-changes"><\/script>/);
+  assert.match(indexHtml, /<script src="brokerage\.js\?v=20260912-home-history"><\/script>/);
   assert.match(homeSource, /function routePlan\(\)/);
   assert.match(homeSource, /function renderPlan\(summary\)/);
   assert.match(homeSource, /function renderPlanChart/);
