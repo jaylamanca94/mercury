@@ -1,3 +1,5 @@
+import { buildCardTrendPath } from "./acadia-card-trend.mjs";
+
 (() => {
   "use strict";
 
@@ -324,10 +326,13 @@
     }
     const minimum = Math.min(...values), maximum = Math.max(...values);
     const range = maximum - minimum;
-    const points = values.map((value, index) => `${performance.positions[index]},${range ? 96 - ((value - minimum) / range) * 84 : 50}`);
-    const area = `0,100 ${points.join(" ")} 100,100`;
-    const startY = points[0].split(",")[1];
-    trend.innerHTML = `<svg class="acadia-card-trend-chart is-primary" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><polyline class="acadia-card-trend-baseline" points="0,${startY} 100,${startY}"></polyline><polygon class="acadia-card-trend-area" points="${area}"></polygon><polyline class="acadia-card-trend-line" points="${points.join(" ")}"></polyline></svg>`;
+    const points = values.map((value, index) => ({
+      x: performance.positions[index] * 10,
+      y: range ? 96 - ((value - minimum) / range) * 84 : 50,
+    }));
+    const linePath = buildCardTrendPath(points);
+    const areaPath = `${linePath} L 1000 100 L 0 100 Z`;
+    trend.innerHTML = `<svg class="acadia-card-trend-chart is-primary" viewBox="0 0 1000 100" preserveAspectRatio="none" aria-hidden="true"><polyline class="acadia-card-trend-baseline" points="0,${points[0].y} 1000,${points[0].y}"></polyline><path class="acadia-card-trend-area" d="${areaPath}"></path><path class="acadia-card-trend-line" d="${linePath}"></path></svg>`;
     const summary = `${movementCurrency(performance.changeCents)}${performance.changeRate === null ? "" : ` (${displaySignedPercentage(performance.changeRate)})`} from ${historyDateLabel(performance.startDate)} to ${historyDateLabel(performance.endDate)}. Recorded portfolio value ${currency.format(values[0])} to ${currency.format(values.at(-1))}. Value changes include contributions and withdrawals; property equity is excluded.`;
     trend.setAttribute("aria-label", summary);
     setText("#history-summary", summary);

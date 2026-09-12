@@ -26,11 +26,12 @@ function controller() {
   };
   window.history = {pushState(_state, _title, hash) { window.location.hash = hash.startsWith('#') ? hash : ''; }};
   const context = vm.createContext({window,document,Intl,Date,Number,Set,Map,console,
+    buildCardTrendPath:require('../acadia-card-trend.mjs').buildCardTrendPath,
     setTimeout,clearTimeout,AbortController,crypto:require('node:crypto').webcrypto,
     FormData: class { constructor(form) { this.values = {...form.fields}; form.elements.filter(field => field.name && !field.disabled).forEach(field => { this.values[field.name] = field.value; }); } get(key) { return this.values[key] ?? null; } },
     fetch:async()=>({ok:false,json:async()=>({error:'provider unavailable'})}),
   });
-  const source = fs.readFileSync(require.resolve('../brokerage.js'),'utf8').replace('  initialise();',
+  const source = fs.readFileSync(require.resolve('../brokerage.js'),'utf8').replace(/^import .*;\n/, '').replace('  initialise();',
     '  window.testController = {state,render,renderHomeChanges,renderHomeGrowth,renderIncomeRecovery,retryIncomeData,missingIncomeYieldRows,renderIncomeYieldRecovery,renderPlan,renderQuickQuotePreview,refreshCurrentAssetPrice,restorePortfolioAssetFocus,renderHistory,renderAsset,canQuote,lookupQuote,saveQuickAsset,navigateToAsset,navigateBackFromAsset,routeAssetId,openFormDialog,hasPendingWrite,hasUnsavedWork,matchingPortfolioHoldingRows,sortHoldingRows,holdingValueLabel,renderPortfolioView,renderPortfolioSummary,detailHolding};');
   vm.runInContext(source,context);
   const api=window.testController;
@@ -472,7 +473,7 @@ test('Home shows sparse history immediately and clears it when records are unava
       assert.doesNotMatch(node('#history-trend').innerHTML,/polyline|polygon/);
       assert.match(node('#history-summary').textContent,/First recorded portfolio value/);
     } else {
-      assert.match(node('#history-trend').innerHTML,/polyline/);
+      assert.match(node('#history-trend').innerHTML,/<path class="acadia-card-trend-line" d="M [^"]* C /);
       assert.match(node('#history-endpoints').innerHTML,/datetime=/);
     }
   }

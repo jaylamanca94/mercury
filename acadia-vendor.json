@@ -45,6 +45,11 @@
     "assets/auth-divider.svg": {
       "source": "src/assets/auth-divider.svg",
       "sha256": "1b0af7a694de4dc52666aaed9e0351bb8e7f99199fcf13ec4c34415fae7e4940"
+    },
+    "acadia-card-trend.mjs": {
+      "source": "src/card-trend.mjs",
+      "revision": "686c30d3400a7d71554a8e50e09b6a54a8b6aa1a",
+      "sha256": "cb0f3a6f391c8eaf52aa26292d04d4ec9738434a60f3bffa50e7f26888a306a3"
     }
   }
 }
