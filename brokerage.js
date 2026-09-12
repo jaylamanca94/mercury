@@ -301,7 +301,6 @@
     const trend = $("#history-trend");
     const performance = summarizeDashboardHistory(state.snapshots, state.performancePeriod);
     renderPerformancePeriods();
-    $("#home-history-card").classList.toggle("is-dashboard-trend", performance.showTrend);
     $("#history-building").hidden = performance.showTrend;
     trend.hidden = !performance.showTrend;
     setText("#history-building", `History building · ${performance.recordedDays} of 30 days`);

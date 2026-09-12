@@ -458,14 +458,11 @@ test('a missing quote can be repaired with manual price or total value, without 
 
 test('Home expands only for a complete recorded trend and returns to its compact state',()=>{
   const {api,node}=controller();
-  let expanded=false;
-  node('#home-history-card').classList.toggle=(name,value)=>{if(name==='is-dashboard-trend')expanded=value};
   node('#history-trend').replaceChildren=()=>{node('#history-trend').innerHTML=''};
   const snapshots=Array.from({length:30},(_,i)=>({snapshot_date:new Date(Date.UTC(2026,7,i+1)).toISOString().slice(0,10),total_value_cents:100000+i*100}));
   for(const [records,expected] of [[snapshots.slice(0,29),false],[snapshots,true],[snapshots.slice(0,5),false],[[],false]]) {
     api.state.snapshots=records;
     api.renderHistory();
-    assert.equal(expanded,expected);
     assert.equal(node('#history-trend').hidden,!expected);
     assert.equal(node('#history-building').hidden,expected);
     if(!expected)assert.equal(node('#history-trend').innerHTML,'');

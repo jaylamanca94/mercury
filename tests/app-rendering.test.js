@@ -70,7 +70,7 @@ test("Home composes a minimal Acadia dashboard", () => {
   assert.match(indexHtml, /data-performance-period="3m"[\s\S]*data-performance-period="6m"[\s\S]*data-performance-period="1y"[\s\S]*data-performance-period="all"/);
   assert.match(indexHtml, /id="history-panel"[^>]*role="tabpanel"/);
   assert.match(indexHtml, /id="home-history-card" class="acadia-card is-content"/);
-  assert.match(homeSource, /classList\.toggle\("is-dashboard-trend", performance\.showTrend\)/);
+  assert.doesNotMatch(homeSource, /classList\.toggle\("is-dashboard-trend"/);
 
   assert.match(indexHtml, /id="home-allocation"/);
   assert.match(indexHtml, /id="holdings-grid" class="acadia-grid"[^>]*role="list"/);
