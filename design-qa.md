@@ -1,55 +1,41 @@
-# Home refinement QA — 5 September 2026
+# Full-width Home QA — 12 September 2026
 
-Final result: passed
+final result: passed
 
-## Scope
+## Target and evidence
 
-Refinement of the founder's supplied Home screenshot: retain the net-worth/history, allocation, investment summary and Top assets hierarchy while reducing competing surfaces and making the short-history state compact. This is an intentional refinement, not a pixel-for-pixel recreation. The supplied screenshot contains owner data and is not copied into the repository.
+Source: `/var/folders/bw/21lzcjwj7rlfsqtjbtn56vbm0000gn/T/TemporaryItems/NSIRD_screencaptureui_4THWXr/Screenshot 2026-09-12 at 1.35.35 AM.png` (the supplied Dribbble screenshot; original filename uses a narrow space before AM). Source pixels: 3024 × 1898.
 
-All implementation captures use disposable local test records and an isolated persistence adapter. No owner records or remote writes were involved.
+Approved translation: net worth above a full-width curved Acadia graph; all-time change, day change, growth and dividends below; Allocation and Top assets further down; four/two/one responsive metrics. This is a layout reference, not a clone of the green palette, tax metrics, branding, chart data or surrounding browser/Dribbble interface. No new image assets were required.
 
-## Changes
+Implementation: isolated synthetic Home at `http://127.0.0.1:8797/?days=11&complete`. Captures: `automation/design/2026-09-12/home-wide-1440.png`, `home-wide-834.png`, `home-wide-390.png`. Desktop CSS viewport 1440 × 1100; returned content capture 1425 × 1089px. Tablet CSS viewport 834 × 1100; returned capture 819 × 1080px. Browser scrollbars/content capture account for the difference.
 
-- Net worth uses canonical Acadia Title and Read Only anatomy, with a wrapping Cluster for the range controls. Missing valuations have a short visible explanation.
-- Fewer than 30 distinct daily snapshots use a compact Content Card with one history-building message. At 30 dates the existing Dashboard Trend expands; switching back clears the chart and restores the compact card. The investment-only history semantics and calculation gate are unchanged.
-- Three investment metrics share one Content Card beneath net worth. Acadia Rule Grid adapts to available space instead of compressing three columns. Annual dividends replaces the broader Passive income label; the estimate qualifier stays visible.
-- Allocation remains alongside the overview at larger widths. Top assets follows with View all leading to Portfolio, plus the existing Add asset action. Cluster keeps these actions beside each other on small phones.
-- Acadia styles, tokens, fonts, icons and asset cards are reused. Neither `acadia.css` nor `styles.css` changed.
+The supplied source and implementation captures were opened together in one comparison input. Comparison is of the app-owned composition, not browser chrome or pixel alignment across different products and data. Full-view review verifies the wide graph, internal horizontal divider, scannable metric row and supporting content below. Typography, labels and values are legible in these captures, so a separate magnified crop was unnecessary.
 
-## Flow checks
+## Findings and fixes
 
-| Step | Result | Evidence |
-| --- | --- | --- |
-| 1. Read Home | Passed locally | Short-history overview, grouped metrics and ranked cards inspected at desktop, tablet and phone widths. |
-| 2. Change history range | Passed locally | Keyboard Home selects 3M and moves focus; panel labelling updates. 29 days has no chart; 30 has the recorded trend. A controller regression also verifies complete → compact → empty transitions. |
-| 3. Open an asset and return | Passed locally | Enter opens FUND; Back returns Home with its original route. |
-| 4. View all assets | Passed locally | View all opens Portfolio with Cards selected and all six test investments; browser Back returns Home. |
-| 5. Add or edit | Passed locally | Add asset opens the shared dialog with Symbol focused. Space opens the existing property editor. Both cancel successfully. No records were saved. |
-| 6. Handle incomplete/empty data | Passed locally | Missing valuation leaves net worth unavailable with a reason; dependent growth/dividends remain unavailable. Empty holdings/property shows $0, disabled ranges and the existing first-asset state. |
+- [P2, fixed] Enlarged tablet text exceeded fixed sidebar and metric tracks. Reused Acadia Insight Grid with Grid so groups adapt to their actual available width; the 834px enlarged-text check has no overflowing descendants.
+- [P2, fixed] Top assets actions crowded the heading at 768px. Added the existing Page Header container; actions now wrap below the heading.
+- [P2, fixed] Two narrow tablet asset cards broke WORLD across lines. Applied the same Grid/Insight Grid composition to the asset list; final tablet capture shows full-width readable cards.
 
-## Responsive and visual checks
+Initial desktop/mobile review established the full-width composition. The combined source/implementation comparison then exposed cramped tablet asset cards; the final 834px capture was inspected after the card fix. Final desktop/tablet/phone screenshots were recaptured. No actionable P0/P1/P2 differences remain against the approved translation.
 
-- Viewports: 1920, 1440, 1024, 768, 390 and 320px. Document scroll width equals client width; scrollbar reservation varies by viewport.
-- Desktop retains four asset cards at 1920px. Device Grid adapts naturally through three/two/one columns as space decreases. Long property names wrap.
-- Tablet range controls wrap within their card. Supporting metrics adapt to two or one columns as needed. Phone overview, summary, allocation and assets follow the same reading order.
-- Phone range buttons and Add asset are 44px high; View all is at least 44px. Focus is visible on range and card entry. Fixed navigation stays within the viewport.
-- Light and dark modes inspected. Acadia's existing teal treatment remains; no new colours, local component rules or decorative assets.
-- Browser error log: no errors. `npm run check`: 129 passing tests. `git diff --check`: passed.
+## Fidelity surfaces
 
-Local browser checks do not establish physical-device/VoiceOver acceptance, authenticated production CRUD, provider availability, magic-link delivery or database isolation. Those systems are unchanged by this work.
+- Typography: existing Acadia fonts, weights and type roles; net worth leads and the change amounts/percentages remain prominent. Tablet asset names no longer split unnecessarily.
+- Spacing/layout: full content-width hero; supported trend height scales from 10rem to 14rem; canonical dense card padding, divider, gaps and wrapping. Four desktop metrics, two tablet columns, one phone column.
+- Colours/tokens: canonical light/dark Acadia colours, surfaces, borders and chart fill; no stylesheet or vendor changes.
+- Images: existing Mercury logo and icon assets preserved. The graph remains the shared Acadia curve utility with recorded observations; no decorative raster additions or imitated reference brand.
+- Copy/content: existing investment scope, previous-close context, date baselines and estimate provenance remain visible. No new financial categories or invented data in product code.
 
-## Captures
+## Verification
 
-![Desktop Home](automation/research/screenshots/2026-09-05-home/01-desktop.png)
+- Full-width hero measured equal to workspace width at 1920/1440/1200/1024/834/768/390/320px. Desktop metric values share a row; tablets have two columns; phones stack.
+- No document overflow at these widths; final 1440/834/768/390px descendant checks pass after wrapping fixes. 320px layout reviewed. Enlarged text checked at 834/390/320px; tablet issue fixed and rechecked.
+- Keyboard Home selects 3M and changes dated endpoints while all-time/day values stay fixed.
+- Enter opens an investment; Back restores its Home link. View all opens Portfolio. Add asset opens the shared dialog with Symbol focused and Cancel works.
+- First-record point, no-history, partial valuation and empty-portfolio states retain correct withheld amounts and fit a 390px viewport.
+- Light/dark appearance inspected. No console errors observed.
+- `npm run check`: 180 tests passed. `git diff --check`: passed.
 
-![Tablet Home](automation/research/screenshots/2026-09-05-home/02-tablet.png)
-
-![Phone Home](automation/research/screenshots/2026-09-05-home/03-phone.png)
-
-![Phone full-history state](automation/research/screenshots/2026-09-05-home/04-phone-history.png)
-
-![Missing valuation](automation/research/screenshots/2026-09-05-home/05-partial.png)
-
-![Light appearance and long names](automation/research/screenshots/2026-09-05-home/06-light-history.png)
-
-![Phone asset actions](automation/research/screenshots/2026-09-05-home/07-phone-assets.png)
+Browser checks use isolated local records with no remote writes. Physical-device/VoiceOver and authenticated owner-account writes are outside this layout change. Publication is verified through the authorised Git-triggered workflow and live HTML matching.

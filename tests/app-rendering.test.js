@@ -77,7 +77,7 @@ test("Home composes a minimal Acadia dashboard", () => {
   assert.doesNotMatch(homeSource, /classList\.toggle\("is-dashboard-trend"/);
 
   assert.match(indexHtml, /id="home-allocation"/);
-  assert.match(indexHtml, /id="holdings-grid" class="acadia-grid"[^>]*role="list"/);
+  assert.match(indexHtml, /id="holdings-grid" class="acadia-grid acadia-insight-grid"[^>]*role="list"/);
   assert.match(indexHtml, /id="history-building"/);
   assert.doesNotMatch(indexHtml, /--acadia-card-trend-height: 16rem/);
   assert.match(indexHtml, /id="holdings-count"/);

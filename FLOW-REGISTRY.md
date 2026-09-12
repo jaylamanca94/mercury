@@ -114,3 +114,7 @@ The founder moved all-time/day changes out of the graph card into the existing i
 ### 2026-09-12 — Home refinement
 
 Home reuses Acadia dense Content Cards and the adaptive Page Header Section to bring the investment summary closer to the graph. Top assets adopts the existing Portfolio Field/Object Card Header composition and concise captions. Investment cards expose exact values as links, focus the asset heading on entry, and restore their Home card on Back with Add asset as a fallback when ranking changes. Existing chart geometry, financial calculations and persistence are unchanged. All 180 checks pass; isolated responsive and keyboard evidence is in `automation/design/2026-09-12/home-refinement.md`.
+
+### 2026-09-12 — Full-width Home overview
+
+The approved reference moves Home to one full-width net-worth/curved-history overview with an internal divider and four summary metrics beneath it. Acadia Grid/Insight Grid turns the row into two tablet columns and a phone stack; Top assets and Allocation sit below. Dense cards and page-header wrapping preserve usable controls. Local chart-range, asset entry/return, View all, Add asset, sparse/empty/partial history, enlarged-text and responsive checks pass; all 180 automated checks pass. See `design-qa.md`.
