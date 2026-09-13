@@ -1,6 +1,6 @@
 # Mercury — Design Status
 
-2026-09-13: Initial account failures now have visible, route-preserving retry; Property has local retry and honest unavailable counts. Current Acadia 0.3.1 is adopted without a second visual system. 190 checks pass, with current local desktop/tablet/phone recovery evidence. Full report: `automation/review/2026-09-13/review.md`. Production owner acceptance remains Vercel-authentication-gated.
+2026-09-13: Initial account failures now have visible, route-preserving retry; Property has local retry and honest unavailable counts. Current Acadia 0.3.1 is adopted without a second visual system. 190 checks pass, with current local desktop/tablet/phone recovery evidence. Full report: `automation/review/2026-09-13/review.md`. Canonical production sign-in is reachable at https://mercury-psi-six.vercel.app; authenticated owner acceptance remains unverified.
 
 **Last reviewed:** 2026-09-12
 

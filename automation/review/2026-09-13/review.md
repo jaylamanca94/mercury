@@ -4,13 +4,13 @@ Mercury now distinguishes a failed initial read from an empty account, offers an
 
 ## Scope and evidence
 
-Reviewed all ten implemented canonical flows against current source, the 190-check suite and the flow registry. Browser evidence below uses current local code with an isolated in-memory Supabase adapter and explicitly synthetic holdings/property records. These are not owner balances, remote persistence tests or live provider responses. Production entry was checked at the verified deployment for `3a1252c`; it redirects to Vercel authentication, so real owner end-to-end acceptance remains blocked at that gate. Mercury credentials were not entered into Vercel.
+Reviewed all ten implemented canonical flows against current source, the 190-check suite and the flow registry. Browser evidence below uses current local code with an isolated in-memory Supabase adapter and explicitly synthetic holdings/property records. These are not owner balances, remote persistence tests or live provider responses. The individual deployment URL for `3a1252c` redirected to Vercel authentication. After release, the verified canonical alias https://mercury-psi-six.vercel.app was reachable and displayed Mercury’s own sign-in screen. Use this canonical alias for future production checks. No authenticated owner browser session or magic-link redemption was established; Mercury credentials were not entered into Vercel.
 
 ### Canonical flow coverage
 
 | Step | Flow | Current result and limits |
 | --- | --- | --- |
-| 1 | Sign in | Signed-out Budget deep link displays authentication at 390px; temporary initial-read failure now recovers without losing the requested route. Actual email delivery/redemption and expiry remain unverified. |
+| 1 | Sign in | Signed-out Budget deep link displays authentication at 390px; temporary initial-read failure now recovers without losing the requested route. The canonical production sign-in screen is verified. Actual email delivery/redemption and expiry remain unverified. |
 | 2 | Add a holding | 320px Add entry, labels, native dialog, Cancel and return focus checked; existing save/manual recovery regressions pass. Fresh remote create not accepted. |
 | 3 | Retrieve/refresh a quote | Deadline, fallback, sanitisation and stale-result tests pass. Provider batch completion now respects in-memory account context and the latest batch. Live provider coverage remains unverified. |
 | 4 | Edit/delete an asset | Synthetic manual valuation changed from 12,500 to 12,600, Changes saved shown, and Back returned to the updated Portfolio value and original card focus. Pending/failed writes and deletion regressions pass; remote deletion was not attempted. |
@@ -104,6 +104,10 @@ Screenshots were saved and reopened before acceptance. Viewport captures intenti
 
 ![Private route sign-in](12-sign-in-390.png)
 
+13. **Canonical production sign-in — reachable.** This is the real product entry, not the Vercel login shown on individual deployment URLs.
+
+![Production sign-in](13-production-sign-in.png)
+
 ## Publication
 
-The code, documentation and accepted synthetic screenshots are committed together on main. The authorised push triggers the existing Vercel build gate. Final remote commit/deployment results are recorded in the automation run memory and task response after publication; this report does not pre-claim their outcome.
+Implementation commit `a7f9ab743d816c96c66635cab3855878a8e46462` was pushed and verified on origin/main. Production deployment `dpl_DkrJHK2FXFTbBwY6eYNEwbUz4uTi` reached READY; all 190 hosted checks passed, with the build completing in 3 seconds. The immediate deployment-scoped error scan returned no records; that is not sustained traffic or cron monitoring. Drains were not inspected. The canonical production alias is https://mercury-psi-six.vercel.app. A documentation-only follow-up records this corrected access evidence; final commit/deployment details are saved in the automation memory and task response.
