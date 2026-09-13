@@ -46,7 +46,7 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
   const wholePercentage = new Intl.NumberFormat("en-US", { style: "percent", maximumFractionDigits: 0 });
   const state = {
     client: null, user: null, account: null, accounts: [], holdings: [], quotes: [], snapshots: [], incomeSources: [], incomeSourcesAvailable: true, budgetCategories: [], budgetCategoriesAvailable: true, planSettings: null, properties: [], propertiesAvailable: true, planDataAvailable: true,
-    incomeReloadPending: false, incomeReloadFailed: false, providerMetrics: {}, providerMetricsPending: new Set(), configured: false, pendingQuote: null, quoteTimer: null, quoteRequestId: 0, portfolioFilter: "all", portfolioSort: "value", portfolioView: "cards", propertySort: "value", performancePeriod: "all", incomePeriod: "month", incomeDividendSort: "value", planHorizon: 10, incomeSourceDialogId: null, incomeSourceDeleteId: null, budgetCategoryDialogId: null, budgetCategoryDeleteId: null, propertyDialogId: null, propertyDeleteId: null,
+    startupStatus: null, startupMessage: "", startupRequestId: 0, dataRequestId: 0, metricsRequestId: 0, propertyReloadPending: false, incomeReloadPending: false, incomeReloadFailed: false, providerMetrics: {}, providerMetricsPending: new Set(), configured: false, pendingQuote: null, quoteTimer: null, quoteRequestId: 0, portfolioFilter: "all", portfolioSort: "value", portfolioView: "cards", propertySort: "value", performancePeriod: "all", incomePeriod: "month", incomeDividendSort: "value", planHorizon: 10, incomeSourceDialogId: null, incomeSourceDeleteId: null, budgetCategoryDialogId: null, budgetCategoryDeleteId: null, propertyDialogId: null, propertyDeleteId: null,
   };
 
   function cents(value) {
@@ -739,12 +739,15 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
     const hasProperties = state.properties.length > 0;
     const properties = sortProperties(matchingProperties());
     renderPropertySort();
-    setText("#portfolio-properties-count", `${properties.length} ${properties.length === 1 ? "property" : "properties"}`);
+    $("#property-retry-data").hidden = state.propertiesAvailable;
+    $("#property-retry-data").disabled = state.propertyReloadPending || hasPendingWrite();
+    setText("#property-retry-data", state.propertyReloadPending ? "Retrying…" : "Retry properties");
+    setText("#portfolio-properties-count", state.propertiesAvailable ? `${properties.length} ${properties.length === 1 ? "property" : "properties"}` : "Unavailable");
     $("#portfolio-properties-grid").hidden = !state.propertiesAvailable;
     $("#portfolio-properties-empty").hidden = !state.propertiesAvailable || properties.length > 0;
     if (!state.propertiesAvailable) {
       setText("#portfolio-properties-empty-title", "Property unavailable");
-      setText("#portfolio-properties-empty-copy", "Apply the latest private property migration to add and view properties.");
+      setText("#portfolio-properties-empty-copy", "Your properties could not be loaded. Try again.");
       $("#portfolio-properties-empty").hidden = false;
       return;
     }
@@ -1539,6 +1542,21 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
 
   let renderedPortfolio = false;
   function render() {
+    $("#workspace-recovery").hidden = !state.startupStatus;
+    if (state.startupStatus) {
+      ["home", "portfolio", "income", "plan", "asset"].forEach((page) => { $(`#${page}-workspace`).hidden = true; });
+      $("#auth-panel").hidden = true;
+      const loading = state.startupStatus === "loading";
+      setText("#workspace-recovery-title", loading ? "Loading your workspace…" : state.startupStatus === "unconfigured" ? "Private sync is not configured" : "Your workspace could not be loaded");
+      setText("#workspace-recovery-copy", state.startupMessage);
+      $("#workspace-retry").hidden = loading;
+      $("#workspace-retry").disabled = loading;
+      setControlsDisabled(true);
+      // The live status stays outside a busy region so it can be announced.
+      $("#main-content").setAttribute("aria-busy", "false");
+      document.title = "Mercury | " + (loading ? "Loading" : "Connection unavailable");
+      return;
+    }
     if (state.configured && !state.user) {
       ["home", "portfolio", "income", "plan", "asset"].forEach((page) => { $(`#${page}-workspace`).hidden = true; });
       $("#auth-panel").hidden = false;
@@ -2283,17 +2301,68 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
     }
   }
 
+  async function readWithDeadline(operation) {
+    const controller = new AbortController();
+    let timer;
+    try {
+      return await Promise.race([
+        Promise.resolve().then(() => operation(controller.signal)),
+        new Promise((_, reject) => {
+          timer = setTimeout(() => { controller.abort(); reject(new Error("Read timed out")); }, 10000);
+        }),
+      ]);
+    } finally { clearTimeout(timer); }
+  }
+
+  function accountContext() {
+    const { client, user, account } = state;
+    return () => state.client === client && state.user === user && state.account === account;
+  }
+
+  async function retryProperties() {
+    if (state.propertyReloadPending || state.propertiesAvailable || !state.user || !state.account || hasPendingWrite()) return;
+    const current = accountContext();
+    const { client, account } = state;
+    const focused = document.activeElement === $("#property-retry-data");
+    state.propertyReloadPending = true;
+    setText("#property-recovery-status", "Retrying properties…");
+    render();
+    try {
+      const result = await readWithDeadline(signal => client.from("home_properties").select("id, account_id, name, location, current_value_cents, mortgage_balance_cents, annual_appreciation_rate, created_at").eq("account_id", account.id).order("created_at").abortSignal(signal));
+      if (!current()) return;
+      if (result.error || !Array.isArray(result.data)) throw new Error("Property read failed");
+      state.properties = result.data;
+      state.propertiesAvailable = true;
+      setText("#property-recovery-status", "Properties loaded.");
+    } catch {
+      if (current()) setText("#property-recovery-status", "Properties are still unavailable. Try again.");
+    } finally {
+      if (current()) {
+        state.propertyReloadPending = false;
+        render();
+        if (focused && (document.activeElement === $("#property-retry-data") || document.activeElement === document.body)) {
+          $(state.propertiesAvailable ? "#portfolio-properties-title" : "#property-retry-data").focus();
+        }
+      }
+    }
+  }
+
   async function loadData() {
-    const [accounts, holdings, quotes, snapshots, incomeSources, budgetCategories, planSettings, properties] = await Promise.all([
-      state.client.from("accounts").select("*").order("created_at"),
-      state.client.from("holdings").select("*").eq("account_id", state.account.id).order("created_at"),
-      state.client.from("holding_quotes").select("*").order("as_of", { ascending: false }),
-      state.client.from("portfolio_snapshots").select("*").eq("account_id", state.account.id).order("snapshot_date"),
-      state.client.from("income_sources").select("*").eq("account_id", state.account.id).order("created_at"),
-      state.client.from("budget_categories").select("*").eq("account_id", state.account.id).order("created_at"),
-      state.client.from("plan_settings").select("*").eq("account_id", state.account.id).maybeSingle(),
-      state.client.from("home_properties").select("id, account_id, name, location, current_value_cents, mortgage_balance_cents, annual_appreciation_rate, created_at").eq("account_id", state.account.id).order("created_at"),
-    ]);
+    const current = accountContext();
+    const { client, account } = state;
+    const requestId = ++state.dataRequestId;
+    const results = await Promise.allSettled([
+      signal => client.from("accounts").select("*").order("created_at").abortSignal(signal),
+      signal => client.from("holdings").select("*").eq("account_id", account.id).order("created_at").abortSignal(signal),
+      signal => client.from("holding_quotes").select("*").order("as_of", { ascending: false }).abortSignal(signal),
+      signal => client.from("portfolio_snapshots").select("*").eq("account_id", account.id).order("snapshot_date").abortSignal(signal),
+      signal => client.from("income_sources").select("*").eq("account_id", account.id).order("created_at").abortSignal(signal),
+      signal => client.from("budget_categories").select("*").eq("account_id", account.id).order("created_at").abortSignal(signal),
+      signal => client.from("plan_settings").select("*").eq("account_id", account.id).maybeSingle().abortSignal(signal),
+      signal => client.from("home_properties").select("id, account_id, name, location, current_value_cents, mortgage_balance_cents, annual_appreciation_rate, created_at").eq("account_id", account.id).order("created_at").abortSignal(signal),
+    ].map(operation => readWithDeadline(operation)));
+    if (!current() || requestId !== state.dataRequestId) return false;
+    const [accounts, holdings, quotes, snapshots, incomeSources, budgetCategories, planSettings, properties] = results.map(result => result.status === "fulfilled" ? result.value : { error: result.reason });
     if (accounts.error || holdings.error || quotes.error || snapshots.error) {
       throw accounts.error || holdings.error || quotes.error || snapshots.error;
     }
@@ -2310,13 +2379,21 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
     state.propertiesAvailable = !properties.error;
     state.properties = properties.data || [];
     render();
+    return true;
   }
   async function ensurePlanSettings() {
     if (!state.planDataAvailable || state.planSettings || !state.account) return;
-    const { data, error } = await state.client.from("plan_settings").upsert({
-      account_id: state.account.id,
+    const current = accountContext();
+    const { client, account } = state;
+    let { data, error } = await readWithDeadline(signal => client.from("plan_settings").upsert({
+      account_id: account.id,
       distribution_policy: "reinvest",
-    }, { onConflict: "account_id" }).select().single();
+    }, { onConflict: "account_id", ignoreDuplicates: true }).select().maybeSingle().abortSignal(signal));
+    if (!current()) return;
+    if (!error && !data) {
+      ({ data, error } = await readWithDeadline(signal => client.from("plan_settings").select("*").eq("account_id", account.id).maybeSingle().abortSignal(signal)));
+      if (!current()) return;
+    }
     if (error) {
       state.planDataAvailable = false;
       state.planSettings = null;
@@ -2326,11 +2403,13 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
     state.planSettings = data;
     render();
   }
-  async function ensureAccount() {
-    const existing = await state.client.from("accounts").select("*").eq("account_type", "brokerage").maybeSingle();
+  async function ensureAccount(isCurrent = () => true) {
+    const client = state.client;
+    const existing = await readWithDeadline(signal => client.from("accounts").select("*").eq("account_type", "brokerage").maybeSingle().abortSignal(signal));
+    if (!isCurrent()) return null;
     if (existing.error) throw existing.error;
     if (existing.data) return existing.data;
-    const created = await state.client.from("accounts").insert({ name: "Brokerage", account_type: "brokerage" }).select().single();
+    const created = await readWithDeadline(signal => client.from("accounts").insert({ name: "Brokerage", account_type: "brokerage" }).select().single().abortSignal(signal));
     if (created.error) throw created.error;
     return created.data;
   }
@@ -2385,6 +2464,8 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
     }
   }
   async function hydrateProviderMetrics() {
+    const current = accountContext();
+    const requestId = ++state.metricsRequestId;
     const candidates = state.holdings.filter((holding) => (
       holding.valuation_basis === VALUATION_BASES.SHARES_AND_PRICE &&
       holding.symbol &&
@@ -2396,9 +2477,12 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
       holdingId: holding.id,
       quote: await requestQuote(holding.symbol, holding.instrument_type, { includeMetrics: true }),
     })));
+    if (!current() || requestId !== state.metricsRequestId) return;
     const metrics = results.reduce((next, result) => {
       if (result.status !== "fulfilled") return next;
       const { holdingId, quote } = result.value;
+      const original = candidates.find(holding => holding.id === holdingId);
+      if (!state.holdings.some(holding => holding.id === holdingId && holding.symbol === original.symbol && holding.instrument_type === original.instrument_type)) return next;
       next[holdingId] = {
         annualizedReturnRate: quote.annualizedReturnRate,
         annualizedReturnYears: quote.annualizedReturnYears,
@@ -2411,50 +2495,65 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
     state.providerMetricsPending = new Set();
     render();
   }
-  function showUnconfigured(message) {
-    state.configured = false;
-    state.account = { id: "unconfigured", name: "Brokerage", weekly_contribution_cents: 0 };
-    state.accounts = [state.account];
-    state.holdings = [];
-    state.quotes = [];
-    state.snapshots = [];
-    state.incomeSources = [];
-    state.budgetCategories = [];
-    state.budgetCategoriesAvailable = false;
-    state.planSettings = null;
-    state.properties = [];
-    state.propertiesAvailable = false;
-    state.planDataAvailable = false;
-    $("#auth-panel").hidden = true;
-    $("#home-workspace").hidden = false;
-    setAccountMenuState("Private sync unavailable", false);
-    setText("#data-status", message);
-    render();
-  }
   async function initialise() {
+    if (state.startupStatus === "loading") return;
+    const requestId = ++state.startupRequestId;
+    const current = () => requestId === state.startupRequestId;
+    const focused = document.activeElement === $("#workspace-retry");
+    state.startupStatus = "loading";
+    state.startupMessage = "Connecting to your private account.";
+    render();
     try {
-      const response = await fetch("/api/config", { cache: "no-store" });
-      const config = response.ok ? await response.json() : { configured: false };
-      if (!config.configured) return showUnconfigured("Private sync is not configured. Configure Supabase before adding holdings.");
-      state.configured = true;
-      state.client = window.supabase.createClient(config.supabaseUrl, config.supabaseAnonKey);
-      const { data: { session } } = await state.client.auth.getSession();
-      if (!session) {
-        render();
+      const config = await readWithDeadline(async signal => {
+        const response = await fetch("/api/config", { cache: "no-store", signal });
+        const config = await response.json();
+        if (!response.ok && !(response.status === 503 && config.configured === false)) throw new Error("Configuration read failed");
+        return config;
+      });
+      if (!current()) return;
+      if (!config.configured) {
+        state.configured = false;
+        state.startupStatus = "unconfigured";
+        state.startupMessage = "Private account access is unavailable until Supabase is configured.";
         return;
       }
-      state.user = session.user;
-      state.account = await ensureAccount();
+      state.configured = true;
+      state.client ||= window.supabase.createClient(config.supabaseUrl, config.supabaseAnonKey);
+      const result = await readWithDeadline(() => state.client.auth.getSession());
+      if (!current()) return;
+      if (result.error) throw result.error;
+      const session = result.data.session;
+      state.user = session?.user || null;
+      if (!session) {
+        state.startupStatus = null;
+        setAccountMenuState("Sign in", false);
+        return;
+      }
       setAccountMenuState(state.user.email, true);
-      $("#home-workspace").hidden = false;
-      await loadData();
-      await ensurePlanSettings();
-      void hydrateProviderMetrics();
+      const account = await ensureAccount(current);
+      if (!current()) return;
+      state.account = account;
+      if (!await loadData() || !current()) return;
+      // Optional plan setup failure must not hide successfully loaded holdings.
+      try { await ensurePlanSettings(); } catch { state.planDataAvailable = false; }
+      if (!current()) return;
+      state.startupStatus = null;
       setText("#data-status", "Private Brokerage account loaded.");
-    } catch (error) {
-      showUnconfigured(`Private sync is unavailable: ${error.message}`);
+      void hydrateProviderMetrics();
+    } catch {
+      if (!current()) return;
+      state.startupStatus = "error";
+      state.startupMessage = "Check your connection and try again. You can retry from this page.";
+    } finally {
+      if (current()) {
+        render();
+        if (focused && (document.activeElement === $("#workspace-retry") || document.activeElement === document.body)) $(state.startupStatus ? "#workspace-retry" : state.user ? "#main-content" : "#email").focus({ preventScroll: true });
+      }
     }
   }
+
+  $("#workspace-retry").addEventListener("click", initialise);
+  $("#property-retry-data").addEventListener("click", retryProperties);
 
   $("#income-retry-data").addEventListener("click", retryIncomeData);
 

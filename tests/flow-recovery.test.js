@@ -13,7 +13,7 @@ function controller() {
       validity: {valid: true}, elements: [], dataset: {}, listeners: {},
       classList: {toggle() {}, add() {}, remove() {}},
       addEventListener(type, callback) { this.listeners[type] = callback; },
-      querySelectorAll() { return []; }, replaceChildren() {}, setAttribute() {}, hasAttribute() { return false; }, focus() {}, scrollIntoView() {},
+      querySelector(child) { return node(selector + " " + child); }, querySelectorAll() { return []; }, replaceChildren() {}, setAttribute() {}, hasAttribute() { return false; }, focus() {}, scrollIntoView() {},
       showModal() { this.open = true; }, close() { this.open = false; this.listeners.close?.(); },
     });
     return nodes.get(selector);
@@ -32,7 +32,7 @@ function controller() {
     fetch:async()=>({ok:false,json:async()=>({error:'provider unavailable'})}),
   });
   const source = fs.readFileSync(require.resolve('../brokerage.js'),'utf8').replace(/^import .*;\n/, '').replace('  initialise();',
-    '  window.testController = {state,render,renderHomeChanges,renderHomeGrowth,renderIncomeRecovery,retryIncomeData,missingIncomeYieldRows,renderIncomeYieldRecovery,renderPlan,renderQuickQuotePreview,refreshCurrentAssetPrice,restorePortfolioAssetFocus,renderHistory,renderAsset,canQuote,lookupQuote,saveQuickAsset,navigateToAsset,navigateBackFromAsset,routeAssetId,openFormDialog,hasPendingWrite,hasUnsavedWork,matchingPortfolioHoldingRows,sortHoldingRows,holdingValueLabel,renderPortfolioView,renderPortfolioSummary,detailHolding};');
+    '  window.testController = {initialise,loadData,readWithDeadline,retryProperties,hydrateProviderMetrics,ensurePlanSettings,state,render,renderHomeChanges,renderHomeGrowth,renderIncomeRecovery,retryIncomeData,missingIncomeYieldRows,renderIncomeYieldRecovery,renderPlan,renderQuickQuotePreview,refreshCurrentAssetPrice,restorePortfolioAssetFocus,renderHistory,renderAsset,canQuote,lookupQuote,saveQuickAsset,navigateToAsset,navigateBackFromAsset,routeAssetId,openFormDialog,hasPendingWrite,hasUnsavedWork,matchingPortfolioHoldingRows,sortHoldingRows,holdingValueLabel,renderPortfolioView,renderPortfolioSummary,detailHolding};');
   vm.runInContext(source,context);
   const api=window.testController;
   api.state.client={auth:{getSession:async()=>({data:{session:{access_token:'isolated-test'}}})}};
@@ -127,7 +127,7 @@ function quickSaveFixture({quoteFailure = false, readFailure = false, holdingFai
   api.state.configured = true;
   const db = {holdings:[], holding_quotes:[], accounts:[api.state.account]};
   api.state.client.from = table => {
-    const q = {select(){return q},eq(){return q},order(){return q},maybeSingle(){return q},
+    const q = {select(){return q},eq(){return q},order(){return q},abortSignal(){return q},maybeSingle(){return q},
       then(resolve,reject){return Promise.resolve({data:db[table] || [],error:readFailure ? {message:'Read unavailable'} : null}).then(resolve,reject)},
       async upsert(payload) {
         writes.push({table,payload});
@@ -952,4 +952,144 @@ test('Home lifetime and day changes stay independent of chart range and recover 
   assert.equal(node('#all-time-change-value').textContent,'—');
   assert.match(node('#all-time-change-context').textContent,/Awaiting first/);
   assert.equal(node('#metric-change-value').textContent,'Down $10');
+});
+
+function readFixture(view, read) {
+  view.api.state.configured = true;
+  view.api.state.user = {id:'owner',email:'fixture'};
+  view.api.state.account = {id:'account',name:'Brokerage'};
+  view.api.state.client.from = table => {
+    const query = {select(){return this},eq(){return this},order(){return this},maybeSingle(){return this},single(){return this},upsert(){return this},insert(){return this},abortSignal(signal){this.signal=signal;return this},then(resolve,reject){return Promise.resolve().then(()=>read(table,this.signal)).then(resolve,reject)}};
+    return query;
+  };
+  return view;
+}
+
+function accountRead(table) {
+  return {data:table === 'accounts' ? [{id:'account',name:'Brokerage'}] : table==='plan_settings' ? {account_id:'account'} : []};
+}
+
+test('initial account failure stays distinct from empty/configuration and retries the current route',async()=>{
+  const view=readFixture(controller(),table=>failed&&table==='accounts'?{error:{message:'private diagnostic'}}:accountRead(table));
+  const {api,node,context,document,window}=view; let failed=true;
+  context.fetch=async()=>({ok:true,json:async()=>({configured:true})});
+  api.state.client.auth.getSession=async()=>({data:{session:{user:api.state.user}}});
+  window.location.hash='#income/budget';
+  await api.initialise();
+  assert.equal(api.state.configured,true);
+  assert.equal(api.state.startupStatus,'error');
+  assert.equal(node('#workspace-recovery').hidden,false);
+  assert.equal(node('#income-workspace').hidden,true);
+  assert.equal(node('#home-add-asset').disabled,true);
+  assert.doesNotMatch(node('#workspace-recovery-copy').textContent,/private diagnostic|configure|No assets/);
+  failed=false; document.activeElement=node('#workspace-retry');let focus=0;node('#main-content').focus=()=>focus++;
+  await api.initialise();
+  assert.equal(api.state.startupStatus,null);
+  assert.equal(node('#workspace-recovery').hidden,true);
+  assert.equal(window.location.hash,'#income/budget');
+  assert.equal(node('#income-workspace').hidden,false);
+  assert.equal(focus,1);
+});
+
+test('missing configuration has visible recovery and never shows an empty portfolio',async()=>{
+  const {api,node,context}=controller();
+  context.fetch=async()=>({ok:false,status:503,json:async()=>({configured:false})});
+  await api.initialise();
+  assert.equal(api.state.startupStatus,'unconfigured');
+  assert.match(node('#workspace-recovery-title').textContent,/not configured/);
+  assert.equal(node('#home-workspace').hidden,true);
+  assert.equal(node('#workspace-retry').hidden,false);
+});
+
+test('startup prevents duplicate retries and bounds a stalled response body',async()=>{
+  const {api,node,context}=controller();let deadline,signal,calls=0,finish;
+  context.setTimeout=callback=>{deadline=callback;return 1};context.clearTimeout=()=>{};
+  context.fetch=async(_url,options)=>{calls++;signal=options.signal;return {ok:true,json:()=>new Promise(resolve=>{finish=resolve})}};
+  const first=api.initialise();await api.initialise();await Promise.resolve();await Promise.resolve();
+  assert.equal(calls,1);assert.equal(node('#home-workspace').hidden,true);
+  deadline();await first;
+  assert.equal(signal.aborted,true);assert.equal(api.state.startupStatus,'error');
+  finish({configured:true});await Promise.resolve();
+  assert.equal(api.state.startupStatus,'error');assert.equal(api.state.client.auth!==undefined,true);
+});
+
+test('late account reads cannot overwrite a newer read or another identity',async()=>{
+  for(const change of ['newer','user','account','client']) {
+    let finish,hold=true;
+    const view=readFixture(controller(),table=>table==='holdings'&&hold?new Promise(resolve=>{finish=resolve}):accountRead(table));
+    const {api}=view;const old=api.loadData();await new Promise(setImmediate);
+    if(change==='newer') {hold=false;await api.loadData();}
+    else api.state[change]=change==='user'?null:{id:'replacement'};
+    finish({data:[{id:'older'}]});assert.equal(await old,false);
+    assert.equal(api.state.holdings.length,0);
+  }
+});
+
+test('load deadline aborts requests and leaves previous records intact after late success',async()=>{
+  const deadlines=new Set();let finish,signal;
+  const view=readFixture(controller(),(table,s)=>{if(table==='holdings'){signal=s;return new Promise(resolve=>{finish=resolve})}return accountRead(table)});
+  const {api,context}=view;api.state.holdings=[{id:'saved'}];
+  context.setTimeout=callback=>{deadlines.add(callback);return callback};context.clearTimeout=callback=>deadlines.delete(callback);
+  const request=api.loadData();await new Promise(setImmediate);for(const deadline of deadlines)deadline();
+  await assert.rejects(request,/timed out/);assert.equal(signal.aborted,true);
+  finish({data:[{id:'late'}]});await new Promise(setImmediate);
+  assert.equal(api.state.holdings[0].id,'saved');
+});
+
+test('optional property rejection preserves holdings and retries only properties with focus recovery',async()=>{
+  let failed=true,calls=[];
+  const view=readFixture(controller(),table=>{calls.push(table);if(table==='home_properties'){if(failed)throw Error('network');return {data:[]}}return accountRead(table)});
+  const {api,node,document}=view;
+  await api.loadData();assert.equal(api.state.propertiesAvailable,false);
+  assert.match(node('#portfolio-properties-empty-copy').textContent,/could not be loaded/);
+  assert.doesNotMatch(node('#portfolio-properties-empty-copy').textContent,/migration/);
+  calls=[];failed=false;document.activeElement=node('#property-retry-data');let focused=0;node('#portfolio-properties-title').focus=()=>focused++;
+  await api.retryProperties();
+  assert.deepEqual(calls,['home_properties']);assert.equal(api.state.propertiesAvailable,true);
+  assert.equal(node('#property-retry-data').hidden,true);assert.equal(focused,1);
+});
+
+test('property retry guards duplicate requests, failed recovery and late identity changes',async()=>{
+  let finish,calls=0;
+  const view=readFixture(controller(),()=>{calls++;return new Promise(resolve=>{finish=resolve})});
+  const {api,node}=view;api.state.propertiesAvailable=false;
+  const request=api.retryProperties();await new Promise(setImmediate);await api.retryProperties();
+  assert.equal(calls,1);assert.equal(node('#property-retry-data').disabled,true);
+  finish({error:{message:'private diagnostic'}});await request;
+  assert.equal(api.state.propertiesAvailable,false);assert.equal(api.state.propertyReloadPending,false);
+  assert.doesNotMatch(node('#property-recovery-status').textContent,/private diagnostic/);
+  const late=api.retryProperties();await new Promise(setImmediate);api.state.user=null;
+  finish({data:[{id:'private'}]});await late;
+  assert.equal(api.state.properties.length,0);
+});
+
+test('a stalled optional property read becomes recoverable without losing the loaded workspace',async()=>{
+  const deadlines=new Set();
+  const {api,context}=readFixture(controller(),table=>table==='home_properties'?new Promise(()=>{}):accountRead(table));
+  context.setTimeout=callback=>{deadlines.add(callback);return callback};context.clearTimeout=callback=>deadlines.delete(callback);
+  const request=api.loadData();await new Promise(setImmediate);
+  assert.equal(deadlines.size,1);for(const deadline of deadlines)deadline();
+  assert.equal(await request,true);assert.equal(api.state.propertiesAvailable,false);
+  assert.equal(api.state.accounts[0].id,'account');
+});
+
+test('late provider metrics cannot populate a signed-out account',async()=>{
+  const {api,context}=readFixture(controller(),accountRead);let finish;
+  // Keep the render on the guarded loading surface; exercise the actual provider lifecycle.
+  api.state.startupStatus='loading';
+  api.state.holdings=[{id:'old',symbol:'OLD',instrument_type:'stock',valuation_basis:'shares-and-price'}];
+  context.fetch=()=>new Promise(resolve=>{finish=resolve});
+  const request=api.hydrateProviderMetrics();await new Promise(setImmediate);
+  api.state.user=null;
+  finish({ok:true,json:async()=>({priceCents:100,annualizedReturnRate:0.2})});await request;
+  assert.equal(Object.keys(api.state.providerMetrics).length,0);
+});
+
+test('initial plan defaults never overwrite a concurrently created plan',async()=>{
+  const {api}=readFixture(controller(),accountRead);api.state.planSettings=null;
+  let conflictOptions,reads=0;
+  api.state.client.from=()=>{const query={select(){return this},eq(){return this},maybeSingle(){return this},abortSignal(){return this},upsert(_value,options){conflictOptions=options;return this},then(resolve){reads++;return Promise.resolve({data:reads===1?null:{account_id:'account',distribution_policy:'cash'}}).then(resolve)}};return query};
+  await api.ensurePlanSettings();
+  assert.equal(conflictOptions.ignoreDuplicates,true);
+  assert.equal(api.state.planSettings.distribution_policy,'cash');
 });

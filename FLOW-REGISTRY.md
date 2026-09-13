@@ -1,8 +1,8 @@
 # Mercury Flow Registry
 
-> **10 implemented canonical flows; all have design and automated coverage at varying depths. One deferred export boundary. Quote lookup now releases stalled providers/session waits into existing recovery; no flows added. Remote and physical-device acceptance gaps remain below.**
+> **10 implemented canonical flows; all have design and automated coverage at varying depths. One deferred export boundary. Initial account failures now offer visible retry; optional property failures remain local to Property. No flows added. Remote and physical-device acceptance gaps remain below.**
 
-**Last reviewed:** 2026-09-08
+**Last reviewed:** 2026-09-13
 
 | Flow | Product status | Meaningful entry → successful outcome | Major states | QA coverage |
 | --- | --- | --- | --- | --- |
@@ -118,3 +118,9 @@ Home reuses Acadia dense Content Cards and the adaptive Page Header Section to b
 ### 2026-09-12 — Full-width Home overview
 
 The approved reference moves Home to one full-width net-worth/curved-history overview with an internal divider and four summary metrics beneath it. Acadia Grid/Insight Grid turns the row into two tablet columns and a phone stack; Top assets and Allocation sit below. Dense cards and page-header wrapping preserve usable controls. Local chart-range, asset entry/return, View all, Add asset, sparse/empty/partial history, enlarged-text and responsive checks pass; all 180 automated checks pass. See `design-qa.md`.
+
+## Account and property recovery — 2026-09-13
+
+Changed Sign in, Understand current position and Manage holdings in Portfolio: initial loading, configuration unavailable, temporary read failure and retry are distinct from an empty account. Retry preserves the route and returns focus to content or sign-in. Property errors offer a local retry, withhold the count, and return focus to Property on success. Individual collection deadlines preserve useful content when optional reads fail. General account loads and provider metrics reject superseded in-memory contexts; real cross-tab session-expiry handling remains an acceptance gap. Initial Plan defaults never overwrite concurrently created settings.
+
+190 checks pass, including ten new recovery/concurrency regressions. Current isolated browser evidence covers account failure/retry, property failure/retry, 320px modal and saved asset edit/return, tablet Income/Budget/Plan, light/dark and signed-out gating. Ten canonical flows were reviewed through source/tests; live authentication, provider and scheduled execution were not accepted. See `automation/review/2026-09-13/review.md`.

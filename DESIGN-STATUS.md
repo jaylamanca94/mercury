@@ -1,5 +1,7 @@
 # Mercury — Design Status
 
+2026-09-13: Initial account failures now have visible, route-preserving retry; Property has local retry and honest unavailable counts. Current Acadia 0.3.1 is adopted without a second visual system. 190 checks pass, with current local desktop/tablet/phone recovery evidence. Full report: `automation/review/2026-09-13/review.md`. Production owner acceptance remains Vercel-authentication-gated.
+
 **Last reviewed:** 2026-09-12
 
 Home now follows the approved wide-chart reference: one full-width net-worth/history card with a divider and four metrics in a desktop row, two tablet columns and a phone stack. Top assets and Allocation sit below. Acadia Grid/Insight Grid and Page Header handle container-aware wrapping, including enlarged text. No financial/controller or stylesheet changes. All 180 checks pass; local visual and interaction evidence is in `design-qa.md` and `automation/design/2026-09-12/home-wide-*.png`.
@@ -43,5 +45,5 @@ Income, Plan and the remaining deletion dialogs now use Acadia compact form comp
 ## Next design opportunities
 
 1. **Recover from session expiry during edits.** Verify real magic-link redemption and expired-session recovery using a disposable authenticated account; preserve the task while respecting private-data boundaries.
-2. **Recover unavailable account and property reads.** Income now has direct recovery. Review initial account-load failures and Property unavailable states so transient errors do not suggest configuration changes.
+2. **Recover unavailable Plan settings locally.** Account and Property now retry in place. Plan settings still need a focused retry path after an optional read fails.
 3. **Review long forms with the software keyboard.** Responsive browser checks pass; verify focused-field visibility, scrolling and action reachability on a physical phone.

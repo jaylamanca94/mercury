@@ -2728,48 +2728,53 @@ main [id] {
 }
 
 .acadia-footer {
-  background: color-mix(
-    in srgb,
-    var(--acadia-surface-layer-base) 88%,
-    transparent
-  );
+  background: transparent;
   border-top: 1px solid var(--acadia-color-border);
+  box-sizing: border-box;
   color: var(--acadia-color-text);
   display: grid;
-  gap: 1.5rem;
+  gap: var(--acadia-space-3);
   min-width: 0;
+  overflow-wrap: anywhere;
   padding: var(--acadia-section-padding-dense);
   width: 100%;
 }
 
+/* Intrinsic wrapping also works inside narrow desktop panels and at larger text sizes. */
 .acadia-footer-content {
   align-items: start;
-  display: grid;
-  gap: 2rem;
-  grid-template-columns: minmax(12rem, 0.8fr) minmax(0, 2fr);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--acadia-space-6);
   min-width: 0;
 }
 
 .acadia-footer-main {
   align-content: start;
   display: grid;
-  gap: 0.75rem;
+  flex: 1 1 12rem;
+  gap: var(--acadia-space-2);
   min-width: 0;
 }
 
 .acadia-footer-brand {
   align-items: center;
   border-radius: var(--acadia-radius-control);
+  box-sizing: border-box;
   color: var(--acadia-color-text);
   display: inline-flex;
   font-family: var(--acadia-font-wordmark);
-  font-weight: 800;
-  gap: 0.5rem;
+  font-weight: var(--acadia-font-weight-strong);
+  gap: var(--acadia-space-1);
   justify-self: start;
-  min-height: var(--acadia-target-size-compact);
-  min-width: 0;
-  padding-inline: 0.125rem;
+  max-width: 100%;
+  min-height: var(--acadia-target-size-touch);
+  min-width: var(--acadia-target-size-touch);
   text-decoration: none;
+}
+
+.acadia-footer-brand .acadia-mark {
+  flex-shrink: 0;
 }
 
 .acadia-footer-brand:hover,
@@ -2784,6 +2789,7 @@ main [id] {
 
 .acadia-footer-description {
   color: var(--acadia-color-text-muted);
+  font-size: var(--acadia-type-size-small);
   line-height: var(--acadia-type-line-copy);
   margin: 0;
   max-width: 24rem;
@@ -2791,38 +2797,43 @@ main [id] {
 
 .acadia-footer-nav {
   display: grid;
-  gap: 1.25rem;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 9rem), 1fr));
+  flex: 2 1 20rem;
+  gap: var(--acadia-space-3);
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 8rem), 1fr));
   min-width: 0;
 }
 
 .acadia-footer-group {
   align-content: start;
   display: grid;
-  gap: 0.25rem;
   min-width: 0;
 }
 
 .acadia-footer-heading {
   color: var(--acadia-color-text);
-  font-size: 0.875rem;
-  font-weight: 800;
-  line-height: 1.25rem;
-  margin: 0 0 0.125rem;
+  font-size: var(--acadia-type-size-small);
+  font-weight: var(--acadia-font-weight-medium);
+  line-height: var(--acadia-type-line-small);
+  margin: 0 0 var(--acadia-space-1);
+  padding-inline: var(--acadia-space-1);
 }
 
 .acadia-footer-link {
   align-items: center;
   border-radius: var(--acadia-radius-sm);
+  box-sizing: border-box;
   color: var(--acadia-color-text-muted);
   display: inline-flex;
-  font-size: 0.9375rem;
-  font-weight: 650;
+  font-size: var(--acadia-type-size-small);
+  font-weight: var(--acadia-font-weight-regular);
   justify-self: start;
-  min-height: 2rem;
-  min-width: 0;
-  padding-inline: 0.25rem;
+  line-height: var(--acadia-type-line-small);
+  max-width: 100%;
+  min-height: var(--acadia-target-size-touch);
+  min-width: var(--acadia-target-size-touch);
+  padding: var(--acadia-space-1);
   text-decoration: none;
+  white-space: normal;
   transition:
     background-color var(--acadia-motion-fast),
     box-shadow var(--acadia-motion-fast),
@@ -2830,12 +2841,18 @@ main [id] {
 }
 
 .acadia-footer-link:hover,
-.acadia-footer-link:focus-visible,
-.acadia-footer-link[aria-current="page"],
-.acadia-footer-link.is-active {
+.acadia-footer-link:focus-visible {
   background: var(--acadia-interaction-hover-bg);
   color: var(--acadia-color-text);
   outline: 0;
+}
+
+.acadia-footer-link[aria-current]:not([aria-current="false"]),
+.acadia-footer-link.is-active:not([aria-current="false"]) {
+  color: var(--acadia-color-text);
+  font-weight: var(--acadia-font-weight-medium);
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
 }
 
 .acadia-footer-link:focus-visible {
@@ -2848,42 +2865,62 @@ main [id] {
   color: var(--acadia-color-text-muted);
   display: flex;
   flex-wrap: wrap;
-  font-size: 0.875rem;
-  font-weight: 700;
-  gap: 0.75rem 1rem;
+  font-size: var(--acadia-type-size-small);
+  font-weight: var(--acadia-font-weight-regular);
+  gap: var(--acadia-space-2);
   justify-content: space-between;
   min-width: 0;
-  padding-top: 1rem;
+  padding-top: var(--acadia-space-2);
+}
+
+/* A compact footer needs one page boundary, not a second empty ruled region. */
+.acadia-footer > .acadia-footer-bottom:first-child {
+  border-top: 0;
+  padding-top: 0;
 }
 
 .acadia-footer-meta {
   align-items: center;
   display: inline-flex;
+  flex: 0 1 auto;
   flex-wrap: wrap;
-  gap: 0.5rem 0.75rem;
+  gap: var(--acadia-space-1) var(--acadia-space-2);
   min-width: 0;
 }
 
 .acadia-footer.is-compact {
-  gap: 1rem;
-  padding-block: 1rem;
+  gap: var(--acadia-space-2);
+  padding-block: var(--acadia-space-2);
 }
 
 .acadia-footer.is-compact .acadia-footer-content {
-  gap: 1rem;
+  gap: var(--acadia-space-3);
 }
 
 .acadia-footer.is-compact .acadia-footer-nav {
   align-items: start;
   display: flex;
   flex-wrap: wrap;
-  gap: 0.75rem 1rem;
+  gap: var(--acadia-space-2);
 }
 
 .acadia-footer.is-compact .acadia-footer-group {
+  align-items: center;
   display: inline-flex;
   flex-wrap: wrap;
-  gap: 0.25rem 0.5rem;
+  gap: var(--acadia-space-1);
+}
+
+.acadia-footer.is-compact .acadia-footer-heading {
+  margin: 0;
+}
+
+@media (forced-colors: active) {
+  .acadia-footer-brand:focus-visible,
+  .acadia-footer-link:focus-visible {
+    outline: 2px solid Highlight;
+    outline-offset: 2px;
+  }
 }
 
 .acadia-breadcrumb {
@@ -3882,8 +3919,11 @@ main [id] {
 .acadia-catalog-copy {
   display: grid;
   gap: var(--acadia-space-2);
+  grid-template-columns: minmax(0, 1fr);
   justify-items: center;
   max-width: 60.5rem;
+  min-inline-size: 0;
+  overflow-wrap: anywhere;
   width: 100%;
 }
 
@@ -3958,6 +3998,7 @@ main [id] {
   font-weight: var(--acadia-font-weight-bold);
   line-height: 1.25rem;
   margin: -0.5rem 0 0;
+  overflow-wrap: anywhere;
 }
 
 .acadia-specimen-stage {
@@ -5204,6 +5245,7 @@ select.acadia-control {
 
 .acadia-lookup {
   align-content: start;
+  container-type: inline-size;
   display: grid;
   gap: var(--acadia-field-gap);
   min-width: 0;
@@ -5256,9 +5298,18 @@ select.acadia-control {
   background: var(--acadia-interaction-hover-bg);
 }
 
+.acadia-lookup-option.is-active,
 .acadia-lookup-option:focus-visible {
   box-shadow: inset var(--acadia-focus-ring);
   outline: 0;
+}
+
+@media (forced-colors: active) {
+  .acadia-lookup-option.is-active,
+  .acadia-lookup-option:focus-visible {
+    outline: 2px solid Highlight;
+    outline-offset: -2px;
+  }
 }
 
 .acadia-lookup-option-copy {
@@ -5278,6 +5329,17 @@ select.acadia-control {
 .acadia-lookup-option-meta {
   min-width: 0;
   text-align: right;
+}
+
+@container (max-width: 20rem) {
+  .acadia-lookup-option {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--acadia-space-1);
+  }
+
+  .acadia-lookup-option-meta {
+    text-align: start;
+  }
 }
 
 .acadia-lookup-message {
@@ -8048,6 +8110,8 @@ select.acadia-control {
    lifecycle. It intentionally keeps identity, status, endpoint, and actions
    in one quiet decision surface rather than repeating a long integration brief. */
 .acadia-connection-card {
+  --acadia-icon-action-size: var(--acadia-control-height);
+  box-sizing: border-box;
   border-radius: var(--acadia-radius-control);
   display: grid;
   gap: 2rem;
@@ -8059,6 +8123,7 @@ select.acadia-control {
 .acadia-connection-card-header {
   align-items: start;
   display: flex;
+  flex-wrap: wrap;
   gap: 1rem;
   min-width: 0;
   width: 100%;
@@ -8079,8 +8144,10 @@ select.acadia-control {
 
 .acadia-connection-card-copy {
   display: grid;
+  flex: 1 1 12rem;
   gap: 0.5rem;
   min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 .acadia-connection-card-header > .acadia-action-menu {
@@ -8150,9 +8217,14 @@ select.acadia-control {
 }
 
 .acadia-connection-card-status {
+  box-sizing: border-box;
   flex: 0 0 auto;
+  flex-wrap: wrap;
   gap: 0.75rem;
+  overflow-wrap: anywhere;
   pointer-events: none;
+  text-align: center;
+  white-space: normal;
 }
 
 .acadia-connection-card-actions {
@@ -8162,14 +8234,12 @@ select.acadia-control {
 }
 
 .acadia-connection-card-feedback {
-  bottom: 0.375rem;
   color: var(--acadia-color-text-muted);
   font-size: var(--acadia-type-size-caption);
-  inset-inline: 2rem;
   line-height: var(--acadia-type-line-ui);
   margin: 0;
   min-block-size: 0;
-  position: absolute;
+  overflow-wrap: anywhere;
 }
 
 .acadia-connection-card-feedback:empty {
@@ -8182,6 +8252,10 @@ select.acadia-control {
 
 .acadia-connection-card-dialog .acadia-dialog-body > p {
   margin: 0;
+}
+
+.acadia-connection-card-dialog .acadia-dialog-body > [role="status"]:not(:empty) {
+  margin-block-start: var(--acadia-space-2);
 }
 
 .acadia-connection-pattern {
@@ -10534,28 +10608,15 @@ button.acadia-profile-row:focus-visible {
     padding-block: 0.625rem;
   }
 
-  .acadia-footer {
-    gap: 1.25rem;
+  .acadia-footer,
+  .acadia-footer.is-compact {
+    gap: var(--acadia-space-3);
     padding: var(--acadia-section-padding-mobile);
+    padding-block-end: max(var(--acadia-section-padding-mobile), env(safe-area-inset-bottom));
   }
 
   .acadia-footer-content {
-    gap: 1.25rem;
-    grid-template-columns: 1fr;
-  }
-
-  .acadia-footer-nav {
-    grid-template-columns: 1fr;
-  }
-
-  .acadia-footer-link,
-  .acadia-footer-brand {
-    min-height: var(--acadia-target-size-touch);
-  }
-
-  .acadia-footer-bottom {
-    align-items: flex-start;
-    flex-direction: column;
+    gap: var(--acadia-space-3);
   }
 
   .acadia-step-list,
@@ -10686,6 +10747,14 @@ button.acadia-profile-row:focus-visible {
       var(--acadia-section-padding-mobile),
       var(--acadia-mobile-dock-clearance)
     );
+  }
+
+  .acadia-footer.acadia-mobile-dock-safe-area {
+    padding-bottom: max(var(--acadia-section-padding-mobile), var(--acadia-mobile-dock-clearance));
+  }
+
+  .acadia-footer.acadia-mobile-dock-safe-area a {
+    scroll-margin-bottom: var(--acadia-mobile-dock-clearance);
   }
 
   .acadia-grid {
@@ -10977,10 +11046,6 @@ button.acadia-profile-row:focus-visible {
   .acadia-connection-card-endpoint-group {
     align-items: stretch;
     flex-direction: column;
-  }
-
-  .acadia-connection-card-feedback {
-    inset-inline: var(--acadia-section-padding-mobile);
   }
 
   .acadia-connection-card-status,

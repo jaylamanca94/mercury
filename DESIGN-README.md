@@ -4,9 +4,16 @@ Use this file as the visual and interaction source of truth for Mercury. Keep th
 
 > **Home simplification — 2026-09-05:** The original Figma dashboard hierarchy is restored on Home: headline/history, compact allocation, paired portfolio changes and two secondary estimates and four asset cards. The Portfolio, Income and Plan contracts below remain active. Legacy economy-dashboard guidance is historical reference.
 
+## Recovery and Acadia alignment — 2026-09-13
+
+- Use a canonical Content Card with a visible heading, polite status and 44px Retry button for initial account loading/failure. Hide private workspaces until the first account load succeeds; preserve the requested route. Missing configuration has distinct copy. Never translate a failed read into zero records.
+- Property read errors use the existing Status Row with Retry properties. Withhold counts/equity, retain usable investment content, retry only the failed collection, and restore focus to the Property heading after success. Do not ask owners to apply migrations based on a generic network error.
+- Updated the unchanged stylesheet to published Acadia 0.3.1 (`ebe4b47a582c8295fde5de1fe56bcce7181bd0a1`). Reviewed intervening Footer, Lookup and Connection changes; these are not new Mercury surfaces. React Menu/Tabs changes do not require replacing Mercury’s native disclosure/controller composition. Assets and curve utility remain byte-identical. The direct-form border-box correction remains necessary in this revision. No new local visual classes.
+- Evidence and limitations: `automation/review/2026-09-13/review.md`.
+
 ## Acadia alignment — 2026-09-10
 
-The active product follows published Acadia `d5408dd1df1840ff91727079f7270d6f9fd754ea`. This section supersedes older snapshot-specific class names, compact modal dimensions and adapters below. See `automation/design/2026-09-10/acadia-alignment.md` for the audited inventory and evidence.
+The original adoption followed published Acadia `d5408dd1df1840ff91727079f7270d6f9fd754ea`; the current pin is recorded above. This section supersedes older snapshot-specific class names, compact modal dimensions and adapters below. See `automation/design/2026-09-10/acadia-alignment.md` for the audited inventory and evidence.
 
 - Vendor one unchanged stylesheet plus matching fonts and SVG assets; `acadia-vendor.json` owns provenance and integrity. Avoid extracted Table overrides and Acadia-prefixed local extensions.
 - Compose static label/value groups using the existing Field layout, Grid and Lead/Title roles. The previous Read Only, Home Dashboard, Asset Preview Card, currency-affix and compact-modal extensions are absent from this published source. Home retains its financial hierarchy through Dashboard Layout, Content Card, Field, Cluster and shared grids. Currency belongs in the visible field label when no canonical prefix exists.

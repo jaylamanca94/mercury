@@ -4,6 +4,10 @@
 
 Mercury is a private personal finance workspace. Its first shipped product surface is Brokerage: a calm, reliable place for one owner to record holdings and understand value, allocation, income, daily movement, and history without becoming a trading terminal or advice engine.
 
+## Release state
+
+0.0.1 establishes semantic versioning for the previously unversioned product. This patch improves account/property recovery and concurrency safety. Remote persistence, migration-rebuild and physical-device acceptance remain open, so 1.0.0 is not warranted.
+
 ## Home / Brokerage MVP
 
 - Email magic-link sign-in for one private owner, backed by Supabase Postgres and row-level security.
@@ -39,4 +43,4 @@ Mercury is a private personal finance workspace. Its first shipped product surfa
 
 ## Operational setup
 
-Apply [`supabase/migrations/20260830_brokerage_mvp.sql`](supabase/migrations/20260830_brokerage_mvp.sql), [`supabase/migrations/20260901_asset_contribution.sql`](supabase/migrations/20260901_asset_contribution.sql), [`supabase/migrations/20260901_quote_dividend_data.sql`](supabase/migrations/20260901_quote_dividend_data.sql), and [`supabase/migrations/20260902_income_sources.sql`](supabase/migrations/20260902_income_sources.sql), configure the environment variables described in [`supabase/README.md`](supabase/README.md), and then use the private authentication flow. Until that configuration is present, Mercury presents an empty disabled workspace rather than storing or fabricating personal financial data.
+Apply [`supabase/migrations/20260830_brokerage_mvp.sql`](supabase/migrations/20260830_brokerage_mvp.sql), [`supabase/migrations/20260901_asset_contribution.sql`](supabase/migrations/20260901_asset_contribution.sql), [`supabase/migrations/20260901_quote_dividend_data.sql`](supabase/migrations/20260901_quote_dividend_data.sql), and [`supabase/migrations/20260902_income_sources.sql`](supabase/migrations/20260902_income_sources.sql), configure the environment variables described in [`supabase/README.md`](supabase/README.md), and then use the private authentication flow. Until that configuration is present, Mercury presents a dedicated configuration state with retry. Temporary account-read failures have their own recovery state; neither is shown as an empty portfolio.
