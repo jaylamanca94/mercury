@@ -97,3 +97,9 @@ Current Acadia Accordion/Breadcrumb contracts were reviewed. The product continu
 ![Before: single-letter compression](/Users/jaylamanca/Library/Mobile Documents/com~apple~CloudDocs/Codex/Mercury/automation/review/2026-09-14/session/15-plan-dark-large-320.png)
 
 ![After: readable wrapping](/Users/jaylamanca/Library/Mobile Documents/com~apple~CloudDocs/Codex/Mercury/automation/review/2026-09-14/session/16-plan-dark-large-fixed.png)
+
+## Production verification — 2026-09-14 19:50 UTC
+
+Implementation `51d54ca285c5d45bb9c36ae8c9cc1ab551fb8c7f` was pushed directly to origin/main and the exact remote SHA verified. GitHub reports the Vercel production deployment successful: [deployment receipt](https://vercel.com/jayson-lamanca-s-projects/mercury/27hCAjDmYb4SmDyX9FtfTtMz4Ezk). Canonical production returned HTTP 200 and byte-identical `index.html`, `brokerage.js`, `styles.css` and `acadia.css`; CSP and nosniff headers were present on all four. Controller SHA-256: `dbcb391eba38ab1ef2dcc69da9908527c4d4e63e0c1eb660367ef138fdbc4433`. The refreshed production browser settled on sign-in with zero captured browser error logs. This is asset/browser verification, not sustained server observability or signed-in production acceptance.
+
+![Verified production sign-in](/Users/jaylamanca/Library/Mobile Documents/com~apple~CloudDocs/Codex/Mercury/automation/review/2026-09-14/session/17-production-signin.png)
