@@ -35,4 +35,8 @@ The layout reference is implemented in the existing Home route, with its wide ch
 - [x] Apply the reference layout using Acadia.
 - [x] Verify responsive layout, source comparison and core actions.
 - [x] Pass all 209 automated checks.
-- [ ] Verify the authorised main push and resulting deployment.
+- [x] Verify the authorised main push and resulting deployment.
+
+## Production receipt
+
+Source commit `a2858c0f294acdf797debe7bf9c14a92fa3ebf78` reached READY production deployment `mercury-3ero9aknz-jayson-lamanca-s-projects.vercel.app`. Hosted checks passed 209/209. Canonical `index.html`, `brokerage.js`, `portfolio.js` and unchanged `acadia.css` matched the committed source exactly. The final 1D screenshot was refreshed after the selected-state transition completed; its layout and data are unchanged. The local synthetic preview remains available for review.
