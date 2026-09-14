@@ -281,11 +281,11 @@ test("Plan provides one hero projection, four statistics and live scenario contr
   for (const horizon of [1,5,10,20]) assert.ok(planWorkspace.includes(`data-plan-horizon="${horizon}"`));
   assert.doesNotMatch(planWorkspace, /id="plan-income-chart"/);
   assert.match(planWorkspace, /Illustrative—not a forecast/);
-  assert.match(planWorkspace, /Property equity is excluded/);
+  assert.match(planWorkspace, /Property equity cannot fund spending/);
   assert.match(indexHtml, /id="plan-assumptions-dialog"/);
   assert.match(indexHtml, /id="property-dialog"/);
-  assert.match(indexHtml, /<script src="plan\.js\?v=20260914-plan-dob-011"><\/script>/);
-  assert.match(indexHtml, /<script type="module" src="brokerage\.js\?v=20260914-plan-dob-011"><\/script>/);
+  assert.match(indexHtml, /<script src="plan\.js\?v=20260914-property-growth-020"><\/script>/);
+  assert.match(indexHtml, /<script type="module" src="brokerage\.js\?v=20260914-property-growth-020"><\/script>/);
   assert.match(homeSource, /function routePlan\(\)/);
   assert.match(homeSource, /function renderPlan\(summary\)/);
   assert.match(homeSource, /function renderPlanChart/);

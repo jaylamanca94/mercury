@@ -22,7 +22,7 @@ function controller() {
   const window = {
     MercuryMarketHistory: require('../market-history'),
     MercuryPortfolio: require('../portfolio'), MercuryIncome: require('../income'),
-    MercuryPlan: require('../plan'), MercuryDashboard: require('../dashboard'),
+    MercuryPropertyMarkets: require('../data/property-markets'), MercuryPlan: require('../plan'), MercuryDashboard: require('../dashboard'),
     location:{reload(){ window.reloads = (window.reloads || 0) + 1; },hash:'#portfolio',origin:'https://example.invalid',pathname:'/index.html',search:''}, listeners:{}, addEventListener(type, callback) { this.listeners[type] = callback; },
   };
   window.history = {pushState(_state, _title, hash) { window.location.hash = hash.startsWith('#') ? hash : ''; }};
@@ -1292,7 +1292,7 @@ test('property purchase price survives save and reopen, can be cleared, and fail
   let payload,fail=false;
   api.state.client.from=table=>{
     assert.equal(table,'home_properties');
-    return {update(value){payload=value;return this},eq(){return this},select(){return this},async single(){return fail?{error:new Error('Save unavailable')}:{data:{...api.state.properties[0],...payload}}}};
+    return {update(value){payload=value;return this},eq(){return this},select(){return this},single(){return this},abortSignal(){return this},async then(resolve){resolve(fail?{error:new Error('Save unavailable')}:{data:{...api.state.properties[0],...payload}})}};
   };
   api.openPropertyDialog('property',{focusPurchasePrice:true});
   assert.equal(node('#property-purchase-price').value,'');
@@ -1579,4 +1579,39 @@ test('DOB saves reject future dates and preserve the entered draft after conflic
  await api.savePlanAssumptions({preventDefault(){}});
  assert.equal(getRemote().date_of_birth,'1990-03-01');assert.equal(node('#plan-assumptions-form').fields.dateOfBirth,'1995-10-01');
  assert.match(node('#plan-assumptions-form-status').textContent,/changed elsewhere/);
+});
+
+test('property geography and automatic/custom appreciation survive save and reopen',async()=>{
+ const {api,node}=controller();api.state.account={id:'account'};
+ api.state.properties=[{id:'property',account_id:'account',name:'Synthetic',location:'Legacy location',current_value_cents:45000000,mortgage_balance_cents:20000000}];
+ let payload;const filters=[];
+ api.state.client.from=()=>({update(p){payload=p;return this},eq(k,v){filters.push([k,v]);return this},select(){return this},single(){return this},abortSignal(){return this},then(resolve){resolve({data:{...api.state.properties[0],...payload}})}});
+ api.openPropertyDialog('property');
+ assert.equal(node('#property-city').value,'');assert.match(node('#property-legacy-location').textContent,/Legacy location/);
+ node('#property-form').fields={name:'Synthetic',city:'Roanoke',stateCode:'VA',countyFips:'51770',appreciation:'',currentValue:'450000',mortgageBalance:'200000'};
+ await api.saveProperty({preventDefault(){}});api.openPropertyDialog('property');
+ assert.equal(api.state.properties[0].county_fips,'51770');assert.equal(node('#property-city').value,'Roanoke');assert.equal(node('#property-state').value,'VA');assert.equal(node('#property-county').value,'51770');
+ assert.equal(payload.annual_appreciation_rate,null);assert.match(node('#property-appreciation-preview').textContent,/FHFA.*Roanoke City/);
+ assert.deepEqual(filters,[['id','property'],['account_id','account']]);
+ node('#property-form').fields.appreciation='0';await api.saveProperty({preventDefault(){}});api.openPropertyDialog('property');
+ assert.equal(node('#property-appreciation').value,'0');assert.match(node('#property-appreciation-preview').textContent,/Custom/);
+ node('#property-state').value='NY';node('#property-state').listeners.change();assert.equal(node('#property-county').value,'');
+});
+
+test('late property save cannot populate a replacement account',async()=>{
+ const {api,node}=controller();api.state.account={id:'account'};
+ let finish;api.state.client.from=()=>({insert(){return this},select(){return this},single(){return this},abortSignal(){return this},then(resolve){finish=resolve}});
+ api.openPropertyDialog();node('#property-form').fields={name:'Synthetic',city:'Synthetic city',currentValue:'450000',mortgageBalance:'200000'};
+ const write=api.saveProperty({preventDefault(){}});await new Promise(setImmediate);
+ api.state.account={id:'other'};api.state.properties=[];
+ finish({data:{id:'late',name:'Synthetic'}});await write;assert.equal(api.state.properties.length,0);
+});
+
+test('Plan reports combined wealth but missing property reads withhold it and expose repair',()=>{
+ const {api,node}=planEditorFixture();api.state.properties=[{id:'property',name:'Synthetic',current_value_cents:45000000,mortgage_balance_cents:20000000,annual_appreciation_rate:null}];
+ const summary={rows:[],totalMarketValueCents:0};api.renderPlan(summary);
+ assert.equal(node('#plan-projected-value').textContent,'$250k');assert.match(node('#plan-projection-note').textContent,/appreciation assumption/);
+ assert.match(node('#plan-value-breakdown').textContent,/Property equity \$250,000.00/);
+ api.state.propertiesAvailable=false;api.renderPlan(summary);
+ assert.equal(node('#plan-outlook').hidden,true);assert.equal(node('#plan-projected-value').textContent,'Not set');assert.equal(node('#plan-review-portfolio').hidden,false);
 });

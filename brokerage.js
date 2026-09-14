@@ -23,6 +23,8 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
     normalizeProperty,
     propertyEquityCents,
     propertyGainLoss,
+    propertyAppreciation,
+    includePropertyInProjection,
     totalPropertyEquityCents,
     normalizePlanSettings,
     projectLifePlan,
@@ -724,10 +726,13 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
       accountId: property.account_id,
       name: property.name || "Home",
       location: property.location || null,
+      city: property.city || null,
+      stateCode: property.state_code || null,
+      countyFips: property.county_fips || null,
       currentValueCents: Number(property.current_value_cents),
       purchasePriceCents: property.purchase_price_cents == null ? null : Number(property.purchase_price_cents),
       mortgageBalanceCents: Number(property.mortgage_balance_cents),
-      annualAppreciationRate: property.annual_appreciation_rate === null ? null : Number(property.annual_appreciation_rate),
+      annualAppreciationRate: property.annual_appreciation_rate == null ? null : Number(property.annual_appreciation_rate),
     };
   }
   function totalPropertyEquity() {
@@ -760,6 +765,7 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
       const model = propertyModel(property);
       const equityCents = propertyEquityCents(model);
       const change = propertyGainLoss(model);
+      const appreciation = propertyAppreciation(model);
       const gainLabel = change === null ? "" : `${change.gainCents > 0 ? "+" : ""}${preciseCurrency.format(change.gainCents / 100)}`;
       const rateLabel = change?.gainRate == null ? "" : new Intl.NumberFormat("en-US", { style: "percent", maximumFractionDigits: 2, signDisplay: "exceptZero" }).format(change.gainRate);
       const purchaseMarkup = change === null
@@ -768,7 +774,7 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
       const card = document.createElement("article");
       card.className = "acadia-card is-content";
       card.setAttribute("aria-label", `${model.name}${model.location ? `, ${model.location}` : ""}, market value ${displayCurrency(model.currentValueCents / 100)}, mortgage balance ${displayCurrency(model.mortgageBalanceCents / 100)}, equity ${displayCurrency(equityCents / 100)}`);
-      card.innerHTML = `<div class="acadia-card-actions" role="group" aria-label="Actions for ${escapeHtml(model.name)}"><details class="acadia-action-menu"><summary class="acadia-action-menu-trigger acadia-icon-action" aria-label="Actions for ${escapeHtml(model.name)}"><i class="fa-solid fa-ellipsis acadia-icon" aria-hidden="true"></i></summary><div class="acadia-action-menu-panel"><button class="acadia-action-menu-item" type="button" data-edit-property-id="${escapeHtml(model.id)}">Edit property</button><div class="acadia-action-menu-divider"></div><button class="acadia-action-menu-item is-danger" type="button" data-delete-property-id="${escapeHtml(model.id)}">Delete property</button></div></details></div><div class="acadia-field"><div class="acadia-cluster"><h3 class="acadia-lead">${escapeHtml(model.name)}</h3><span style="color: var(--acadia-color-brand)" title="${escapeHtml(preciseCurrency.format(model.currentValueCents / 100))}">${escapeHtml(displayCurrency(model.currentValueCents / 100))}<span class="acadia-sr-only"> market value</span></span></div>${model.location ? `<span class="acadia-text-muted">${escapeHtml(model.location)}</span>` : ""}</div>${purchaseMarkup}<div class="acadia-cluster"><small class="acadia-text-muted">Equity ${escapeHtml(preciseCurrency.format(equityCents / 100))}</small><small class="acadia-text-muted">Debt ${escapeHtml(preciseCurrency.format(model.mortgageBalanceCents / 100))}</small></div>`;
+      card.innerHTML = `<div class="acadia-card-actions" role="group" aria-label="Actions for ${escapeHtml(model.name)}"><details class="acadia-action-menu"><summary class="acadia-action-menu-trigger acadia-icon-action" aria-label="Actions for ${escapeHtml(model.name)}"><i class="fa-solid fa-ellipsis acadia-icon" aria-hidden="true"></i></summary><div class="acadia-action-menu-panel"><button class="acadia-action-menu-item" type="button" data-edit-property-id="${escapeHtml(model.id)}">Edit property</button><div class="acadia-action-menu-divider"></div><button class="acadia-action-menu-item is-danger" type="button" data-delete-property-id="${escapeHtml(model.id)}">Delete property</button></div></details></div><div class="acadia-field"><div class="acadia-cluster"><h3 class="acadia-lead">${escapeHtml(model.name)}</h3><span style="color: var(--acadia-color-brand)" title="${escapeHtml(preciseCurrency.format(model.currentValueCents / 100))}">${escapeHtml(displayCurrency(model.currentValueCents / 100))}<span class="acadia-sr-only"> market value</span></span></div>${model.location ? `<span class="acadia-text-muted">${escapeHtml(model.location)}</span>` : ""}</div>${purchaseMarkup}<div class="acadia-field"><span>${appreciation.rate === null ? "Appreciation not set" : `${percentage.format(appreciation.rate)} annual appreciation`}</span><small class="acadia-text-muted">${escapeHtml(appreciation.source)}</small></div><div class="acadia-cluster"><small class="acadia-text-muted">Equity ${escapeHtml(preciseCurrency.format(equityCents / 100))}</small><small class="acadia-text-muted">Debt ${escapeHtml(preciseCurrency.format(model.mortgageBalanceCents / 100))}</small></div>`;
       return card;
     }));
     grid.querySelectorAll("[data-edit-property-id]").forEach((button) => {
@@ -1346,6 +1352,7 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
       normalizePlanScenario(scenario);
       projection = projectLifePlan({ currentValueCents: summary.totalMarketValueCents, ...amounts, ...assumptions, horizonYears: state.planHorizon,
         dateOfBirth: scenario.dateOfBirth, stopInvestingAge: scenario.stopInvestingAge, retirementAge: scenario.retirementAge });
+      projection = includePropertyInProjection(projection, state.properties.map(propertyModel));
     } catch (error) {
       projection = { available: false, points: [], reason: error.message };
     }
@@ -1415,13 +1422,13 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
   function renderPlanChart(points, selectedYear, unavailableText) {
     const chart = $("#plan-value-chart");
     if (!points.length) { chart.innerHTML = ""; chart.setAttribute("aria-label", unavailableText); setText("#plan-value-summary", unavailableText); return; }
-    const values = points.map(point => point.investmentValueCents);
+    const values = points.map(point => point.totalValueCents);
     const min = Math.min(...values), max = Math.max(...values), range = max - min;
     const geometry = values.map((value, index) => ({ x: index / (values.length - 1) * 1000, y: range ? 92 - (value - min) / range * 80 : 50 }));
     const line = buildCardTrendPath(geometry);
     const selected = geometry[selectedYear * 12];
     chart.innerHTML = `<svg class="acadia-card-trend-chart is-primary" viewBox="0 0 1000 100" preserveAspectRatio="none" aria-hidden="true"><polyline class="acadia-card-trend-baseline" points="0,${geometry[0].y} 1000,${geometry[0].y}"></polyline><path class="acadia-card-trend-area" d="${line} L 1000 100 L 0 100 Z"></path><path class="acadia-card-trend-line" d="${line}"></path><line class="acadia-card-trend-baseline" x1="${selected.x}" x2="${selected.x}" y1="0" y2="100"></line></svg>`;
-    const description = `Illustrative portfolio value: ${preciseCurrency.format(values[0] / 100)} now; ${preciseCurrency.format(values[selectedYear * 12] / 100)} in year ${selectedYear}; ${preciseCurrency.format(values.at(-1) / 100)} in year ${state.planHorizon}.`;
+    const description = `Illustrative net worth (investments and property equity): ${preciseCurrency.format(values[0] / 100)} now; ${preciseCurrency.format(values[selectedYear * 12] / 100)} in year ${selectedYear}; ${preciseCurrency.format(values.at(-1) / 100)} in year ${state.planHorizon}.`;
     chart.setAttribute("aria-label", description); setText("#plan-value-summary", description);
   }
   function renderPlanAssets(summary) {
@@ -1437,8 +1444,8 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
     const count = state.properties.length;
     const properties = state.properties.map(propertyModel);
     const propertyTotal = properties.reduce((sum, property) => sum + property.currentValueCents, 0);
-    const appreciation = propertyTotal > 0 && properties.every(property => property.annualAppreciationRate !== null) ? properties.reduce((sum, property) => sum + property.currentValueCents * property.annualAppreciationRate, 0) / propertyTotal : null;
-    $("#plan-property-summary").innerHTML = `<article class="acadia-card is-content"><div class="acadia-card-header"><div class="acadia-page-header-pattern-actions"><h3 class="acadia-lead">Property</h3><a class="acadia-icon-action" href="#portfolio" aria-label="View properties"><i class="fa-solid fa-chevron-right acadia-icon" aria-hidden="true"></i></a></div><span class="acadia-text-muted">${state.propertiesAvailable ? displayCurrency(totalPropertyEquity() / 100) : "Unavailable"}</span></div><strong style="color: var(--acadia-color-brand)">${state.propertiesAvailable ? `${count} ${count === 1 ? "property" : "properties"}` : "Review Portfolio to retry"}</strong><span title="Annual appreciation assumption"><i class="fa-solid fa-chart-line acadia-icon" aria-hidden="true"></i> <span class="acadia-sr-only">Annual appreciation: </span>${appreciation === null ? "Not set" : percentage.format(appreciation)}</span></article>`;
+    const appreciation = propertyTotal > 0 && properties.every(property => propertyAppreciation(property).rate !== null) ? properties.reduce((sum, property) => sum + property.currentValueCents * propertyAppreciation(property).rate, 0) / propertyTotal : null;
+    $("#plan-property-summary").innerHTML = `<article class="acadia-card is-content"><div class="acadia-card-header"><div class="acadia-page-header-pattern-actions"><h3 class="acadia-lead">Property</h3><a class="acadia-icon-action" href="#portfolio" aria-label="View properties"><i class="fa-solid fa-chevron-right acadia-icon" aria-hidden="true"></i></a></div><span class="acadia-text-muted">${state.propertiesAvailable ? displayCurrency(totalPropertyEquity() / 100) : "Unavailable"}</span></div><strong style="color: var(--acadia-color-brand)">${state.propertiesAvailable ? `${count} ${count === 1 ? "property" : "properties"}` : "Review Portfolio to retry"}</strong><span title="Annual appreciation assumption"><i class="fa-solid fa-chart-line acadia-icon" aria-hidden="true"></i> <span class="acadia-sr-only">Annual appreciation: </span>${appreciation === null ? "Not set" : percentage.format(appreciation)} annual appreciation</span><small class="acadia-text-muted">${properties.map(property => escapeHtml(`${property.name}: ${propertyAppreciation(property).source}`)).join("<br>")}</small></article>`;
     document.querySelectorAll("[data-plan-group]").forEach(link => link.addEventListener("click", () => { state.portfolioFilter = link.dataset.planGroup; }));
   }
   function renderPlan(summary) {
@@ -1451,13 +1458,14 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
     const missingValuations = state.holdings.length - summary.rows.length;
     const valuationComplete = missingValuations === 0;
     const cashflowAvailable = state.incomeSourcesAvailable && state.budgetCategoriesAvailable;
-    const ready = state.planDataAvailable && valuationComplete && cashflowAvailable && projection.available;
+    const ready = state.planDataAvailable && state.propertiesAvailable && valuationComplete && cashflowAvailable && projection.available;
     const points = ready ? projection.points : [];
     const year = Math.min(state.planHorizon, state.planSelectedYear);
     const selected = points[year * 12];
     const metricsLoading = state.providerMetricsPending.size > 0;
     const missingReturn = !Number.isFinite(assumptions.expectedAnnualReturnRate), missingYield = !Number.isFinite(assumptions.distributionYieldRate);
     const unavailableText = !state.planDataAvailable ? "Your saved settings could not be loaded. Retry to restore your outlook."
+      : !state.propertiesAvailable ? "Properties could not be loaded. Review Portfolio and retry properties."
       : !valuationComplete ? `${missingValuations} ${missingValuations === 1 ? "asset needs" : "assets need"} a valuation before an outlook can be calculated.`
         : !cashflowAvailable ? "Income or expenses could not be loaded. Review Income and retry your data."
           : projection.reason || (metricsLoading && !projection.available ? "Loading current portfolio metrics…" : missingReturn && missingYield ? "Return and dividend data are missing for some holdings. Review Portfolio to complete coverage." : missingReturn ? "Annual return data is missing for some holdings. Review Portfolio to complete coverage." : "Dividend data is missing for some holdings. Review Portfolio to complete coverage.");
@@ -1466,23 +1474,24 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
     $("#plan-retry-data").hidden = state.planDataAvailable;
     $("#plan-retry-data").disabled = state.planReloadPending;
     setText("#plan-retry-data", state.planReloadPending ? "Retrying…" : "Retry settings");
-    $("#plan-review-portfolio").hidden = (valuationComplete && !(missingReturn || missingYield)) || metricsLoading || !state.planDataAvailable;
+    $("#plan-review-portfolio").hidden = state.propertiesAvailable && ((valuationComplete && !(missingReturn || missingYield)) || metricsLoading || !state.planDataAvailable);
     $("#plan-review-income").hidden = cashflowAvailable;
     setText("#plan-readiness-title", !state.planDataAvailable ? "Plan unavailable" : !valuationComplete ? "Complete your portfolio values" : metricsLoading && !projection.available ? "Loading your outlook" : projection.reason ? "Review your Plan inputs" : "Portfolio data incomplete");
     setText("#plan-readiness-copy", unavailableText);
-    const projected = ready ? displayCurrency(selected.investmentValueCents / 100) : "Not set";
+    const projected = ready ? displayCurrency(selected.totalValueCents / 100) : "Not set";
     setText("#plan-hero-value", projected); setText("#plan-projected-value", projected);
-    setText("#plan-hero-age", selected?.age == null ? "Projected portfolio" : `Age ${selected.age}`);
+    setText("#plan-hero-age", selected?.age == null ? "Projected net worth" : `Age ${selected.age}`);
     const date = new Date(`${selected?.date || dateAtPlanMonth(planToday(), year * 12)}T12:00:00`);
     setText("#plan-hero-date", date.toLocaleDateString("en-US", { month: "short", year: "numeric" }));
-    const change = ready ? selected.investmentValueCents - summary.totalMarketValueCents : null;
+    const baseline = summary.totalMarketValueCents + totalPropertyEquity();
+    const change = ready ? selected.totalValueCents - baseline : null;
     setText("#plan-change", change === null ? "Not set" : displaySignedCurrency(change));
-    setText("#plan-change-rate", ready && summary.totalMarketValueCents > 0 ? displaySignedPercentage(change / summary.totalMarketValueCents) : "");
+    setText("#plan-change-rate", ready && baseline > 0 ? displaySignedPercentage(change / baseline) : "");
     setText("#plan-change-label", `${year} year change`);
     setText("#plan-projected-income", ready ? displayCurrency(selected.projectedIncomeCents / 100) : "Not set");
     setText("#plan-income-rate", ready ? percentage.format(assumptions.distributionYieldRate) : "");
     setText("#plan-growth", ready ? displaySignedCurrency(selected.expectedGrowthCents) : "Not set");
-    setText("#plan-growth-rate", ready ? displaySignedPercentage(projection.effectiveGrowthRate) : "");
+    setText("#plan-growth-rate", ready && selected.totalValueCents > 0 ? displaySignedPercentage(selected.expectedGrowthCents / selected.totalValueCents) : "");
     $("#plan-selected-year").max = state.planHorizon;
     $("#plan-selected-year").value = year;
     $("#plan-selected-year").setAttribute("aria-valuetext", `${year === 0 ? "Now" : `Year ${year}`} · ${projected}${selected?.age == null ? "" : ` · Age ${selected.age}`}`);
@@ -1490,9 +1499,10 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
     document.querySelectorAll("[data-plan-horizon]").forEach(control => { const active = Number(control.dataset.planHorizon) === state.planHorizon; control.classList.toggle("is-active", active); control.setAttribute("aria-pressed", String(active)); });
     renderPlanChart(points, year, unavailableText);
     const depletion = ready && projection.depletionMonth !== null;
-    $("#plan-projection-note").hidden = !depletion;
-    setText("#plan-projection-note", depletion ? `This scenario exhausts the portfolio in month ${projection.depletionMonth}. ${currency.format(projection.unfundedCents / 100)} of spending remains unfunded over ${state.planHorizon} years.` : "");
-    for (const [id, amount] of [["plan-projected-value", selected?.investmentValueCents], ["plan-change", change], ["plan-projected-income", selected?.projectedIncomeCents], ["plan-growth", selected?.expectedGrowthCents]]) $("#" + id).setAttribute("title", Number.isSafeInteger(amount) ? preciseCurrency.format(amount / 100) : "Unavailable");
+    $("#plan-projection-note").hidden = !ready || (!depletion && !projection.missingPropertyRates);
+    setText("#plan-projection-note", [ready && projection.missingPropertyRates ? `${projection.missingPropertyRates} ${projection.missingPropertyRates === 1 ? "property needs" : "properties need"} an appreciation assumption. Their current values are held constant. Edit the property in Portfolio to complete projected growth.` : "", depletion ? `Investments run out in month ${projection.depletionMonth}. ${currency.format(projection.unfundedCents / 100)} of spending remains unfunded over ${state.planHorizon} years. Property equity is not available to cover spending.` : ""].filter(Boolean).join(" "));
+    setText("#plan-value-breakdown", ready ? `Investments ${preciseCurrency.format(selected.investmentValueCents / 100)} · Property equity ${preciseCurrency.format(selected.propertyEquityCents / 100)}` : "");
+    for (const [id, amount] of [["plan-projected-value", selected?.totalValueCents], ["plan-change", change], ["plan-projected-income", selected?.projectedIncomeCents], ["plan-growth", selected?.expectedGrowthCents]]) $("#" + id).setAttribute("title", Number.isSafeInteger(amount) ? preciseCurrency.format(amount / 100) : "Unavailable");
     const defaults = { weeklyExpensesCents: amounts.annualExpensesCents / 52, weeklyInvestmentCents: amounts.annualContributionCents / 52, annualIncomeCents: amounts.annualIncomeCents / planIncomeCadence };
     for (const [key, selector] of Object.entries(scenarioControls)) {
       const control = $(selector);
@@ -2694,6 +2704,22 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
     }
   }
 
+  const propertyMarkets = window.MercuryPropertyMarkets;
+  function renderPropertyCounties(selected = "") {
+    const stateCode = $("#property-state").value;
+    const counties = (propertyMarkets?.counties || []).filter(county => county.state === stateCode).sort((a, b) => a.name.localeCompare(b.name));
+    $("#property-county").innerHTML = '<option value="">Select county / not listed</option>' + counties.map(county => `<option value="${county.fips}">${escapeHtml(county.name)}</option>`).join("");
+    $("#property-county").value = selected;
+    $("#property-county").disabled = !stateCode;
+  }
+  function renderPropertyAppreciation() {
+    const value = $("#property-appreciation").value;
+    try {
+      const assumption = propertyAppreciation({ stateCode: $("#property-state").value, countyFips: $("#property-county").value, annualAppreciationRate: value === "" ? null : Number(value) / 100 });
+      setText("#property-appreciation-preview", `${assumption.rate === null ? "Appreciation not set" : `${percentage.format(assumption.rate)} / year`} · ${assumption.source}`);
+    } catch (error) { setText("#property-appreciation-preview", error.message); }
+  }
+  let propertyEditContext = null;
   function openPropertyDialog(id = null, { focusPurchasePrice = false } = {}) {
     if (protectedDialogs.get($("#property-dialog"))?.pending) return;
     if (!state.propertiesAvailable) return;
@@ -2701,13 +2727,20 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
     const property = state.properties.find((entry) => entry.id === id);
     state.propertyDialogId = property?.id || null;
     form.reset();
+    propertyEditContext = accountContext();
+    $("#property-state").innerHTML = '<option value="">Select state / outside US</option>' + [...new Set((propertyMarkets?.counties || []).map(county => county.state))].sort().map(code => `<option value="${code}">${code}</option>`).join("");
+    $("#property-state").value = property?.state_code || "";
+    $("#property-city").value = property?.city || "";
+    $("#property-appreciation").value = property?.annual_appreciation_rate == null ? "" : String(Number(property.annual_appreciation_rate) * 100);
+    renderPropertyCounties(property?.county_fips || "");
+    renderPropertyAppreciation();
+    setText("#property-legacy-location", property?.location && !property.city ? `Previously saved location: ${property.location}. Confirm city, state and county below.` : "");
     setText("#property-dialog-title", property ? "Edit property" : "Add property");
     setText("#save-property", property ? "Save property" : "Add property");
     setText("#property-form-status", "");
     if (property) {
       const model = propertyModel(property);
       $("#property-name").value = model.name;
-      $("#property-location").value = model.location || "";
       $("#property-current-value").value = (model.currentValueCents / 100).toFixed(2);
       $("#property-purchase-price").value = model.purchasePriceCents === null ? "" : (model.purchasePriceCents / 100).toFixed(2);
       $("#property-debt-balance").value = (model.mortgageBalanceCents / 100).toFixed(2);
@@ -2719,7 +2752,9 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
   function closePropertyDialog() { $("#property-dialog").close(); }
   async function saveProperty(event) {
     event.preventDefault();
-    if (!state.account) return;
+    if (!state.account || (propertyEditContext && !propertyEditContext())) return;
+    const current = propertyEditContext || accountContext();
+    const { client, account, propertyDialogId } = state;
     const save = $("#save-property");
     try {
       save.disabled = true;
@@ -2728,22 +2763,32 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
         accountId: state.account.id,
         name: getFormValue($("#property-form"), "name"),
         location: getFormValue($("#property-form"), "location"),
+        city: getFormValue($("#property-form"), "city"),
+        stateCode: getFormValue($("#property-form"), "stateCode"),
+        countyFips: getFormValue($("#property-form"), "countyFips"),
+        annualAppreciationRate: getFormValue($("#property-form"), "appreciation") === null || getFormValue($("#property-form"), "appreciation") === "" ? null : Number(getFormValue($("#property-form"), "appreciation")) / 100,
         currentValueCents: cents(getFormValue($("#property-form"), "currentValue")),
         purchasePriceCents: cents(getFormValue($("#property-form"), "purchasePrice")),
         mortgageBalanceCents: cents(getFormValue($("#property-form"), "mortgageBalance")) ?? 0,
       });
+      if (property.countyFips && !propertyMarkets?.counties.some(county => county.fips === property.countyFips && county.state === property.stateCode)) throw new Error("Select a county in the property’s state.");
       const payload = {
         account_id: state.account.id,
         name: property.name,
-        location: property.location,
+        location: [property.city, property.stateCode, propertyMarkets?.counties.find(county => county.fips === property.countyFips)?.name].filter(Boolean).join(", ") || property.location || state.properties.find(entry => entry.id === propertyDialogId)?.location || null,
+        city: property.city,
+        state_code: property.stateCode,
+        county_fips: property.countyFips,
+        annual_appreciation_rate: property.annualAppreciationRate,
         current_value_cents: property.currentValueCents,
         purchase_price_cents: property.purchasePriceCents,
         mortgage_balance_cents: property.mortgageBalanceCents,
       };
-      const query = state.propertyDialogId
-        ? state.client.from("home_properties").update(payload).eq("id", state.propertyDialogId)
-        : state.client.from("home_properties").insert(payload);
-      const { data, error } = await query.select().single();
+      const query = propertyDialogId
+        ? client.from("home_properties").update(payload).eq("id", propertyDialogId).eq("account_id", account.id)
+        : client.from("home_properties").insert(payload);
+      const { data, error } = await readWithDeadline(signal => query.select().single().abortSignal(signal));
+      if (!current()) return;
       if (error) throw error;
       state.properties = state.propertyDialogId
         ? state.properties.map((entry) => entry.id === data.id ? data : entry)
@@ -2751,7 +2796,7 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
       render();
       closePropertyDialog();
     } catch (error) {
-      setText("#property-form-status", error.message || "The property could not be saved.");
+      if (current()) setText("#property-form-status", error.message === "Read timed out" ? "Saving could not be confirmed. Your draft is retained. Reload to check before adding again." : error.message || "The property could not be saved.");
     } finally {
       save.disabled = false;
       save.textContent = state.propertyDialogId ? "Save property" : "Add property";
@@ -2850,7 +2895,7 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
     setText("#property-recovery-status", "Retrying properties…");
     render();
     try {
-      const result = await readWithDeadline(signal => client.from("home_properties").select("id, account_id, name, location, current_value_cents, purchase_price_cents, mortgage_balance_cents, annual_appreciation_rate, created_at").eq("account_id", account.id).order("created_at").abortSignal(signal));
+      const result = await readWithDeadline(signal => client.from("home_properties").select("id, account_id, name, location, city, state_code, county_fips, current_value_cents, purchase_price_cents, mortgage_balance_cents, annual_appreciation_rate, created_at").eq("account_id", account.id).order("created_at").abortSignal(signal));
       if (!current()) return;
       if (result.error || !Array.isArray(result.data)) throw new Error("Property read failed");
       state.properties = result.data;
@@ -2881,7 +2926,7 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
       signal => client.from("income_sources").select("*").eq("account_id", account.id).order("created_at").abortSignal(signal),
       signal => client.from("budget_categories").select("*").eq("account_id", account.id).order("created_at").abortSignal(signal),
       signal => client.from("plan_settings").select("*").eq("account_id", account.id).maybeSingle().abortSignal(signal),
-      signal => client.from("home_properties").select("id, account_id, name, location, current_value_cents, purchase_price_cents, mortgage_balance_cents, annual_appreciation_rate, created_at").eq("account_id", account.id).order("created_at").abortSignal(signal),
+      signal => client.from("home_properties").select("id, account_id, name, location, city, state_code, county_fips, current_value_cents, purchase_price_cents, mortgage_balance_cents, annual_appreciation_rate, created_at").eq("account_id", account.id).order("created_at").abortSignal(signal),
     ].map(operation => readWithDeadline(operation)));
     if (!current() || requestId !== state.dataRequestId) return false;
     const [accounts, holdings, quotes, snapshots, incomeSources, budgetCategories, planSettings, properties] = results.map(result => result.status === "fulfilled" ? result.value : { error: result.reason });
@@ -3269,6 +3314,9 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
   $("#close-property-dialog").addEventListener("click", closePropertyDialog);
   $("#cancel-property-dialog").addEventListener("click", closePropertyDialog);
   $("#property-dialog").addEventListener("close", () => { $("#property-dialog").hidden = true; });
+  $("#property-state").addEventListener("change", () => { renderPropertyCounties(); renderPropertyAppreciation(); });
+  $("#property-county").addEventListener("change", renderPropertyAppreciation);
+  $("#property-appreciation").addEventListener("input", renderPropertyAppreciation);
   protectDialog("#property-dialog", "#property-form", saveProperty);
   $("#cancel-delete-property").addEventListener("click", closeDeletePropertyDialog);
   $("#delete-property-dialog").addEventListener("close", () => { $("#delete-property-dialog").hidden = true; });

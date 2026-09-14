@@ -8,6 +8,7 @@ const PLAN_DISTRIBUTION_POLICIES = Object.freeze([
   "hold-cash",
 ]);
 const PLAN_CONTRIBUTION_FREQUENCIES = Object.freeze({ weekly: 52, monthly: 12 });
+const PROPERTY_MARKETS = typeof module !== "undefined" ? require("./data/property-markets.js") : window.MercuryPropertyMarkets;
 
 class PlanValidationError extends Error {
   constructor(message) {
@@ -171,11 +172,20 @@ function normalizeProperty(input) {
   if (!input || typeof input !== "object" || Array.isArray(input)) {
     throw new PlanValidationError("property must be an object");
   }
+  const city = optionalText(input.city, "City");
+  const stateCode = optionalText(input.stateCode, "State");
+  const countyFips = optionalText(input.countyFips, "County");
+  if (city && city.length > 120) throw new PlanValidationError("City must be 120 characters or fewer.");
+  // Stored equity stays readable even if a future source release retires an area.
+  // Exact source matching belongs to appreciation lookup and editor validation.
+  if (stateCode && !/^[A-Z]{2}$/.test(stateCode)) throw new PlanValidationError("Select a valid state.");
+  if (countyFips && (!stateCode || !/^\d{5}$/.test(countyFips))) throw new PlanValidationError("Select a valid county and state.");
   return Object.freeze({
     id: input.id ?? null,
     accountId: input.accountId ?? null,
     name: requiredText(input.name ?? "Home", "name"),
     location: optionalText(input.location, "location"),
+    city, stateCode, countyFips,
     currentValueCents: nonNegativeCents(input.currentValueCents, "currentValueCents"),
     purchasePriceCents: input.purchasePriceCents == null || input.purchasePriceCents === ""
       ? null : nonNegativeCents(input.purchasePriceCents, "purchasePriceCents"),
@@ -183,6 +193,41 @@ function normalizeProperty(input) {
     annualAppreciationRate: optionalRate(input.annualAppreciationRate, "annualAppreciationRate"),
     includeInNetWorth: Boolean(input.includeInNetWorth),
   });
+}
+
+function propertyAppreciation(property, markets = PROPERTY_MARKETS) {
+  const override = optionalRate(property.annualAppreciationRate, "Annual appreciation");
+  if (override !== null) return { rate: override, source: "Custom appreciation assumption", automatic: false };
+  const county = markets?.counties.find(entry => entry.fips === property.countyFips && entry.state === property.stateCode);
+  if (!county) return { rate: null, source: "Select a state and county, or enter a custom rate.", automatic: false };
+  const years = markets.endYear - markets.startYear;
+  if (years !== 10 || !(county.startIndex > 0) || !(county.endIndex > 0)) return { rate: null, source: `FHFA has no complete ten-year history for ${county.name}, ${county.state}. Enter a custom rate.`, automatic: true };
+  const rate = Math.pow(county.endIndex / county.startIndex, 1 / years) - 1;
+  if (!Number.isFinite(rate) || rate < -1 || rate > 1) return { rate: null, source: "County appreciation data is unavailable. Enter a custom rate.", automatic: true };
+  return { rate, automatic: true, source: `FHFA · ${county.name}, ${county.state} · ${markets.startYear}–${markets.endYear} annualised · released ${markets.released}` };
+}
+
+// Property is wealth, never a source of cash for the investment spending model.
+// Unknown appreciation holds the supplied current value constant and is flagged.
+function includePropertyInProjection(projection, properties) {
+  if (!projection.available) return projection;
+  const models = properties.map(normalizeProperty);
+  const assumptions = models.map(property => propertyAppreciation(property));
+  const missingPropertyRates = assumptions.filter(item => item.rate === null).length;
+  const points = projection.points.map(point => {
+    let propertyEquityCents = 0, propertyGrowthCents = 0;
+    models.forEach((property, index) => {
+      const rate = assumptions[index].rate ?? 0;
+      const value = Math.round(property.currentValueCents * Math.pow(1 + rate, point.year));
+      propertyEquityCents += value - property.mortgageBalanceCents;
+      propertyGrowthCents += Math.round(value * rate);
+    });
+    const totalValueCents = point.investmentValueCents + propertyEquityCents;
+    const expectedGrowthCents = point.expectedGrowthCents + propertyGrowthCents;
+    if (![propertyEquityCents, totalValueCents, expectedGrowthCents].every(Number.isSafeInteger)) throw new PlanValidationError("Projected values exceed the supported range. Review appreciation and return assumptions.");
+    return { ...point, propertyEquityCents, propertyGrowthCents, totalValueCents, expectedGrowthCents };
+  });
+  return { ...projection, points, missingPropertyRates };
 }
 
 function propertyEquityCents(property) {
@@ -322,6 +367,8 @@ const planContract = {
   normalizePlanScenario,
   propertyEquityCents,
   propertyGainLoss,
+  propertyAppreciation,
+  includePropertyInProjection,
   projectPortfolio,
   projectLifePlan,
   resolvePlanAssumptions,

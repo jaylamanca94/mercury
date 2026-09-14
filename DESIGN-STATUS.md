@@ -1,5 +1,7 @@
 # Mercury — Design Status
 
+Plan 0.2.0 includes projected property equity with source-labelled county appreciation, structured geography and an optional override. Missing rates remain visible; debt stays fixed and property cannot cover investment spending. The existing ten canonical flows remain; property editing and Plan are extended.
+
 Plan 0.1.1 replaces approximate age entry with native date-of-birth input, a readable date/age confirmation and birthday-based milestones. Date entry, save/reopen, legacy-age recovery and 320px enlarged-text containment are verified. See `automation/design/2026-09-14/plan-date-of-birth.md`.
 
 Plan 0.1.0 now implements Figma `129:4939`: one computed hero graph, four year-linked statistics, five live cash-flow/age controls and current asset groups. Source-linked defaults, explicit saves, revision conflicts and depletion are covered. At 320px with 200% text, horizon controls wrap and the age dialog remains contained. Authenticated database persistence was verified separately from the isolated browser. See `automation/design/2026-09-14/plan-refinement.md`.

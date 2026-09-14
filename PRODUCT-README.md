@@ -16,7 +16,7 @@ Mercury is a private personal finance workspace. Its first shipped product surfa
 
 ## Release state
 
-Current: **0.1.1** — At the founder's request, Plan now collects an optional private date of birth instead of approximate current age. DOB is required for retirement and stop-investing milestones; actual birthdays drive age and partial-month cash-flow changes. No date is inferred from existing ages. This supersedes the earlier no-DOB decision for this bounded Plan purpose.
+Previous: **0.1.1** — At the founder's request, Plan now collects an optional private date of birth instead of approximate current age. DOB is required for retirement and stop-investing milestones; actual birthdays drive age and partial-month cash-flow changes. No date is inferred from existing ages. This supersedes the earlier no-DOB decision for this bounded Plan purpose.
 
 Previous: **0.1.0** — The founder's 2026-09-14 Plan reference explicitly expands the old portfolio-only projection into a cash-flow scenario: source-linked expenses, investments and income; an entered current age; stop-investing and retirement ages; a single hero graph and current asset groups. This supersedes the earlier exclusion of salary/expense modelling for this bounded Plan flow. Source records remain unchanged by scenario edits. The projection is illustrative and assumes monthly fixed nominal cash flows, employment/contract income ending at retirement, continuing benefits/other income, and portfolio-funded spending shortfalls. It does not establish retirement feasibility, tax treatment or access to restricted accounts.
 
@@ -65,3 +65,8 @@ Follow [`supabase/README.md`](supabase/README.md) to reconcile the existing migr
 ## Portfolio market-card design — 2026-09-14
 
 Implement Figma Portfolio frame `110:7662` with market-price movement on investment cards, independent of personal cost, shares and recurring contributions. Reuse the existing authenticated market-history source; no broker connection, trading action or new database table is added. The unlabelled dashed comparison series is not a defined benchmark. Recurring displays saved schedules and their equivalent weekly/monthly/annual totals; adding a schedule edits the existing holding. Property market-value gain/loss remains distinct from equity. See the current README and design contract for state handling and source boundaries.
+
+
+## Property growth in Plan — 2026-09-14, 0.2.0
+
+Current: **0.2.0**. Founder approved structured property geography and automatic area-based appreciation in Plan. Use FHFA's public county ten-year annualised nominal HPI change as a clearly dated assumption, with an optional owner override. Include projected property equity in Plan net worth without treating it as investment income or available cash. Preserve actual market/debt/purchase inputs and legacy location text; missing growth is explicit and never inferred from a neighbouring area. Data coverage, source release and refresh boundaries are documented in README.
