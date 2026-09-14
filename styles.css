@@ -81,3 +81,8 @@
 .mercury-currency-control > .acadia-control {
   width: 100%; padding-inline-start: calc(var(--acadia-field-padding-x) + 1ch);
 }
+
+/* Day change uses Acadia’s semantic negative colour for both value parts. */
+#metric-change-value.is-danger, #metric-change-rate.is-danger {
+  color: var(--acadia-status-danger-text);
+}

@@ -1007,8 +1007,9 @@ test('Home lifetime and day changes stay independent of chart range and recover 
     api.state.performancePeriod=period; api.renderHomeChanges(summary);
     assert.equal(node('#all-time-change-value').textContent,'Up $100');
     assert.equal(node('#all-time-change-rate').textContent,'+10%');
-    assert.equal(node('#metric-change-value').textContent,'Down $10');
-    assert.equal(node('#metric-change-rate').textContent,'-0.9%');
+    assert.equal(node('#metric-change-value').textContent,'-$10');
+    assert.equal(node('#metric-change-rate').textContent,'(0.9%)');
+    assert.equal(node('#day-change-context').hidden,true);
     assert.match(node('#all-time-change-context').textContent,/Jan 1, 2025/);
   }
   api.renderHomeChanges({...summary,rows:[]});
@@ -1022,7 +1023,7 @@ test('Home lifetime and day changes stay independent of chart range and recover 
   api.state.snapshots=[];api.renderHomeChanges(summary);
   assert.equal(node('#all-time-change-value').textContent,'—');
   assert.match(node('#all-time-change-context').textContent,/Awaiting first/);
-  assert.equal(node('#metric-change-value').textContent,'Down $10');
+  assert.equal(node('#metric-change-value').textContent,'-$10');
 });
 
 function readFixture(view, read) {

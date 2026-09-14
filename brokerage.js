@@ -852,12 +852,13 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
       : `Since ${historyDateLabel(lifetime.startDate)}${lifetime.changeRate === null ? " · Percentage unavailable from $0" : ""}`);
     const dayCents = complete ? summary.totalDayChangeCents : null;
     const dayRate = complete ? summary.totalDayChangeRate : null;
-    setMovement("#metric-change-value", dayCents, movementCurrency);
-    setMovement("#metric-change-rate", dayRate, displaySignedPercentage, { hideWhenUnavailable: true });
+    setMovement("#metric-change-value", dayCents, displaySignedCurrency);
+    setMovement("#metric-change-rate", dayRate, value => `(${percentage.format(Math.abs(value))})`, { hideWhenUnavailable: true });
     setText("#day-change-context", !complete ? "Complete investment values unavailable"
       : dayCents === null ? "Previous close unavailable for some investments"
-      : dayRate === null ? "Since previous market close · Percentage unavailable from $0"
-      : "Since previous market close");
+      : dayRate === null ? "Percentage unavailable from $0"
+      : "");
+    $("#day-change-context").hidden = complete && Number.isFinite(dayCents) && Number.isFinite(dayRate);
     for (const [selector, value] of [["#all-time-change-value", lifetime.changeCents], ["#metric-change-value", dayCents]]) {
       $(selector).title = value === null ? "Change unavailable" : `${value > 0 ? "+" : ""}${preciseCurrency.format(value / 100)}`;
     }
