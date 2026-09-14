@@ -1,5 +1,7 @@
 # Mercury — Design Status
 
+2026-09-14 Income: Figma desktop/tablet/phone composition now includes four summary cards, compact annual Dividends and editable source amount/frequency. Saved-only summaries, retained drafts, guarded navigation and stale/account protection are covered by 217 passing checks and local responsive browser review. See `automation/income-figma/2026-09-14/review.md`.
+
 Portfolio now follows Figma frame `110:7662`: three-column market-price cards, four range controls, full-width recurring equivalents/schedules and compact property purchase gain/loss. Shared Acadia remains unchanged; one inline responsive grid adapter supplies the requested card width. See `automation/portfolio-figma/2026-09-14/review.md` for current checks, browser evidence and remaining acceptance boundaries. Older Portfolio composition notes below are historical.
 
 2026-09-14 Home layout: unboxed wide history, four separate summary cards and a full-width four-card Top assets row now follow the founder reference. Unit-price/share and property purchase-price context are visible. Daily 1D/1W/1M/1Y/All ranges preserve saved-data semantics. Current visual gate and evidence: `design-qa.md`.

@@ -1,11 +1,11 @@
-# Design QA — Portfolio Figma frame 110:7662
+# Design QA — Income Figma section 129:4938
 
-Result: **passed** for the implemented Portfolio composition and existing-data flow boundaries.
+Result: **passed** for the implemented Income composition and bounded local flow coverage.
 
-The exact Figma design context and screenshot were inspected, then compared with the rendered implementation at the source's 1512px width. Investment cards now use three columns, source-backed metrics, classification and market-price graphs. Recurring and Property are full-width consecutive sections. The exact exported Mercury mark and matching existing Font Awesome icons are used.
+Inspected all three source frames: desktop 202:11644, tablet 203:12261 and phone 203:12765. Four separate summary cards, Dividends before Sources, editable amount/frequency, annual planned income and responsive stacking now follow the reference. Existing Acadia components, glyphs and tokens are reused.
 
-Intentional data/function differences: real holdings replace illustrative balances/curves; the undefined second series is omitted, leaving a labelled initial-price baseline; saved group/search controls and explicit recurring Edit remain accessible; 52-week/12-month arithmetic replaces inconsistent illustrative totals; property equity/debt and market-source context retain their labels. Native Acadia controls keep 44px targets. A short market-price caption makes cards slightly taller than the static design.
+Intentional differences: actual saved arithmetic replaces illustrative balances; Planned expenses accurately names category limits; an exact total/investing reconciliation and annual dividend label remain visible; source annual totals remain available on phone; search/recovery, explicit dirty Save/Cancel and 44px actions remain operable. These increase the content height. Small product layout adapters provide intrinsic columns, phone ordering and enlarged-text padding; the shared Acadia files are unchanged.
 
-Desktop, tablet, 320px phone, 200% text, dark/light and the relevant editor/navigation/recovery flows pass. The enlarged-text header overflow and retry-focus issue found during review are fixed. All 213 automated checks pass. Acadia vendor files are unchanged; one inline 20rem card-grid adapter supplies the source's responsive column count.
+217 automated checks pass. Local browser coverage includes desktop/tablet/400px and 320px phone, 200% text, light/dark, amount/cadence preview, confirmed Save, Cancel, failed-save retry, conflicting-record review, unsaved navigation, search recovery, Expenses continuity, source-dialog focus and dividend asset Back focus.
 
-Detailed measurements, state coverage, screenshots and publication receipt: [review.md](automation/portfolio-figma/2026-09-14/review.md). Local fixture evidence does not claim authenticated owner-data or physical-device acceptance.
+Evidence and publication receipt: [review.md](automation/income-figma/2026-09-14/review.md). Synthetic local data does not establish authenticated owner-data persistence or physical-device/VoiceOver acceptance.

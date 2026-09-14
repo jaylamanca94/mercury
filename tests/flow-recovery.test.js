@@ -33,7 +33,7 @@ function controller() {
     fetch:async()=>({ok:false,json:async()=>({error:'provider unavailable'})}),
   });
   const source = fs.readFileSync(require.resolve('../brokerage.js'),'utf8').replace(/^import .*;\n/, '').replace('  initialise();',
-    '  window.testController = {syncPortfolioMarketHistory,clearPortfolioMarketHistory,portfolioMarketHistory,renderRecurringInvestments,loadMarketHistory,renderMarketHistory,clearMarketHistory,initialise,loadData,readWithDeadline,retryPlanSettings,openPlanAssumptionsDialog,savePlanAssumptions,retryProperties,hydrateProviderMetrics,ensurePlanSettings,state,render,renderHomeChanges,renderHomeGrowth,renderIncomeRecovery,retryIncomeData,missingIncomeYieldRows,renderIncomeYieldRecovery,renderPlan,renderQuickQuotePreview,refreshCurrentAssetPrice,restorePortfolioAssetFocus,renderHistory,renderAsset,canQuote,lookupQuote,saveQuickAsset,navigateToAsset,navigateBackFromAsset,routeAssetId,openFormDialog,hasPendingWrite,hasUnsavedWork,matchingPortfolioHoldingRows,sortHoldingRows,holdingValueLabel,renderPortfolioView,renderPortfolioSummary,detailHolding,openPropertyDialog,saveProperty};');
+    '  window.testController = {editIncomeSource,saveInlineIncomeSource,cancelInlineIncomeSource,incomeSourceDrafts,syncPortfolioMarketHistory,clearPortfolioMarketHistory,portfolioMarketHistory,renderRecurringInvestments,loadMarketHistory,renderMarketHistory,clearMarketHistory,initialise,loadData,readWithDeadline,retryPlanSettings,openPlanAssumptionsDialog,savePlanAssumptions,retryProperties,hydrateProviderMetrics,ensurePlanSettings,state,render,renderHomeChanges,renderHomeGrowth,renderIncomeRecovery,retryIncomeData,missingIncomeYieldRows,renderIncomeYieldRecovery,renderPlan,renderQuickQuotePreview,refreshCurrentAssetPrice,restorePortfolioAssetFocus,renderHistory,renderAsset,canQuote,lookupQuote,saveQuickAsset,navigateToAsset,navigateBackFromAsset,routeAssetId,openFormDialog,hasPendingWrite,hasUnsavedWork,matchingPortfolioHoldingRows,sortHoldingRows,holdingValueLabel,renderPortfolioView,renderPortfolioSummary,detailHolding,openPropertyDialog,saveProperty};');
   vm.runInContext(source,context);
   const api=window.testController;
   api.state.client={auth:{getSession:async()=>({data:{session:{access_token:'isolated-test'}}})}};
@@ -1371,4 +1371,68 @@ test('recurring equivalents reconcile weekly and monthly schedules', () => {
   assert.equal(node('#portfolio-recurring-weekly').textContent,'$146');
   assert.equal(node('#portfolio-recurring-monthly').textContent,'$633');
   assert.equal(node('#portfolio-recurring-annual').textContent,'$7,600');
+});
+
+test('inline income drafts retain saved summary inputs, validate, and cancel without a write', async () => {
+  const {api}=controller();
+  const source={id:'salary',account_id:'account',name:'Salary',income_type:'employment',amount_cents:110000,frequency:'biweekly'};
+  api.state.user={id:'owner'}; api.state.account={id:'account'}; api.state.incomeSources=[source];
+  let writes=0; api.state.client.from=()=>{writes++;throw new Error('Unexpected write')};
+  api.editIncomeSource('salary','1200','monthly');
+  assert.equal(api.hasUnsavedWork(),true);
+  assert.equal(api.state.incomeSources[0].amount_cents,110000);
+  assert.equal(require('../income').summarizeIncomeSources(api.state.incomeSources.map(s=>({id:s.id,name:s.name,incomeType:s.income_type,amountCents:s.amount_cents,frequency:s.frequency})),'year').totalAnnualIncomeCents,2860000);
+  api.editIncomeSource('salary','0','monthly'); await api.saveInlineIncomeSource('salary');
+  assert.match(api.incomeSourceDrafts.get('salary').status,/positive/); assert.equal(writes,0);
+  api.cancelInlineIncomeSource('salary'); assert.equal(api.hasUnsavedWork(),false);
+  api.editIncomeSource('salary','1200','monthly'); api.editIncomeSource('salary','1100','biweekly');
+  assert.equal(api.hasUnsavedWork(),false);
+});
+
+test('inline income save is single flight, scoped, confirmed, and leaves failed drafts retryable', async () => {
+  const {api}=controller();
+  const source={id:'salary',account_id:'account',name:'Salary',income_type:'employment',amount_cents:110000,frequency:'biweekly'};
+  api.state.user={id:'owner'}; api.state.account={id:'account'}; api.state.incomeSources=[source];
+  let finish,writes=0,payload; const filters=[];
+  api.state.client.from=table=>{assert.equal(table,'income_sources');return {update(value){payload=value;writes++;return this},eq(k,v){filters.push([k,v]);return this},select(){return this},maybeSingle(){return this},abortSignal(){return new Promise(resolve=>{finish=resolve})}}};
+  api.editIncomeSource('salary','1200','monthly'); const saving=api.saveInlineIncomeSource('salary');
+  await new Promise(resolve=>setImmediate(resolve));
+  assert.equal(api.hasPendingWrite(),true); api.cancelInlineIncomeSource('salary');
+  await api.saveInlineIncomeSource('salary'); assert.equal(writes,1);
+  finish({error:{message:'Offline'}}); await saving;
+  assert.equal(api.hasPendingWrite(),false); assert.equal(api.incomeSourceDrafts.get('salary').amount,'1200');
+  assert.match(api.incomeSourceDrafts.get('salary').status,/Offline/);
+  assert.deepEqual(filters.slice(0,4),[['id','salary'],['account_id','account'],['amount_cents',110000],['frequency','biweekly']]);
+  const retry=api.saveInlineIncomeSource('salary'); await new Promise(resolve=>setImmediate(resolve));
+  finish({data:{...source,...payload}}); await retry;
+  assert.equal(api.state.incomeSources[0].amount_cents,120000);
+  assert.equal(api.state.incomeSources[0].frequency,'monthly');
+  assert.equal(api.hasUnsavedWork(),false); assert.equal(api.hasPendingWrite(),false);
+});
+
+test('inline income conflicts retain the original baseline until Cancel reviews the latest source', async () => {
+  const {api}=controller();
+  const source={id:'salary',account_id:'account',name:'Salary',income_type:'employment',amount_cents:110000,frequency:'biweekly'};
+  api.state.user={id:'owner'}; api.state.account={id:'account'}; api.state.incomeSources=[source];
+  const compared=[];
+  api.state.client.from=()=>{let write=false;return {update(){write=true;return this},eq(k,v){if(write&&k==='amount_cents')compared.push(v);return this},select(){return this},maybeSingle(){return this},abortSignal(){return Promise.resolve({data:write?null:{...source,amount_cents:125000}})}}};
+  api.editIncomeSource('salary','1200','monthly'); await api.saveInlineIncomeSource('salary');
+  assert.equal(api.state.incomeSources[0].amount_cents,125000);
+  assert.match(api.incomeSourceDrafts.get('salary').status,/changed or was removed/);
+  await api.saveInlineIncomeSource('salary'); assert.deepEqual(compared,[110000,110000]);
+  api.cancelInlineIncomeSource('salary'); assert.equal(api.hasUnsavedWork(),false);
+});
+
+test('an old account income save cannot populate another account or leave its draft visible', async () => {
+  const {api}=controller();
+  const source={id:'salary',account_id:'account',name:'Salary',income_type:'employment',amount_cents:110000,frequency:'biweekly'};
+  api.state.user={id:'owner'}; api.state.account={id:'account'}; api.state.incomeSources=[source];
+  let finish;
+  api.state.client.from=()=>({update(){return this},eq(){return this},select(){return this},maybeSingle(){return this},abortSignal(){return new Promise(resolve=>{finish=resolve})}});
+  api.editIncomeSource('salary','1200','monthly'); const saving=api.saveInlineIncomeSource('salary');
+  await new Promise(resolve=>setImmediate(resolve));
+  api.state.account={id:'another-account'}; api.state.incomeSources=[]; api.render();
+  assert.equal(api.hasUnsavedWork(),false);
+  finish({data:{...source,amount_cents:120000,frequency:'monthly'}}); await saving;
+  assert.equal(api.state.incomeSources.length,0); assert.equal(api.hasPendingWrite(),false);
 });

@@ -235,10 +235,10 @@ test("Income is a functional planning workspace with live dividend coverage and 
   assert.match(incomeWorkspace, /data-income-period="year"/);
   assert.match(incomeWorkspace, /data-income-period="month"/);
   assert.match(incomeWorkspace, /id="income-expenses"/);
-  assert.match(incomeWorkspace, /Planned spending/);
+  assert.match(incomeWorkspace, /Planned expenses/);
   assert.match(incomeWorkspace, /Expected income/);
-  assert.match(incomeWorkspace, /Earned &amp; other income/);
-  assert.match(incomeWorkspace, /Estimated dividends/);
+  assert.match(incomeWorkspace, /id="income-earned"/);
+  assert.match(incomeWorkspace, /Expected dividends/);
   assert.match(incomeWorkspace, /id="income-dividend-sort"/);
   assert.match(incomeWorkspace, /id="income-dividends-grid"/);
   assert.match(incomeWorkspace, /id="income-sources-grid"/);
@@ -258,7 +258,7 @@ test("Income is a functional planning workspace with live dividend coverage and 
   assert.match(homeSource, /state\.client\.from\("income_sources"\)/);
   assert.match(homeSource, /state\.client\.from\("budget_categories"\)/);
   assert.match(homeSource, /summarizeBudgetCategories/);
-  assert.doesNotMatch(homeSource, /saveBudgetCategoryInline|saveIncomeSourceInline/);
+  assert.match(homeSource, /saveInlineIncomeSource/);
   assert.match(homeSource, /data-edit-income-source/);
   assert.match(homeSource, /data-edit-budget-category/);
   assert.match(incomeWorkspace, /id="income-view-tabs"[^>]*role="tablist"/);
@@ -295,7 +295,7 @@ test("Plan is a separate Base-plan projection workspace with aligned portfolio c
   assert.match(indexHtml, /id="plan-assumptions-dialog"/);
   assert.match(indexHtml, /id="property-dialog"/);
   assert.match(indexHtml, /<script src="plan\.js\?v=20260914-property-purchase"><\/script>/);
-  assert.match(indexHtml, /<script type="module" src="brokerage\.js\?v=20260914-portfolio-007"><\/script>/);
+  assert.match(indexHtml, /<script type="module" src="brokerage\.js\?v=20260914-income-008"><\/script>/);
   assert.match(homeSource, /function routePlan\(\)/);
   assert.match(homeSource, /function renderPlan\(summary\)/);
   assert.match(homeSource, /function renderPlanChart/);

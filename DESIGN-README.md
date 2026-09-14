@@ -1,5 +1,15 @@
 # Mercury Design README
 
+## Income Figma implementation — 2026-09-14
+
+- Reference: section `129:4938`, desktop `202:11644`, tablet `203:12261`, phone `203:12765`. Four summary cards precede Dividends and Sources. Desktop uses two equal sections; tablet and phone stack them. Phone stacks summary cards and source fields.
+- Expected income is recurring source income; Expected dividends is separate. Total expected includes both. Planned balance still subtracts planned expenses and investing. The reference's Average expenses becomes Planned expenses because Mercury stores category limits, not observed transaction averages. Compact headlines expose precise values in their titles; the reconciliation line retains exact period totals.
+- Annual dividend rows remain explicitly annual, with source amount/yield and View asset menus. Search and sort are retained in section disclosures. Income/Expenses labels retain existing routes and category workflows.
+- Source cards expose native Amount (USD) and Frequency fields. Annual draft preview is labelled Unsaved; Save/Cancel appear only while dirty. Summary calculations use confirmed saved records. Reused DOM cards preserve input values/caret during background rendering; failed saves retain drafts, writes are single flight, navigation/unload is guarded, and late replies cannot cross account context. Updates compare original source values and require a returned row. Conflicts load newer values for review while preserving the original draft baseline; Cancel restores the saved source. Timed-out writes remain unconfirmed.
+- Reuse unchanged Acadia 0.3.2 cards, fields, selects, tabs, menus, typography, colours and 44px target tokens. Product layout adapters provide desktop/tablet/phone columns, phone control ordering and bounded card padding for enlarged text. Native controls and explicit planning context make the live cards taller than the static reference. Source annual totals remain visible on phone.
+- Evidence: `automation/income-figma/2026-09-14/review.md`. Local synthetic browser coverage is separate from authenticated owner-data persistence and physical-device/VoiceOver acceptance.
+
+
 Use this file as the visual and interaction source of truth for Mercury. Keep this document updated as Mercury evolves.
 
 > **Home simplification — 2026-09-05:** The original Figma dashboard hierarchy is restored on Home: headline/history, compact allocation, paired portfolio changes and two secondary estimates and four asset cards. The Portfolio, Income and Plan contracts below remain active. Legacy economy-dashboard guidance is historical reference.

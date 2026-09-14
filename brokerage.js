@@ -151,14 +151,14 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
     if (!routeAssetId()) assetReturnHash = window.location.hash || "#";
     const fromHome = ["", "#"].includes(window.location.hash);
     portfolioAssetNavigation = routePortfolio() || fromHome ? { id, section, fromHome } : null;
-    incomeAssetNavigation = routeIncome() && ["yield", "valuation"].includes(section) ? { id, section, returnHash: window.location.hash, fromSummary: document.activeElement === $("#income-review-yields") } : null;
+    incomeAssetNavigation = routeIncome() ? { id, section, returnHash: window.location.hash, fromSummary: document.activeElement === $("#income-review-yields") } : null;
     window.location.hash = `asset/${encodeURIComponent(id)}`;
   }
   function restorePortfolioAssetFocus(previousHash) {
     if (incomeAssetNavigation && previousHash !== window.location.hash) {
       const { id, section, returnHash, fromSummary } = incomeAssetNavigation;
       if (routeAssetId() === id) {
-        if (state.holdings.some((holding) => holding.id === id)) {
+        if (section !== "details" && state.holdings.some((holding) => holding.id === id)) {
           const field = $(section === "valuation" ? "#asset-detail-manual-price" : "#asset-detail-yield");
           const disclosure = field.closest("details");
           if (disclosure) disclosure.open = true;
@@ -166,8 +166,10 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
           field.scrollIntoView({ block: "center" });
         } else $("#asset-title").focus();
       } else if (window.location.hash === returnHash && previousHash.startsWith("#asset/")) {
-        const target = section === "valuation" ? $("#income-review-valuations") : fromSummary ? $("#income-review-yields") : [...document.querySelectorAll("[data-review-income-yield]")].find((element) => element.dataset.reviewIncomeYield === id);
+        const target = section === "details" ? [...document.querySelectorAll("[data-income-dividend-id]")].find(element => element.dataset.incomeDividendId === id) : section === "valuation" ? $("#income-review-valuations") : fromSummary ? $("#income-review-yields") : [...document.querySelectorAll("[data-review-income-yield]")].find((element) => element.dataset.reviewIncomeYield === id);
         const returnTarget = target && !target.hidden ? target : $(returnHash === "#income/budget" ? "#income-budget-tab" : "#income-dividends-search");
+        const menu = returnTarget.closest?.(".acadia-action-menu");
+        if (menu && returnTarget.tagName !== "SUMMARY") menu.open = true;
         returnTarget.focus();
         returnTarget.scrollIntoView({ block: "center" });
       } else if (!routeAssetId()) incomeAssetNavigation = null;
@@ -993,11 +995,12 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
         ? displayCurrency(annualCents / 100)
         : isLoading ? "Loading…" : "Not set";
       const yieldRate = row.distributionYieldRate;
-      const yieldDisplay = Number.isFinite(yieldRate) ? `${percentage.format(yieldRate)} yield` : isLoading ? "Loading yield…" : "Yield not set";
+      const yieldDisplay = Number.isFinite(yieldRate) ? percentage.format(yieldRate) : isLoading ? "Loading yield…" : "Yield not set";
       const card = document.createElement("article");
       card.className = "acadia-object-card-header";
       card.setAttribute("role", "listitem");
-      card.innerHTML = `<div class="acadia-field"><strong>${escapeHtml(row.asset.symbol || row.asset.name)}</strong><small class="acadia-text-muted">${escapeHtml(row.asset.symbol && row.asset.name !== row.asset.symbol ? row.asset.name : instrumentLabel(row.asset.instrumentType))}</small></div><div class="acadia-field"><strong title="${Number.isSafeInteger(annualCents) ? escapeHtml(preciseCurrency.format(annualCents / 100)) : amount}">${amount}</strong><small class="acadia-text-muted">${yieldDisplay}</small></div>`;
+      card.innerHTML = `<div class="acadia-cluster"><strong title="${escapeHtml(row.asset.name)}">${escapeHtml(row.asset.symbol || row.asset.name)}</strong><strong style="color: var(--acadia-color-brand)" title="${Number.isSafeInteger(annualCents) ? escapeHtml(preciseCurrency.format(annualCents / 100)) : amount}">${amount}</strong><small class="acadia-text-muted">${yieldDisplay}</small></div><details class="acadia-action-menu"><summary class="acadia-icon-action" style="--acadia-icon-action-size: var(--acadia-target-size-touch)" data-income-dividend-id="${escapeHtml(row.asset.id)}" aria-label="Actions for ${escapeHtml(row.asset.symbol || row.asset.name)}"><i class="fa-solid fa-ellipsis acadia-icon" aria-hidden="true"></i></summary><div class="acadia-action-menu-panel"><button class="acadia-button acadia-button-quiet" type="button" data-open-dividend-asset>View asset</button></div></details>`;
+      card.querySelector('[data-open-dividend-asset]').addEventListener("click", () => navigateToAsset(row.asset.id));
       if (annualCents === null && !isLoading) {
         card.classList.add("acadia-cluster");
         const action = document.createElement("button");
@@ -1011,7 +1014,7 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
       }
       return card;
     }));
-    setText("#income-dividends-count", `${matchingRows.length} ${matchingRows.length === 1 ? "source" : "sources"}`);
+    setText("#income-dividends-count", `${matchingRows.length} ${matchingRows.length === 1 ? "asset" : "assets"}`);
     $("#income-dividends-empty").hidden = rows.length > 0;
     $("#income-dividends-records").hidden = rows.length === 0;
     $("#income-dividends-clear").hidden = rows.length > 0 || !$("#income-dividends-search").value.trim();
@@ -1025,19 +1028,143 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
     const search = $("#income-sources-search").value.trim().toLowerCase();
     return rows.filter((row) => !search || `${row.source.name} ${row.source.incomeType}`.toLowerCase().includes(search));
   }
+  const incomeSourceCards = new Map();
+  const incomeSourceDrafts = new Map();
+  let incomeEditorContext = null;
+  function clearIncomeEditors() {
+    incomeSourceDrafts.clear();
+    incomeSourceCards.clear();
+    incomeEditorContext = null;
+  }
+  function ensureIncomeEditorContext() {
+    if (incomeEditorContext && !incomeEditorContext()) clearIncomeEditors();
+    if (!incomeEditorContext) incomeEditorContext = accountContext();
+  }
+  function editIncomeSource(id, amount, frequency) {
+    ensureIncomeEditorContext();
+    const source = state.incomeSources.find(source => source.id === id);
+    if (!source || incomeSourceDrafts.get(id)?.pending) return;
+    const draft = incomeSourceDrafts.get(id) || { baseline: { ...source } };
+    draft.amount = amount;
+    draft.frequency = frequency;
+    draft.status = "";
+    if (cents(amount) === Number(draft.baseline.amount_cents) && frequency === draft.baseline.frequency) incomeSourceDrafts.delete(id);
+    else incomeSourceDrafts.set(id, draft);
+    syncIncomeSourceCard(id);
+  }
+  function syncIncomeSourceCard(id) {
+    const card = incomeSourceCards.get(id);
+    const source = state.incomeSources.find(source => source.id === id);
+    if (!card || !source) return;
+    const draft = incomeSourceDrafts.get(id);
+    const amount = card.querySelector('[name="amount"]');
+    const frequency = card.querySelector('[name="frequency"]');
+    // Preserve the actual input nodes, value and caret during background renders.
+    if (!draft) {
+      amount.value = (Number(source.amount_cents) / 100).toFixed(2);
+      frequency.value = source.frequency;
+    }
+    card.querySelector('[data-income-name]').textContent = source.name;
+    card.querySelector('[data-income-type]').textContent = incomeTypeLabel(source.income_type);
+    const annual = cents(draft ? draft.amount : amount.value) * (INCOME_FREQUENCIES[draft?.frequency || source.frequency]?.periodsPerYear || 0);
+    card.querySelector('[data-income-annual]').textContent = Number.isSafeInteger(annual) && annual > 0 ? currency.format(annual / 100) : "—";
+    card.querySelector('[data-income-preview-label]').textContent = draft ? "Planned income · Unsaved" : "Planned income";
+    card.querySelector('[data-income-actions]').hidden = !draft;
+    const status = card.querySelector('[data-income-status]');
+    status.textContent = draft?.pending ? "Saving… Please wait before leaving." : draft?.status || "";
+    status.hidden = !status.textContent;
+    card.querySelectorAll('input, select, button').forEach(control => { control.disabled = Boolean(draft?.pending); });
+    card.querySelector('[type="submit"]').textContent = draft?.pending ? "Saving…" : "Save";
+    card.setAttribute("aria-busy", String(Boolean(draft?.pending)));
+  }
+  async function saveInlineIncomeSource(id) {
+    if (hasPendingWrite() || !state.user || !state.account) return;
+    const draft = incomeSourceDrafts.get(id);
+    if (!draft) return;
+    const current = accountContext();
+    const { client, account } = state;
+    try {
+      const normalized = normalizeIncomeSource({ ...incomeSourceModel(draft.baseline), amountCents: cents(draft.amount), frequency: draft.frequency });
+      draft.pending = true;
+      draft.status = "";
+      syncIncomeSourceCard(id);
+      const { data, error } = await readWithDeadline(signal => client.from("income_sources")
+        .update({ amount_cents: normalized.amountCents, frequency: normalized.frequency })
+        .eq("id", id).eq("account_id", account.id)
+        .eq("amount_cents", draft.baseline.amount_cents).eq("frequency", draft.baseline.frequency)
+        .eq("name", draft.baseline.name).eq("income_type", draft.baseline.income_type)
+        .select().maybeSingle().abortSignal(signal));
+      if (!current() || incomeSourceDrafts.get(id) !== draft) return;
+      if (error) throw error;
+      if (!data) {
+        const latest = await readWithDeadline(signal => client.from("income_sources").select("*").eq("id", id).eq("account_id", account.id).maybeSingle().abortSignal(signal));
+        if (!current() || incomeSourceDrafts.get(id) !== draft) return;
+        if (!latest.error && latest.data) {
+          state.incomeSources = state.incomeSources.map(source => source.id === id ? latest.data : source);
+          render();
+        }
+        throw new Error("This source changed or was removed elsewhere. Your draft is unchanged. Cancel to review the saved values, or reload if it was removed.");
+      }
+      state.incomeSources = state.incomeSources.map(source => source.id === id ? data : source);
+      incomeSourceDrafts.delete(id);
+      render();
+      const card = incomeSourceCards.get(id);
+      if (card) {
+        card.querySelector('[data-income-status]').textContent = "Saved";
+        card.querySelector('[data-income-status]').hidden = false;
+        card.querySelector('[name="amount"]').focus();
+      }
+    } catch (error) {
+      if (!current() || incomeSourceDrafts.get(id) !== draft) return;
+      draft.status = error.message === "Read timed out"
+        ? "Saving could not be confirmed. Your draft is unchanged. Try Save again to check it."
+        : error.message || "This income source could not be saved. Try again.";
+    } finally {
+      draft.pending = false;
+      if (current() && incomeSourceDrafts.get(id) === draft) syncIncomeSourceCard(id);
+    }
+  }
+  function cancelInlineIncomeSource(id) {
+    if (incomeSourceDrafts.get(id)?.pending) return;
+    incomeSourceDrafts.delete(id);
+    render();
+    incomeSourceCards.get(id)?.querySelector('[name="amount"]').focus();
+  }
   function renderIncomeSources(incomeSummary) {
+    ensureIncomeEditorContext();
     const matchingRows = matchingIncomeSources(incomeSummary.rows);
     const grid = $("#income-sources-grid");
-    grid.replaceChildren(...matchingRows.map((row) => {
-      const source = row.source;
-      const card = document.createElement("article");
-      card.className = "acadia-card is-content";
-      card.setAttribute("role", "listitem");
-      card.innerHTML = `<div class="acadia-card-content acadia-stack"><div class="acadia-page-header-pattern-actions"><div class="acadia-field"><strong>${escapeHtml(source.name)}</strong><small class="acadia-text-muted">${escapeHtml(incomeTypeLabel(source.incomeType))}</small></div><div class="acadia-row-actions"><button class="acadia-button acadia-button-quiet" type="button" data-edit-income-source="${escapeHtml(source.id)}" aria-label="Edit ${escapeHtml(source.name)}">Edit</button><button class="acadia-icon-action" style="--acadia-icon-action-size: var(--acadia-target-size-touch)" type="button" data-delete-income-source="${escapeHtml(source.id)}" aria-label="Delete ${escapeHtml(source.name)}"><i class="fa-solid fa-trash acadia-icon" aria-hidden="true"></i></button></div></div><div class="acadia-field"><strong class="acadia-card-metric-value">${planningValue(row.periodIncomeCents)} <small class="acadia-text-muted">/ ${incomePeriodLabel()}</small></strong><small class="acadia-text-muted">${planningValue(source.amountCents)} · ${INCOME_FREQUENCIES[source.frequency].label}</small></div></div>`;
-      return card;
-    }));
-    grid.querySelectorAll("[data-edit-income-source]").forEach((control) => control.addEventListener("click", () => openIncomeSourceDialog(control.dataset.editIncomeSource)));
-    grid.querySelectorAll("[data-delete-income-source]").forEach((control) => control.addEventListener("click", () => openDeleteIncomeSourceDialog(control.dataset.deleteIncomeSource)));
+    for (const id of incomeSourceCards.keys()) {
+      if (!state.incomeSources.some(source => source.id === id) && !incomeSourceDrafts.has(id)) incomeSourceCards.delete(id);
+    }
+    const cards = matchingRows.map(({ source }) => {
+      if (!incomeSourceCards.has(source.id)) {
+        const card = document.createElement("article");
+        card.className = "acadia-card is-content";
+        card.setAttribute("role", "listitem");
+        const id = escapeHtml(source.id);
+        card.innerHTML = `<form class="acadia-stack" aria-label="Income from ${escapeHtml(source.name)}">
+          <div class="acadia-cluster" style="justify-content: space-between"><div class="acadia-field" style="min-width: min(100%, 10rem); flex: 1"><strong class="acadia-lead" data-income-name></strong><small class="acadia-text-muted" data-income-type></small></div><details class="acadia-action-menu"><summary class="acadia-icon-action" style="--acadia-icon-action-size: var(--acadia-target-size-touch)" aria-label="Actions for ${escapeHtml(source.name)}"><i class="fa-solid fa-ellipsis acadia-icon" aria-hidden="true"></i></summary><div class="acadia-action-menu-panel"><button class="acadia-button acadia-button-quiet" type="button" data-edit-income-source="${id}" aria-label="Edit ${escapeHtml(source.name)}">Edit details</button><button class="acadia-button acadia-button-quiet" type="button" data-delete-income-source="${id}" aria-label="Delete ${escapeHtml(source.name)}">Delete source</button></div></details></div>
+          <div class="acadia-grid"><div class="acadia-form-control" data-acadia-form-variant="input"><label class="acadia-label" for="income-amount-${id}">Amount (USD)</label><input id="income-amount-${id}" class="acadia-control" name="amount" type="number" min="0.01" step="0.01" required style="min-height: var(--acadia-target-size-touch)"></div><div class="acadia-form-control" data-acadia-form-variant="select"><label class="acadia-label" for="income-frequency-${id}">Frequency</label><select id="income-frequency-${id}" class="acadia-control" name="frequency" style="min-height: var(--acadia-target-size-touch)">${Object.entries(INCOME_FREQUENCIES).map(([value, frequency]) => `<option value="${value}">${frequency.label}</option>`).join("")}</select></div></div>
+          <div class="acadia-field"><span class="acadia-text-muted" data-income-preview-label>Planned income</span><div class="acadia-cluster"><strong class="acadia-lead" data-income-annual></strong><span class="acadia-text-muted">per year</span></div></div>
+          <div class="acadia-cluster" data-income-actions hidden><button class="acadia-button acadia-button-secondary" type="button" data-income-cancel>Cancel</button><button class="acadia-button acadia-button-primary" type="submit">Save</button></div>
+          <small class="acadia-field-hint" data-income-status role="status" aria-live="polite"></small>
+        </form>`;
+        const form = card.querySelector('form');
+        const update = () => editIncomeSource(source.id, card.querySelector('[name="amount"]').value, card.querySelector('[name="frequency"]').value);
+        form.addEventListener("input", update);
+        form.addEventListener("change", update);
+        form.addEventListener("submit", event => { event.preventDefault(); saveInlineIncomeSource(source.id); });
+        card.querySelector('[data-income-cancel]').addEventListener("click", () => cancelInlineIncomeSource(source.id));
+        card.querySelector('[data-edit-income-source]').addEventListener("click", () => leaveWorkspace(() => openIncomeSourceDialog(source.id)));
+        card.querySelector('[data-delete-income-source]').addEventListener("click", () => leaveWorkspace(() => openDeleteIncomeSourceDialog(source.id)));
+        incomeSourceCards.set(source.id, card);
+      }
+      syncIncomeSourceCard(source.id);
+      return incomeSourceCards.get(source.id);
+    });
+    const existing = Array.from(grid.children || []);
+    if (cards.length !== existing.length || cards.some((card, index) => card !== existing[index])) grid.replaceChildren(...cards);
     setText("#income-sources-count", `${matchingRows.length} ${matchingRows.length === 1 ? "source" : "sources"}`);
     $("#income-sources-empty").hidden = matchingRows.length > 0;
     $("#income-sources-clear").hidden = matchingRows.length > 0 || !$("#income-sources-search").value.trim();
@@ -1132,6 +1259,10 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
     });
     const planning = planningPosition(summary, state.incomePeriod);
     for (const [id, key] of [["total", "expectedCents"], ["earned", "recurringCents"], ["passive", "passiveCents"], ["expenses", "spendingCents"], ["investing", "investingCents"], ["balance", "balanceCents"]]) setText(`#income-${id}`, planningValue(planning[key]));
+    for (const [id, value] of [["balance", planning.balanceCents], ["earned", planning.recurringCents], ["passive", planning.passiveCents], ["expenses", planning.spendingCents === null ? null : planning.spendingCents === 0 ? 0 : -planning.spendingCents]]) {
+      setText(`#income-${id}`, value === null ? "Not set" : displayCurrency(value / 100));
+      $(`#income-${id}`).setAttribute("title", value === null ? "Not set" : preciseCurrency.format(value / 100));
+    }
     setText("#income-balance-period", `/ ${incomePeriodLabel()}`);
     const recoveryMessage = renderIncomeRecovery(summary);
     renderIncomeYieldRecovery(summary);
@@ -1601,10 +1732,10 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
     return entry.dialog.open && entry.baseline !== formSnapshot(entry.form);
   }
   function hasPendingWrite() {
-    return Boolean(savingAssetId) || Array.from(protectedDialogs.values()).some((entry) => entry.pending);
+    return Array.from(incomeSourceDrafts.values()).some(draft => draft.pending) || Boolean(savingAssetId) || Array.from(protectedDialogs.values()).some((entry) => entry.pending);
   }
   function hasUnsavedWork() {
-    return assetHasDraft() || Array.from(protectedDialogs.values()).some(dialogHasDraft);
+    return incomeSourceDrafts.size > 0 || assetHasDraft() || Array.from(protectedDialogs.values()).some(dialogHasDraft);
   }
   function requestDiscard(action) {
     if (pendingDiscard) return;
@@ -1619,6 +1750,8 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
       return;
     }
     const leave = () => {
+      incomeSourceDrafts.clear();
+      for (const id of incomeSourceCards.keys()) syncIncomeSourceCard(id);
       assetFormBaseline = assetFormSnapshot();
       protectedDialogs.forEach((entry) => { if (entry.dialog.open) entry.dialog.close(); });
       action();
@@ -1731,6 +1864,7 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
 
   let renderedPortfolio = false;
   function render() {
+    if (incomeEditorContext && !incomeEditorContext()) clearIncomeEditors();
     if (!state.user || !routeAssetId()) clearMarketHistory();
     if (!state.user || !routePortfolio() || state.startupStatus) clearPortfolioMarketHistory();
     $("#workspace-recovery").hidden = !state.startupStatus;
@@ -2879,6 +3013,8 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
     const search = $(`#income-${section}-search`);
     search.value = "";
     render();
+    const menu = search.closest?.(".acadia-action-menu");
+    if (menu) menu.open = true;
     search.focus();
   }));
   $("#add-income").addEventListener("click", () => openIncomeSourceDialog());

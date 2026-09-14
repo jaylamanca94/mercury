@@ -14,3 +14,16 @@
 .acadia-dialog.is-form-modal > .acadia-dialog-form {
   box-sizing: border-box;
 }
+
+/* Income's reference keeps four cards on tablet and one column on phone.
+   The intrinsic minimum also reflows enlarged text. Acadia owns their styling. */
+#income-summary > .acadia-grid {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 10rem), 1fr));
+}
+#income-workspace .acadia-card.is-content {
+  --acadia-content-card-padding: min(var(--acadia-section-padding-standard), 6vw);
+}
+@media (max-width: 767px) {
+  #income-summary > .acadia-grid { grid-template-columns: minmax(0, 1fr); }
+  #income-summary-tools { flex-direction: column-reverse; align-items: flex-start; }
+}
