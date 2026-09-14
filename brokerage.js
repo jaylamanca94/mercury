@@ -25,7 +25,8 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
     propertyGainLoss,
     totalPropertyEquityCents,
     normalizePlanSettings,
-    projectPortfolio,
+    projectLifePlan,
+    normalizePlanScenario,
     resolvePlanAssumptions,
     totalNetWorthCents,
     weeklyEquivalentRecurringContributionCents,
@@ -48,7 +49,7 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
   const wholePercentage = new Intl.NumberFormat("en-US", { style: "percent", maximumFractionDigits: 0 });
   const state = {
     client: null, user: null, account: null, accounts: [], holdings: [], quotes: [], snapshots: [], incomeSources: [], incomeSourcesAvailable: true, budgetCategories: [], budgetCategoriesAvailable: true, planSettings: null, properties: [], propertiesAvailable: true, planDataAvailable: true,
-    startupStatus: null, startupMessage: "", startupRequestId: 0, dataRequestId: 0, metricsRequestId: 0, propertyReloadPending: false, planReloadPending: false, incomeReloadPending: false, incomeReloadFailed: false, providerMetrics: {}, providerMetricsPending: new Set(), configured: false, pendingQuote: null, quoteTimer: null, quoteRequestId: 0, portfolioFilter: "all", portfolioSort: "value", portfolioView: "cards", recurringSort: "value", propertySort: "value", performancePeriod: "all", incomePeriod: "month", incomeDividendSort: "value", planHorizon: 10, incomeSourceDialogId: null, incomeSourceDeleteId: null, budgetCategoryDialogId: null, budgetCategoryDeleteId: null, propertyDialogId: null, propertyDeleteId: null,
+    startupStatus: null, startupMessage: "", startupRequestId: 0, dataRequestId: 0, metricsRequestId: 0, propertyReloadPending: false, planReloadPending: false, incomeReloadPending: false, incomeReloadFailed: false, providerMetrics: {}, providerMetricsPending: new Set(), configured: false, pendingQuote: null, quoteTimer: null, quoteRequestId: 0, portfolioFilter: "all", portfolioSort: "value", portfolioView: "cards", recurringSort: "value", propertySort: "value", performancePeriod: "all", incomePeriod: "month", incomeDividendSort: "value", planHorizon: 5, planSelectedYear: 5, incomeSourceDialogId: null, incomeSourceDeleteId: null, budgetCategoryDialogId: null, budgetCategoryDeleteId: null, propertyDialogId: null, propertyDeleteId: null,
   };
   let authSubscription = null;
   let observedAuthUserId;
@@ -1313,34 +1314,90 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
       distributionPolicy: settings.distribution_policy,
     } : null;
   }
+  const scenarioColumns = { currentAge: "current_age", ageReferenceYear: "age_reference_year", stopInvestingAge: "stop_investing_age", retirementAge: "retirement_age", weeklyExpensesCents: "weekly_expenses_cents", weeklyInvestmentCents: "weekly_investment_cents", annualIncomeCents: "annual_income_cents" };
+  const scenarioControls = { weeklyExpensesCents: "#plan-weekly-expenses", weeklyInvestmentCents: "#plan-weekly-investments", stopInvestingAge: "#plan-stop-age", annualIncomeCents: "#plan-income", retirementAge: "#plan-retirement-age" };
+  let planDraft = null;
+  let planIncomeCadence = 52;
+  function planScenarioModel(record = state.planSettings) {
+    return Object.fromEntries(Object.entries(scenarioColumns).map(([key, column]) => [key, record?.[column] == null ? null : Number(record[column])]));
+  }
+  function currentPlanAge(scenario) {
+    return scenario.currentAge === null ? null : scenario.currentAge + new Date().getFullYear() - scenario.ageReferenceYear;
+  }
   function planProjection(summary) {
     const settings = planSettingsModel(state.planSettings);
-    const assumptions = resolvePlanAssumptions(settings || {} , summary);
-    const annualContributionCents = annualRecurringContributionCents(
-      state.holdings.map((holding) => ({
-        contributionCents: holding.contribution_cents === null ? null : Number(holding.contribution_cents),
-        contributionFrequency: holding.contribution_frequency,
-      })),
-      {
-        legacyWeeklyContributionCents: Number(state.account?.weekly_contribution_cents || 0),
-        legacyWeeklyAllocationRate: summary.weeklyContributionRate,
-      },
-    );
+    const assumptions = resolvePlanAssumptions(settings || {}, summary);
+    const annualContributionCents = annualRecurringContributionCents(state.holdings.map(holding => ({ contributionCents: holding.contribution_cents == null ? null : Number(holding.contribution_cents), contributionFrequency: holding.contribution_frequency })), { legacyWeeklyContributionCents: Number(state.account?.weekly_contribution_cents || 0), legacyWeeklyAllocationRate: summary.weeklyContributionRate });
+    const sourceIncome = summarizeIncomeSources(state.incomeSources.map(incomeSourceModel), "year");
+    const annualExpensesCents = summarizeBudgetCategories(state.budgetCategories.map(budgetCategoryModel), "year").totalPeriodAmountCents;
+    const sourceContinuing = sourceIncome.rows.filter(row => ["benefits", "other"].includes(row.source.incomeType)).reduce((sum, row) => sum + row.annualIncomeCents, 0);
+    const scenario = planDraft?.scenario || planScenarioModel();
+    const amounts = { annualContributionCents: scenario.weeklyInvestmentCents === null ? annualContributionCents : scenario.weeklyInvestmentCents * 52,
+      annualExpensesCents: scenario.weeklyExpensesCents === null ? annualExpensesCents : scenario.weeklyExpensesCents * 52,
+      annualIncomeCents: scenario.annualIncomeCents === null ? sourceIncome.totalAnnualIncomeCents : scenario.annualIncomeCents };
+    amounts.continuingIncomeCents = sourceIncome.totalAnnualIncomeCents ? Math.round(amounts.annualIncomeCents * sourceContinuing / sourceIncome.totalAnnualIncomeCents) : 0;
     let projection;
     try {
-      projection = projectPortfolio({
-        currentValueCents: summary.totalMarketValueCents,
-        annualContributionCents,
-        expectedAnnualReturnRate: assumptions.expectedAnnualReturnRate,
-        distributionYieldRate: assumptions.distributionYieldRate,
-        distributionPolicy: assumptions.distributionPolicy,
-        horizonYears: state.planHorizon,
-      });
+      if (planDraft?.invalid) throw new Error(planDraft.invalid);
+      normalizePlanScenario(scenario);
+      projection = projectLifePlan({ currentValueCents: summary.totalMarketValueCents, ...amounts, ...assumptions, horizonYears: state.planHorizon,
+        currentAge: currentPlanAge(scenario), stopInvestingAge: scenario.stopInvestingAge, retirementAge: scenario.retirementAge });
     } catch (error) {
-      if (error.name !== "PlanValidationError") throw error;
-      projection = { available: false, points: [], reason: "These rates cannot be projected with the selected distribution policy. Review Plan settings." };
+      projection = { available: false, points: [], reason: error.message };
     }
-    return { assumptions, annualContributionCents, projection };
+    return { assumptions, scenario, amounts, annualContributionCents, projection };
+  }
+  function beginPlanDraft() {
+    if (!planDraft) planDraft = { scenario: planScenarioModel(), baseline: state.planSettings ? { ...state.planSettings } : null, current: accountContext(), pending: false, status: "Unsaved Plan changes", invalid: "", raw: {} };
+    return planDraft;
+  }
+  function editPlanScenario(key, value, valid = true) {
+    if (!state.planDataAvailable || planDraft?.pending || !state.account) return;
+    const draft = beginPlanDraft();
+    draft.raw[key] = { value, valid };
+    draft.invalid = "";
+    for (const [field, raw] of Object.entries(draft.raw)) {
+      if (!raw.valid || (raw.value !== "" && !Number.isFinite(Number(raw.value)))) { draft.invalid = "Enter valid amounts and whole ages to preview your Plan."; continue; }
+      draft.scenario[field] = raw.value === "" ? null : field.endsWith("Cents") ? Math.round(Number(raw.value) * 100) * (field === "annualIncomeCents" ? planIncomeCadence : 1) : Number(raw.value);
+    }
+    draft.status = "Unsaved Plan changes";
+    renderPlan(portfolio());
+  }
+  async function savePlanScenario(event) {
+    event.preventDefault();
+    const draft = planDraft;
+    if (!draft || draft.pending || !draft.current()) return;
+    try {
+      if (draft.invalid) throw new Error(draft.invalid);
+      const scenario = normalizePlanScenario(draft.scenario);
+      const payload = Object.fromEntries(Object.entries(scenarioColumns).map(([key, column]) => [column, scenario[key]]));
+      payload.account_id = state.account.id;
+      if (draft.baseline && !draft.baseline.updated_at) throw new Error("Reload Plan before saving. Your draft has not been saved.");
+      draft.pending = true; draft.status = "Saving… Please wait before leaving."; renderPlan(portfolio());
+      const { client, account } = state;
+      const result = await readWithDeadline(signal => {
+        const query = draft.baseline ? client.from("plan_settings").update(payload).eq("account_id", account.id).eq("id", draft.baseline.id).eq("updated_at", draft.baseline.updated_at) : client.from("plan_settings").insert(payload);
+        return query.select().maybeSingle().abortSignal(signal);
+      });
+      if (!draft.current() || planDraft !== draft) return;
+      if (result.error?.code === "23505" || (!result.error && !result.data)) {
+        const latest = await readWithDeadline(signal => client.from("plan_settings").select("*").eq("account_id", account.id).maybeSingle().abortSignal(signal));
+        if (!draft.current() || planDraft !== draft) return;
+        if (latest.error) throw new Error("Settings changed elsewhere. Latest settings could not be loaded. Try Save again to retry; your draft is retained.");
+        state.planSettings = latest.data;
+        throw new Error("Settings changed elsewhere. Cancel to review the latest settings before editing again. Your draft has not been saved.");
+      }
+      if (result.error) throw result.error;
+      state.planSettings = result.data;
+      planDraft = null;
+      renderPlan(portfolio());
+      setText("#plan-recovery-status", "Plan saved");
+      $("#plan-weekly-expenses").focus();
+    } catch (error) {
+      if (draft.current() && planDraft === draft) draft.status = error.message === "Read timed out" ? "Saving could not be confirmed. Your draft is retained. Retry Save or reload to check the saved Plan." : error.message || "Plan could not be saved. Try again.";
+    } finally {
+      if (draft.current() && planDraft === draft) { draft.pending = false; renderPlan(portfolio()); }
+    }
   }
 
   function policyLabel(value) {
@@ -1351,97 +1408,116 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
       "hold-cash": "Hold cash",
     })[value] || "Reinvest";
   }
-  function renderPlanChart({ chartSelector, axisSelector, endpointsSelector, summarySelector, points, key, label, unavailableText }) {
-    const chart = $(chartSelector);
-    const axis = $(axisSelector);
-    const endpoints = $(endpointsSelector);
-    const summary = $(summarySelector);
-    if (!points.length) {
-      chart.innerHTML = "";
-      chart.setAttribute("aria-label", `${label}: ${unavailableText}`);
-      axis.replaceChildren();
-      endpoints.textContent = "";
-      summary.textContent = `${label}: ${unavailableText}`;
-      return;
-    }
-    const values = points.map((point) => point[key] / 100);
-    const minimum = Math.min(...values);
-    const maximum = Math.max(...values);
-    const range = maximum - minimum || 1;
-    const pointsString = values.map((value, index) => `${(index / (values.length - 1)) * 100},${96 - ((value - minimum) / range) * 84}`).join(" ");
-    const area = `0,100 ${pointsString} 100,100`;
-    chart.innerHTML = `<svg class="acadia-card-trend-chart is-primary" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><polygon class="acadia-card-trend-area" points="${area}"></polygon><polyline class="acadia-card-trend-line" points="${pointsString}"></polyline></svg>`;
-    const first = points[0];
-    const last = points.at(-1);
-    const firstValue = displayCurrency(first[key] / 100);
-    const lastValue = displayCurrency(last[key] / 100);
-    chart.setAttribute("aria-label", `${label}: ${firstValue} now to ${lastValue} in year ${last.year}.`);
-    axis.innerHTML = `<span>Now</span><span>Year ${last.year}</span>`;
-    endpoints.innerHTML = `<span class="acadia-text-muted">From ${firstValue} now</span>`;
-    summary.textContent = `${label}: ${firstValue} now and ${lastValue} in year ${last.year}.`;
+  function renderPlanChart(points, selectedYear, unavailableText) {
+    const chart = $("#plan-value-chart");
+    if (!points.length) { chart.innerHTML = ""; chart.setAttribute("aria-label", unavailableText); setText("#plan-value-summary", unavailableText); return; }
+    const values = points.map(point => point.investmentValueCents);
+    const min = Math.min(...values), max = Math.max(...values), range = max - min;
+    const geometry = values.map((value, index) => ({ x: index / (values.length - 1) * 1000, y: range ? 92 - (value - min) / range * 80 : 50 }));
+    const line = buildCardTrendPath(geometry);
+    const selected = geometry[selectedYear * 12];
+    chart.innerHTML = `<svg class="acadia-card-trend-chart is-primary" viewBox="0 0 1000 100" preserveAspectRatio="none" aria-hidden="true"><polyline class="acadia-card-trend-baseline" points="0,${geometry[0].y} 1000,${geometry[0].y}"></polyline><path class="acadia-card-trend-area" d="${line} L 1000 100 L 0 100 Z"></path><path class="acadia-card-trend-line" d="${line}"></path><line class="acadia-card-trend-baseline" x1="${selected.x}" x2="${selected.x}" y1="0" y2="100"></line></svg>`;
+    const description = `Illustrative portfolio value: ${preciseCurrency.format(values[0] / 100)} now; ${preciseCurrency.format(values[selectedYear * 12] / 100)} in year ${selectedYear}; ${preciseCurrency.format(values.at(-1) / 100)} in year ${state.planHorizon}.`;
+    chart.setAttribute("aria-label", description); setText("#plan-value-summary", description);
+  }
+  function renderPlanAssets(summary) {
+    const rows = portfolioHoldingRows(summary);
+    const cards = summarizeInvestmentGroups(rows).filter(group => group.id !== "all").sort((a, b) => ["brokerage", "crypto", "retirement"].indexOf(a.id) - ["brokerage", "crypto", "retirement"].indexOf(b.id));
+    $("#plan-asset-groups").innerHTML = cards.map(group => {
+      const members = rows.filter(row => investmentGroup(row.asset) === group.id);
+      const returns = resolvePlanAssumptions({}, { rows: members, totalMarketValueCents: group.valueCents }).expectedAnnualReturnRate;
+      const yieldKnown = group.valueCents > 0 && members.every(row => Number.isFinite(row.asset.distributionYieldRate));
+      const yieldRate = yieldKnown ? members.reduce((sum, row) => sum + row.marketValueCents * row.asset.distributionYieldRate, 0) / group.valueCents : null;
+      return `<article class="acadia-card is-content"><div class="acadia-card-header"><div class="acadia-page-header-pattern-actions"><h3 class="acadia-lead">${group.name}</h3><a class="acadia-icon-action" href="#portfolio" data-plan-group="${group.id}" aria-label="View ${group.name} assets"><i class="fa-solid fa-chevron-right acadia-icon" aria-hidden="true"></i></a></div><span class="acadia-text-muted">${group.valueCents === null ? "Not set" : displayCurrency(group.valueCents / 100)}</span></div><strong style="color: var(--acadia-color-brand)">${group.count} ${group.count === 1 ? "asset" : "assets"}</strong><div class="acadia-cluster"><span title="Annual return assumption"><i class="fa-solid fa-chart-line acadia-icon" aria-hidden="true"></i> <span class="acadia-sr-only">Annual return: </span>${group.count && group.missingCount === 0 && Number.isFinite(returns) ? percentage.format(returns) : "Not set"}</span><span title="Distribution yield"><i class="fa-solid fa-coins acadia-icon" aria-hidden="true"></i> <span class="acadia-sr-only">Distribution yield: </span>${yieldRate === null ? "Not set" : percentage.format(yieldRate)}</span></div></article>`;
+    }).join("");
+    const count = state.properties.length;
+    const properties = state.properties.map(propertyModel);
+    const propertyTotal = properties.reduce((sum, property) => sum + property.currentValueCents, 0);
+    const appreciation = propertyTotal > 0 && properties.every(property => property.annualAppreciationRate !== null) ? properties.reduce((sum, property) => sum + property.currentValueCents * property.annualAppreciationRate, 0) / propertyTotal : null;
+    $("#plan-property-summary").innerHTML = `<article class="acadia-card is-content"><div class="acadia-card-header"><div class="acadia-page-header-pattern-actions"><h3 class="acadia-lead">Property</h3><a class="acadia-icon-action" href="#portfolio" aria-label="View properties"><i class="fa-solid fa-chevron-right acadia-icon" aria-hidden="true"></i></a></div><span class="acadia-text-muted">${state.propertiesAvailable ? displayCurrency(totalPropertyEquity() / 100) : "Unavailable"}</span></div><strong style="color: var(--acadia-color-brand)">${state.propertiesAvailable ? `${count} ${count === 1 ? "property" : "properties"}` : "Review Portfolio to retry"}</strong><span title="Annual appreciation assumption"><i class="fa-solid fa-chart-line acadia-icon" aria-hidden="true"></i> <span class="acadia-sr-only">Annual appreciation: </span>${appreciation === null ? "Not set" : percentage.format(appreciation)}</span></article>`;
+    document.querySelectorAll("[data-plan-group]").forEach(link => link.addEventListener("click", () => { state.portfolioFilter = link.dataset.planGroup; }));
   }
   function renderPlan(summary) {
-    $("#home-workspace").hidden = true;
-    $("#portfolio-workspace").hidden = true;
-    $("#income-workspace").hidden = true;
+    if (planDraft && !planDraft.current()) planDraft = null;
+    ["home", "portfolio", "income", "asset"].forEach(name => { $(`#${name}-workspace`).hidden = true; });
     $("#plan-workspace").hidden = false;
-    $("#asset-workspace").hidden = true;
     setActiveNavigation("plan");
     const plan = planProjection(summary);
-    const { assumptions, projection } = plan;
+    const { assumptions, projection, amounts, scenario } = plan;
     const missingValuations = state.holdings.length - summary.rows.length;
     const valuationComplete = missingValuations === 0;
-    const ready = state.planDataAvailable && valuationComplete && projection.available;
+    const cashflowAvailable = state.incomeSourcesAvailable && state.budgetCategoriesAvailable;
+    const ready = state.planDataAvailable && valuationComplete && cashflowAvailable && projection.available;
     const points = ready ? projection.points : [];
-    const finalPoint = points.at(-1);
+    const year = Math.min(state.planHorizon, state.planSelectedYear);
+    const selected = points[year * 12];
     const metricsLoading = state.providerMetricsPending.size > 0;
-    const missingReturn = !Number.isFinite(assumptions.expectedAnnualReturnRate);
-    const missingYield = !Number.isFinite(assumptions.distributionYieldRate);
+    const missingReturn = !Number.isFinite(assumptions.expectedAnnualReturnRate), missingYield = !Number.isFinite(assumptions.distributionYieldRate);
     const unavailableText = !state.planDataAvailable ? "Your saved settings could not be loaded. Retry to restore your outlook."
       : !valuationComplete ? `${missingValuations} ${missingValuations === 1 ? "asset needs" : "assets need"} a valuation before an outlook can be calculated.`
-        : projection.reason ? projection.reason
-        : metricsLoading && !projection.available ? "Loading current portfolio metrics…"
-          : missingReturn && missingYield ? "Return and dividend data are missing for some holdings. Review Portfolio to complete coverage."
-            : missingReturn ? "Annual return data is missing for some holdings. Review Portfolio to complete coverage."
-              : "Dividend data is missing for some holdings. Review Portfolio to complete coverage.";
+        : !cashflowAvailable ? "Income or expenses could not be loaded. Review Income and retry your data."
+          : projection.reason || (metricsLoading && !projection.available ? "Loading current portfolio metrics…" : missingReturn && missingYield ? "Return and dividend data are missing for some holdings. Review Portfolio to complete coverage." : missingReturn ? "Annual return data is missing for some holdings. Review Portfolio to complete coverage." : "Dividend data is missing for some holdings. Review Portfolio to complete coverage.");
     $("#plan-readiness").hidden = ready;
     $("#plan-outlook").hidden = !ready;
     $("#plan-retry-data").hidden = state.planDataAvailable;
     $("#plan-retry-data").disabled = state.planReloadPending;
     setText("#plan-retry-data", state.planReloadPending ? "Retrying…" : "Retry settings");
     $("#plan-review-portfolio").hidden = (valuationComplete && !(missingReturn || missingYield)) || metricsLoading || !state.planDataAvailable;
-    setText("#plan-readiness-title", !state.planDataAvailable ? "Plan unavailable" : !valuationComplete ? "Complete your portfolio values" : metricsLoading && !projection.available ? "Loading your outlook" : projection.reason ? "Outlook unavailable" : "Portfolio data incomplete");
+    $("#plan-review-income").hidden = cashflowAvailable;
+    setText("#plan-readiness-title", !state.planDataAvailable ? "Plan unavailable" : !valuationComplete ? "Complete your portfolio values" : metricsLoading && !projection.available ? "Loading your outlook" : projection.reason ? "Review your Plan inputs" : "Portfolio data incomplete");
     setText("#plan-readiness-copy", unavailableText);
-    setText("#plan-current-value", valuationComplete ? displayCurrency(summary.totalMarketValueCents / 100) : "Not set");
-    setText("#plan-projected-value-label", `Projected in ${state.planHorizon} years`);
-    setText("#plan-projected-income-label", `Annual distributions in ${state.planHorizon} years`);
-    setText("#plan-projected-value", ready ? displayCurrency(finalPoint.investmentValueCents / 100) : "Not set");
-    setText("#plan-projected-income", ready ? displayCurrency(finalPoint.projectedIncomeCents / 100) : "Not set");
-    document.querySelectorAll("[data-plan-horizon]").forEach((control) => {
-      const active = Number(control.dataset.planHorizon) === state.planHorizon;
-      control.classList.toggle("is-active", active);
-      control.setAttribute("aria-pressed", String(active));
-    });
-    renderPlanChart({ chartSelector: "#plan-value-chart", axisSelector: "#plan-value-axis", endpointsSelector: "#plan-value-endpoints", summarySelector: "#plan-value-summary", points, key: "investmentValueCents", label: "Projected investment value", unavailableText });
-    renderPlanChart({ chartSelector: "#plan-income-chart", axisSelector: "#plan-income-axis", endpointsSelector: "#plan-income-endpoints", summarySelector: "#plan-income-summary", points, key: "projectedIncomeCents", label: "Projected portfolio income", unavailableText });
-    setText("#plan-assumption-contributions", `${displayCurrency(plan.annualContributionCents / 100)} / year`);
+    const projected = ready ? displayCurrency(selected.investmentValueCents / 100) : "Not set";
+    setText("#plan-hero-value", projected); setText("#plan-projected-value", projected);
+    setText("#plan-hero-age", selected?.age == null ? "Projected portfolio" : `Age ${selected.age}`);
+    const date = new Date(); date.setFullYear(date.getFullYear() + year);
+    setText("#plan-hero-date", date.toLocaleDateString("en-US", { month: "short", year: "numeric" }));
+    const change = ready ? selected.investmentValueCents - summary.totalMarketValueCents : null;
+    setText("#plan-change", change === null ? "Not set" : displaySignedCurrency(change));
+    setText("#plan-change-rate", ready && summary.totalMarketValueCents > 0 ? displaySignedPercentage(change / summary.totalMarketValueCents) : "");
+    setText("#plan-change-label", `${year} year change`);
+    setText("#plan-projected-income", ready ? displayCurrency(selected.projectedIncomeCents / 100) : "Not set");
+    setText("#plan-income-rate", ready ? percentage.format(assumptions.distributionYieldRate) : "");
+    setText("#plan-growth", ready ? displaySignedCurrency(selected.expectedGrowthCents) : "Not set");
+    setText("#plan-growth-rate", ready ? displaySignedPercentage(projection.effectiveGrowthRate) : "");
+    $("#plan-selected-year").max = state.planHorizon;
+    $("#plan-selected-year").value = year;
+    $("#plan-selected-year").setAttribute("aria-valuetext", `${year === 0 ? "Now" : `Year ${year}`} · ${projected}${selected?.age == null ? "" : ` · Age ${selected.age}`}`);
+    $("#plan-value-axis").innerHTML = `<span>Now</span><span>${state.planHorizon} years</span>`;
+    document.querySelectorAll("[data-plan-horizon]").forEach(control => { const active = Number(control.dataset.planHorizon) === state.planHorizon; control.classList.toggle("is-active", active); control.setAttribute("aria-pressed", String(active)); });
+    renderPlanChart(points, year, unavailableText);
+    const depletion = ready && projection.depletionMonth !== null;
+    $("#plan-projection-note").hidden = !depletion;
+    setText("#plan-projection-note", depletion ? `This scenario exhausts the portfolio in month ${projection.depletionMonth}. ${currency.format(projection.unfundedCents / 100)} of spending remains unfunded over ${state.planHorizon} years.` : "");
+    for (const [id, amount] of [["plan-projected-value", selected?.investmentValueCents], ["plan-change", change], ["plan-projected-income", selected?.projectedIncomeCents], ["plan-growth", selected?.expectedGrowthCents]]) $("#" + id).setAttribute("title", Number.isSafeInteger(amount) ? preciseCurrency.format(amount / 100) : "Unavailable");
+    const defaults = { weeklyExpensesCents: amounts.annualExpensesCents / 52, weeklyInvestmentCents: amounts.annualContributionCents / 52, annualIncomeCents: amounts.annualIncomeCents / planIncomeCadence };
+    for (const [key, selector] of Object.entries(scenarioControls)) {
+      const control = $(selector);
+      if (!(key in (planDraft?.raw || {}))) control.value = key.endsWith("Cents") ? (defaults[key] / 100).toFixed(2) : scenario[key] ?? "";
+      control.disabled = !state.planDataAvailable || !cashflowAvailable || Boolean(planDraft?.pending);
+      if (!planDraft && (!state.planDataAvailable || !cashflowAvailable)) control.value = "";
+    }
+    $("#plan-income-cadence").value = planIncomeCadence;
+    $("#plan-income-cadence").disabled = Boolean(planDraft?.pending);
+    for (const [id, key, amount] of [["expenses", "weeklyExpensesCents", amounts.annualExpensesCents], ["investments", "weeklyInvestmentCents", amounts.annualContributionCents], ["income", "annualIncomeCents", amounts.annualIncomeCents]]) setText(`#plan-${id}-hint`, `${currency.format(amount / 1200)}/mo · ${scenario[key] === null ? "From Mercury" : "Plan override"}`);
+    if (!state.planDataAvailable || !cashflowAvailable) ["expenses", "investments", "income"].forEach(id => setText(`#plan-${id}-hint`, "Saved inputs unavailable"));
+    setText("#plan-input-source", `USD · ${currentPlanAge(scenario) === null ? "Set your current age in Plan settings." : `Current age ${currentPlanAge(scenario)}.`} Empty amounts follow Mercury.`);
+    $("#plan-scenario-actions").hidden = !planDraft;
+    setText("#plan-scenario-status", planDraft?.status || "");
+    $("#plan-scenario-save").disabled = Boolean(planDraft?.pending);
+    $("#plan-scenario-cancel").disabled = Boolean(planDraft?.pending);
+    $("#plan-reset-amounts").disabled = !state.planDataAvailable || !cashflowAvailable || Boolean(planDraft?.pending);
+    $("#edit-plan-assumptions").disabled = !state.planDataAvailable || Boolean(planDraft?.pending);
     setText("#plan-assumption-return", Number.isFinite(assumptions.expectedAnnualReturnRate) ? percentage.format(assumptions.expectedAnnualReturnRate) : "Not set");
-    setText("#plan-assumption-yield", Number.isFinite(assumptions.distributionYieldRate) ? percentage.format(assumptions.distributionYieldRate) : metricsLoading ? "Loading…" : "Not set");
+    setText("#plan-assumption-yield", Number.isFinite(assumptions.distributionYieldRate) ? percentage.format(assumptions.distributionYieldRate) : "Not set");
     setText("#plan-assumption-policy", policyLabel(assumptions.distributionPolicy));
-    setText("#plan-return-source", missingReturn ? metricsLoading ? "Loading portfolio returns…" : "Portfolio data incomplete" : assumptions.usesReturnOverride ? "Plan override" : assumptions.usesHistoricalReturn ? "Value-weighted · historical returns" : "Value-weighted · holding assumptions");
-    setText("#plan-yield-source", missingYield ? metricsLoading ? "Loading portfolio yields…" : "Portfolio data incomplete" : assumptions.usesYieldOverride ? "Plan override" : "From Portfolio");
+    setText("#plan-return-source", assumptions.usesReturnOverride ? "Plan override" : assumptions.usesHistoricalReturn ? "Value-weighted · historical returns" : "Value-weighted · holding assumptions");
+    setText("#plan-yield-source", assumptions.usesYieldOverride ? "Plan override" : "From Portfolio");
+    setText("#plan-cashflow-note", ready ? `Over ${state.planHorizon} years: ${currency.format(points.at(-1).contributedCents / 100)} contributed; ${currency.format(points.at(-1).withdrawnCents / 100)} withdrawn.${projection.depletionMonth === null ? "" : ` Portfolio depleted in month ${projection.depletionMonth}; ${currency.format(projection.unfundedCents / 100)} of spending could not be funded.`}` : unavailableText);
     if (!state.planDataAvailable) {
-      ["#plan-assumption-return", "#plan-assumption-yield", "#plan-assumption-policy"].forEach(selector => setText(selector, "Unavailable"));
-      ["#plan-return-source", "#plan-yield-source"].forEach(selector => setText(selector, "Saved settings unavailable"));
+      ["return", "yield", "policy"].forEach(id => setText(`#plan-assumption-${id}`, "Unavailable"));
+      ["return", "yield"].forEach(id => setText(`#plan-${id}-source`, "Saved settings unavailable"));
     }
-    $("#edit-plan-assumptions").disabled = !state.planDataAvailable;
-    document.querySelectorAll("[data-open-plan-assumptions]").forEach((button) => { button.disabled = !state.planDataAvailable; });
-    const propertyCount = state.properties.length;
-    $("#plan-property-equity").hidden = !state.propertiesAvailable || propertyCount === 0;
-    if (propertyCount > 0) {
-      setText("#plan-property-equity-value", displayCurrency(totalPropertyEquity() / 100));
-      setText("#plan-property-equity-count", `${propertyCount} ${propertyCount === 1 ? "property" : "properties"}`);
-    }
+    renderPlanAssets(summary);
   }
 
   function setDetailFormDisabled(disabled) {
@@ -1764,10 +1840,10 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
     return entry.dialog.open && entry.baseline !== formSnapshot(entry.form);
   }
   function hasPendingWrite() {
-    return Array.from(incomeSourceDrafts.values()).some(draft => draft.pending) || Boolean(savingAssetId) || Array.from(protectedDialogs.values()).some((entry) => entry.pending);
+    return Boolean(planDraft?.pending) || Array.from(incomeSourceDrafts.values()).some(draft => draft.pending) || Boolean(savingAssetId) || Array.from(protectedDialogs.values()).some((entry) => entry.pending);
   }
   function hasUnsavedWork() {
-    return incomeSourceDrafts.size > 0 || assetHasDraft() || Array.from(protectedDialogs.values()).some(dialogHasDraft);
+    return Boolean(planDraft) || incomeSourceDrafts.size > 0 || assetHasDraft() || Array.from(protectedDialogs.values()).some(dialogHasDraft);
   }
   function requestDiscard(action) {
     if (pendingDiscard) return;
@@ -1783,6 +1859,7 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
     }
     const leave = () => {
       incomeSourceDrafts.clear();
+      planDraft = null;
       for (const id of incomeSourceCards.keys()) syncIncomeSourceCard(id);
       assetFormBaseline = assetFormSnapshot();
       protectedDialogs.forEach((entry) => { if (entry.dialog.open) entry.dialog.close(); });
@@ -1897,6 +1974,7 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
   let renderedPortfolio = false;
   function render() {
     if (authReloadPending) return;
+    if (planDraft && !planDraft.current()) planDraft = null;
     if (incomeEditorContext && !incomeEditorContext()) clearIncomeEditors();
     if (!state.user || !routeAssetId()) clearMarketHistory();
     if (!state.user || !routePortfolio() || state.startupStatus) clearPortfolioMarketHistory();
@@ -2516,10 +2594,12 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
   function openPlanAssumptionsDialog() {
     if (protectedDialogs.get($("#plan-assumptions-dialog"))?.pending) return;
     if (!state.planDataAvailable) return;
+    if (planDraft) { leaveWorkspace(openPlanAssumptionsDialog); return; }
     const settings = planSettingsModel(state.planSettings);
     planEditorRecord = state.planSettings ? { ...state.planSettings } : null;
     const form = $("#plan-assumptions-form");
     form.reset();
+    $("#plan-current-age").value = currentPlanAge(planScenarioModel()) ?? "";
     const summary = portfolio();
     const automatic = resolvePlanAssumptions({}, summary);
     const complete = summary.rows.length === state.holdings.length;
@@ -2555,7 +2635,11 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
         distributionYieldRate: rate(getFormValue($("#plan-assumptions-form"), "distributionYield")),
         distributionPolicy: getFormValue($("#plan-assumptions-form"), "distributionPolicy"),
       });
+      const ageValue = getFormValue($("#plan-assumptions-form"), "currentAge");
+      const scenario = normalizePlanScenario({ ...planScenarioModel(planEditorRecord), currentAge: ageValue == null || ageValue === "" ? null : Number(ageValue), ageReferenceYear: ageValue == null || ageValue === "" ? null : new Date().getFullYear() });
       const payload = {
+        current_age: scenario.currentAge,
+        age_reference_year: scenario.ageReferenceYear,
         account_id: account.id,
         expected_annual_return_rate: settings.expectedAnnualReturnRate,
         distribution_yield_rate: settings.distributionYieldRate,
@@ -3140,8 +3224,24 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
   document.querySelectorAll("[data-plan-horizon]").forEach((control) => {
     control.addEventListener("click", () => {
       state.planHorizon = Number(control.dataset.planHorizon);
+      state.planSelectedYear = state.planHorizon;
       render();
     });
+  });
+  for (const [key, selector] of Object.entries(scenarioControls)) $(selector).addEventListener("input", event => editPlanScenario(key, event.target.value, event.target.validity.valid));
+  $("#plan-selected-year").addEventListener("input", event => { state.planSelectedYear = Number(event.target.value); renderPlan(portfolio()); });
+  $("#plan-scenario-form").addEventListener("submit", savePlanScenario);
+  $("#plan-scenario-cancel").addEventListener("click", () => { if (planDraft?.pending) return; planDraft = null; renderPlan(portfolio()); $("#plan-weekly-expenses").focus(); });
+  $("#plan-reset-amounts").addEventListener("click", () => {
+    if (planDraft?.pending) return;
+    const draft = beginPlanDraft();
+    for (const key of ["weeklyExpensesCents", "weeklyInvestmentCents", "annualIncomeCents"]) { draft.scenario[key] = null; delete draft.raw[key]; }
+    draft.invalid = ""; draft.status = "Mercury amounts restored · Save to keep this change"; renderPlan(portfolio());
+  });
+  $("#plan-income-cadence").addEventListener("change", event => {
+    planIncomeCadence = Number(event.target.value);
+    if (planDraft?.raw.annualIncomeCents) delete planDraft.raw.annualIncomeCents;
+    renderPlan(portfolio());
   });
   $("#edit-plan-assumptions").addEventListener("click", openPlanAssumptionsDialog);
   document.querySelectorAll("[data-open-plan-assumptions]").forEach((control) => {

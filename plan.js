@@ -1,6 +1,6 @@
 "use strict";
 
-const PLAN_HORIZONS = Object.freeze([5, 10, 20]);
+const PLAN_HORIZONS = Object.freeze([1, 5, 10, 20]);
 const PLAN_DISTRIBUTION_POLICIES = Object.freeze([
   "reinvest",
   "transfer-to-bank",
@@ -46,6 +46,65 @@ function normalizePlanSettings(input = {}) {
     distributionYieldRate: optionalRate(input.distributionYieldRate, "distributionYieldRate", { minimum: 0, maximum: 1 }),
     distributionPolicy,
   });
+}
+
+// Null monetary overrides stay linked to Mercury's source records.
+function normalizePlanScenario(input = {}) {
+  const integer = (value, field, min, max) => {
+    if (value === null || value === undefined || value === "") return null;
+    if (!Number.isSafeInteger(value) || value < min || value > max) throw new PlanValidationError(`${field} must be a whole number between ${min} and ${max}.`);
+    return value;
+  };
+  const scenario = {
+    currentAge: integer(input.currentAge, "Current age", 0, 120),
+    ageReferenceYear: integer(input.ageReferenceYear, "Age reference year", 1900, 2200),
+    stopInvestingAge: integer(input.stopInvestingAge, "Stop investing age", 0, 120),
+    retirementAge: integer(input.retirementAge, "Retirement age", 0, 120),
+    weeklyExpensesCents: integer(input.weeklyExpensesCents, "Weekly expenses", 0, 100000000000),
+    weeklyInvestmentCents: integer(input.weeklyInvestmentCents, "Weekly investments", 0, 100000000000),
+    annualIncomeCents: integer(input.annualIncomeCents, "Annual income", 0, 5200000000000),
+  };
+  if ((scenario.currentAge === null) !== (scenario.ageReferenceYear === null)) throw new PlanValidationError("Enter your current age to use age-based controls.");
+  if (scenario.currentAge === null && (scenario.stopInvestingAge !== null || scenario.retirementAge !== null)) throw new PlanValidationError("Enter your current age in Plan settings to use age-based controls.");
+  return Object.freeze(scenario);
+}
+
+// Fixed nominal monthly cash flow. Total return already includes distributions.
+// Contributions use available income; spending shortfalls draw down investments.
+function projectLifePlan({ currentValueCents, annualContributionCents = 0, annualExpensesCents = 0,
+  annualIncomeCents = 0, continuingIncomeCents = 0, expectedAnnualReturnRate,
+  distributionYieldRate, distributionPolicy = "reinvest", horizonYears = 5,
+  currentAge = null, stopInvestingAge = null, retirementAge = null } = {}) {
+  [currentValueCents, annualContributionCents, annualExpensesCents, annualIncomeCents, continuingIncomeCents].forEach(value => nonNegativeCents(value, "Cash flow"));
+  if (continuingIncomeCents > annualIncomeCents) throw new PlanValidationError("Continuing income cannot exceed total income.");
+  const validation = projectPortfolio({ currentValueCents, annualContributionCents: 0, expectedAnnualReturnRate, distributionYieldRate, distributionPolicy, horizonYears });
+  if (!validation.available) return validation;
+  normalizePlanScenario({ currentAge, ageReferenceYear: currentAge === null ? null : 2000, stopInvestingAge, retirementAge });
+  const rate = validation.effectiveGrowthRate;
+  const monthlyGrowth = Math.pow(1 + rate, 1 / 12) - 1;
+  const portion = (annual, month) => Math.round(annual * month / 12) - Math.round(annual * (month - 1) / 12);
+  let value = currentValueCents, depletionMonth = null, unfundedCents = 0, contributedCents = 0, withdrawnCents = 0;
+  const point = month => ({ month, year: month / 12, age: currentAge === null ? null : currentAge + Math.floor(month / 12), investmentValueCents: value,
+    projectedIncomeCents: Math.round(value * distributionYieldRate), expectedGrowthCents: Math.round(value * rate), contributedCents, withdrawnCents, unfundedCents });
+  const points = [point(0)];
+  for (let month = 1; month <= horizonYears * 12; month++) {
+    const age = currentAge === null ? null : currentAge + Math.floor((month - 1) / 12);
+    const retired = retirementAge !== null && age >= retirementAge;
+    const stopped = stopInvestingAge !== null && age >= stopInvestingAge;
+    const income = portion(retired ? continuingIncomeCents : annualIncomeCents, month);
+    const distributions = distributionPolicy === "reinvest" ? 0 : Math.round(value * distributionYieldRate / 12);
+    const balance = income + distributions - portion(annualExpensesCents, month);
+    const cashFlow = Math.min(stopped ? 0 : portion(annualContributionCents, month), balance);
+    const grown = Math.max(0, Math.round(value * (1 + monthlyGrowth)));
+    contributedCents += Math.max(0, cashFlow);
+    withdrawnCents += Math.min(grown, Math.max(0, -cashFlow));
+    unfundedCents += Math.max(0, -(grown + cashFlow));
+    value = Math.max(0, grown + cashFlow);
+    if (!Number.isSafeInteger(value)) throw new PlanValidationError("This projection exceeds the supported amount range. Reduce the amounts or horizon.");
+    if (value === 0 && cashFlow < 0 && depletionMonth === null) depletionMonth = month;
+    points.push(point(month));
+  }
+  return { available: true, effectiveGrowthRate: rate, points, depletionMonth, unfundedCents };
 }
 
 function requiredText(value, field) {
@@ -211,9 +270,11 @@ const planContract = {
   normalizeHomeProperty,
   normalizeProperty,
   normalizePlanSettings,
+  normalizePlanScenario,
   propertyEquityCents,
   propertyGainLoss,
   projectPortfolio,
+  projectLifePlan,
   resolvePlanAssumptions,
   totalNetWorthCents,
   totalPropertyEquityCents,

@@ -555,3 +555,9 @@ When a UX detail, UI pattern, visual utility, chart treatment, component behavio
 ## Add asset intrinsic sizing — historical 2026-09-07
 
 The previous compact-grid modal required a Safari translation adapter. The 2026-09-10 alignment replaces that obsolete modifier with the current Acadia flex modal and removes the translation. Earlier 560px measurements describe the retired snapshot, not the current acceptance target.
+
+## Plan reference — 2026-09-14
+
+Figma Mercury `129:4939` is the Plan composition: an unboxed teal portfolio graph, 1Y/5Y/10Y/20Y tabs, four statistics, five inline scenario controls, then Brokerage/Crypto/Retirement and full-width Property summaries. The year slider keeps graph, approximate age/date and all statistics synchronised. Graph geometry comes from real monthly projection points through Acadia's unchanged bounded curve helper; never reproduce the illustrative reference's market wiggles with invented data.
+
+Acadia owns cards, typography, colours, controls, range input, tabs, focus and dialogs. Product CSS only composes intrinsic grids, bounds hero height and reflows tabs/buttons at enlarged text. Summary cards show selected-year projections; Assets explicitly shows current values. One useful navigation link replaces each reference ellipsis where there is only one action. Source hints distinguish inherited amounts and overrides. Advanced assumptions sit after Assets to preserve the main hierarchy. Edits preview live, with explicit Save Plan/Cancel and revision-aware conflict recovery; starting age belongs in Plan settings. Retain missing-data and depletion feedback.

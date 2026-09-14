@@ -25,3 +25,7 @@ Snapshots reject incomplete or invalid valuations before writing, leaving previo
 `20260914144500_property_purchase_price.sql` adds nullable `purchase_price_cents` to `home_properties`, with a non-negative safe-integer constraint. It was applied to the linked Mercury project and recorded in the migration ledger in one transaction on 2026-09-14. No old migrations were replayed, existing values were not backfilled, and row-level security remains enabled. Apply this one forward migration before deploying the new client to another environment.
 
 Authenticated disposable-account checks verified omitted/null values, exact cent precision, updates, zero, clearing, rejection of negative/unsafe values, and unchanged equity inputs. All test records were removed and the empty test-account state rechecked. The general migration-baseline/rebuild gate above remains separate.
+
+## Plan scenario — 0.1.0
+
+`20260914180000_plan_scenario.sql` adds seven nullable scenario fields and age/money constraints to `plan_settings`. It was applied and recorded atomically on 2026-09-14. Existing records retain null overrides; RLS, ownership and the revision trigger remain unchanged. Authenticated disposable-account checks verified all seven fields, exact cents, fresh rereads, stale updates, invalid-age/money rejection, clearing overrides and complete cleanup. The historical baseline/rebuild and second-user acceptance gates remain separate.

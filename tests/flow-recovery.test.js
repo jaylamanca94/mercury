@@ -33,7 +33,7 @@ function controller() {
     fetch:async()=>({ok:false,json:async()=>({error:'provider unavailable'})}),
   });
   const source = fs.readFileSync(require.resolve('../brokerage.js'),'utf8').replace(/^import .*;\n/, '').replace('  initialise();',
-    '  window.testController = {observeAuthSession,sessionToken,editIncomeSource,saveInlineIncomeSource,cancelInlineIncomeSource,incomeSourceDrafts,syncPortfolioMarketHistory,clearPortfolioMarketHistory,portfolioMarketHistory,renderRecurringInvestments,loadMarketHistory,renderMarketHistory,clearMarketHistory,initialise,loadData,readWithDeadline,retryPlanSettings,openPlanAssumptionsDialog,savePlanAssumptions,retryProperties,hydrateProviderMetrics,ensurePlanSettings,state,render,renderHomeChanges,renderHomeGrowth,renderIncomeRecovery,retryIncomeData,missingIncomeYieldRows,renderIncomeYieldRecovery,renderPlan,renderQuickQuotePreview,refreshCurrentAssetPrice,restorePortfolioAssetFocus,renderHistory,renderAsset,canQuote,lookupQuote,saveQuickAsset,navigateToAsset,navigateBackFromAsset,routeAssetId,openFormDialog,hasPendingWrite,hasUnsavedWork,matchingPortfolioHoldingRows,sortHoldingRows,holdingValueLabel,renderPortfolioView,renderPortfolioSummary,detailHolding,openPropertyDialog,saveProperty};');
+    '  window.testController = {editPlanScenario,savePlanScenario,planProjection,observeAuthSession,sessionToken,editIncomeSource,saveInlineIncomeSource,cancelInlineIncomeSource,incomeSourceDrafts,syncPortfolioMarketHistory,clearPortfolioMarketHistory,portfolioMarketHistory,renderRecurringInvestments,loadMarketHistory,renderMarketHistory,clearMarketHistory,initialise,loadData,readWithDeadline,retryPlanSettings,openPlanAssumptionsDialog,savePlanAssumptions,retryProperties,hydrateProviderMetrics,ensurePlanSettings,state,render,renderHomeChanges,renderHomeGrowth,renderIncomeRecovery,retryIncomeData,missingIncomeYieldRows,renderIncomeYieldRecovery,renderPlan,renderQuickQuotePreview,refreshCurrentAssetPrice,restorePortfolioAssetFocus,renderHistory,renderAsset,canQuote,lookupQuote,saveQuickAsset,navigateToAsset,navigateBackFromAsset,routeAssetId,openFormDialog,hasPendingWrite,hasUnsavedWork,matchingPortfolioHoldingRows,sortHoldingRows,holdingValueLabel,renderPortfolioView,renderPortfolioSummary,detailHolding,openPropertyDialog,saveProperty};');
   vm.runInContext(source,context);
   const api=window.testController;
   api.state.client={auth:{onAuthStateChange(callback){ window.authChanged = callback; return {data:{subscription:{unsubscribe(){}}}}; },getSession:async()=>({data:{session:{access_token:'isolated-test'}}})}};
@@ -595,16 +595,14 @@ test('Plan clears stale projections when valuation coverage is incomplete and re
   api.state.holdings=[{contribution_cents:null},{contribution_cents:null}];
   api.state.planSettings={expected_annual_return_rate:.05,distribution_yield_rate:.02,distribution_policy:'reinvest'};
   for(const id of ['#plan-value-axis','#plan-income-axis']) node(id).replaceChildren=()=>{node(id).innerHTML=''};
-  const summary={rows:[{},{}],totalMarketValueCents:5000000,weeklyContributionRate:0};
+  const summary={rows:[{asset:{id:'one'}},{asset:{id:'two'}}],totalMarketValueCents:5000000,weeklyContributionRate:0};
   api.renderPlan(summary);
   assert.equal(node('#plan-outlook').hidden,false);
   assert.match(node('#plan-value-chart').innerHTML,/<svg/);
   const completeValue=node('#plan-projected-value').textContent;
-  api.renderPlan({...summary,rows:[{}]});
+  api.renderPlan({...summary,rows:[{asset:{id:'one'}}]});
   assert.equal(node('#plan-outlook').hidden,true);
   assert.equal(node('#plan-value-chart').innerHTML,'');
-  assert.equal(node('#plan-income-chart').innerHTML,'');
-  assert.equal(node('#plan-current-value').textContent,'Not set');
   assert.equal(node('#plan-projected-value').textContent,'Not set');
   assert.equal(node('#plan-review-portfolio').hidden,false);
   assert.match(node('#plan-readiness-copy').textContent,/1 asset needs a valuation/);
@@ -632,8 +630,8 @@ test('Plan contains unsupported historical rates for cash distribution policies 
   const summary={rows:[{marketValueCents:10000,asset:{historicalAnnualizedReturnRate:-.99}}],totalMarketValueCents:10000,distributionYieldRate:.02,weeklyContributionRate:0};
   api.renderPlan(summary);
   assert.equal(node('#plan-outlook').hidden,true);
-  assert.equal(node('#plan-readiness-title').textContent,'Outlook unavailable');
-  assert.match(node('#plan-readiness-copy').textContent,/selected distribution policy/);
+  assert.equal(node('#plan-readiness-title').textContent,'Review your Plan inputs');
+  assert.match(node('#plan-readiness-copy').textContent,/cash distribution policy/);
   api.state.planSettings.distribution_policy='reinvest';
   api.renderPlan(summary);
   assert.equal(node('#plan-outlook').hidden,false);
@@ -1501,4 +1499,61 @@ test('an old account income save cannot populate another account or leave its dr
   assert.equal(api.hasUnsavedWork(),false);
   finish({data:{...source,amount_cents:120000,frequency:'monthly'}}); await saving;
   assert.equal(api.state.incomeSources.length,0); assert.equal(api.hasPendingWrite(),false);
+});
+
+test('Plan scenario saves remain account scoped, retain conflicting drafts and cancel to the winner', async()=>{
+ const {api,node,getRemote,setRemote,writes}=planEditorFixture();
+ api.editPlanScenario('weeklyExpensesCents','50');
+ assert.equal(api.hasUnsavedWork(),true);
+ const newer={...getRemote(),updated_at:'new',weekly_expenses_cents:7000};setRemote(newer);
+ await api.savePlanScenario({preventDefault(){}});
+ assert.equal(getRemote().weekly_expenses_cents,7000);
+ assert.match(node('#plan-scenario-status').textContent,/changed elsewhere/);
+ assert.equal(api.hasUnsavedWork(),true);
+ assert.equal(writes[0].values.weekly_expenses_cents,5000);
+ assert.deepEqual(writes[0].filters,[['account_id','account'],['id','plan'],['updated_at','v1']]);
+ await api.savePlanScenario({preventDefault(){}});
+ assert.equal(getRemote().weekly_expenses_cents,7000);
+ node('#plan-scenario-cancel').listeners.click();
+ assert.equal(api.hasUnsavedWork(),false);
+ assert.equal(node('#plan-weekly-expenses').value,'70.00');
+});
+
+test('Plan scenario saves exact cents and reset restores linked source amounts without editing sources',async()=>{
+ const {api,node,getRemote,writes}=planEditorFixture();
+ api.state.incomeSources=[{id:'income',name:'Job',income_type:'employment',amount_cents:12345,frequency:'weekly'}];
+ api.editPlanScenario('annualIncomeCents','200.01');
+ await api.savePlanScenario({preventDefault(){}});
+ assert.equal(getRemote().annual_income_cents,1040052);
+ assert.equal(api.state.incomeSources[0].amount_cents,12345);
+ assert.equal(api.hasUnsavedWork(),false);
+ node('#plan-reset-amounts').listeners.click();
+ await api.savePlanScenario({preventDefault(){}});
+ assert.equal(getRemote().annual_income_cents,null);
+ assert.equal(node('#plan-income').value,'123.45');
+ assert.equal(writes.length,2);
+});
+
+test('Plan scenario duplicates are blocked and late writes cannot enter a replacement account',async()=>{
+ const {api,node}=planEditorFixture();let finish,calls=0;
+ api.state.client.from=()=>{const q={update(){return this},eq(){return this},select(){return this},maybeSingle(){return this},abortSignal(){return this},then(resolve){calls++;return new Promise(r=>finish=r).then(resolve)}};return q};
+ api.editPlanScenario('weeklyExpensesCents','100');
+ const pending=api.savePlanScenario({preventDefault(){}});await new Promise(setImmediate);
+ assert.equal(api.hasPendingWrite(),true);await api.savePlanScenario({preventDefault(){}});assert.equal(calls,1);
+ api.state.account={id:'replacement'};api.state.planSettings={id:'replacement-plan'};
+ finish({data:{id:'old-plan',weekly_expenses_cents:10000}});await pending;
+ assert.equal(api.state.planSettings.id,'replacement-plan');
+ api.render();assert.equal(api.hasUnsavedWork(),false);
+});
+
+test('Plan invalid ages and failed cash-flow reads withhold the entire projection',()=>{
+ const {api,node}=planEditorFixture();
+ api.editPlanScenario('retirementAge','65');
+ assert.match(node('#plan-readiness-copy').textContent,/current age/);
+ assert.equal(node('#plan-outlook').hidden,true);
+ node('#plan-scenario-cancel').listeners.click();
+ api.state.incomeSourcesAvailable=false;api.renderPlan({rows:[],totalMarketValueCents:0});
+ assert.equal(node('#plan-outlook').hidden,true);
+ assert.equal(node('#plan-review-income').hidden,false);
+ assert.equal(node('#plan-income').disabled,true);
 });

@@ -275,27 +275,17 @@ test("Income is a functional planning workspace with live dividend coverage and 
   assert.match(personalFinancePivot, /category-level only/);
 });
 
-test("Plan is a separate Base-plan projection workspace with aligned portfolio charts", () => {
+test("Plan provides one hero projection, four statistics and live scenario controls", () => {
   const planWorkspace = indexHtml.slice(indexHtml.indexOf('<section id="plan-workspace"'), indexHtml.indexOf('<section id="asset-workspace"'));
-  assert.match(planWorkspace, /Base plan/);
-  assert.match(planWorkspace, /id="edit-plan-assumptions"/);
+  for (const id of ['edit-plan-assumptions','plan-projected-value','plan-change','plan-projected-income','plan-growth','plan-value-chart','plan-selected-year','plan-weekly-expenses','plan-weekly-investments','plan-stop-age','plan-income','plan-retirement-age','plan-asset-groups','plan-property-summary']) assert.ok(planWorkspace.includes(`id="${id}"`), id);
+  for (const horizon of [1,5,10,20]) assert.ok(planWorkspace.includes(`data-plan-horizon="${horizon}"`));
+  assert.doesNotMatch(planWorkspace, /id="plan-income-chart"/);
   assert.match(planWorkspace, /Illustrative—not a forecast/);
-  assert.match(planWorkspace, /id="plan-current-value"/);
-  assert.match(planWorkspace, /id="plan-projected-value"/);
-  assert.match(planWorkspace, /Projected portfolio income/);
-  assert.match(planWorkspace, /data-plan-horizon="5"/);
-  assert.match(planWorkspace, /data-plan-horizon="10"/);
-  assert.match(planWorkspace, /data-plan-horizon="20"/);
-  assert.match(planWorkspace, /id="plan-value-chart"/);
-  assert.match(planWorkspace, /id="plan-value-endpoints"/);
-  assert.match(planWorkspace, /id="plan-income-chart"/);
-  assert.match(planWorkspace, /id="plan-income-endpoints"/);
-  assert.match(planWorkspace, /id="plan-property-equity"/);
-  assert.match(planWorkspace, /Included in net worth, not in investment or portfolio-income projections/);
+  assert.match(planWorkspace, /Property equity is excluded/);
   assert.match(indexHtml, /id="plan-assumptions-dialog"/);
   assert.match(indexHtml, /id="property-dialog"/);
-  assert.match(indexHtml, /<script src="plan\.js\?v=20260914-property-purchase"><\/script>/);
-  assert.match(indexHtml, /<script type="module" src="brokerage\.js\?v=20260914-session-009"><\/script>/);
+  assert.match(indexHtml, /<script src="plan\.js\?v=20260914-plan-010"><\/script>/);
+  assert.match(indexHtml, /<script type="module" src="brokerage\.js\?v=20260914-plan-010"><\/script>/);
   assert.match(homeSource, /function routePlan\(\)/);
   assert.match(homeSource, /function renderPlan\(summary\)/);
   assert.match(homeSource, /function renderPlanChart/);

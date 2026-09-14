@@ -38,3 +38,31 @@
   #income-summary > .acadia-grid { grid-template-columns: minmax(0, 1fr); }
   #income-summary-tools { flex-direction: column-reverse; align-items: flex-start; }
 }
+
+/* Plan's Figma composition uses the canonical Acadia surfaces and chart.
+   Intrinsic columns reflow for narrow viewports and enlarged text. */
+#plan-workspace .acadia-card.is-content {
+  --acadia-content-card-padding: min(var(--acadia-section-padding-standard), 6vw);
+}
+#plan-statistics { grid-template-columns: repeat(auto-fit, minmax(min(100%, 13rem), 1fr)); }
+#plan-controls { grid-template-columns: repeat(auto-fit, minmax(min(100%, 10rem), 1fr)); }
+#plan-asset-groups { grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr)); }
+#plan-value-chart { --acadia-card-trend-height: clamp(8rem, 16vw, 14rem); }
+.mercury-plan-hero-header { align-items: flex-start; }
+.mercury-plan-year { display: grid; gap: var(--acadia-space-1); }
+#plan-selected-year { width: 100%; min-height: var(--acadia-touch-target); margin: 0; accent-color: var(--acadia-color-brand); }
+#plan-income-cadence { font-size: var(--acadia-type-size-small); }
+@media (max-width: 767px) {
+  #plan-statistics, #plan-controls, #plan-asset-groups { grid-template-columns: minmax(0, 1fr); }
+  #plan-scenario-actions { bottom: var(--acadia-mobile-dock-clearance); }
+}
+
+#plan-outlook { gap: var(--acadia-space-1); }
+.mercury-plan-hero-header > .acadia-cluster { min-width: 0; max-width: 100%; }
+#plan-outlook .acadia-tabs { flex-wrap: wrap; max-width: 100%; }
+#plan-workspace .acadia-button { white-space: normal; max-width: 100%; }
+@media (min-width: 768px) and (max-width: 1199px) {
+  #plan-statistics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+#plan-hero-value { font-size: var(--acadia-type-size-heading-large); font-weight: var(--acadia-font-weight-bold); }

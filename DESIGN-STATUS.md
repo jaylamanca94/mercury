@@ -1,5 +1,7 @@
 # Mercury — Design Status
 
+Plan 0.1.0 now implements Figma `129:4939`: one computed hero graph, four year-linked statistics, five live cash-flow/age controls and current asset groups. Source-linked defaults, explicit saves, revision conflicts and depletion are covered. At 320px with 200% text, horizon controls wrap and the age dialog remains contained. Authenticated database persistence was verified separately from the isolated browser. See `automation/design/2026-09-14/plan-refinement.md`.
+
 2026-09-14 session audit: 0.0.9 closes the stale private-workspace gap on auth changes and adopts published Acadia `346c874`. Bounded dialog spacing fixes single-letter disclosure wrapping at 320px/200% text; 222 tests pass. Current evidence: `automation/review/2026-09-14/session/review.md`.
 
 Next design opportunities, in priority order:
