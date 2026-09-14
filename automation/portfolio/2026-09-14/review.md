@@ -35,7 +35,10 @@ Only published Acadia 0.3.2 classes and utilities were composed. The vendored st
 
 ## Delivery
 
-Pending source publication and canonical deployment verification.
+- Source commit `7e3865ad86e5f8f57d2c476ee6c0a1774c50d7f7` was pushed to `origin/main`; the remote reference was independently verified.
+- Its Git-triggered production deployment `mercury-k9mtmn09f-jayson-lamanca-s-projects.vercel.app` reached READY. Hosted checks passed all 197 tests on 14 September 2026 at 14:16 UTC.
+- The canonical site `https://mercury-psi-six.vercel.app` returned HTTP 200 and byte-identical `index.html`, `brokerage.js`, `acadia.css` and `styles.css` at 14:17 UTC. The new module cache key is `20260914-portfolio-003`.
+- A fresh live browser load of `#portfolio` loaded that module and displayed the expected signed-out gate with no browser errors. Private Portfolio interaction evidence remains the local synthetic review described above.
 
 ## Limits
 
