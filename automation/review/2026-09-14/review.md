@@ -100,4 +100,8 @@ Competitive feature copying would not improve these failure paths; the establish
 
 ## Publication
 
-Implementation and review are ready for the required direct-to-main commit and Git-triggered deployment. Final commit, hosted checks and canonical asset verification will be recorded after publication.
+Implementation commit `95d76a97349f7246ea93acc4da6074583c045c35` was pushed directly to `origin/main`, then verified against the remote reference. Vercel's Git-triggered production deployment `mercury-8ftkycxeo-jayson-lamanca-s-projects.vercel.app` is READY. Hosted checks: 197 passed; build completed in 3 seconds.
+
+Canonical `https://mercury-psi-six.vercel.app` serves byte-identical `brokerage.js`, `acadia.css` and `index.html` with the configured security headers. Controller SHA256: `60fd485aa212b897fed6f26c3d33a1ca1fbebe975b85033f8c5eef8cf5c8ecbd`. The browser loads the new controller cache key and Plan recovery markup. `package.json` is not served by Vercel (404); version identity comes from the checked Git commit, not a public package endpoint.
+
+A documentation receipt commit follows this implementation; no additional product version bump is required.
