@@ -21,7 +21,7 @@ Post-application checks confirmed the nullable column, non-negative safe-integer
 
 ## Publication
 
-Pending Git-triggered publication and canonical-file verification.
+Source commit `cd5b223603d44de7445d72ac004d3a1938894159` was pushed to `origin/main`. Its Git-triggered production deployment `mercury-mepgbuv8y-jayson-lamanca-s-projects.vercel.app` reached READY, with all 201 hosted tests passing at 14:58 UTC. The canonical site `https://mercury-psi-six.vercel.app` returned HTTP 200 and byte-identical `index.html`, `brokerage.js`, `plan.js` and `acadia.css` after deployment. The database migration was applied and verified before client publication.
 
 ## Evidence limits
 
