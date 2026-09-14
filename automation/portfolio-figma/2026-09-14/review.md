@@ -1,6 +1,6 @@
 # Portfolio Figma implementation — 2026-09-14
 
-Result: local design and flow verification passed. Production receipt follows after the authorised main push.
+Result: design and flow verification passed; the implementation is deployed to canonical production.
 
 ## Source and implementation
 
@@ -26,3 +26,10 @@ Result: local design and flow verification passed. Production receipt follows af
 ## Evidence boundary
 
 Browser rendering and editor persistence checks used disposable in-memory local fixtures. No owner holdings, prices, recurring amounts or properties were changed. Production owner-session persistence, physical-device behaviour and VoiceOver are not claimed by this pass. No schema change, new external provider, trading feature or benchmark integration was introduced.
+
+## Production receipt
+
+- Implementation commit: `ed5008dfbf9e8becc3b531ee4d264d4da5966a11`, pushed directly to `origin/main` under standing authorisation.
+- Git-triggered deployment: `mercury-kuhaaooq9-jayson-lamanca-s-projects.vercel.app`, **Ready**. Hosted build: **213 tests, 213 passed, 0 failed**; completed 2026-09-14 18:31:53 UTC.
+- Canonical production: [Mercury Portfolio](https://mercury-psi-six.vercel.app/#portfolio). Its HTML, controller, market-history module, portfolio domain module, unchanged Acadia stylesheet and exact Figma mark all match the verified checkout byte-for-byte.
+- Production browser route preserves the sign-in gate. Owner-authenticated Portfolio interaction is not inferred from static-file parity. The local sample-data preview remains available for visual review.
