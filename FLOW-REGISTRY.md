@@ -158,3 +158,5 @@ No canonical flows added. Plan expected income now supports source Amount/Freque
 ## Property appreciation and Plan wealth — 2026-09-14
 
 Changed flows: Add/Edit property → city, state and county/independent city → automatic FHFA ten-year historical appreciation or explicit custom rate → Save/Cancel → Portfolio and Plan. Plan combines projected investment value and property equity, preserving investment-only spending/depletion and dividend calculations. Missing county/history/rate has explicit repair; current property value is held constant until an assumption is set, with a prominent incomplete-growth notice. Required QA: exact county identity (including independent cities), missing/negative history, override/clear, save failure and account context, zero/negative equity, debt held constant, 10/20-year compounding, no double counting or property-funded withdrawals, responsive dialog, persisted geography and sourced release dates.
+
+2026-09-14, 0.2.1: Plan monetary controls display whole dollars with a dollar prefix. Editing, Save/Cancel and frequency changes retain the existing cent-based model; untouched saved/source precision is preserved.

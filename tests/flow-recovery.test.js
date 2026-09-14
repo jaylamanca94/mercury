@@ -1516,7 +1516,7 @@ test('Plan scenario saves remain account scoped, retain conflicting drafts and c
  assert.equal(getRemote().weekly_expenses_cents,7000);
  node('#plan-scenario-cancel').listeners.click();
  assert.equal(api.hasUnsavedWork(),false);
- assert.equal(node('#plan-weekly-expenses').value,'70.00');
+ assert.equal(node('#plan-weekly-expenses').value,'70');
 });
 
 test('Plan scenario saves exact cents and reset restores linked source amounts without editing sources',async()=>{
@@ -1530,7 +1530,7 @@ test('Plan scenario saves exact cents and reset restores linked source amounts w
  node('#plan-reset-amounts').listeners.click();
  await api.savePlanScenario({preventDefault(){}});
  assert.equal(getRemote().annual_income_cents,null);
- assert.equal(node('#plan-income').value,'123.45');
+ assert.equal(node('#plan-income').value,'123');
  assert.equal(writes.length,2);
 });
 

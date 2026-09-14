@@ -1506,7 +1506,7 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
     const defaults = { weeklyExpensesCents: amounts.annualExpensesCents / 52, weeklyInvestmentCents: amounts.annualContributionCents / 52, annualIncomeCents: amounts.annualIncomeCents / planIncomeCadence };
     for (const [key, selector] of Object.entries(scenarioControls)) {
       const control = $(selector);
-      if (!(key in (planDraft?.raw || {}))) control.value = key.endsWith("Cents") ? (defaults[key] / 100).toFixed(2) : scenario[key] ?? "";
+      if (!(key in (planDraft?.raw || {}))) control.value = key.endsWith("Cents") ? (defaults[key] / 100).toFixed(0) : scenario[key] ?? "";
       control.disabled = !state.planDataAvailable || !cashflowAvailable || Boolean(planDraft?.pending);
       if (!planDraft && (!state.planDataAvailable || !cashflowAvailable)) control.value = "";
     }

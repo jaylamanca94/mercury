@@ -70,3 +70,14 @@
 /* Leave room for all native date segments plus its calendar affordance at
    enlarged phone text sizes; compress empty inset, not the entered date. */
 #plan-date-of-birth { padding-inline: min(var(--acadia-field-padding-x), 2vw); }
+
+/* Currency adornment: keep Acadia's native number control and focus styling. */
+.mercury-currency-control { position: relative; min-width: 0; }
+.mercury-currency-control > span {
+  position: absolute; inset-inline-start: var(--acadia-field-padding-x);
+  top: 50%; transform: translateY(-50%); pointer-events: none; z-index: 1;
+  color: var(--acadia-color-text);
+}
+.mercury-currency-control > .acadia-control {
+  width: 100%; padding-inline-start: calc(var(--acadia-field-padding-x) + 1ch);
+}
