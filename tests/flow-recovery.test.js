@@ -1549,11 +1549,34 @@ test('Plan scenario duplicates are blocked and late writes cannot enter a replac
 test('Plan invalid ages and failed cash-flow reads withhold the entire projection',()=>{
  const {api,node}=planEditorFixture();
  api.editPlanScenario('retirementAge','65');
- assert.match(node('#plan-readiness-copy').textContent,/current age/);
+ assert.match(node('#plan-readiness-copy').textContent,/date of birth/);
  assert.equal(node('#plan-outlook').hidden,true);
  node('#plan-scenario-cancel').listeners.click();
  api.state.incomeSourcesAvailable=false;api.renderPlan({rows:[],totalMarketValueCents:0});
  assert.equal(node('#plan-outlook').hidden,true);
  assert.equal(node('#plan-review-income').hidden,false);
  assert.equal(node('#plan-income').disabled,true);
+});
+
+test('Plan DOB replaces legacy age only after a confirmed save and survives reopen',async()=>{
+ const {api,node,getRemote,setRemote}=planEditorFixture();
+ setRemote({...getRemote(),current_age:31,age_reference_year:2026,retirement_age:40,stop_investing_age:65});api.state.planSettings={...getRemote()};
+ api.openPlanAssumptionsDialog();assert.equal(node('#plan-date-of-birth').value,'');
+ node('#plan-assumptions-form').fields.dateOfBirth='1995-10-01';
+ await api.savePlanAssumptions({preventDefault(){}});
+ assert.equal(getRemote().date_of_birth,'1995-10-01');assert.equal(getRemote().current_age,null);assert.equal(getRemote().age_reference_year,null);
+ assert.equal(getRemote().retirement_age,40);assert.equal(getRemote().stop_investing_age,65);
+ api.openPlanAssumptionsDialog();assert.equal(node('#plan-date-of-birth').value,'1995-10-01');
+ assert.match(node('#plan-birth-date-preview').textContent,/October 1, 1995/);
+});
+
+test('DOB saves reject future dates and preserve the entered draft after conflicts',async()=>{
+ const {api,node,getRemote,setRemote,writes}=planEditorFixture();
+ api.openPlanAssumptionsDialog();node('#plan-assumptions-form').fields.dateOfBirth='2999-01-01';
+ await api.savePlanAssumptions({preventDefault(){}});assert.equal(writes.length,0);assert.match(node('#plan-assumptions-form-status').textContent,/today/);
+ node('#plan-assumptions-form').fields.dateOfBirth='1995-10-01';
+ setRemote({...getRemote(),date_of_birth:'1990-03-01',updated_at:'v2'});
+ await api.savePlanAssumptions({preventDefault(){}});
+ assert.equal(getRemote().date_of_birth,'1990-03-01');assert.equal(node('#plan-assumptions-form').fields.dateOfBirth,'1995-10-01');
+ assert.match(node('#plan-assumptions-form-status').textContent,/changed elsewhere/);
 });

@@ -48,24 +48,56 @@ function normalizePlanSettings(input = {}) {
   });
 }
 
+// Calendar dates stay date-only; local midnight and DST never shift birthdays.
+function planToday(date = new Date()) {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+}
+function parsePlanDate(value, label = "Date") {
+  if (typeof value !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(value)) throw new PlanValidationError(`${label} must be a valid date.`);
+  const date = new Date(`${value}T00:00:00Z`);
+  if (!Number.isFinite(date.getTime()) || date.toISOString().slice(0, 10) !== value) throw new PlanValidationError(`${label} must be a valid date.`);
+  return date;
+}
+function dateAtPlanMonth(startDate, months) {
+  const start = parsePlanDate(startDate);
+  const lastDay = new Date(Date.UTC(start.getUTCFullYear(), start.getUTCMonth() + months + 1, 0));
+  return new Date(Date.UTC(lastDay.getUTCFullYear(), lastDay.getUTCMonth(), Math.min(start.getUTCDate(), lastDay.getUTCDate()))).toISOString().slice(0, 10);
+}
+function birthdayAtAge(dateOfBirth, age) {
+  const birth = parsePlanDate(dateOfBirth, "Date of birth");
+  const year = birth.getUTCFullYear() + age;
+  const lastDay = new Date(Date.UTC(year, birth.getUTCMonth() + 1, 0)).getUTCDate();
+  return new Date(Date.UTC(year, birth.getUTCMonth(), Math.min(birth.getUTCDate(), lastDay))).toISOString().slice(0, 10);
+}
+function ageOnDate(dateOfBirth, onDate = planToday()) {
+  if (!dateOfBirth) return null;
+  const birth = parsePlanDate(dateOfBirth, "Date of birth"), date = parsePlanDate(onDate);
+  const years = date.getUTCFullYear() - birth.getUTCFullYear();
+  return years - (onDate < birthdayAtAge(dateOfBirth, years) ? 1 : 0);
+}
+function normalizeDateOfBirth(value, today = planToday()) {
+  if (value === null || value === undefined || value === "") return null;
+  parsePlanDate(value, "Date of birth"); parsePlanDate(today);
+  if (value < "1900-01-01" || value > today) throw new PlanValidationError("Date of birth must be between 1 January 1900 and today.");
+  return value;
+}
+
 // Null monetary overrides stay linked to Mercury's source records.
-function normalizePlanScenario(input = {}) {
+function normalizePlanScenario(input = {}, today = planToday()) {
   const integer = (value, field, min, max) => {
     if (value === null || value === undefined || value === "") return null;
     if (!Number.isSafeInteger(value) || value < min || value > max) throw new PlanValidationError(`${field} must be a whole number between ${min} and ${max}.`);
     return value;
   };
   const scenario = {
-    currentAge: integer(input.currentAge, "Current age", 0, 120),
-    ageReferenceYear: integer(input.ageReferenceYear, "Age reference year", 1900, 2200),
+    dateOfBirth: normalizeDateOfBirth(input.dateOfBirth, today),
     stopInvestingAge: integer(input.stopInvestingAge, "Stop investing age", 0, 120),
     retirementAge: integer(input.retirementAge, "Retirement age", 0, 120),
     weeklyExpensesCents: integer(input.weeklyExpensesCents, "Weekly expenses", 0, 100000000000),
     weeklyInvestmentCents: integer(input.weeklyInvestmentCents, "Weekly investments", 0, 100000000000),
     annualIncomeCents: integer(input.annualIncomeCents, "Annual income", 0, 5200000000000),
   };
-  if ((scenario.currentAge === null) !== (scenario.ageReferenceYear === null)) throw new PlanValidationError("Enter your current age to use age-based controls.");
-  if (scenario.currentAge === null && (scenario.stopInvestingAge !== null || scenario.retirementAge !== null)) throw new PlanValidationError("Enter your current age in Plan settings to use age-based controls.");
+  if (scenario.dateOfBirth === null && (scenario.stopInvestingAge !== null || scenario.retirementAge !== null)) throw new PlanValidationError("Enter your date of birth in Plan settings to use age-based controls.");
   return Object.freeze(scenario);
 }
 
@@ -74,34 +106,47 @@ function normalizePlanScenario(input = {}) {
 function projectLifePlan({ currentValueCents, annualContributionCents = 0, annualExpensesCents = 0,
   annualIncomeCents = 0, continuingIncomeCents = 0, expectedAnnualReturnRate,
   distributionYieldRate, distributionPolicy = "reinvest", horizonYears = 5,
-  currentAge = null, stopInvestingAge = null, retirementAge = null } = {}) {
+  dateOfBirth = null, startDate = planToday(), stopInvestingAge = null, retirementAge = null } = {}) {
   [currentValueCents, annualContributionCents, annualExpensesCents, annualIncomeCents, continuingIncomeCents].forEach(value => nonNegativeCents(value, "Cash flow"));
   if (continuingIncomeCents > annualIncomeCents) throw new PlanValidationError("Continuing income cannot exceed total income.");
   const validation = projectPortfolio({ currentValueCents, annualContributionCents: 0, expectedAnnualReturnRate, distributionYieldRate, distributionPolicy, horizonYears });
   if (!validation.available) return validation;
-  normalizePlanScenario({ currentAge, ageReferenceYear: currentAge === null ? null : 2000, stopInvestingAge, retirementAge });
+  parsePlanDate(startDate);
+  normalizePlanScenario({ dateOfBirth, stopInvestingAge, retirementAge }, startDate);
+  const stopDate = stopInvestingAge === null ? null : birthdayAtAge(dateOfBirth, stopInvestingAge);
+  const retirementDate = retirementAge === null ? null : birthdayAtAge(dateOfBirth, retirementAge);
   const rate = validation.effectiveGrowthRate;
   const monthlyGrowth = Math.pow(1 + rate, 1 / 12) - 1;
   const portion = (annual, month) => Math.round(annual * month / 12) - Math.round(annual * (month - 1) / 12);
   let value = currentValueCents, depletionMonth = null, unfundedCents = 0, contributedCents = 0, withdrawnCents = 0;
-  const point = month => ({ month, year: month / 12, age: currentAge === null ? null : currentAge + Math.floor(month / 12), investmentValueCents: value,
+  const point = month => ({ month, year: month / 12, date: dateAtPlanMonth(startDate, month), age: ageOnDate(dateOfBirth, dateAtPlanMonth(startDate, month)), investmentValueCents: value,
     projectedIncomeCents: Math.round(value * distributionYieldRate), expectedGrowthCents: Math.round(value * rate), contributedCents, withdrawnCents, unfundedCents });
   const points = [point(0)];
   for (let month = 1; month <= horizonYears * 12; month++) {
-    const age = currentAge === null ? null : currentAge + Math.floor((month - 1) / 12);
-    const retired = retirementAge !== null && age >= retirementAge;
-    const stopped = stopInvestingAge !== null && age >= stopInvestingAge;
-    const income = portion(retired ? continuingIncomeCents : annualIncomeCents, month);
-    const distributions = distributionPolicy === "reinvest" ? 0 : Math.round(value * distributionYieldRate / 12);
-    const balance = income + distributions - portion(annualExpensesCents, month);
-    const cashFlow = Math.min(stopped ? 0 : portion(annualContributionCents, month), balance);
-    const grown = Math.max(0, Math.round(value * (1 + monthlyGrowth)));
-    contributedCents += Math.max(0, cashFlow);
-    withdrawnCents += Math.min(grown, Math.max(0, -cashFlow));
-    unfundedCents += Math.max(0, -(grown + cashFlow));
-    value = Math.max(0, grown + cashFlow);
-    if (!Number.isSafeInteger(value)) throw new PlanValidationError("This projection exceeds the supported amount range. Reduce the amounts or horizon.");
-    if (value === 0 && cashFlow < 0 && depletionMonth === null) depletionMonth = month;
+    const from = dateAtPlanMonth(startDate, month - 1), to = dateAtPlanMonth(startDate, month);
+    // Split only at a milestone birthday; ordinary months retain existing rounding.
+    const boundaries = [...new Set([from, ...[stopDate, retirementDate].filter(date => date && date > from && date < to), to])].sort();
+    const fromTime = parsePlanDate(from).getTime(), duration = parsePlanDate(to).getTime() - fromTime;
+    for (let segment = 1; segment < boundaries.length; segment++) {
+      const begin = boundaries[segment - 1], end = boundaries[segment];
+      const before = (parsePlanDate(begin).getTime() - fromTime) / duration;
+      const after = (parsePlanDate(end).getTime() - fromTime) / duration;
+      const fraction = after - before;
+      const segmentAmount = annual => Math.round(portion(annual, month) * after) - Math.round(portion(annual, month) * before);
+      const retired = retirementDate !== null && begin >= retirementDate;
+      const stopped = stopDate !== null && begin >= stopDate;
+      const income = segmentAmount(retired ? continuingIncomeCents : annualIncomeCents);
+      const distributions = distributionPolicy === "reinvest" ? 0 : Math.round(value * distributionYieldRate / 12 * fraction);
+      const balance = income + distributions - segmentAmount(annualExpensesCents);
+      const cashFlow = Math.min(stopped ? 0 : segmentAmount(annualContributionCents), balance);
+      const grown = Math.max(0, Math.round(value * Math.pow(1 + monthlyGrowth, fraction)));
+      contributedCents += Math.max(0, cashFlow);
+      withdrawnCents += Math.min(grown, Math.max(0, -cashFlow));
+      unfundedCents += Math.max(0, -(grown + cashFlow));
+      value = Math.max(0, grown + cashFlow);
+      if (!Number.isSafeInteger(value)) throw new PlanValidationError("This projection exceeds the supported amount range. Reduce the amounts or horizon.");
+      if (value === 0 && cashFlow < 0 && depletionMonth === null) depletionMonth = month;
+    }
     points.push(point(month));
   }
   return { available: true, effectiveGrowthRate: rate, points, depletionMonth, unfundedCents };
@@ -261,6 +306,10 @@ function projectPortfolio({
 }
 
 const planContract = {
+  planToday,
+  ageOnDate,
+  dateAtPlanMonth,
+  normalizeDateOfBirth,
   PLAN_CONTRIBUTION_FREQUENCIES,
   PLAN_DISTRIBUTION_POLICIES,
   PLAN_HORIZONS,

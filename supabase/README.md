@@ -29,3 +29,7 @@ Authenticated disposable-account checks verified omitted/null values, exact cent
 ## Plan scenario — 0.1.0
 
 `20260914180000_plan_scenario.sql` adds seven nullable scenario fields and age/money constraints to `plan_settings`. It was applied and recorded atomically on 2026-09-14. Existing records retain null overrides; RLS, ownership and the revision trigger remain unchanged. Authenticated disposable-account checks verified all seven fields, exact cents, fresh rereads, stale updates, invalid-age/money rejection, clearing overrides and complete cleanup. The historical baseline/rebuild and second-user acceptance gates remain separate.
+
+## Date of birth — 0.1.1
+
+`20260914221500_plan_date_of_birth.sql` adds a private nullable `date_of_birth` date, bounded from 1900-01-01 to today, and permits it as the age anchor. Applied and recorded atomically on 2026-09-14. Existing rows are not backfilled. Legacy age columns remain for older clients; new clients ignore them and clear them after a confirmed DOB save. The existing owner RLS and revision trigger are unchanged. Disposable authenticated checks verified exact date persistence, leap day, stale-write rejection, date bounds and cleanup.

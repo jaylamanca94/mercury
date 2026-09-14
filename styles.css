@@ -66,3 +66,7 @@
 }
 
 #plan-hero-value { font-size: var(--acadia-type-size-heading-large); font-weight: var(--acadia-font-weight-bold); }
+
+/* Leave room for all native date segments plus its calendar affordance at
+   enlarged phone text sizes; compress empty inset, not the entered date. */
+#plan-date-of-birth { padding-inline: min(var(--acadia-field-padding-x), 2vw); }

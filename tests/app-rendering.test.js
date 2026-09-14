@@ -284,8 +284,8 @@ test("Plan provides one hero projection, four statistics and live scenario contr
   assert.match(planWorkspace, /Property equity is excluded/);
   assert.match(indexHtml, /id="plan-assumptions-dialog"/);
   assert.match(indexHtml, /id="property-dialog"/);
-  assert.match(indexHtml, /<script src="plan\.js\?v=20260914-plan-010"><\/script>/);
-  assert.match(indexHtml, /<script type="module" src="brokerage\.js\?v=20260914-plan-010"><\/script>/);
+  assert.match(indexHtml, /<script src="plan\.js\?v=20260914-plan-dob-011"><\/script>/);
+  assert.match(indexHtml, /<script type="module" src="brokerage\.js\?v=20260914-plan-dob-011"><\/script>/);
   assert.match(homeSource, /function routePlan\(\)/);
   assert.match(homeSource, /function renderPlan\(summary\)/);
   assert.match(homeSource, /function renderPlanChart/);

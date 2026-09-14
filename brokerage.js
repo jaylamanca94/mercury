@@ -26,6 +26,10 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
     totalPropertyEquityCents,
     normalizePlanSettings,
     projectLifePlan,
+    ageOnDate,
+    normalizeDateOfBirth,
+    dateAtPlanMonth,
+    planToday,
     normalizePlanScenario,
     resolvePlanAssumptions,
     totalNetWorthCents,
@@ -1314,15 +1318,15 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
       distributionPolicy: settings.distribution_policy,
     } : null;
   }
-  const scenarioColumns = { currentAge: "current_age", ageReferenceYear: "age_reference_year", stopInvestingAge: "stop_investing_age", retirementAge: "retirement_age", weeklyExpensesCents: "weekly_expenses_cents", weeklyInvestmentCents: "weekly_investment_cents", annualIncomeCents: "annual_income_cents" };
+  const scenarioColumns = { dateOfBirth: "date_of_birth", stopInvestingAge: "stop_investing_age", retirementAge: "retirement_age", weeklyExpensesCents: "weekly_expenses_cents", weeklyInvestmentCents: "weekly_investment_cents", annualIncomeCents: "annual_income_cents" };
   const scenarioControls = { weeklyExpensesCents: "#plan-weekly-expenses", weeklyInvestmentCents: "#plan-weekly-investments", stopInvestingAge: "#plan-stop-age", annualIncomeCents: "#plan-income", retirementAge: "#plan-retirement-age" };
   let planDraft = null;
   let planIncomeCadence = 52;
   function planScenarioModel(record = state.planSettings) {
-    return Object.fromEntries(Object.entries(scenarioColumns).map(([key, column]) => [key, record?.[column] == null ? null : Number(record[column])]));
+    return Object.fromEntries(Object.entries(scenarioColumns).map(([key, column]) => [key, record?.[column] == null ? null : key === "dateOfBirth" ? record[column] : Number(record[column])]));
   }
   function currentPlanAge(scenario) {
-    return scenario.currentAge === null ? null : scenario.currentAge + new Date().getFullYear() - scenario.ageReferenceYear;
+    return ageOnDate(scenario.dateOfBirth);
   }
   function planProjection(summary) {
     const settings = planSettingsModel(state.planSettings);
@@ -1341,7 +1345,7 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
       if (planDraft?.invalid) throw new Error(planDraft.invalid);
       normalizePlanScenario(scenario);
       projection = projectLifePlan({ currentValueCents: summary.totalMarketValueCents, ...amounts, ...assumptions, horizonYears: state.planHorizon,
-        currentAge: currentPlanAge(scenario), stopInvestingAge: scenario.stopInvestingAge, retirementAge: scenario.retirementAge });
+        dateOfBirth: scenario.dateOfBirth, stopInvestingAge: scenario.stopInvestingAge, retirementAge: scenario.retirementAge });
     } catch (error) {
       projection = { available: false, points: [], reason: error.message };
     }
@@ -1469,7 +1473,7 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
     const projected = ready ? displayCurrency(selected.investmentValueCents / 100) : "Not set";
     setText("#plan-hero-value", projected); setText("#plan-projected-value", projected);
     setText("#plan-hero-age", selected?.age == null ? "Projected portfolio" : `Age ${selected.age}`);
-    const date = new Date(); date.setFullYear(date.getFullYear() + year);
+    const date = new Date(`${selected?.date || dateAtPlanMonth(planToday(), year * 12)}T12:00:00`);
     setText("#plan-hero-date", date.toLocaleDateString("en-US", { month: "short", year: "numeric" }));
     const change = ready ? selected.investmentValueCents - summary.totalMarketValueCents : null;
     setText("#plan-change", change === null ? "Not set" : displaySignedCurrency(change));
@@ -1500,7 +1504,7 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
     $("#plan-income-cadence").disabled = Boolean(planDraft?.pending);
     for (const [id, key, amount] of [["expenses", "weeklyExpensesCents", amounts.annualExpensesCents], ["investments", "weeklyInvestmentCents", amounts.annualContributionCents], ["income", "annualIncomeCents", amounts.annualIncomeCents]]) setText(`#plan-${id}-hint`, `${currency.format(amount / 1200)}/mo · ${scenario[key] === null ? "From Mercury" : "Plan override"}`);
     if (!state.planDataAvailable || !cashflowAvailable) ["expenses", "investments", "income"].forEach(id => setText(`#plan-${id}-hint`, "Saved inputs unavailable"));
-    setText("#plan-input-source", `USD · ${currentPlanAge(scenario) === null ? "Set your current age in Plan settings." : `Current age ${currentPlanAge(scenario)}.`} Empty amounts follow Mercury.`);
+    setText("#plan-input-source", `USD · ${currentPlanAge(scenario) === null ? "Set your date of birth in Plan settings." : `Current age ${currentPlanAge(scenario)}.`} Empty amounts follow Mercury.`);
     $("#plan-scenario-actions").hidden = !planDraft;
     setText("#plan-scenario-status", planDraft?.status || "");
     $("#plan-scenario-save").disabled = Boolean(planDraft?.pending);
@@ -2590,6 +2594,13 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
     }
   }
 
+  function renderBirthDatePreview() {
+    try {
+      const dob = normalizeDateOfBirth($("#plan-date-of-birth").value);
+      const label = dob ? new Date(`${dob}T12:00:00`).toLocaleDateString("en-US", { day: "numeric", month: "long", year: "numeric" }) : "";
+      setText("#plan-birth-date-preview", dob ? `${label} · Age ${ageOnDate(dob)}` : "");
+    } catch { setText("#plan-birth-date-preview", "Enter a valid date of birth, no later than today."); }
+  }
   let planEditorRecord = null;
   function openPlanAssumptionsDialog() {
     if (protectedDialogs.get($("#plan-assumptions-dialog"))?.pending) return;
@@ -2599,7 +2610,9 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
     planEditorRecord = state.planSettings ? { ...state.planSettings } : null;
     const form = $("#plan-assumptions-form");
     form.reset();
-    $("#plan-current-age").value = currentPlanAge(planScenarioModel()) ?? "";
+    $("#plan-date-of-birth").value = planScenarioModel().dateOfBirth ?? "";
+    $("#plan-date-of-birth").max = planToday();
+    renderBirthDatePreview();
     const summary = portfolio();
     const automatic = resolvePlanAssumptions({}, summary);
     const complete = summary.rows.length === state.holdings.length;
@@ -2635,11 +2648,11 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
         distributionYieldRate: rate(getFormValue($("#plan-assumptions-form"), "distributionYield")),
         distributionPolicy: getFormValue($("#plan-assumptions-form"), "distributionPolicy"),
       });
-      const ageValue = getFormValue($("#plan-assumptions-form"), "currentAge");
-      const scenario = normalizePlanScenario({ ...planScenarioModel(planEditorRecord), currentAge: ageValue == null || ageValue === "" ? null : Number(ageValue), ageReferenceYear: ageValue == null || ageValue === "" ? null : new Date().getFullYear() });
+      const scenario = normalizePlanScenario({ ...planScenarioModel(planEditorRecord), dateOfBirth: getFormValue($("#plan-assumptions-form"), "dateOfBirth") });
       const payload = {
-        current_age: scenario.currentAge,
-        age_reference_year: scenario.ageReferenceYear,
+        date_of_birth: scenario.dateOfBirth,
+        current_age: null,
+        age_reference_year: null,
         account_id: account.id,
         expected_annual_return_rate: settings.expectedAnnualReturnRate,
         distribution_yield_rate: settings.distributionYieldRate,
@@ -3247,6 +3260,7 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
   document.querySelectorAll("[data-open-plan-assumptions]").forEach((control) => {
     control.addEventListener("click", openPlanAssumptionsDialog);
   });
+  $("#plan-date-of-birth").addEventListener("input", renderBirthDatePreview);
   $("#close-plan-assumptions-dialog").addEventListener("click", closePlanAssumptionsDialog);
   $("#cancel-plan-assumptions").addEventListener("click", closePlanAssumptionsDialog);
   $("#plan-assumptions-dialog").addEventListener("close", () => { $("#plan-assumptions-dialog").hidden = true; });
