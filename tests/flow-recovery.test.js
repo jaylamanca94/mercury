@@ -1005,19 +1005,20 @@ test('Home lifetime and day changes stay independent of chart range and recover 
   const summary={rows:[{}],totalMarketValueCents:110000,totalDayChangeCents:-1000,totalDayChangeRate:-1000/111000};
   for(const period of ['all','3m','6m','1y']) {
     api.state.performancePeriod=period; api.renderHomeChanges(summary);
-    assert.equal(node('#all-time-change-value').textContent,'Up $100');
-    assert.equal(node('#all-time-change-rate').textContent,'+10%');
+    assert.equal(node('#all-time-change-value').textContent,'+$100');
+    assert.equal(node('#all-time-change-rate').textContent,'(10%)');
     assert.equal(node('#metric-change-value').textContent,'-$10');
     assert.equal(node('#metric-change-rate').textContent,'(0.9%)');
     assert.equal(node('#day-change-context').hidden,true);
-    assert.match(node('#all-time-change-context').textContent,/Jan 1, 2025/);
+    assert.equal(node('#all-time-change-context').hidden,true);
+    assert.equal(node('#all-time-change-context').textContent,'');
   }
   api.renderHomeChanges({...summary,rows:[]});
   assert.equal(node('#all-time-change-value').textContent,'—');
   assert.equal(node('#all-time-change-rate').hidden,true);
   assert.equal(node('#metric-change-value').textContent,'—');
   api.renderHomeChanges({...summary,totalDayChangeCents:null,totalDayChangeRate:null});
-  assert.equal(node('#all-time-change-value').textContent,'Up $100');
+  assert.equal(node('#all-time-change-value').textContent,'+$100');
   assert.equal(node('#metric-change-rate').hidden,true);
   assert.match(node('#day-change-context').textContent,/Previous close unavailable/);
   api.state.snapshots=[];api.renderHomeChanges(summary);

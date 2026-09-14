@@ -82,7 +82,8 @@
   width: 100%; padding-inline-start: calc(var(--acadia-field-padding-x) + 1ch);
 }
 
-/* Day change uses Acadia’s semantic negative colour for both value parts. */
-#metric-change-value.is-danger, #metric-change-rate.is-danger {
+/* Home change cards use Acadia’s semantic negative colour for both value parts. */
+#metric-change-value.is-danger, #metric-change-rate.is-danger,
+#all-time-change-value.is-danger, #all-time-change-rate.is-danger {
   color: var(--acadia-status-danger-text);
 }

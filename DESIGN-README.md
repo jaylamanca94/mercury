@@ -571,4 +571,4 @@ Use the existing Acadia form-modal, field grid, native selects and number input.
 
 Plan currency controls use whole-dollar display and a non-editable dollar prefix around the canonical native number input. A bounded Mercury adornment adapter reuses Acadia tokens; rounding is presentational and must not rewrite source or untouched saved amounts.
 
-Day change uses a signed compact currency amount followed by the absolute percentage in parentheses, e.g. `-$5.4k (0.68%)`. Both parts use Acadia’s semantic danger text token when negative. Omit the routine previous-close caption; retain exceptional missing-data explanations. Other change cards keep their own existing format.
+Day change and All-time change use a signed compact currency amount followed by the absolute percentage in parentheses, e.g. `-$5.4k (0.68%)`. Both parts use Acadia’s semantic danger text token when negative. Omit the routine previous-close and start-date captions; retain exceptional missing-data explanations.

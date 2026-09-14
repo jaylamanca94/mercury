@@ -845,11 +845,12 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
   function renderHomeChanges(summary) {
     const complete = state.configured && Boolean(state.account) && summary.rows.length === state.holdings.length;
     const lifetime = summarizeAllTimeChange(state.snapshots, complete ? summary.totalMarketValueCents : null);
-    setMovement("#all-time-change-value", lifetime.changeCents, movementCurrency);
-    setMovement("#all-time-change-rate", lifetime.changeRate, displaySignedPercentage, { hideWhenUnavailable: true });
+    setMovement("#all-time-change-value", lifetime.changeCents, displaySignedCurrency);
+    setMovement("#all-time-change-rate", lifetime.changeRate, value => `(${percentage.format(Math.abs(value))})`, { hideWhenUnavailable: true });
     setText("#all-time-change-context", !complete ? "Complete investment values unavailable"
       : !lifetime.startDate ? "Awaiting first recorded value"
-      : `Since ${historyDateLabel(lifetime.startDate)}${lifetime.changeRate === null ? " · Percentage unavailable from $0" : ""}`);
+      : lifetime.changeRate === null ? "Percentage unavailable from $0" : "");
+    $("#all-time-change-context").hidden = complete && Number.isFinite(lifetime.changeCents) && Number.isFinite(lifetime.changeRate);
     const dayCents = complete ? summary.totalDayChangeCents : null;
     const dayRate = complete ? summary.totalDayChangeRate : null;
     setMovement("#metric-change-value", dayCents, displaySignedCurrency);
