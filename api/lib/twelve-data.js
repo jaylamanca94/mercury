@@ -7,6 +7,7 @@ const quoteCache = new Map();
 const distributionCache = new Map();
 const performanceCache = new Map();
 const portfolioMetricsCache = new Map();
+const marketHistoryCache = new Map();
 const CRYPTO_TICKERS = new Set(["BTC", "ETH", "SOL", "LINK", "AVAX", "SHIB", "ETC"]);
 
 async function fetchProviderJson(url, signal, headers = { Accept: "application/json" }) {
@@ -192,6 +193,45 @@ async function getPortfolioMetrics({ symbol, instrumentType }) {
   return value;
 }
 
+function mapYahooMarketHistory(payload, now = Date.now()) {
+  const result = payload?.chart?.result?.[0];
+  // Mercury valuations are in USD. Never silently relabel a foreign quote.
+  if (result?.meta?.currency !== "USD") throw new Error("USD market-price history is unavailable for this asset.");
+  const timestamps = result.timestamp;
+  // Use market prices, not dividend-adjusted total-return observations.
+  const closes = result.indicators?.quote?.[0]?.close;
+  if (!Array.isArray(timestamps) || !Array.isArray(closes)) throw new Error("Market-price history is unavailable for this asset.");
+  const points = new Map();
+  timestamps.slice(-1900).forEach((timestamp, offset) => {
+    const index = Math.max(0, timestamps.length - 1900) + offset;
+    const price = closes[index];
+    const time = timestamp * 1000;
+    if (typeof timestamp !== "number" || !Number.isFinite(time) || time <= 0 || time > now ||
+      typeof price !== "number" || !Number.isFinite(price) || price <= 0) return;
+    points.set(time, { time, price });
+  });
+  return [...points.values()].sort((a, b) => a.time - b.time);
+}
+
+async function getMarketHistory({ symbol, instrumentType }) {
+  if (typeof symbol !== "string" || !/^[A-Za-z0-9.^/=-]{1,32}$/.test(symbol) || instrumentType === "cash") {
+    throw new Error("Market-price history is unavailable for this asset.");
+  }
+  const normalisedSymbol = normaliseSymbol(symbol, instrumentType);
+  const cacheKey = normalisedSymbol;
+  const cached = marketHistoryCache.get(cacheKey);
+  if (cached && Date.now() - cached.savedAt < QUOTE_CACHE_TTL_MS) return cached.value;
+  const yahooSymbol = normalisedSymbol.replace("/USD", "-USD");
+  const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(yahooSymbol)}?range=5y&interval=1d`;
+  const payload = await fetchProviderJson(url, AbortSignal.timeout(LOOKUP_TIMEOUT_MS),
+    { Accept: "application/json", "User-Agent": "Mercury portfolio source bridge" });
+  const value = { symbol: normalisedSymbol, currency: "USD", source: "Yahoo Finance", interval: "1d", points: mapYahooMarketHistory(payload) };
+  // Public market data only; bounded per-process cache, no account data or writes.
+  if (marketHistoryCache.size >= 100) marketHistoryCache.delete(marketHistoryCache.keys().next().value);
+  marketHistoryCache.set(cacheKey, { value, savedAt: Date.now() });
+  return value;
+}
+
 async function getQuote({ symbol, instrumentType, includeMetrics = false }) {
   const normalisedSymbol = normaliseSymbol(symbol, instrumentType);
   const resolvedInstrumentType = isCryptoSymbol(normalisedSymbol, instrumentType) ? "crypto" : instrumentType || "other";
@@ -305,7 +345,8 @@ module.exports = {
   QUOTE_CACHE_TTL_MS,
   DISTRIBUTION_CACHE_TTL_MS,
   PERFORMANCE_CACHE_TTL_MS,
-  _internals: { annualizedReturn, dollarsToCents, isCryptoSymbol, mapDistribution, mapQuote, mapYahooDistribution, mapYahooPerformance, mapYahooPortfolioMetrics, normaliseRate, normaliseSymbol },
+  _internals: { annualizedReturn, dollarsToCents, isCryptoSymbol, mapDistribution, mapQuote, mapYahooDistribution, mapYahooPerformance, mapYahooPortfolioMetrics, mapYahooMarketHistory, normaliseRate, normaliseSymbol },
   getQuote,
   getPortfolioMetrics,
+  getMarketHistory,
 };

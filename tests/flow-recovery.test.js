@@ -20,6 +20,7 @@ function controller() {
   }
   const document = {querySelector:node, querySelectorAll:()=>[], activeElement:null, listeners:{}, addEventListener(type, callback) { this.listeners[type] = callback; }};
   const window = {
+    MercuryMarketHistory: require('../market-history'),
     MercuryPortfolio: require('../portfolio'), MercuryIncome: require('../income'),
     MercuryPlan: require('../plan'), MercuryDashboard: require('../dashboard'),
     location:{hash:'#portfolio',origin:'https://example.invalid',pathname:'/index.html',search:''}, listeners:{}, addEventListener(type, callback) { this.listeners[type] = callback; },
@@ -32,7 +33,7 @@ function controller() {
     fetch:async()=>({ok:false,json:async()=>({error:'provider unavailable'})}),
   });
   const source = fs.readFileSync(require.resolve('../brokerage.js'),'utf8').replace(/^import .*;\n/, '').replace('  initialise();',
-    '  window.testController = {initialise,loadData,readWithDeadline,retryPlanSettings,openPlanAssumptionsDialog,savePlanAssumptions,retryProperties,hydrateProviderMetrics,ensurePlanSettings,state,render,renderHomeChanges,renderHomeGrowth,renderIncomeRecovery,retryIncomeData,missingIncomeYieldRows,renderIncomeYieldRecovery,renderPlan,renderQuickQuotePreview,refreshCurrentAssetPrice,restorePortfolioAssetFocus,renderHistory,renderAsset,canQuote,lookupQuote,saveQuickAsset,navigateToAsset,navigateBackFromAsset,routeAssetId,openFormDialog,hasPendingWrite,hasUnsavedWork,matchingPortfolioHoldingRows,sortHoldingRows,holdingValueLabel,renderPortfolioView,renderPortfolioSummary,detailHolding,openPropertyDialog,saveProperty};');
+    '  window.testController = {loadMarketHistory,renderMarketHistory,clearMarketHistory,initialise,loadData,readWithDeadline,retryPlanSettings,openPlanAssumptionsDialog,savePlanAssumptions,retryProperties,hydrateProviderMetrics,ensurePlanSettings,state,render,renderHomeChanges,renderHomeGrowth,renderIncomeRecovery,retryIncomeData,missingIncomeYieldRows,renderIncomeYieldRecovery,renderPlan,renderQuickQuotePreview,refreshCurrentAssetPrice,restorePortfolioAssetFocus,renderHistory,renderAsset,canQuote,lookupQuote,saveQuickAsset,navigateToAsset,navigateBackFromAsset,routeAssetId,openFormDialog,hasPendingWrite,hasUnsavedWork,matchingPortfolioHoldingRows,sortHoldingRows,holdingValueLabel,renderPortfolioView,renderPortfolioSummary,detailHolding,openPropertyDialog,saveProperty};');
   vm.runInContext(source,context);
   const api=window.testController;
   api.state.client={auth:{getSession:async()=>({data:{session:{access_token:'isolated-test'}}})}};
@@ -1258,4 +1259,48 @@ test('removing the purchase-price shortcut returns focus to its visible menu eve
   document.querySelectorAll=selector=>selector==='[data-edit-property-id="property"]'?[hiddenEdit]:[];
   node('#property-dialog').close();
   assert.equal(focused,'summary');
+});
+
+test('market history rejects stale asset responses and keeps an unsaved holding draft', async () => {
+  const { api, node, window, context } = editableAsset();
+  api.clearMarketHistory();
+  const holding = api.state.holdings[0];
+  node('#asset-detail-shares').value = '27';
+  let finish;
+  context.fetch = async () => new Promise(resolve => { finish = resolve; });
+  const request = api.loadMarketHistory(holding);
+  await new Promise(resolve => setImmediate(resolve));
+  window.location.hash = '#portfolio';
+  api.clearMarketHistory();
+  node('#asset-market-price').textContent = 'different asset';
+  finish({ ok: true, json: async () => ({ currency:'USD',source:'Test prices',points:[{time:Date.now()-86400000,price:100},{time:Date.now(),price:120}] }) });
+  await request;
+  assert.equal(node('#asset-market-price').textContent, 'different asset');
+  assert.equal(node('#asset-detail-shares').value, '27');
+  window.location.hash = '#asset/test';
+  context.fetch = async () => ({ ok: true, json: async () => ({ currency:'USD',source:'Test prices',points:[{time:Date.now()-86400000,price:100},{time:Date.now(),price:120}] }) });
+  await api.loadMarketHistory(holding);
+  assert.equal(node('#asset-market-price').textContent, '$120.00');
+  assert.match(node('#asset-market-change').textContent, /Up \$20.00 \(20%\)/);
+  assert.equal(node('#asset-detail-shares').value, '27');
+});
+
+test('market history retries failed reads without writes and ignores a replaced account', async () => {
+  const { api, node, context } = editableAsset();
+  api.clearMarketHistory();
+  const holding = api.state.holdings[0];
+  context.fetch = async () => { throw new Error('private diagnostic'); };
+  await api.loadMarketHistory(holding);
+  assert.equal(node('#asset-market-retry').hidden, false);
+  assert.match(node('#asset-market-status').textContent, /could not be loaded/);
+  assert.doesNotMatch(node('#asset-market-status').textContent, /private diagnostic/);
+  let finish;
+  context.fetch = async () => new Promise(resolve => { finish = resolve; });
+  const request = api.loadMarketHistory(holding);
+  await new Promise(resolve => setImmediate(resolve));
+  api.state.account = { id:'another-account' };
+  node('#asset-market-price').textContent = 'new account';
+  finish({ ok:true,json:async()=>({currency:'USD',points:[{time:Date.now(),price:999}]}) });
+  await request;
+  assert.equal(node('#asset-market-price').textContent, 'new account');
 });

@@ -6,7 +6,7 @@ Mercury is a private personal finance workspace. Its first shipped product surfa
 
 ## Release state
 
-0.0.4 adds optional property purchase prices and gain/loss in dollars and percent, retaining the Portfolio refinement and published Acadia 0.3.2. Plan retains revision-aware saves and recovery from 0.0.2. A failed settings read withholds the saved rates/policy and provides Retry settings. Live disposable-data checks confirm Plan revision and uniqueness enforcement; full browser authentication, other editor concurrency, migration-rebuild and physical-device acceptance remain open, so 1.0.0 is not warranted.
+0.0.5 adds daily asset market-price charts with 1M/3M/1Y/5Y ranges, independently of personal returns and holding size. 0.0.4 added optional property purchase prices and gain/loss in dollars and percent, retaining the Portfolio refinement and published Acadia 0.3.2. Plan retains revision-aware saves and recovery from 0.0.2. A failed settings read withholds the saved rates/policy and provides Retry settings. Live disposable-data checks confirm Plan revision and uniqueness enforcement; full browser authentication, other editor concurrency, migration-rebuild and physical-device acceptance remain open, so 1.0.0 is not warranted.
 
 ## Home / Brokerage MVP
 

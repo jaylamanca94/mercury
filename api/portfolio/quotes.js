@@ -1,5 +1,5 @@
 const { requireUser } = require("../lib/portfolio-auth");
-const { getPortfolioMetrics, getQuote } = require("../lib/twelve-data");
+const { getMarketHistory, getPortfolioMetrics, getQuote } = require("../lib/twelve-data");
 
 module.exports = async function handler(request, response) {
   response.setHeader("Cache-Control", "private, no-store");
@@ -8,6 +8,10 @@ module.exports = async function handler(request, response) {
   if (!user) return;
 
   try {
+    if (request.query.history === "1") {
+      const history = await getMarketHistory({ symbol: request.query.symbol, instrumentType: request.query.instrumentType });
+      return response.status(200).json(history);
+    }
     if (request.query.includeMetrics === "1") {
       const metrics = await getPortfolioMetrics({
         symbol: request.query.symbol,
