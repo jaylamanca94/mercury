@@ -73,6 +73,8 @@ function normalizeProperty(input) {
     name: requiredText(input.name ?? "Home", "name"),
     location: optionalText(input.location, "location"),
     currentValueCents: nonNegativeCents(input.currentValueCents, "currentValueCents"),
+    purchasePriceCents: input.purchasePriceCents == null || input.purchasePriceCents === ""
+      ? null : nonNegativeCents(input.purchasePriceCents, "purchasePriceCents"),
     mortgageBalanceCents: nonNegativeCents(input.mortgageBalanceCents, "mortgageBalanceCents"),
     annualAppreciationRate: optionalRate(input.annualAppreciationRate, "annualAppreciationRate"),
     includeInNetWorth: Boolean(input.includeInNetWorth),
@@ -82,6 +84,16 @@ function normalizeProperty(input) {
 function propertyEquityCents(property) {
   const normalized = normalizeProperty(property);
   return normalized.currentValueCents - normalized.mortgageBalanceCents;
+}
+
+function propertyGainLoss(property) {
+  const normalized = normalizeProperty(property);
+  if (normalized.purchasePriceCents === null) return null;
+  const gainCents = normalized.currentValueCents - normalized.purchasePriceCents;
+  return Object.freeze({
+    gainCents,
+    gainRate: normalized.purchasePriceCents === 0 ? null : gainCents / normalized.purchasePriceCents,
+  });
 }
 
 function totalPropertyEquityCents(properties) {
@@ -200,6 +212,7 @@ const planContract = {
   normalizeProperty,
   normalizePlanSettings,
   propertyEquityCents,
+  propertyGainLoss,
   projectPortfolio,
   resolvePlanAssumptions,
   totalNetWorthCents,

@@ -32,7 +32,7 @@ function controller() {
     fetch:async()=>({ok:false,json:async()=>({error:'provider unavailable'})}),
   });
   const source = fs.readFileSync(require.resolve('../brokerage.js'),'utf8').replace(/^import .*;\n/, '').replace('  initialise();',
-    '  window.testController = {initialise,loadData,readWithDeadline,retryPlanSettings,openPlanAssumptionsDialog,savePlanAssumptions,retryProperties,hydrateProviderMetrics,ensurePlanSettings,state,render,renderHomeChanges,renderHomeGrowth,renderIncomeRecovery,retryIncomeData,missingIncomeYieldRows,renderIncomeYieldRecovery,renderPlan,renderQuickQuotePreview,refreshCurrentAssetPrice,restorePortfolioAssetFocus,renderHistory,renderAsset,canQuote,lookupQuote,saveQuickAsset,navigateToAsset,navigateBackFromAsset,routeAssetId,openFormDialog,hasPendingWrite,hasUnsavedWork,matchingPortfolioHoldingRows,sortHoldingRows,holdingValueLabel,renderPortfolioView,renderPortfolioSummary,detailHolding};');
+    '  window.testController = {initialise,loadData,readWithDeadline,retryPlanSettings,openPlanAssumptionsDialog,savePlanAssumptions,retryProperties,hydrateProviderMetrics,ensurePlanSettings,state,render,renderHomeChanges,renderHomeGrowth,renderIncomeRecovery,retryIncomeData,missingIncomeYieldRows,renderIncomeYieldRecovery,renderPlan,renderQuickQuotePreview,refreshCurrentAssetPrice,restorePortfolioAssetFocus,renderHistory,renderAsset,canQuote,lookupQuote,saveQuickAsset,navigateToAsset,navigateBackFromAsset,routeAssetId,openFormDialog,hasPendingWrite,hasUnsavedWork,matchingPortfolioHoldingRows,sortHoldingRows,holdingValueLabel,renderPortfolioView,renderPortfolioSummary,detailHolding,openPropertyDialog,saveProperty};');
   vm.runInContext(source,context);
   const api=window.testController;
   api.state.client={auth:{getSession:async()=>({data:{session:{access_token:'isolated-test'}}})}};
@@ -1211,4 +1211,51 @@ test('a stalled Plan save unlocks the draft and never reports an unconfirmed wri
   assert.match(node('#plan-assumptions-form-status').textContent,/could not be confirmed/);
   finish({data:{id:'plan',updated_at:'late'}});await new Promise(setImmediate);
   assert.equal(api.state.planSettings.updated_at,'v1');assert.equal(node('#plan-assumptions-dialog').open,true);
+});
+
+
+test('property purchase price survives save and reopen, can be cleared, and failed saves retain the draft', async () => {
+  const {api,node}=controller();
+  api.state.account={id:'account'};
+  api.state.properties=[{id:'property',account_id:'account',name:'Test house',location:'Test region',current_value_cents:45000000,mortgage_balance_cents:20000000,purchase_price_cents:null,annual_appreciation_rate:null}];
+  let payload,fail=false;
+  api.state.client.from=table=>{
+    assert.equal(table,'home_properties');
+    return {update(value){payload=value;return this},eq(){return this},select(){return this},async single(){return fail?{error:new Error('Save unavailable')}:{data:{...api.state.properties[0],...payload}}}};
+  };
+  api.openPropertyDialog('property',{focusPurchasePrice:true});
+  assert.equal(node('#property-purchase-price').value,'');
+  node('#property-form').fields={name:'Test house',location:'Test region',currentValue:'450000',mortgageBalance:'200000',purchasePrice:'300000.25'};
+  await api.saveProperty({preventDefault(){}});
+  assert.equal(payload.purchase_price_cents,30000025);
+  api.openPropertyDialog('property');
+  assert.equal(node('#property-purchase-price').value,'300000.25');
+  node('#property-form').fields.purchasePrice='';
+  await api.saveProperty({preventDefault(){}});
+  assert.equal(api.state.properties[0].purchase_price_cents,null);
+  api.openPropertyDialog('property');
+  node('#property-form').fields.purchasePrice='280000';node('#property-purchase-price').value='280000';fail=true;
+  await api.saveProperty({preventDefault(){}});
+  assert.equal(api.state.properties[0].purchase_price_cents,null);
+  assert.equal(node('#property-purchase-price').value,'280000');
+  assert.equal(node('#property-dialog').open,true);
+  assert.equal(node('#property-form-status').textContent,'Save unavailable');
+  assert.equal(node('#save-property').disabled,false);
+});
+
+test('removing the purchase-price shortcut returns focus to its visible menu even when closed menu items report rectangles', () => {
+  const {api,node,document,context}=controller();
+  context.CSS={escape:value=>value};
+  let focused=null;
+  const summary={isConnected:true,disabled:false,getClientRects:()=>[{}],focus(){focused='summary'},closest:()=>menu};
+  const menu={open:false,querySelector:()=>summary};
+  const hiddenEdit={isConnected:true,disabled:false,getClientRects:()=>[{}],closest:()=>menu,focus(){focused='hidden edit'}};
+  const shortcut={isConnected:true,disabled:false,closest:()=>null,hasAttribute:name=>name==='data-edit-property-id',getAttribute:()=> 'property',getClientRects:()=>[{}],focus(){focused='shortcut'}};
+  document.querySelector=selector=>selector==='dialog[open]'?null:node(selector);
+  document.activeElement=shortcut;
+  api.openFormDialog('#property-dialog');
+  shortcut.isConnected=false;
+  document.querySelectorAll=selector=>selector==='[data-edit-property-id="property"]'?[hiddenEdit]:[];
+  node('#property-dialog').close();
+  assert.equal(focused,'summary');
 });

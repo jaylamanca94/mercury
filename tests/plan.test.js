@@ -9,6 +9,7 @@ const {
   normalizeProperty,
   normalizePlanSettings,
   propertyEquityCents,
+  propertyGainLoss,
   projectPortfolio,
   resolvePlanAssumptions,
   totalNetWorthCents,
@@ -162,6 +163,28 @@ test("properties retain identity and aggregate equity for net worth", () => {
     currentValueCents: 1,
     mortgageBalanceCents: 0,
   }), PlanValidationError);
+});
+
+test("property gain/loss compares market value with purchase price independently of debt", () => {
+  const property = { currentValueCents: 450_000_00, purchasePriceCents: 300_000_00, mortgageBalanceCents: 200_000_00 };
+  assert.deepEqual(propertyGainLoss(property), { gainCents: 150_000_00, gainRate: 0.5 });
+  assert.equal(propertyEquityCents(property), 250_000_00);
+  assert.deepEqual(propertyGainLoss({ ...property, mortgageBalanceCents: 0 }), propertyGainLoss(property));
+  assert.deepEqual(propertyGainLoss({ ...property, currentValueCents: 240_000_00 }), { gainCents: -60_000_00, gainRate: -0.2 });
+  assert.deepEqual(propertyGainLoss({ ...property, currentValueCents: 300_000_00 }), { gainCents: 0, gainRate: 0 });
+  assert.deepEqual(propertyGainLoss({ ...property, currentValueCents: 0 }), { gainCents: -300_000_00, gainRate: -1 });
+});
+
+test("property purchase price preserves unknown and zero without fabricating a percentage", () => {
+  const property = { currentValueCents: 100_00, mortgageBalanceCents: 0 };
+  for (const purchasePriceCents of [undefined, null, ""]) {
+    assert.equal(normalizeProperty({ ...property, purchasePriceCents }).purchasePriceCents, null);
+    assert.equal(propertyGainLoss({ ...property, purchasePriceCents }), null);
+  }
+  assert.deepEqual(propertyGainLoss({ ...property, purchasePriceCents: 0 }), { gainCents: 100_00, gainRate: null });
+  for (const purchasePriceCents of [-1, 1.5, Infinity, Number.MAX_SAFE_INTEGER + 1]) {
+    assert.throws(() => normalizeProperty({ ...property, purchasePriceCents }), PlanValidationError);
+  }
 });
 
 test("net worth combines investment value with all property equity", () => {

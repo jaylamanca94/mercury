@@ -22,6 +22,7 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
     annualRecurringContributionCents,
     normalizeProperty,
     propertyEquityCents,
+    propertyGainLoss,
     totalPropertyEquityCents,
     normalizePlanSettings,
     projectPortfolio,
@@ -669,6 +670,7 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
       name: property.name || "Home",
       location: property.location || null,
       currentValueCents: Number(property.current_value_cents),
+      purchasePriceCents: property.purchase_price_cents == null ? null : Number(property.purchase_price_cents),
       mortgageBalanceCents: Number(property.mortgage_balance_cents),
       annualAppreciationRate: property.annual_appreciation_rate === null ? null : Number(property.annual_appreciation_rate),
     };
@@ -702,14 +704,20 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
     grid.replaceChildren(...properties.map((property) => {
       const model = propertyModel(property);
       const equityCents = propertyEquityCents(model);
+      const change = propertyGainLoss(model);
+      const gainLabel = change === null ? "" : `${change.gainCents > 0 ? "+" : ""}${preciseCurrency.format(change.gainCents / 100)}`;
+      const rateLabel = change?.gainRate == null ? "" : new Intl.NumberFormat("en-US", { style: "percent", maximumFractionDigits: 2, signDisplay: "exceptZero" }).format(change.gainRate);
+      const purchaseMarkup = change === null
+        ? `<button class="acadia-button acadia-button-quiet" type="button" data-edit-property-id="${escapeHtml(model.id)}" data-property-field="purchase-price" aria-label="Add purchase price for ${escapeHtml(model.name)}">Add purchase price</button>`
+        : `<div class="acadia-grid"><div class="acadia-field"><span class="acadia-text-muted">Purchase price</span><strong>${escapeHtml(preciseCurrency.format(model.purchasePriceCents / 100))}</strong></div><div class="acadia-field"><span class="acadia-text-muted">Gain / loss</span><strong>${escapeHtml(gainLabel)}</strong>${rateLabel ? `<small class="acadia-text-muted">${escapeHtml(rateLabel)}</small>` : ""}</div></div><small class="acadia-text-muted">Since purchase · excludes costs and rental income.${change.gainRate === null ? " Percentage unavailable for a zero purchase price." : ""}</small>`;
       const card = document.createElement("article");
       card.className = "acadia-card is-content";
       card.setAttribute("aria-label", `${model.name}${model.location ? `, ${model.location}` : ""}, market value ${displayCurrency(model.currentValueCents / 100)}, mortgage balance ${displayCurrency(model.mortgageBalanceCents / 100)}, equity ${displayCurrency(equityCents / 100)}`);
-      card.innerHTML = `<div class="acadia-card-actions" role="group" aria-label="Actions for ${escapeHtml(model.name)}"><details class="acadia-action-menu"><summary class="acadia-action-menu-trigger acadia-icon-action" aria-label="Actions for ${escapeHtml(model.name)}"><i class="fa-solid fa-ellipsis acadia-icon" aria-hidden="true"></i></summary><div class="acadia-action-menu-panel"><button class="acadia-action-menu-item" type="button" data-edit-property-id="${escapeHtml(model.id)}">Edit property</button><div class="acadia-action-menu-divider"></div><button class="acadia-action-menu-item is-danger" type="button" data-delete-property-id="${escapeHtml(model.id)}">Delete property</button></div></details></div><div class="acadia-card-header"><h3>${escapeHtml(model.name)}</h3>${model.location ? `<p>${escapeHtml(model.location)}</p>` : ""}</div><div class="acadia-card-content acadia-stack"><div class="acadia-field"><span class="acadia-text-muted">Equity</span><strong class="acadia-card-metric-value">${escapeHtml(displayCurrency(equityCents / 100))}</strong></div><div class="acadia-grid"><div class="acadia-field"><span class="acadia-text-muted">Market value</span><strong>${escapeHtml(displayCurrency(model.currentValueCents / 100))}</strong></div><div class="acadia-field"><span class="acadia-text-muted">Mortgage balance</span><strong>${escapeHtml(displayCurrency(model.mortgageBalanceCents / 100))}</strong></div></div></div>`;
+      card.innerHTML = `<div class="acadia-card-actions" role="group" aria-label="Actions for ${escapeHtml(model.name)}"><details class="acadia-action-menu"><summary class="acadia-action-menu-trigger acadia-icon-action" aria-label="Actions for ${escapeHtml(model.name)}"><i class="fa-solid fa-ellipsis acadia-icon" aria-hidden="true"></i></summary><div class="acadia-action-menu-panel"><button class="acadia-action-menu-item" type="button" data-edit-property-id="${escapeHtml(model.id)}">Edit property</button><div class="acadia-action-menu-divider"></div><button class="acadia-action-menu-item is-danger" type="button" data-delete-property-id="${escapeHtml(model.id)}">Delete property</button></div></details></div><div class="acadia-card-header"><h3>${escapeHtml(model.name)}</h3>${model.location ? `<p>${escapeHtml(model.location)}</p>` : ""}</div><div class="acadia-card-content acadia-stack"><div class="acadia-field"><span class="acadia-text-muted">Equity</span><strong class="acadia-card-metric-value">${escapeHtml(displayCurrency(equityCents / 100))}</strong></div><div class="acadia-grid"><div class="acadia-field"><span class="acadia-text-muted">Market value</span><strong>${escapeHtml(displayCurrency(model.currentValueCents / 100))}</strong></div><div class="acadia-field"><span class="acadia-text-muted">Mortgage balance</span><strong>${escapeHtml(displayCurrency(model.mortgageBalanceCents / 100))}</strong></div></div>${purchaseMarkup}</div>`;
       return card;
     }));
     grid.querySelectorAll("[data-edit-property-id]").forEach((button) => {
-      button.addEventListener("click", () => openPropertyDialog(button.dataset.editPropertyId));
+      button.addEventListener("click", () => openPropertyDialog(button.dataset.editPropertyId, { focusPurchasePrice: button.dataset.propertyField === "purchase-price" }));
     });
     grid.querySelectorAll("[data-delete-property-id]").forEach((button) => {
       button.addEventListener("click", () => openDeletePropertyDialog(button.dataset.deletePropertyId));
@@ -1482,7 +1490,14 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
       if (entry.returnSelector) {
         const matches = Array.from(document.querySelectorAll(entry.returnSelector));
         const candidates = matches.map((control) => entry.returnToMenu ? control.closest(".acadia-action-menu")?.querySelector("summary") : control);
-        trigger = candidates.find((control) => control?.getClientRects().length) || trigger;
+        const menuFallback = matches.map((control) => control.closest(".acadia-action-menu")?.querySelector("summary"))
+          .find((control) => control?.getClientRects().length);
+        const visibleControl = candidates.find((control) => {
+          const menu = control?.closest(".acadia-action-menu");
+          // WebKit can report rectangles for content inside closed details.
+          return control?.getClientRects().length && (!menu || menu.open || control === menu.querySelector("summary"));
+        });
+        trigger = visibleControl || menuFallback || trigger;
       }
       // The table and cards are peer renderings: restore only a visible control.
       if (trigger.isConnected && trigger.getClientRects().length && !trigger.disabled) trigger.focus();
@@ -2223,7 +2238,7 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
     }
   }
 
-  function openPropertyDialog(id = null) {
+  function openPropertyDialog(id = null, { focusPurchasePrice = false } = {}) {
     if (protectedDialogs.get($("#property-dialog"))?.pending) return;
     if (!state.propertiesAvailable) return;
     const form = $("#property-form");
@@ -2238,11 +2253,12 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
       $("#property-name").value = model.name;
       $("#property-location").value = model.location || "";
       $("#property-current-value").value = (model.currentValueCents / 100).toFixed(2);
+      $("#property-purchase-price").value = model.purchasePriceCents === null ? "" : (model.purchasePriceCents / 100).toFixed(2);
       $("#property-debt-balance").value = (model.mortgageBalanceCents / 100).toFixed(2);
     }
     $("#property-dialog").hidden = false;
     openFormDialog("#property-dialog");
-    $("#property-name").focus();
+    $(focusPurchasePrice ? "#property-purchase-price" : "#property-name").focus();
   }
   function closePropertyDialog() { $("#property-dialog").close(); }
   async function saveProperty(event) {
@@ -2257,6 +2273,7 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
         name: getFormValue($("#property-form"), "name"),
         location: getFormValue($("#property-form"), "location"),
         currentValueCents: cents(getFormValue($("#property-form"), "currentValue")),
+        purchasePriceCents: cents(getFormValue($("#property-form"), "purchasePrice")),
         mortgageBalanceCents: cents(getFormValue($("#property-form"), "mortgageBalance")) ?? 0,
       });
       const payload = {
@@ -2264,6 +2281,7 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
         name: property.name,
         location: property.location,
         current_value_cents: property.currentValueCents,
+        purchase_price_cents: property.purchasePriceCents,
         mortgage_balance_cents: property.mortgageBalanceCents,
       };
       const query = state.propertyDialogId
@@ -2274,8 +2292,8 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
       state.properties = state.propertyDialogId
         ? state.properties.map((entry) => entry.id === data.id ? data : entry)
         : [...state.properties, data];
-      closePropertyDialog();
       render();
+      closePropertyDialog();
     } catch (error) {
       setText("#property-form-status", error.message || "The property could not be saved.");
     } finally {
@@ -2376,7 +2394,7 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
     setText("#property-recovery-status", "Retrying properties…");
     render();
     try {
-      const result = await readWithDeadline(signal => client.from("home_properties").select("id, account_id, name, location, current_value_cents, mortgage_balance_cents, annual_appreciation_rate, created_at").eq("account_id", account.id).order("created_at").abortSignal(signal));
+      const result = await readWithDeadline(signal => client.from("home_properties").select("id, account_id, name, location, current_value_cents, purchase_price_cents, mortgage_balance_cents, annual_appreciation_rate, created_at").eq("account_id", account.id).order("created_at").abortSignal(signal));
       if (!current()) return;
       if (result.error || !Array.isArray(result.data)) throw new Error("Property read failed");
       state.properties = result.data;
@@ -2407,7 +2425,7 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
       signal => client.from("income_sources").select("*").eq("account_id", account.id).order("created_at").abortSignal(signal),
       signal => client.from("budget_categories").select("*").eq("account_id", account.id).order("created_at").abortSignal(signal),
       signal => client.from("plan_settings").select("*").eq("account_id", account.id).maybeSingle().abortSignal(signal),
-      signal => client.from("home_properties").select("id, account_id, name, location, current_value_cents, mortgage_balance_cents, annual_appreciation_rate, created_at").eq("account_id", account.id).order("created_at").abortSignal(signal),
+      signal => client.from("home_properties").select("id, account_id, name, location, current_value_cents, purchase_price_cents, mortgage_balance_cents, annual_appreciation_rate, created_at").eq("account_id", account.id).order("created_at").abortSignal(signal),
     ].map(operation => readWithDeadline(operation)));
     if (!current() || requestId !== state.dataRequestId) return false;
     const [accounts, holdings, quotes, snapshots, incomeSources, budgetCategories, planSettings, properties] = results.map(result => result.status === "fulfilled" ? result.value : { error: result.reason });

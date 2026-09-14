@@ -19,3 +19,9 @@ The snapshot endpoint is called hourly by Vercel. It writes only after 4 PM Amer
 The `20260907133000_function_security.sql` migration fixes the timestamp trigger search path and removes browser-role execution grants from the optional hosted RLS event-trigger helper. It was applied and recorded on the linked project on 2026-09-07; disposable transaction checks verified both triggers.
 
 Snapshots reject incomplete or invalid valuations before writing, leaving previous history intact. A cron request requires a configured nonblank secret. Authentication and storage reads/writes have ten-second deadlines.
+
+## Property purchase prices — 0.0.4
+
+`20260914144500_property_purchase_price.sql` adds nullable `purchase_price_cents` to `home_properties`, with a non-negative safe-integer constraint. It was applied to the linked Mercury project and recorded in the migration ledger in one transaction on 2026-09-14. No old migrations were replayed, existing values were not backfilled, and row-level security remains enabled. Apply this one forward migration before deploying the new client to another environment.
+
+Authenticated disposable-account checks verified omitted/null values, exact cent precision, updates, zero, clearing, rejection of negative/unsafe values, and unchanged equity inputs. All test records were removed and the empty test-account state rechecked. The general migration-baseline/rebuild gate above remains separate.
