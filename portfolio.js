@@ -33,6 +33,9 @@ const ALLOCATION_CATEGORIES = Object.freeze([
 
 const CONTRIBUTION_FREQUENCIES = Object.freeze(["weekly", "monthly"]);
 const PERFORMANCE_PERIODS = Object.freeze({
+  "1d": { days: 1 },
+  "1w": { days: 7 },
+  "1m": { months: 1 },
   "3m": { months: 3 },
   "6m": { months: 6 },
   "1y": { years: 1 },
@@ -368,8 +371,15 @@ function performanceSnapshots(snapshots, period = "all") {
   if (!duration || normalized.length === 0) return normalized;
 
   const end = new Date(`${normalized.at(-1).snapshotDate}T12:00:00.000Z`);
+  if (duration.days) end.setUTCDate(end.getUTCDate() - duration.days);
   if (duration.years) end.setUTCFullYear(end.getUTCFullYear() - duration.years);
-  if (duration.months) end.setUTCMonth(end.getUTCMonth() - duration.months);
+  if (duration.months) {
+    const day = end.getUTCDate();
+    end.setUTCDate(1);
+    end.setUTCMonth(end.getUTCMonth() - duration.months);
+    const lastDay = new Date(Date.UTC(end.getUTCFullYear(), end.getUTCMonth() + 1, 0)).getUTCDate();
+    end.setUTCDate(Math.min(day, lastDay));
+  }
   const startDate = end.toISOString().slice(0, 10);
   return normalized.filter((snapshot) => snapshot.snapshotDate >= startDate);
 }

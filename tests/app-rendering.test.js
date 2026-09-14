@@ -62,7 +62,7 @@ test("Home composes a minimal Acadia dashboard", () => {
   assert.doesNotMatch(indexHtml, /id="home-planning-balance"|id="home-review-list"/);
   const graphCard = indexHtml.slice(indexHtml.indexOf('id="home-history-card"'), indexHtml.indexOf('aria-label="Investment summary"'));
   assert.doesNotMatch(graphCard, /id="all-time-change-value"|id="metric-change-value"/);
-  const summaryCard = indexHtml.slice(indexHtml.indexOf('aria-label="Investment summary"'), indexHtml.indexOf('aria-labelledby="home-allocation-title"'));
+  const summaryCard = indexHtml.slice(indexHtml.indexOf('aria-label="Investment summary"'), indexHtml.indexOf('aria-labelledby="holdings-title"'));
   for (const id of ['all-time-change-value', 'metric-change-value', 'home-growth', 'home-passive-income']) assert.ok(summaryCard.includes(`id="${id}"`));
   assert.match(indexHtml, /id="home-growth"/);
   assert.match(indexHtml, /id="home-passive-income"/);
@@ -71,12 +71,13 @@ test("Home composes a minimal Acadia dashboard", () => {
   assert.doesNotMatch(indexHtml, />Dashboard</);
   assert.doesNotMatch(indexHtml, /id="holding-search"|id="holding-sort"|id="holding-filters"/);
   assert.match(indexHtml, /id="performance-periods" class="acadia-tabs" role="tablist"/);
-  assert.match(indexHtml, /data-performance-period="3m"[\s\S]*data-performance-period="6m"[\s\S]*data-performance-period="1y"[\s\S]*data-performance-period="all"/);
+  assert.match(indexHtml, /data-performance-period="1d"[\s\S]*data-performance-period="1w"[\s\S]*data-performance-period="1m"[\s\S]*data-performance-period="1y"[\s\S]*data-performance-period="all"/);
   assert.match(indexHtml, /id="history-panel"[^>]*role="tabpanel"/);
-  assert.match(indexHtml, /id="home-history-card" class="acadia-card is-content"/);
+  assert.match(indexHtml, /id="home-history-card" class="acadia-stack"/);
   assert.doesNotMatch(homeSource, /classList\.toggle\("is-dashboard-trend"/);
 
-  assert.match(indexHtml, /id="home-allocation"/);
+  assert.doesNotMatch(indexHtml, /id="home-allocation"/);
+  assert.match(indexHtml, /id="portfolio-allocation"/);
   assert.match(indexHtml, /id="holdings-grid" class="acadia-grid acadia-insight-grid"[^>]*role="list"/);
   assert.match(indexHtml, /id="history-building"/);
   assert.doesNotMatch(indexHtml, /--acadia-card-trend-height: 16rem/);
@@ -294,7 +295,7 @@ test("Plan is a separate Base-plan projection workspace with aligned portfolio c
   assert.match(indexHtml, /id="plan-assumptions-dialog"/);
   assert.match(indexHtml, /id="property-dialog"/);
   assert.match(indexHtml, /<script src="plan\.js\?v=20260914-property-purchase"><\/script>/);
-  assert.match(indexHtml, /<script type="module" src="brokerage\.js\?v=20260914-market-005"><\/script>/);
+  assert.match(indexHtml, /<script type="module" src="brokerage\.js\?v=20260914-home-006"><\/script>/);
   assert.match(homeSource, /function routePlan\(\)/);
   assert.match(homeSource, /function renderPlan\(summary\)/);
   assert.match(homeSource, /function renderPlanChart/);
@@ -328,7 +329,7 @@ test("the quick add dialog matches the compact Figma flow and keeps manual recov
   assert.match(homeSource, /setQuickAddStatus\(error\.message \|\| "This asset could not be saved\."\)/);
   assert.match(homeSource, /normalizeContributionPlan/);
   assert.match(homeSource, /calculateQuotePreviewValueCents/);
-  assert.match(indexHtml, /<script src="portfolio\.js\?v=20260904-home-overview-v2"><\/script>/);
+  assert.match(indexHtml, /<script src="portfolio\.js\?v=20260914-home-006"><\/script>/);
   assert.match(homeSource, /is_retirement: \$\("#asset-retirement"\)\.checked/);
   assert.match(homeSource, /\$\("#asset-symbol"\)\.focus\(\)/);
   assert.match(homeSource, /Edit details/);

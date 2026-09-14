@@ -1,41 +1,38 @@
-# Full-width Home QA — 12 September 2026
+# Home layout reference QA — 2026-09-14
 
 final result: passed
 
-## Target and evidence
+Reference: founder attachment `f0fd726f-5e22-4147-aec9-b0fb3058dc8d/image-1.png`, 2952×1972 including design-canvas padding. App frame is approximately a 1440×936 CSS desktop at 2× density. Compared with 1440×936 local dark Home, populated synthetic records. Initial comparison opened both images together.
 
-Source: `/var/folders/bw/21lzcjwj7rlfsqtjbtn56vbm0000gn/T/TemporaryItems/NSIRD_screencaptureui_4THWXr/Screenshot 2026-09-12 at 1.35.35 AM.png` (the supplied Dribbble screenshot; original filename uses a narrow space before AM). Source pixels: 3024 × 1898.
+P2: the first implementation made the graph/panel too tall, putting Top assets below the initial viewport. Source puts the four summary cards and full Top assets row in view. Fix: use the existing 14rem trend-height ceiling and compact Acadia Field anatomy for chart endpoints/context, while retaining the full-width chart. Fixed in two spacing passes: the final 12rem ceiling, compact Field panel and inline dated endpoints bring the full Top assets row inside the viewport (bottom 883px at 936px height). Post-fix `desktop-1d.png` was opened alongside the reference again, including after amount/percentage pairing was added. No remaining P0/P1/P2 layout differences.
 
-Approved translation: net worth above a full-width curved Acadia graph; all-time change, day change, growth and dividends below; Allocation and Top assets further down; four/two/one responsive metrics. This is a layout reference, not a clone of the green palette, tax metrics, branding, chart data or surrounding browser/Dribbble interface. No new image assets were required.
+Intentional data boundaries: no fabricated benchmark or net-worth change percentage. These are not present in the saved-data model. S&P comparison preference was asked separately; layout work preserves recorded investment history, with deposits/withdrawals disclosure. The reference’s illustrated intraday curve is not a historical data source. Actual 1D/1W/1M/1Y/All controls filter daily snapshots; All preserves access to older records. Personal values in the attachment are not test fixtures. Existing Mercury logo/font assets and canonical Acadia tokens remain unchanged.
 
-Implementation: isolated synthetic Home at `http://127.0.0.1:8797/?days=11&complete`. Captures: `automation/design/2026-09-12/home-wide-1440.png`, `home-wide-834.png`, `home-wide-390.png`. Desktop CSS viewport 1440 × 1100; returned content capture 1425 × 1089px. Tablet CSS viewport 834 × 1100; returned capture 819 × 1080px. Browser scrollbars/content capture account for the difference.
+## Final fidelity review
 
-The supplied source and implementation captures were opened together in one comparison input. Comparison is of the app-owned composition, not browser chrome or pixel alignment across different products and data. Full-view review verifies the wide graph, internal horizontal divider, scannable metric row and supporting content below. Typography, labels and values are legible in these captures, so a separate magnified crop was unnecessary.
+- Typography: existing Geist body/expression and Syncopate wordmark are reused. Net worth leads; all four amount/rate pairs use the same readable role, with muted labels and small provenance/coverage text. Source’s illustrative font/brand treatment is adapted through Acadia, not redrawn.
+- Spacing/layout: unboxed headline and chart, four separate summary cards, then four full-width Top assets cards match the reference hierarchy. At 1440px, both grids have four equal columns; at 768px they have two; at 320px one. Dated endpoints and coverage notes add purposeful information absent from the illustration.
+- Colours/tokens: canonical dark/light surfaces, borders, radii, teal chart and controls remain unchanged. Acadia supplies the selection/focus states. No product CSS or shared asset modifications.
+- Image quality/assets: the only image asset is the supplied product mark, reused without distortion; there are no missing raster illustrations. Font Awesome supplies controls. The plotted path is a real-data chart using the existing published Acadia utility, not a replacement image or invented market series.
+- Copy/content: Day change, All-time change, Expected annual growth and Annual dividends retain exact existing semantics. Growth/dividend percentage pairs divide by current investment value and hide when unavailable or zero-based. Property cards explicitly identify equity and purchase price; investment cards show unit price and shares. Personal reference numbers were not copied to fixtures.
 
-## Findings and fixes
+## Interaction and responsive evidence
 
-- [P2, fixed] Enlarged tablet text exceeded fixed sidebar and metric tracks. Reused Acadia Insight Grid with Grid so groups adapt to their actual available width; the 834px enlarged-text check has no overflowing descendants.
-- [P2, fixed] Top assets actions crowded the heading at 768px. Added the existing Page Header container; actions now wrap below the heading.
-- [P2, fixed] Two narrow tablet asset cards broke WORLD across lines. Applied the same Grid/Insight Grid composition to the asset list; final tablet capture shows full-width readable cards.
+- Local browser checks at 1440×936, 768×1024 and 320×780 pass containment. All five range controls have 44px height at ordinary size.
+- 200% text at 768px and 320px keeps the page contained. The canonical range rail scrolls horizontally at the narrowest enlarged setting; Arrow navigation scrolls the selected/focused range into view (1Y visible at x62–159px in a 320px viewport).
+- Keyboard 1M selection changes the graph and leaves the four summary amounts unchanged. 1D renders only the two saved daily records; empty and one-record cases show their explicit message/point without invented data.
+- Keyboard entry to ALFA opens its asset heading; Back returns focus to its Home card. Property opens with the saved purchase price and returns focus to its card after closing. Add asset opens from Home with Symbol focused.
+- All 209 automated checks pass, including cent-safe financial calculations, calendar-day/week/month windows, zero/missing growth-rate guards, coverage states, editor recovery and shared Acadia integrity.
+- Local screenshots use isolated synthetic records and a synthetic provider; no owner data or production writes. Authenticated owner/device acceptance is separate.
 
-Initial desktop/mobile review established the full-width composition. The combined source/implementation comparison then exposed cramped tablet asset cards; the final 834px capture was inspected after the card fix. Final desktop/tablet/phone screenshots were recaptured. No actionable P0/P1/P2 differences remain against the approved translation.
+## Completion audit
 
-## Fidelity surfaces
+The layout reference is implemented in the existing Home route, with its wide chart, four amount/rate cards, four Top assets cards, purchase-price/share context, Add asset and working navigation/ranges. Existing persistence, net-worth calculation, asset market history and property gain/loss remain intact. The illustrative S&P line and net-worth percentage were not requested as new data-model features; they are withheld pending the separately asked preference. This is a layout implementation, not a claim of intraday or benchmark performance. Source and final 1D capture were compared together, with synthetic amounts and daily-only geometry explicitly accounted for. No remaining P0/P1/P2 findings. Physical device checks remain outside this browser evidence.
 
-- Typography: existing Acadia fonts, weights and type roles; net worth leads and the change amounts/percentages remain prominent. Tablet asset names no longer split unnecessarily.
-- Spacing/layout: full content-width hero; supported trend height scales from 10rem to 14rem; canonical dense card padding, divider, gaps and wrapping. Four desktop metrics, two tablet columns, one phone column.
-- Colours/tokens: canonical light/dark Acadia colours, surfaces, borders and chart fill; no stylesheet or vendor changes.
-- Images: existing Mercury logo and icon assets preserved. The graph remains the shared Acadia curve utility with recorded observations; no decorative raster additions or imitated reference brand.
-- Copy/content: existing investment scope, previous-close context, date baselines and estimate provenance remain visible. No new financial categories or invented data in product code.
+## Implementation checklist
 
-## Verification
-
-- Full-width hero measured equal to workspace width at 1920/1440/1200/1024/834/768/390/320px. Desktop metric values share a row; tablets have two columns; phones stack.
-- No document overflow at these widths; final 1440/834/768/390px descendant checks pass after wrapping fixes. 320px layout reviewed. Enlarged text checked at 834/390/320px; tablet issue fixed and rechecked.
-- Keyboard Home selects 3M and changes dated endpoints while all-time/day values stay fixed.
-- Enter opens an investment; Back restores its Home link. View all opens Portfolio. Add asset opens the shared dialog with Symbol focused and Cancel works.
-- First-record point, no-history, partial valuation and empty-portfolio states retain correct withheld amounts and fit a 390px viewport.
-- Light/dark appearance inspected. No console errors observed.
-- `npm run check`: 180 tests passed. `git diff --check`: passed.
-
-Browser checks use isolated local records with no remote writes. Physical-device/VoiceOver and authenticated owner-account writes are outside this layout change. Publication is verified through the authorised Git-triggered workflow and live HTML matching.
+- [x] Preserve actual saved-data semantics and financial calculations.
+- [x] Apply the reference layout using Acadia.
+- [x] Verify responsive layout, source comparison and core actions.
+- [x] Pass all 209 automated checks.
+- [ ] Verify the authorised main push and resulting deployment.

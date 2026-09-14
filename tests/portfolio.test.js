@@ -416,7 +416,7 @@ test("performance periods use only persisted daily snapshots and calculate an au
   const all = summarizePerformance(snapshots);
   const threeMonths = summarizePerformance(snapshots, "3m");
 
-  assert.deepEqual(Object.keys(PERFORMANCE_PERIODS), ["3m", "6m", "1y", "all"]);
+  assert.deepEqual(Object.keys(PERFORMANCE_PERIODS), ["1d", "1w", "1m", "3m", "6m", "1y", "all"]);
   assert.equal(all.changeCents, 50_000);
   assert.equal(all.changeRate, 0.5);
   assert.equal(all.startDate, "2025-01-01");

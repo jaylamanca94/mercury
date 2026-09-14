@@ -5,5 +5,5 @@
     "check:syntax": "node --check acadia-card-trend.mjs && node --check market-history.js && node --check dashboard.js && node --check brokerage.js && node --check portfolio.js && node --check income.js && node --check plan.js && node --check theme.js && node --check api/config.js && node --check api/lib/portfolio-auth.js && node --check api/lib/twelve-data.js && node --check api/portfolio/quotes.js && node --check api/portfolio/snapshot.js && node --check api/live-snapshot.js && node --check api/fred-snapshot.js",
     "test": "node --test"
   },
-  "version": "0.0.5"
+  "version": "0.0.6"
 }

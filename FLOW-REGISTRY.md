@@ -135,3 +135,7 @@ The ten canonical flows remain unchanged. Review current trajectory gains a loca
 ## Asset market history — 2026-09-14
 
 Changed flow: Portfolio/Home → Asset detail → market-price range → holding details → Back. The lead chart shows daily USD prices per share/unit, with 1M/3M/1Y/5Y ranges and period price movement; personal holding value remains separate. States: loading, available, one observation, no observations in range, unsupported asset/currency and retryable provider failure. Required QA: dated point integrity, price-only arithmetic, auth and bounded provider reads, stale navigation/account responses, preserved edit drafts, keyboard ranges/retry, phone/tablet/desktop containment, live provider verification.
+
+## Home reference layout — 2026-09-14
+
+Home → history range → four summary cards → Top assets → Asset detail/property editor → Back. Lead chart is unboxed; Day change, All-time change, Expected annual growth and Annual dividends form four separate cards with amount/percentage pairs; Top assets spans the page with price/share or purchase-price context. Allocation remains available in Portfolio. Preserve valuation coverage, period/summary independence, sparse history, keyboard activation, add/edit, return focus and 320px/200% text usability.

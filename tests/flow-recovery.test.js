@@ -914,8 +914,13 @@ test('Home growth withholds incomplete history and valuations and recovers after
   assert.equal(node('#home-growth').textContent,'Loading…');
   api.state.providerMetricsPending.clear();api.renderHomeGrowth(complete);
   assert.equal(node('#home-growth').textContent,'$123');
+  api.renderHomeGrowth({...complete,totalMarketValueCents:123000});
+  assert.equal(node('#home-growth-rate').textContent,'+10%');
+  api.renderHomeGrowth({...complete,totalMarketValueCents:0});
+  assert.equal(node('#home-growth-rate').hidden,true);
   api.renderHomeGrowth({...complete,totalEstimatedAnnualGrowthCents:null});
   assert.equal(node('#home-growth').textContent,'Unavailable');
+  assert.equal(node('#home-growth-rate').hidden,true);
   assert.match(node('#home-growth-context').textContent,/Historical returns unavailable/);
   api.renderHomeGrowth({...complete,rows:[{}]});
   assert.equal(node('#home-growth').textContent,'Unavailable');

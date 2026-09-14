@@ -317,7 +317,7 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
       return performance;
     }
     const values = performance.snapshots.map((point) => point.totalValueCents / 100);
-    const endpoint = (date, value) => `<span class="acadia-field"><span>${escapeHtml(displayCurrency(value))}</span><time datetime="${date}">${historyDateLabel(date)}</time></span>`;
+    const endpoint = (date, value) => `<span class="acadia-cluster"><span>${escapeHtml(displayCurrency(value))}</span><time datetime="${date}">${historyDateLabel(date)}</time></span>`;
     endpoints.innerHTML = endpoint(performance.startDate, values[0])
       + (values.length > 1 ? endpoint(performance.endDate, values.at(-1)) : "");
     if (values.length === 1) {
@@ -492,11 +492,12 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
       const classification = isHolding
         ? row.asset.isRetirement ? "Retirement" : row.asset.instrumentType === "crypto" ? "Crypto" : "Brokerage"
         : "Property equity";
+      const description = isHolding ? row.asset.name || instrumentLabel(row.asset.instrumentType) : classification;
       const detail = isHolding
         ? row.asset.valuationBasis === VALUATION_BASES.MANUAL_VALUE ? "Manual valuation"
-          : holdingSharesLabel(row, true)
-        : `Market value ${displayCurrency(candidate.model.currentValueCents / 100)} · Mortgage ${displayCurrency(candidate.model.mortgageBalanceCents / 100)}`;
-      item.innerHTML = `<div class="acadia-field"><div class="acadia-object-card-header"><strong>${escapeHtml(title)}</strong><strong class="acadia-lead" title="${escapeHtml(preciseCurrency.format(candidate.valueCents / 100))}">${escapeHtml(displayCurrency(candidate.valueCents / 100))}</strong></div><small class="acadia-text-muted">${escapeHtml(classification)} · ${escapeHtml(detail)}</small></div>`;
+          : `${row.asset.unitPriceCents === null ? "Price unavailable" : preciseCurrency.format(row.asset.unitPriceCents / 100)} · ${holdingSharesLabel(row, true)}`
+        : candidate.model.purchasePriceCents === null ? "Purchase price not set" : `${preciseCurrency.format(candidate.model.purchasePriceCents / 100)} purchase price`;
+      item.innerHTML = `<div class="acadia-field"><div class="acadia-object-card-header"><strong>${escapeHtml(title)}</strong><strong class="acadia-lead" title="${escapeHtml(preciseCurrency.format(candidate.valueCents / 100))}">${escapeHtml(displayCurrency(candidate.valueCents / 100))}</strong></div><span class="acadia-text-muted">${escapeHtml(description)}</span></div><small class="acadia-text-muted">${escapeHtml(detail)}</small>`;
       item.setAttribute("aria-label", `${isHolding ? `Open ${title} asset details` : `Edit ${title} property`}, ${preciseCurrency.format(candidate.valueCents / 100)}`);
       if (isHolding) item.dataset.holdingId = row.asset.id;
       else item.dataset.propertyId = candidate.model.id;
@@ -767,17 +768,12 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
     node.innerHTML = allocation.rows.length ? `<div class="acadia-chart-list">${allocation.rows.map((row) => `<div class="acadia-card-progress"><div class="acadia-card-progress-heading"><span>${escapeHtml(row.name)}</span><span class="acadia-cluster">${escapeHtml(planningValue(row.valueCents))}<span>${percentage.format(row.allocationRate)}</span></span></div><progress value="${row.valueCents}" max="${allocation.totalValueCents}" aria-label="${escapeHtml(row.name)}: ${percentage.format(row.allocationRate)} of valued investments"></progress></div>`).join("")}</div><p class="acadia-text-muted">${coverage}</p>` : `<p class="acadia-text-muted">No investment value to allocate.${allocation.unvaluedCount ? ` ${coverage}` : ""}</p>`;
     return allocation;
   }
-  function renderHomeAllocation() {
-    const allocation = summarizeHoldingAllocation(state.holdings.map(holdingAsset));
-    const node = $("#home-allocation");
-    node.innerHTML = allocation.rows.length ? allocation.rows.map((row) => `<div class="acadia-card-progress"><div class="acadia-card-progress-heading"><span>${escapeHtml(row.name)}</span><span>${wholePercentage.format(row.allocationRate)}</span></div><progress value="${row.valueCents}" max="${allocation.totalValueCents}" aria-label="${escapeHtml(row.name)}: ${wholePercentage.format(row.allocationRate)} of valued investments"></progress></div>`).join("") : '<p class="acadia-text-muted">No investment value yet</p>';
-    if (allocation.unvaluedCount) node.insertAdjacentHTML("beforeend", `<small class="acadia-text-muted">${allocation.unvaluedCount} missing ${allocation.unvaluedCount === 1 ? "valuation" : "valuations"}</small>`);
-  }
   function renderHomeGrowth(summary) {
     const missingValuations = summary.rows.length !== state.holdings.length;
     const available = state.configured && Boolean(state.account) && !missingValuations;
     const loading = available && state.providerMetricsPending.size > 0;
     const growth = available && !loading ? summary.totalEstimatedAnnualGrowthCents : null;
+    setMovement("#home-growth-rate", growth !== null && summary.totalMarketValueCents > 0 ? growth / summary.totalMarketValueCents : null, displaySignedPercentage, { hideWhenUnavailable: true });
     setText("#home-growth", loading ? "Loading…" : growth === null ? "Unavailable" : displayCurrency(growth / 100));
     setText("#home-growth-context", !state.configured || !state.account ? "Portfolio data unavailable"
       : missingValuations ? "Incomplete valuation coverage"
@@ -826,13 +822,13 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
     const estimatesComplete = state.configured && Boolean(state.account) && summary.rows.length === state.holdings.length;
     const passive = estimatesComplete && state.providerMetricsPending.size === 0 ? summary.totalEstimatedAnnualIncomeCents : null;
     renderHomeGrowth(summary);
+    setMovement("#home-passive-rate", passive !== null && summary.totalMarketValueCents > 0 ? passive / summary.totalMarketValueCents : null, value => percentage.format(value), { hideWhenUnavailable: true });
     setText("#home-passive-income", passive === null ? "Not set" : displayCurrency(passive / 100));
     setText("#home-passive-context", missingValuations ? "Incomplete valuation coverage" : state.providerMetricsPending.size ? "Loading dividend estimates…" : passive === null ? "Incomplete dividend coverage" : "Estimated from saved yields");
     renderHistory();
     renderHomeChanges(summary);
     setText("#portfolio-warnings", state.holdings.length ? summary.warnings.join(" ") : "");
     renderHoldings(summary);
-    renderHomeAllocation();
   }
 
   function renderPortfolio(summary) {

@@ -113,3 +113,12 @@ test('all-time change compares current investments with the first distinct recor
   assert.deepEqual(allTimeChange([{snapshot_date:'2026-01-01',total_value_cents:0}],11000),
     {startDate:'2026-01-01',changeCents:11000,changeRate:null});
 });
+
+test('Home short ranges use recorded daily observations and calendar-month bounds', () => {
+  const records = ['2026-02-27','2026-02-28','2026-03-23','2026-03-24','2026-03-30','2026-03-31'].map((date,index)=>({snapshot_date:date,total_value_cents:10000+index*100}));
+  assert.deepEqual(history(records,'1d').snapshots.map(p=>p.snapshotDate), ['2026-03-30','2026-03-31']);
+  assert.equal(history(records,'1w').startDate, '2026-03-24');
+  assert.equal(history(records,'1m').startDate, '2026-02-28');
+  assert.equal(history(records,'1d').changeCents, 100);
+  assert.equal(history(records.slice(0,1),'1d').changeCents, null);
+});
