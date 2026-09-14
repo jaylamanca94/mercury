@@ -12,7 +12,7 @@
     <link rel="preload" href="fonts/Syncopate-Regular.ttf" as="font" type="font/ttf" crossorigin>
     <link rel="preload" href="fonts/Syncopate-Bold.ttf" as="font" type="font/ttf" crossorigin>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" referrerpolicy="no-referrer">
-    <link rel="stylesheet" href="styles.css?v=20260913-acadia-alignment">
+    <link rel="stylesheet" href="styles.css?v=20260914-acadia-alignment">
   </head>
   <body class="acadia-app">
     <a class="acadia-skip-link" href="#main-content">Skip to content</a>
@@ -97,7 +97,7 @@
               </div>
             <div id="portfolio-group-mobile" class="acadia-field" hidden><label class="acadia-label" for="portfolio-filter">Investment group</label><select id="portfolio-filter" class="acadia-control" aria-label="Filter investments"><option value="all">All investments</option><option value="brokerage">Brokerage</option><option value="retirement">Retirement</option><option value="crypto">Crypto</option></select></div>
             <div id="portfolio-investments-toolbar" class="acadia-grid" role="group" aria-label="Find and organise investments">
-              <label class="acadia-search-control"><span class="acadia-sr-only">Search assets</span><input class="acadia-control" id="portfolio-search" type="search" placeholder="Search assets"><i class="fa-solid fa-magnifying-glass acadia-icon acadia-control-icon" aria-hidden="true"></i></label>
+              <div class="acadia-field"><label class="acadia-search-control"><span class="acadia-sr-only">Search assets</span><input class="acadia-control" id="portfolio-search" type="search" placeholder="Search assets"><i class="fa-solid fa-magnifying-glass acadia-icon acadia-control-icon" aria-hidden="true"></i></label></div>
               <div class="acadia-cluster acadia-page-header-pattern-tools">
               <div id="portfolio-view-tabs" class="acadia-tabs" role="tablist" aria-label="Investment view">
                 <button id="portfolio-cards-tab" class="acadia-tab is-active" type="button" role="tab" data-portfolio-view="cards" aria-controls="portfolio-cards-panel" aria-selected="true" tabindex="0">Cards</button>
@@ -171,7 +171,8 @@
       <section id="plan-workspace" class="acadia-stack" hidden>
         <header class="acadia-field"><div class="acadia-page-header-pattern-actions"><h1 class="acadia-page-header-pattern-title">Plan</h1><button id="edit-plan-assumptions" class="acadia-button acadia-button-primary" type="button"><i class="fa-solid fa-sliders acadia-icon" aria-hidden="true"></i> Plan settings</button></div><small class="acadia-text-muted">Base plan · From your portfolio and recurring investments. Illustrative—not a forecast.</small></header>
         <div class="acadia-grid" role="group" aria-label="Plan inputs"><div class="acadia-field"><span class="acadia-text-muted">Current investments</span><strong id="plan-current-value" class="acadia-card-metric-value">$0</strong></div><div class="acadia-field"><span class="acadia-text-muted">Recurring investments</span><strong id="plan-assumption-contributions" class="acadia-card-metric-value">$0 / year</strong></div></div>
-        <div id="plan-readiness" class="acadia-status-row is-info" role="status"><span class="acadia-status-icon" aria-hidden="true"><i class="fa-solid fa-circle-info acadia-icon"></i></span><div><strong id="plan-readiness-title">Portfolio data incomplete</strong><p id="plan-readiness-copy">Return and dividend data are missing for some holdings. Review Portfolio to complete coverage.</p><a id="plan-review-portfolio" class="acadia-button acadia-button-quiet" href="#portfolio" hidden>Review Portfolio</a></div></div>
+        <div id="plan-readiness" class="acadia-status-row is-info" role="status"><span class="acadia-status-icon" aria-hidden="true"><i class="fa-solid fa-circle-info acadia-icon"></i></span><div><strong id="plan-readiness-title">Portfolio data incomplete</strong><p id="plan-readiness-copy">Return and dividend data are missing for some holdings. Review Portfolio to complete coverage.</p><button id="plan-retry-data" class="acadia-button acadia-button-quiet" type="button" hidden>Retry settings</button><a id="plan-review-portfolio" class="acadia-button acadia-button-quiet" href="#portfolio" hidden>Review Portfolio</a></div></div>
+        <p id="plan-recovery-status" class="acadia-sr-only" role="status" aria-live="polite"></p>
         <section id="plan-outlook" class="acadia-stack" aria-labelledby="plan-outlook-title" hidden>
           <div class="acadia-page-header-pattern-actions"><h2 id="plan-outlook-title" class="acadia-page-header-pattern-section-title">Outlook</h2><div id="plan-horizons" class="acadia-tabs" role="group" aria-label="Plan horizon"><button class="acadia-tab" type="button" data-plan-horizon="5" aria-pressed="false">5Y</button><button class="acadia-tab is-active" type="button" data-plan-horizon="10" aria-pressed="true">10Y</button><button class="acadia-tab" type="button" data-plan-horizon="20" aria-pressed="false">20Y</button></div></div>
           <div class="acadia-grid">
@@ -251,6 +252,6 @@
     <script src="income.js?v=20260904-budget-v1"></script>
     <script src="plan.js?v=20260907-plan-automatic-v1"></script>
     <script src="dashboard.js?v=20260912-home-history"></script>
-    <script type="module" src="brokerage.js?v=20260913-recovery"></script>
+    <script type="module" src="brokerage.js?v=20260914-plan-recovery"></script>
   </body>
 </html>

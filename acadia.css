@@ -5113,6 +5113,7 @@ select.acadia-control {
 .acadia-range-field-endpoints {
   align-items: baseline;
   display: flex;
+  flex-wrap: wrap;
   gap: 0.75rem;
   justify-content: space-between;
 }
@@ -5599,6 +5600,8 @@ select.acadia-control {
 }
 
 .acadia-form-layout {
+  min-width: 0;
+  overflow-wrap: anywhere;
   display: grid;
   gap: var(--acadia-space-3);
   grid-template-columns: minmax(0, 1fr) minmax(16rem, 0.34fr);
@@ -5608,6 +5611,7 @@ select.acadia-control {
 .acadia-form-aside,
 .acadia-form-section {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--acadia-space-3);
   min-width: 0;
 }
@@ -11037,6 +11041,7 @@ button.acadia-profile-row:focus-visible {
   .acadia-dialog-body,
   .acadia-dialog-footer,
   .acadia-form-section,
+  .acadia-form-section.acadia-panel-dense,
   .acadia-card-header,
   .acadia-card-body,
   .acadia-card-footer {

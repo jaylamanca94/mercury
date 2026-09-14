@@ -4,6 +4,14 @@ Use this file as the visual and interaction source of truth for Mercury. Keep th
 
 > **Home simplification — 2026-09-05:** The original Figma dashboard hierarchy is restored on Home: headline/history, compact allocation, paired portfolio changes and two secondary estimates and four asset cards. The Portfolio, Income and Plan contracts below remain active. Legacy economy-dashboard guidance is historical reference.
 
+## Plan recovery and Acadia alignment — 2026-09-14
+
+- Vendor published Acadia 0.3.2 (`c3547c1c841f2b15598ed393ea1c849fdcb3aff6`) unchanged. Form columns shrink, range captions wrap and dense form sections respect mobile insets. Matching assets and Card Trend utility remain unchanged; the manifest records integrity. Existing sticky-action and form border-box exceptions remain necessary.
+- A failed Plan settings read uses the existing Status Row and 44px Retry settings action. Withhold unknown saved rates/policy as well as the outlook, preserve unrelated account content and the horizon, and return focus to Plan settings after keyboard recovery.
+- Capture the Plan revision when opening the dialog. A stale write retains the draft, loads the newer record for subsequent review, and asks the owner to close/reopen settings. Repeated Save must not silently adopt a newer revision. First creation inserts; a competing insert cannot replace existing settings. A timed-out write is unconfirmed.
+- Wrap Portfolio search in the canonical Field layout so a taller neighbouring toolbar cannot stretch the search icon's positioning container. No new visual class or CSS override.
+- Current evidence: `automation/review/2026-09-14/review.md`. Auth lifecycle and revision protection for other editors remain separate work.
+
 ## Recovery and Acadia alignment — 2026-09-13
 
 - Use a canonical Content Card with a visible heading, polite status and 44px Retry button for initial account loading/failure. Hide private workspaces until the first account load succeeds; preserve the requested route. Missing configuration has distinct copy. Never translate a failed read into zero records.

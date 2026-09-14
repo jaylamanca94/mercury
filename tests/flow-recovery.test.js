@@ -13,7 +13,7 @@ function controller() {
       validity: {valid: true}, elements: [], dataset: {}, listeners: {},
       classList: {toggle() {}, add() {}, remove() {}},
       addEventListener(type, callback) { this.listeners[type] = callback; },
-      querySelector(child) { return node(selector + " " + child); }, querySelectorAll() { return []; }, replaceChildren() {}, setAttribute() {}, hasAttribute() { return false; }, focus() {}, scrollIntoView() {},
+      reset() {}, querySelector(child) { return node(selector + " " + child); }, querySelectorAll() { return []; }, replaceChildren() {}, setAttribute() {}, hasAttribute() { return false; }, focus() {}, scrollIntoView() {},
       showModal() { this.open = true; }, close() { this.open = false; this.listeners.close?.(); },
     });
     return nodes.get(selector);
@@ -32,7 +32,7 @@ function controller() {
     fetch:async()=>({ok:false,json:async()=>({error:'provider unavailable'})}),
   });
   const source = fs.readFileSync(require.resolve('../brokerage.js'),'utf8').replace(/^import .*;\n/, '').replace('  initialise();',
-    '  window.testController = {initialise,loadData,readWithDeadline,retryProperties,hydrateProviderMetrics,ensurePlanSettings,state,render,renderHomeChanges,renderHomeGrowth,renderIncomeRecovery,retryIncomeData,missingIncomeYieldRows,renderIncomeYieldRecovery,renderPlan,renderQuickQuotePreview,refreshCurrentAssetPrice,restorePortfolioAssetFocus,renderHistory,renderAsset,canQuote,lookupQuote,saveQuickAsset,navigateToAsset,navigateBackFromAsset,routeAssetId,openFormDialog,hasPendingWrite,hasUnsavedWork,matchingPortfolioHoldingRows,sortHoldingRows,holdingValueLabel,renderPortfolioView,renderPortfolioSummary,detailHolding};');
+    '  window.testController = {initialise,loadData,readWithDeadline,retryPlanSettings,openPlanAssumptionsDialog,savePlanAssumptions,retryProperties,hydrateProviderMetrics,ensurePlanSettings,state,render,renderHomeChanges,renderHomeGrowth,renderIncomeRecovery,retryIncomeData,missingIncomeYieldRows,renderIncomeYieldRecovery,renderPlan,renderQuickQuotePreview,refreshCurrentAssetPrice,restorePortfolioAssetFocus,renderHistory,renderAsset,canQuote,lookupQuote,saveQuickAsset,navigateToAsset,navigateBackFromAsset,routeAssetId,openFormDialog,hasPendingWrite,hasUnsavedWork,matchingPortfolioHoldingRows,sortHoldingRows,holdingValueLabel,renderPortfolioView,renderPortfolioSummary,detailHolding};');
   vm.runInContext(source,context);
   const api=window.testController;
   api.state.client={auth:{getSession:async()=>({data:{session:{access_token:'isolated-test'}}})}};
@@ -306,7 +306,7 @@ test('all modal writes lock dismissal and fields, reject duplicate submits and r
   ]) {
     const {api,node}=controller();let finish,calls=0;
     api.state.account={id:'account'};if(stateId)api.state[stateId]='existing';
-    api.state.client.from=()=>{const q={update(){return q},upsert(){return q},insert(){return q},eq(){return q},select(){return q},single(){return q},then(resolve){calls++;return new Promise(r=>{finish=r}).then(resolve)}};return q};
+    api.state.client.from=()=>{const q={update(){return q},upsert(){return q},insert(){return q},eq(){return q},select(){return q},single(){return q},maybeSingle(){return q},abortSignal(){return q},then(resolve){calls++;return new Promise(r=>{finish=r}).then(resolve)}};return q};
     const form=node(`#${prefix}-form`), dialog=node(`#${prefix}-dialog`);
     form.fields=fields;
     const field={name:Object.keys(fields)[0],value:Object.values(fields)[0],disabled:false};
@@ -1092,4 +1092,123 @@ test('initial plan defaults never overwrite a concurrently created plan',async()
   await api.ensurePlanSettings();
   assert.equal(conflictOptions.ignoreDuplicates,true);
   assert.equal(api.state.planSettings.distribution_policy,'cash');
+});
+
+test('Plan read failure withholds assumed settings and retries only Plan with focus recovery', async () => {
+  let failed = true; const calls = [];
+  const { api, node, window, document } = readFixture(controller(), table => {
+    calls.push(table);
+    return table === 'plan_settings' ? failed ? {error:{message:'private diagnostic'}} : {data:{id:'plan',account_id:'account',updated_at:'v1',expected_annual_return_rate:null,distribution_yield_rate:null,distribution_policy:'hold-cash'}} : accountRead(table);
+  });
+  window.location.hash = '#plan';
+  await api.loadData();
+  assert.equal(node('#plan-retry-data').hidden, false);
+  for (const id of ['return','yield','policy']) assert.equal(node('#plan-assumption-'+id).textContent, 'Unavailable');
+  assert.equal(node('#plan-outlook').hidden, true);
+  calls.length=0; failed=false;
+  document.activeElement=node('#plan-retry-data'); let focus=0;
+  node('#edit-plan-assumptions').focus=()=>focus++;
+  api.state.planHorizon=20;
+  await api.retryPlanSettings();
+  assert.deepEqual(calls,['plan_settings']);
+  assert.equal(api.state.planSettings.distribution_policy,'hold-cash');
+  assert.equal(node('#plan-assumption-policy').textContent,'Hold cash');
+  assert.equal(node('#plan-retry-data').hidden,true);
+  assert.equal(api.state.planHorizon,20); assert.equal(focus,1);
+});
+
+test('Plan retry deduplicates, aborts stalled reads, and rejects late identity results', async () => {
+  let finish, signal, calls=0; const timers=new Set();
+  const {api,context,node,window}=readFixture(controller(),(_table,abortSignal)=>{calls++;signal=abortSignal;return new Promise(r=>finish=r)});
+  context.setTimeout=callback=>{timers.add(callback);return callback}; context.clearTimeout=callback=>timers.delete(callback);
+  api.state.planDataAvailable=false; window.location.hash='#plan';
+  const pending=api.retryPlanSettings(); await new Promise(setImmediate); await api.retryPlanSettings();
+  assert.equal(calls,1);assert.equal(node('#plan-retry-data').disabled,true);
+  for(const expire of timers)expire(); await pending;
+  assert.equal(signal.aborted,true);assert.equal(api.state.planReloadPending,false);
+  assert.equal(api.state.planDataAvailable,false);
+  assert.match(node('#plan-recovery-status').textContent,/still unavailable/);
+  finish({data:{id:'late'}});await new Promise(setImmediate);assert.equal(api.state.planSettings,null);
+  const other=api.retryPlanSettings();await new Promise(setImmediate);api.state.user=null;
+  finish({data:{id:'different-owner'}});await other;assert.equal(api.state.planSettings,null);
+});
+
+test('Plan retry preserves loaded investments when initial settings creation fails', async () => {
+  const {api,node}=readFixture(controller(),()=>({data:null}));api.state.planDataAvailable=false;
+  api.state.holdings=[{id:'kept'}];api.state.startupStatus='loading';let writes=0;
+  api.state.client.from=()=>{const q={select(){return this},eq(){return this},maybeSingle(){return this},abortSignal(){return this},upsert(){writes++;return this},then(resolve){return Promise.resolve(writes?{error:{message:'setup failed'}}:{data:null}).then(resolve)}};return q};
+  await api.retryPlanSettings();
+  assert.equal(writes,1);assert.equal(api.state.planDataAvailable,false);assert.equal(api.state.holdings[0].id,'kept');
+  assert.equal(node('#plan-retry-data').disabled,false);
+});
+
+function planEditorFixture() {
+  const view=readFixture(controller(),accountRead);
+  let remote={id:'plan',account_id:'account',updated_at:'v1',expected_annual_return_rate:0.04,distribution_yield_rate:0,distribution_policy:'reinvest'};
+  const writes=[]; let failRead=false;
+  view.api.state.planSettings={...remote};
+  view.api.state.client.from=table=>{
+    assert.equal(table,'plan_settings');let values,operation='read';const filters=[];
+    const q={select(){return this},maybeSingle(){return this},abortSignal(){return this},eq(k,v){filters.push([k,v]);return this},update(p){operation='update';values=p;return this},insert(p){operation='insert';values=p;return this},then(resolve){
+      if(operation==='read')return Promise.resolve(failRead?{error:{message:'offline'}}:{data:remote?{...remote}:null}).then(resolve);
+      writes.push({operation,filters,values});
+      if(operation==='insert'&&remote)return Promise.resolve({error:{code:'23505'}}).then(resolve);
+      if(operation==='update'&&(!remote||!filters.every(([k,v])=>remote[k]===v)))return Promise.resolve({data:null}).then(resolve);
+      remote={...remote,...values,id:'plan',updated_at:'v'+(writes.length+1)};
+      return Promise.resolve({data:{...remote}}).then(resolve);
+    }};return q;
+  };
+  view.node('#plan-assumptions-form').fields={expectedAnnualReturn:'5',distributionYield:'2',distributionPolicy:'hold-cash'};
+  return {...view,writes,getRemote:()=>remote,setRemote:r=>{remote=r},setFailRead:v=>{failRead=v}};
+}
+
+test('Plan saves compare the opening revision and preserve a conflicting draft until reopened', async () => {
+  const {api,node,writes,getRemote,setRemote}=planEditorFixture();
+  api.openPlanAssumptionsDialog();
+  const newer={...getRemote(),updated_at:'v2',distribution_policy:'transfer-to-bank'};
+  setRemote(newer);api.state.planSettings={...newer}; // Background reads must not rebase the draft.
+  await api.savePlanAssumptions({preventDefault(){}});
+  assert.equal(getRemote().distribution_policy,'transfer-to-bank');
+  assert.equal(node('#plan-assumptions-dialog').open,true);
+  assert.equal(node('#plan-assumptions-form').fields.distributionPolicy,'hold-cash');
+  assert.match(node('#plan-assumptions-form-status').textContent,/changed elsewhere/);
+  assert.deepEqual(writes[0].filters.map(([k,v])=>[k,v]),[['account_id','account'],['id','plan'],['updated_at','v1']]);
+  await api.savePlanAssumptions({preventDefault(){}});assert.equal(getRemote().updated_at,'v2');
+  node('#plan-assumptions-dialog').close();api.openPlanAssumptionsDialog();
+  assert.equal(node('#plan-distribution-policy').value,'transfer-to-bank');
+  await api.savePlanAssumptions({preventDefault(){}});
+  assert.equal(getRemote().distribution_policy,'hold-cash');assert.equal(node('#plan-assumptions-dialog').open,false);
+});
+
+test('concurrent first Plan settings creation cannot overwrite the winning record', async () => {
+  const {api,node,getRemote}=planEditorFixture();api.state.planSettings=null;api.openPlanAssumptionsDialog();
+  await api.savePlanAssumptions({preventDefault(){}});
+  assert.equal(getRemote().distribution_policy,'reinvest');
+  assert.match(node('#plan-assumptions-form-status').textContent,/changed elsewhere/);
+  assert.equal(node('#plan-assumptions-dialog').open,true);
+});
+
+test('Plan conflict read failures retain the original revision and support retry', async () => {
+  const {api,node,getRemote,setRemote,setFailRead}=planEditorFixture();api.openPlanAssumptionsDialog();
+  setRemote({...getRemote(),updated_at:'v2'});setFailRead(true);
+  await api.savePlanAssumptions({preventDefault(){}});
+  assert.match(node('#plan-assumptions-form-status').textContent,/latest version could not be loaded/);
+  setFailRead(false);await api.savePlanAssumptions({preventDefault(){}});
+  assert.equal(getRemote().updated_at,'v2');assert.equal(api.state.planSettings.updated_at,'v2');
+  assert.match(node('#plan-assumptions-form-status').textContent,/Close and reopen/);
+});
+
+test('a stalled Plan save unlocks the draft and never reports an unconfirmed write as saved', async () => {
+  const {api,node,context}=planEditorFixture();api.openPlanAssumptionsDialog();
+  const timers=new Set();let finish,signal;
+  context.setTimeout=callback=>{timers.add(callback);return callback};context.clearTimeout=callback=>timers.delete(callback);
+  api.state.client.from=()=>{const q={update(){return this},eq(){return this},select(){return this},maybeSingle(){return this},abortSignal(s){signal=s;return this},then(resolve){return new Promise(r=>finish=r).then(resolve)}};return q};
+  const request=node('#plan-assumptions-form').listeners.submit({preventDefault(){}});
+  await new Promise(setImmediate);assert.equal(api.hasPendingWrite(),true);
+  for(const expire of timers)expire();await request;
+  assert.equal(signal.aborted,true);assert.equal(api.hasPendingWrite(),false);
+  assert.equal(node('#plan-assumptions-dialog').open,true);
+  assert.match(node('#plan-assumptions-form-status').textContent,/could not be confirmed/);
+  finish({data:{id:'plan',updated_at:'late'}});await new Promise(setImmediate);
+  assert.equal(api.state.planSettings.updated_at,'v1');assert.equal(node('#plan-assumptions-dialog').open,true);
 });

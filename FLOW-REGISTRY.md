@@ -124,3 +124,10 @@ The approved reference moves Home to one full-width net-worth/curved-history ove
 Changed Sign in, Understand current position and Manage holdings in Portfolio: initial loading, configuration unavailable, temporary read failure and retry are distinct from an empty account. Retry preserves the route and returns focus to content or sign-in. Property errors offer a local retry, withhold the count, and return focus to Property on success. Individual collection deadlines preserve useful content when optional reads fail. General account loads and provider metrics reject superseded in-memory contexts; real cross-tab session-expiry handling remains an acceptance gap. Initial Plan defaults never overwrite concurrently created settings.
 
 190 checks pass, including ten new recovery/concurrency regressions. Current isolated browser evidence covers account failure/retry, property failure/retry, 320px modal and saved asset edit/return, tablet Income/Budget/Plan, light/dark and signed-out gating. Ten canonical flows were reviewed through source/tests; live authentication, provider and scheduled execution were not accepted. See `automation/review/2026-09-13/review.md`.
+
+
+## Plan recovery and responsive refinement — 2026-09-14
+
+The ten canonical flows remain unchanged. Review current trajectory gains a local settings retry, truthful unavailable assumptions, revision-aware saves, retained conflict drafts and explicit unconfirmed-save feedback. Portfolio search retains its icon alignment when the view/sort controls wrap. Adopted published Acadia 0.3.2 without local shared-style edits.
+
+197 automated checks pass. Local browser evidence covers Home/history, Portfolio Cards/Table, Add/Cancel, asset Save/Back, Income, Budget creation, and Plan failure/retry/conflict/review/save at desktop/tablet/phone sizes. Live Supabase disposable checks separately prove Plan revision and uniqueness enforcement and cleanup. This does not close magic-link redemption, cross-tab session lifecycle, other-record concurrency, scheduled snapshots, migration rebuild or physical accessibility. See `automation/review/2026-09-14/review.md`.

@@ -6,7 +6,7 @@ Mercury is a private personal finance workspace. Its first shipped product surfa
 
 ## Release state
 
-0.0.1 establishes semantic versioning for the previously unversioned product. This patch improves account/property recovery and concurrency safety. Remote persistence, migration-rebuild and physical-device acceptance remain open, so 1.0.0 is not warranted.
+0.0.2 refines Plan recovery, prevents stale Plan settings from silently overwriting a newer revision, and adopts Acadia 0.3.2. A failed settings read withholds the saved rates/policy and provides Retry settings. Live disposable-data checks confirm Plan revision and uniqueness enforcement; full browser authentication, other editor concurrency, migration-rebuild and physical-device acceptance remain open, so 1.0.0 is not warranted.
 
 ## Home / Brokerage MVP
 
@@ -43,4 +43,4 @@ Mercury is a private personal finance workspace. Its first shipped product surfa
 
 ## Operational setup
 
-Apply [`supabase/migrations/20260830_brokerage_mvp.sql`](supabase/migrations/20260830_brokerage_mvp.sql), [`supabase/migrations/20260901_asset_contribution.sql`](supabase/migrations/20260901_asset_contribution.sql), [`supabase/migrations/20260901_quote_dividend_data.sql`](supabase/migrations/20260901_quote_dividend_data.sql), and [`supabase/migrations/20260902_income_sources.sql`](supabase/migrations/20260902_income_sources.sql), configure the environment variables described in [`supabase/README.md`](supabase/README.md), and then use the private authentication flow. Until that configuration is present, Mercury presents a dedicated configuration state with retry. Temporary account-read failures have their own recovery state; neither is shown as an empty portfolio.
+Follow [`supabase/README.md`](supabase/README.md) to reconcile the existing migration baseline before applying schema changes, then configure the documented environment variables and private authentication flow. Until configured, Mercury presents a dedicated configuration state with retry. Temporary account-read failures have their own recovery state; neither is shown as an empty portfolio.

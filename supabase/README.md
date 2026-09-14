@@ -1,6 +1,8 @@
 # Mercury Supabase setup
 
-Apply every schema migration in `migrations/`, including `20260902_income_sources.sql`, `20260904_budget_categories.sql`, `20260902_base_plan.sql`, and `20260903202800_retirement_holdings.sql`, in the Supabase SQL editor (or through the Supabase CLI). They create the one-owner Brokerage, expected-income, monthly category spending-plan, Base-plan, optional home-equity, and per-holding retirement-classification data models with row-level security policies. The no-op `20260903004833_remote_baseline.sql` records the existing consolidated remote baseline, but older local files are not individually recorded remotely and some share version prefixes. Do not run a blanket `db push` until that history is reconciled against the actual schema and a clean rebuild is verified.
+Reconcile migration history against the actual schema before applying changes. The files in `migrations/` define the private Brokerage, income, budget, Base plan, property and retirement models. The no-op `20260903004833_remote_baseline.sql` records a consolidated remote baseline; older local files are not individually recorded remotely and some share version prefixes. Do not replay all files in the SQL editor or run a blanket `db push`. A reconciled baseline and verified clean rebuild remain a release gate.
+
+Plan settings use the existing `id`, unique `account_id` and `updated_at` trigger for revision-aware writes. No schema change is required for 0.0.2. On 2026-09-14, a disposable test account verified advancing revisions, zero-row stale updates, retained winning settings and rejection of duplicate first creation. All created account/settings rows were removed and empty test-account state rechecked.
 
 Enable **Email** authentication with magic links, then set these Vercel environment variables:
 

@@ -46,7 +46,7 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
   const wholePercentage = new Intl.NumberFormat("en-US", { style: "percent", maximumFractionDigits: 0 });
   const state = {
     client: null, user: null, account: null, accounts: [], holdings: [], quotes: [], snapshots: [], incomeSources: [], incomeSourcesAvailable: true, budgetCategories: [], budgetCategoriesAvailable: true, planSettings: null, properties: [], propertiesAvailable: true, planDataAvailable: true,
-    startupStatus: null, startupMessage: "", startupRequestId: 0, dataRequestId: 0, metricsRequestId: 0, propertyReloadPending: false, incomeReloadPending: false, incomeReloadFailed: false, providerMetrics: {}, providerMetricsPending: new Set(), configured: false, pendingQuote: null, quoteTimer: null, quoteRequestId: 0, portfolioFilter: "all", portfolioSort: "value", portfolioView: "cards", propertySort: "value", performancePeriod: "all", incomePeriod: "month", incomeDividendSort: "value", planHorizon: 10, incomeSourceDialogId: null, incomeSourceDeleteId: null, budgetCategoryDialogId: null, budgetCategoryDeleteId: null, propertyDialogId: null, propertyDeleteId: null,
+    startupStatus: null, startupMessage: "", startupRequestId: 0, dataRequestId: 0, metricsRequestId: 0, propertyReloadPending: false, planReloadPending: false, incomeReloadPending: false, incomeReloadFailed: false, providerMetrics: {}, providerMetricsPending: new Set(), configured: false, pendingQuote: null, quoteTimer: null, quoteRequestId: 0, portfolioFilter: "all", portfolioSort: "value", portfolioView: "cards", propertySort: "value", performancePeriod: "all", incomePeriod: "month", incomeDividendSort: "value", planHorizon: 10, incomeSourceDialogId: null, incomeSourceDeleteId: null, budgetCategoryDialogId: null, budgetCategoryDeleteId: null, propertyDialogId: null, propertyDeleteId: null,
   };
 
   function cents(value) {
@@ -1235,7 +1235,7 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
     const metricsLoading = state.providerMetricsPending.size > 0;
     const missingReturn = !Number.isFinite(assumptions.expectedAnnualReturnRate);
     const missingYield = !Number.isFinite(assumptions.distributionYieldRate);
-    const unavailableText = !state.planDataAvailable ? "Plan settings are unavailable. Try reloading the page."
+    const unavailableText = !state.planDataAvailable ? "Your saved settings could not be loaded. Retry to restore your outlook."
       : !valuationComplete ? `${missingValuations} ${missingValuations === 1 ? "asset needs" : "assets need"} a valuation before an outlook can be calculated.`
         : projection.reason ? projection.reason
         : metricsLoading && !projection.available ? "Loading current portfolio metrics…"
@@ -1244,6 +1244,9 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
               : "Dividend data is missing for some holdings. Review Portfolio to complete coverage.";
     $("#plan-readiness").hidden = ready;
     $("#plan-outlook").hidden = !ready;
+    $("#plan-retry-data").hidden = state.planDataAvailable;
+    $("#plan-retry-data").disabled = state.planReloadPending;
+    setText("#plan-retry-data", state.planReloadPending ? "Retrying…" : "Retry settings");
     $("#plan-review-portfolio").hidden = (valuationComplete && !(missingReturn || missingYield)) || metricsLoading || !state.planDataAvailable;
     setText("#plan-readiness-title", !state.planDataAvailable ? "Plan unavailable" : !valuationComplete ? "Complete your portfolio values" : metricsLoading && !projection.available ? "Loading your outlook" : projection.reason ? "Outlook unavailable" : "Portfolio data incomplete");
     setText("#plan-readiness-copy", unavailableText);
@@ -1265,6 +1268,10 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
     setText("#plan-assumption-policy", policyLabel(assumptions.distributionPolicy));
     setText("#plan-return-source", missingReturn ? metricsLoading ? "Loading portfolio returns…" : "Portfolio data incomplete" : assumptions.usesReturnOverride ? "Plan override" : assumptions.usesHistoricalReturn ? "Value-weighted · historical returns" : "Value-weighted · holding assumptions");
     setText("#plan-yield-source", missingYield ? metricsLoading ? "Loading portfolio yields…" : "Portfolio data incomplete" : assumptions.usesYieldOverride ? "Plan override" : "From Portfolio");
+    if (!state.planDataAvailable) {
+      ["#plan-assumption-return", "#plan-assumption-yield", "#plan-assumption-policy"].forEach(selector => setText(selector, "Unavailable"));
+      ["#plan-return-source", "#plan-yield-source"].forEach(selector => setText(selector, "Saved settings unavailable"));
+    }
     $("#edit-plan-assumptions").disabled = !state.planDataAvailable;
     document.querySelectorAll("[data-open-plan-assumptions]").forEach((button) => { button.disabled = !state.planDataAvailable; });
     const propertyCount = state.properties.length;
@@ -2151,10 +2158,12 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
     }
   }
 
+  let planEditorRecord = null;
   function openPlanAssumptionsDialog() {
     if (protectedDialogs.get($("#plan-assumptions-dialog"))?.pending) return;
     if (!state.planDataAvailable) return;
     const settings = planSettingsModel(state.planSettings);
+    planEditorRecord = state.planSettings ? { ...state.planSettings } : null;
     const form = $("#plan-assumptions-form");
     form.reset();
     const summary = portfolio();
@@ -2181,6 +2190,8 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
     event.preventDefault();
     if (!state.account) return;
     const save = $("#save-plan-assumptions");
+    const current = accountContext();
+    const { client, account } = state;
     try {
       save.disabled = true;
       save.textContent = "Saving…";
@@ -2190,18 +2201,41 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
         distributionYieldRate: rate(getFormValue($("#plan-assumptions-form"), "distributionYield")),
         distributionPolicy: getFormValue($("#plan-assumptions-form"), "distributionPolicy"),
       });
-      const { data, error } = await state.client.from("plan_settings").upsert({
-        account_id: state.account.id,
+      const payload = {
+        account_id: account.id,
         expected_annual_return_rate: settings.expectedAnnualReturnRate,
         distribution_yield_rate: settings.distributionYieldRate,
         distribution_policy: settings.distributionPolicy,
-      }, { onConflict: "account_id" }).select().single();
+      };
+      // Compare the revision captured when this draft opened, even if a
+      // background read has since replaced state.planSettings.
+      if (planEditorRecord && !planEditorRecord.updated_at) throw new Error("Reload Plan settings before saving. Your changes have not been saved.");
+      const { data, error } = await readWithDeadline(signal => {
+        const query = planEditorRecord
+          ? client.from("plan_settings").update(payload).eq("account_id", account.id).eq("id", planEditorRecord.id).eq("updated_at", planEditorRecord.updated_at)
+          : client.from("plan_settings").insert(payload);
+        return query.select().maybeSingle().abortSignal(signal);
+      });
+      if (!current()) return;
+      if (error?.code === "23505" || (!error && !data)) {
+        // Keep the draft and its old revision. Repeated Save must never turn
+        // into an implicit overwrite; closing/reopening reviews the new record.
+        const latest = await readWithDeadline(signal => client.from("plan_settings").select("*").eq("account_id", account.id).maybeSingle().abortSignal(signal));
+        if (!current()) return;
+        if (latest.error) throw new Error("Settings changed elsewhere, but the latest version could not be loaded. Your draft is unchanged. Try Save again to retry the read.");
+        state.planSettings = latest.data;
+        render();
+        throw new Error("Settings changed elsewhere. Your draft has not been saved. Close and reopen Plan settings to review the latest version.");
+      }
       if (error) throw error;
       state.planSettings = data;
       closePlanAssumptionsDialog();
       render();
     } catch (error) {
-      setText("#plan-assumptions-form-status", error.message || "The Base plan assumptions could not be saved.");
+      if (!current()) return;
+      setText("#plan-assumptions-form-status", error.message === "Read timed out"
+        ? "Saving could not be confirmed. Your draft is unchanged. Try Save again, or close and reopen to check saved settings."
+        : error.message || "The Base plan assumptions could not be saved. Try again.");
       $("#plan-assumptions-form-status").hidden = false;
     } finally {
       save.disabled = false;
@@ -2317,6 +2351,40 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
   function accountContext() {
     const { client, user, account } = state;
     return () => state.client === client && state.user === user && state.account === account;
+  }
+
+  async function retryPlanSettings() {
+    if (state.planReloadPending || state.planDataAvailable || !state.user || !state.account || hasPendingWrite()) return;
+    const current = accountContext();
+    const { client, account } = state;
+    const focused = document.activeElement === $("#plan-retry-data");
+    state.planReloadPending = true;
+    setText("#plan-recovery-status", "Retrying settings…");
+    render();
+    try {
+      const result = await readWithDeadline(signal => client.from("plan_settings").select("*").eq("account_id", account.id).maybeSingle().abortSignal(signal));
+      if (!current()) return;
+      if (result.error) throw new Error("Plan read failed");
+      state.planSettings = result.data;
+      state.planDataAvailable = true;
+      await ensurePlanSettings();
+      if (!current()) return;
+      if (!state.planDataAvailable || !state.planSettings) throw new Error("Plan setup failed");
+      setText("#plan-recovery-status", "Settings loaded.");
+    } catch {
+      if (current()) {
+        state.planDataAvailable = false;
+        setText("#plan-recovery-status", "Settings are still unavailable. Try again.");
+      }
+    } finally {
+      if (current()) {
+        state.planReloadPending = false;
+        render();
+        if (focused && (document.activeElement === $("#plan-retry-data") || document.activeElement === document.body)) {
+          $(state.planDataAvailable ? "#edit-plan-assumptions" : "#plan-retry-data").focus();
+        }
+      }
+    }
   }
 
   async function retryProperties() {
@@ -2554,6 +2622,7 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
 
   $("#workspace-retry").addEventListener("click", initialise);
   $("#property-retry-data").addEventListener("click", retryProperties);
+  $("#plan-retry-data").addEventListener("click", retryPlanSettings);
 
   $("#income-retry-data").addEventListener("click", retryIncomeData);
 
