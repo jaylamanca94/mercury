@@ -2,7 +2,7 @@
 
 > **10 implemented canonical flows; all have design and automated coverage at varying depths. One deferred export boundary. Initial account failures now offer visible retry; optional property failures remain local to Property. No flows added. Remote and physical-device acceptance gaps remain below.**
 
-**Last reviewed:** 2026-09-13
+**Last reviewed:** 2026-09-14
 
 | Flow | Product status | Meaningful entry → successful outcome | Major states | QA coverage |
 | --- | --- | --- | --- | --- |
@@ -150,3 +150,7 @@ Required QA: source comparison, desktop/tablet/phone and enlarged text; price ra
 ## Income Figma follow-through — 2026-09-14
 
 No canonical flows added. Plan expected income now supports source Amount/Frequency editing in the card with an annual unsaved preview and confirmed Save/Cancel. The summary separates recurring income, dividends and planned expenses, with exact total/investing context. Dividends precede Sources at all sizes. Existing searches, menus, category limits, recovery and routes remain available. New draft, pending, validation, retry, stale-record and account-isolation tests pass. Local desktop/tablet/phone, 200% text and menu/navigation checks are documented in `automation/income-figma/2026-09-14/review.md`.
+
+## Session lifecycle and current Acadia — 2026-09-14, 0.0.9
+
+10 implemented canonical flows unchanged. Sign-in now observes external sign-out and identity replacement: private pages/dialogs become hidden and inert immediately, pending contexts are invalidated and the document reloads without an unsaved-work veto. Same-identity token refresh preserves drafts. Five new controller regressions plus synthetic cross-tab Income and dirty category-dialog checks pass. Current Acadia native disclosures and bounded dialog composition pass 320px/200% text containment and keyboard entry/Cancel return-focus checks. Total: 222 passing tests. Live magic-link completion and actual Supabase broadcast acceptance were not repeated; already accepted backend writes may finish. Full flow matrix and screenshots: `automation/review/2026-09-14/session/review.md`.

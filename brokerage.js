@@ -50,6 +50,38 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
     client: null, user: null, account: null, accounts: [], holdings: [], quotes: [], snapshots: [], incomeSources: [], incomeSourcesAvailable: true, budgetCategories: [], budgetCategoriesAvailable: true, planSettings: null, properties: [], propertiesAvailable: true, planDataAvailable: true,
     startupStatus: null, startupMessage: "", startupRequestId: 0, dataRequestId: 0, metricsRequestId: 0, propertyReloadPending: false, planReloadPending: false, incomeReloadPending: false, incomeReloadFailed: false, providerMetrics: {}, providerMetricsPending: new Set(), configured: false, pendingQuote: null, quoteTimer: null, quoteRequestId: 0, portfolioFilter: "all", portfolioSort: "value", portfolioView: "cards", recurringSort: "value", propertySort: "value", performancePeriod: "all", incomePeriod: "month", incomeDividendSort: "value", planHorizon: 10, incomeSourceDialogId: null, incomeSourceDeleteId: null, budgetCategoryDialogId: null, budgetCategoryDeleteId: null, propertyDialogId: null, propertyDeleteId: null,
   };
+  let authSubscription = null;
+  let observedAuthUserId;
+  let authReloadPending = false;
+
+  // Auth callbacks must stay synchronous: calling Supabase here can deadlock
+  // its session lock. A new document also discards every private editor and
+  // pending continuation instead of carrying them into another identity.
+  function observeAuthSession(session) {
+    const userId = session?.user?.id || null;
+    if (authReloadPending || observedAuthUserId === userId) return;
+    if (observedAuthUserId === undefined) {
+      observedAuthUserId = userId;
+      return;
+    }
+    authReloadPending = true;
+    state.startupRequestId += 1;
+    state.dataRequestId += 1;
+    state.metricsRequestId += 1;
+    state.quoteRequestId += 1;
+    clearTimeout(state.quoteTimer);
+    state.client = null;
+    state.user = null;
+    state.account = null;
+    clearMarketHistory();
+    clearPortfolioMarketHistory();
+    // Hide dialogs as well as the workspace immediately, before navigation.
+    // The old page stays inert even if a queued response settles first.
+    document.body.hidden = true;
+    document.body.setAttribute("style", "display: none !important");
+    document.body.inert = true;
+    window.location.reload();
+  }
 
   function cents(value) {
     return value === null || value === undefined || value === "" ? null : Math.round(Number(value) * 100);
@@ -1864,6 +1896,7 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
 
   let renderedPortfolio = false;
   function render() {
+    if (authReloadPending) return;
     if (incomeEditorContext && !incomeEditorContext()) clearIncomeEditors();
     if (!state.user || !routeAssetId()) clearMarketHistory();
     if (!state.user || !routePortfolio() || state.startupStatus) clearPortfolioMarketHistory();
@@ -1994,7 +2027,10 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
   }
 
   async function sessionToken() {
-    const { data } = await state.client.auth.getSession();
+    const client = state.client;
+    if (authReloadPending || !client) throw new Error("Your session changed. Sign in again.");
+    const { data } = await client.auth.getSession();
+    if (authReloadPending || client !== state.client) throw new Error("Your session changed. Sign in again.");
     return data.session?.access_token;
   }
   async function requestQuote(symbol, instrumentType = "other", { includeMetrics = false } = {}) {
@@ -2885,7 +2921,7 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
     render();
   }
   async function initialise() {
-    if (state.startupStatus === "loading") return;
+    if (authReloadPending || state.startupStatus === "loading") return;
     const requestId = ++state.startupRequestId;
     const current = () => requestId === state.startupRequestId;
     const focused = document.activeElement === $("#workspace-retry");
@@ -2908,10 +2944,13 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
       }
       state.configured = true;
       state.client ||= window.supabase.createClient(config.supabaseUrl, config.supabaseAnonKey);
+      authSubscription ||= state.client.auth.onAuthStateChange((_event, session) => observeAuthSession(session)).data.subscription;
       const result = await readWithDeadline(() => state.client.auth.getSession());
       if (!current()) return;
       if (result.error) throw result.error;
       const session = result.data.session;
+      observeAuthSession(session);
+      if (!current()) return;
       state.user = session?.user || null;
       if (!session) {
         state.startupStatus = null;
@@ -2990,7 +3029,7 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
     control.addEventListener("click", () => leaveWorkspace(async () => {
       const { error } = await state.client.auth.signOut();
       if (error) { setText("#data-status", error.message || "Sign out failed. Try again."); return; }
-      window.location.reload();
+      if (!authReloadPending) window.location.reload();
     }));
   });
   $("#portfolio-add-asset").addEventListener("click", openQuickAdd);
@@ -3187,6 +3226,7 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
     });
   });
   window.addEventListener("beforeunload", (event) => {
+    if (authReloadPending) return;
     if (!hasUnsavedWork() && !hasPendingWrite()) return;
     event.preventDefault();
     event.returnValue = "";

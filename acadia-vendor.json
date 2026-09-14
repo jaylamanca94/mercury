@@ -1,10 +1,10 @@
 {
   "repository": "https://github.com/jaylamanca94/acadia",
-  "revision": "c3547c1c841f2b15598ed393ea1c849fdcb3aff6",
+  "revision": "346c874f64b45262ae4d7d6089fa67a61b1da898",
   "files": {
     "acadia.css": {
       "source": "src/acadia.css",
-      "sha256": "aea4dad0c5cb45f39117c3f92ff6981b5d7ab2def53a0e9551aaf1a1578411f0"
+      "sha256": "1bbe5e397046b6ec877b7c46b91e6842505b94a93a4b1e1413ff4f9d6f9c4423"
     },
     "fonts/Syncopate-Bold.ttf": {
       "source": "src/fonts/Syncopate-Bold.ttf",

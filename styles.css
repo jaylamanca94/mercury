@@ -1,4 +1,4 @@
-@import url("acadia.css?v=20260914-c3547c1");
+@import url("acadia.css?v=20260914-346c874");
 
 /* Product composition exception: keep the asset editor's sticky actions above
    Mercury's persistent phone navigation. Acadia owns the action anatomy. */
@@ -13,6 +13,17 @@
    Remove when the canonical form sizing includes border-box. */
 .acadia-dialog.is-form-modal > .acadia-dialog-form {
   box-sizing: border-box;
+}
+
+/* Bound nested dialog spacing to the viewport at enlarged text sizes.
+   Text and touch targets keep Acadia's scale; only empty insets compress. */
+.acadia-dialog.is-form-modal {
+  --acadia-section-padding-mobile: min(var(--acadia-space-2), 5vw);
+  --acadia-accordion-padding-mobile: min(var(--acadia-space-2), 5vw);
+  --acadia-accordion-gap: min(var(--acadia-space-2), 5vw);
+  --acadia-field-padding-x: min(var(--acadia-space-2), 5vw);
+  max-width: calc(100vw - min(2rem, 10vw));
+  width: min(32rem, calc(100vw - min(2rem, 10vw)));
 }
 
 /* Income's reference keeps four cards on tablet and one column on phone.

@@ -1,5 +1,12 @@
 # Mercury Design README
 
+## Session privacy and dialog containment — 2026-09-14
+
+- Acadia 0.3.2 published `346c874f64b45262ae4d7d6089fa67a61b1da898` is vendored unchanged. Native Accordion retains independent expansion, visible summary focus and plus/minus state; current 64px minimum summaries and whole-surface hover replace the older styles. Breadcrumb typography updates are included although the active product does not compose Breadcrumb.
+- Reuse classification: unchanged shared asset adoption. Composition adapter: form dialogs bound empty mobile padding, accordion gaps, field insets and outer width margins to viewport space while preserving font size and touch targets. At 320px and a 32px root font, Custom rates remains readable rather than collapsing into single letters. This extends the existing form box-sizing adapter; it is a shared-dialog graduation candidate, not a fork of Acadia CSS. No Acadia source was edited.
+- Privacy transition: external sign-out or identity replacement clears the visible document and reloads without a draft-dismissal veto. Same-user refresh preserves drafts; normal in-product navigation retains Save/Discard protection.
+- Evidence and remaining physical-device limits: `automation/review/2026-09-14/session/review.md`.
+
 ## Income Figma implementation — 2026-09-14
 
 - Reference: section `129:4938`, desktop `202:11644`, tablet `203:12261`, phone `203:12765`. Four summary cards precede Dividends and Sources. Desktop uses two equal sections; tablet and phone stack them. Phone stacks summary cards and source fields.

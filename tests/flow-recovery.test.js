@@ -18,12 +18,12 @@ function controller() {
     });
     return nodes.get(selector);
   }
-  const document = {querySelector:node, querySelectorAll:()=>[], activeElement:null, listeners:{}, addEventListener(type, callback) { this.listeners[type] = callback; }};
+  const document = {body: node("body"),querySelector:node, querySelectorAll:()=>[], activeElement:null, listeners:{}, addEventListener(type, callback) { this.listeners[type] = callback; }};
   const window = {
     MercuryMarketHistory: require('../market-history'),
     MercuryPortfolio: require('../portfolio'), MercuryIncome: require('../income'),
     MercuryPlan: require('../plan'), MercuryDashboard: require('../dashboard'),
-    location:{hash:'#portfolio',origin:'https://example.invalid',pathname:'/index.html',search:''}, listeners:{}, addEventListener(type, callback) { this.listeners[type] = callback; },
+    location:{reload(){ window.reloads = (window.reloads || 0) + 1; },hash:'#portfolio',origin:'https://example.invalid',pathname:'/index.html',search:''}, listeners:{}, addEventListener(type, callback) { this.listeners[type] = callback; },
   };
   window.history = {pushState(_state, _title, hash) { window.location.hash = hash.startsWith('#') ? hash : ''; }};
   const context = vm.createContext({window,document,Intl,Date,Number,Set,Map,console,
@@ -33,10 +33,10 @@ function controller() {
     fetch:async()=>({ok:false,json:async()=>({error:'provider unavailable'})}),
   });
   const source = fs.readFileSync(require.resolve('../brokerage.js'),'utf8').replace(/^import .*;\n/, '').replace('  initialise();',
-    '  window.testController = {editIncomeSource,saveInlineIncomeSource,cancelInlineIncomeSource,incomeSourceDrafts,syncPortfolioMarketHistory,clearPortfolioMarketHistory,portfolioMarketHistory,renderRecurringInvestments,loadMarketHistory,renderMarketHistory,clearMarketHistory,initialise,loadData,readWithDeadline,retryPlanSettings,openPlanAssumptionsDialog,savePlanAssumptions,retryProperties,hydrateProviderMetrics,ensurePlanSettings,state,render,renderHomeChanges,renderHomeGrowth,renderIncomeRecovery,retryIncomeData,missingIncomeYieldRows,renderIncomeYieldRecovery,renderPlan,renderQuickQuotePreview,refreshCurrentAssetPrice,restorePortfolioAssetFocus,renderHistory,renderAsset,canQuote,lookupQuote,saveQuickAsset,navigateToAsset,navigateBackFromAsset,routeAssetId,openFormDialog,hasPendingWrite,hasUnsavedWork,matchingPortfolioHoldingRows,sortHoldingRows,holdingValueLabel,renderPortfolioView,renderPortfolioSummary,detailHolding,openPropertyDialog,saveProperty};');
+    '  window.testController = {observeAuthSession,sessionToken,editIncomeSource,saveInlineIncomeSource,cancelInlineIncomeSource,incomeSourceDrafts,syncPortfolioMarketHistory,clearPortfolioMarketHistory,portfolioMarketHistory,renderRecurringInvestments,loadMarketHistory,renderMarketHistory,clearMarketHistory,initialise,loadData,readWithDeadline,retryPlanSettings,openPlanAssumptionsDialog,savePlanAssumptions,retryProperties,hydrateProviderMetrics,ensurePlanSettings,state,render,renderHomeChanges,renderHomeGrowth,renderIncomeRecovery,retryIncomeData,missingIncomeYieldRows,renderIncomeYieldRecovery,renderPlan,renderQuickQuotePreview,refreshCurrentAssetPrice,restorePortfolioAssetFocus,renderHistory,renderAsset,canQuote,lookupQuote,saveQuickAsset,navigateToAsset,navigateBackFromAsset,routeAssetId,openFormDialog,hasPendingWrite,hasUnsavedWork,matchingPortfolioHoldingRows,sortHoldingRows,holdingValueLabel,renderPortfolioView,renderPortfolioSummary,detailHolding,openPropertyDialog,saveProperty};');
   vm.runInContext(source,context);
   const api=window.testController;
-  api.state.client={auth:{getSession:async()=>({data:{session:{access_token:'isolated-test'}}})}};
+  api.state.client={auth:{onAuthStateChange(callback){ window.authChanged = callback; return {data:{subscription:{unsubscribe(){}}}}; },getSession:async()=>({data:{session:{access_token:'isolated-test'}}})}};
   return {api,node,window,document,context};
 }
 
@@ -50,6 +50,72 @@ test('signed-out route changes show only authentication and disable private crea
     assert.equal(node('#home-add-asset').disabled,true);
     assert.equal(document.title,'Mercury | Sign in');
   }
+});
+
+test('same-user auth refresh preserves drafts and does not reload', () => {
+  const {api,node,window,document}=controller();
+  api.observeAuthSession({user:{id:'owner'}});
+  api.incomeSourceDrafts.set('source',{amount:'123',pending:false});
+  node('#asset-detail-shares').value='17';
+  for(let i=0;i<3;i++) api.observeAuthSession({user:{id:'owner'},access_token:'refreshed'});
+  assert.equal(window.reloads,undefined);
+  assert.equal(document.body.hidden,false);
+  assert.equal(api.incomeSourceDrafts.get('source').amount,'123');
+  assert.equal(node('#asset-detail-shares').value,'17');
+});
+
+test('sign-out and identity replacement immediately conceal private drafts and bypass unload guard', () => {
+  for(const next of [null,{user:{id:'different-owner'}}]) {
+    const {api,window,document}=controller();
+    api.state.user={id:'owner'};api.state.account={id:'account'};
+    api.observeAuthSession({user:api.state.user});
+    api.incomeSourceDrafts.set('source',{amount:'123',pending:true});
+    const before=api.state.dataRequestId;
+    api.observeAuthSession(next);
+    assert.equal(document.body.hidden,true);
+    assert.equal(document.body.inert,true);
+    assert.equal(api.state.user,null);assert.equal(api.state.account,null);assert.equal(api.state.client,null);
+    assert.equal(api.state.dataRequestId,before+1);
+    assert.equal(window.reloads,1);
+    let blocked=false;
+    window.listeners.beforeunload({preventDefault(){blocked=true}});
+    assert.equal(blocked,false);
+    api.render();api.observeAuthSession(next);
+    assert.equal(document.body.hidden,true);assert.equal(window.reloads,1);
+  }
+});
+
+test('cross-tab sign-in reloads a signed-out page once without auth calls inside the callback', () => {
+  const {api,window}=controller();
+  api.observeAuthSession(null);
+  api.state.client.auth.getSession=()=>{throw new Error('Callback must not request the session')};
+  assert.equal(api.observeAuthSession({user:{id:'owner'}}),undefined);
+  assert.equal(window.reloads,1);
+});
+
+test('a session read that completes after sign-out cannot authorise a provider request', async () => {
+  const {api}=controller();let finish;
+  api.observeAuthSession({user:{id:'owner'}});
+  api.state.client.auth.getSession=()=>new Promise(resolve=>{finish=resolve});
+  const pending=api.sessionToken();
+  api.observeAuthSession(null);
+  finish({data:{session:{access_token:'old-token'}}});
+  await assert.rejects(pending,/session changed/);
+});
+
+test('startup subscribes once and a sign-out invalidates a pending initial account read', async () => {
+  const {api,window,context}=controller();let finish,subscriptions=0;
+  context.fetch=async()=>({ok:true,json:async()=>({configured:true})});
+  api.state.client.auth.onAuthStateChange=callback=>{subscriptions++;window.authChanged=callback;return {data:{subscription:{unsubscribe(){}}}}};
+  api.state.client.auth.getSession=async()=>({data:{session:{user:{id:'owner'}}}});
+  api.state.client.from=()=>{const q={select(){return q},eq(){return q},maybeSingle(){return q},abortSignal(){return q},then(resolve){finish=resolve}};return q};
+  const pending=api.initialise();
+  for(let i=0;i<20&&!finish;i++)await new Promise(resolve=>setImmediate(resolve));
+  assert.equal(typeof finish,'function');
+  window.authChanged('SIGNED_OUT',null);
+  finish({data:{id:'old-account'}});await pending;
+  assert.equal(api.state.account,null);assert.equal(window.reloads,1);
+  await api.initialise();assert.equal(subscriptions,1);
 });
 
 test('quotes require entered, valid shares and reveal fallback on the first failure',async()=>{

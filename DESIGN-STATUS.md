@@ -1,5 +1,12 @@
 # Mercury — Design Status
 
+2026-09-14 session audit: 0.0.9 closes the stale private-workspace gap on auth changes and adopts published Acadia `346c874`. Bounded dialog spacing fixes single-letter disclosure wrapping at 320px/200% text; 222 tests pass. Current evidence: `automation/review/2026-09-14/session/review.md`.
+
+Next design opportunities, in priority order:
+1. Give holding, source-detail, category and property editors the same explicit concurrent-edit recovery already used by Plan and inline Income.
+2. Complete magic-link arrival/return and expired-session recovery acceptance with a real inbox and browser session.
+3. Reduce the narrow tablet asset editor’s unused side column while retaining its existing Acadia detail/valuation hierarchy.
+
 2026-09-14 Income: Figma desktop/tablet/phone composition now includes four summary cards, compact annual Dividends and editable source amount/frequency. Saved-only summaries, retained drafts, guarded navigation and stale/account protection are covered by 217 passing checks and local responsive browser review. See `automation/income-figma/2026-09-14/review.md`.
 
 Portfolio now follows Figma frame `110:7662`: three-column market-price cards, four range controls, full-width recurring equivalents/schedules and compact property purchase gain/loss. Shared Acadia remains unchanged; one inline responsive grid adapter supplies the requested card width. See `automation/portfolio-figma/2026-09-14/review.md` for current checks, browser evidence and remaining acceptance boundaries. Older Portfolio composition notes below are historical.
