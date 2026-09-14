@@ -11,7 +11,8 @@ Founder request: asset detail should graph the asset’s market price rather tha
 - Local browser QA uses synthetic holdings and synthetic historical prices only. Evidence images are synthetic and do not disclose personal finances.
 - Browser checks passed at 320, 390, 768 and 1440px with no horizontal overflow; ranges retain at least 44px height. At 768px and 200% text they reflow and grow to 64px. Light/dark chart styling, native keyboard range activation, unsaved Contribution retention, Back navigation, retry retaining 5Y, one-point, empty and cash/unsupported states passed.
 - Acadia stylesheet and curve utility are unchanged; the lead card uses existing supported tokens.
-- Production verification follows the authorised main push.
+- Source commit `6bbeda598b3ef30bc951ed0f1f7ee674c187d784` reached READY production deployment `mercury-cictdi18p-jayson-lamanca-s-projects.vercel.app`; the hosted build passed all 208 checks. Canonical production `index.html`, `brokerage.js`, `market-history.js` and unchanged `acadia.css` matched the committed bytes.
+- Live authenticated read-only requests on the authorised test account returned 1,255 VOO observations and 1,827 BTC/USD observations, sorted by date with positive USD prices and private/no-store response headers. An unauthenticated history request returned 401. No accounts or holdings were created or modified; the test account remained empty.
 
 ## Boundaries
 
