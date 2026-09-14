@@ -579,31 +579,11 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
     const groups = summarizeInvestmentGroups(portfolioHoldingRows(summary));
     for (const group of groups) {
       const selected = group.id === state.portfolioFilter;
-      const value = group.valueCents === null ? "Needs valuation" : displayCurrency(group.valueCents / 100);
-      const count = `${group.count} ${group.count === 1 ? "asset" : "assets"}`;
-      const share = group.allocationRate === null || group.id === "all" ? "" : new Intl.NumberFormat("en-US", { style: "percent", maximumFractionDigits: 1 }).format(group.allocationRate);
-      const meta = [count, share].filter(Boolean).join(" · ");
       const button = $(`[data-investment-group="${group.id}"]`);
-      button.classList.toggle("is-active", selected);
       button.setAttribute("aria-pressed", String(selected));
-      setText(`#portfolio-group-${group.id}-value`, value);
-      setText(`#portfolio-group-${group.id}-meta`, meta);
-      const progress = $(`#portfolio-group-${group.id}-progress`);
-      progress.hidden = group.allocationRate === null || group.id === "all";
-      progress.value = group.allocationRate ?? 0;
-      $(`#portfolio-filter option[value="${group.id}"]`).textContent = group.name;
-      if (selected) {
-        setText("#portfolio-holdings-title", group.name);
-      }
+      button.querySelector(".acadia-icon").hidden = !selected;
+      if (selected) setText("#portfolio-holdings-title", group.name);
     }
-    $("#portfolio-group-coverage").hidden = groups[0].missingCount === 0;
-    $("#portfolio-filter").value = state.portfolioFilter;
-    renderPortfolioResponsive();
-  }
-  function renderPortfolioResponsive() {
-    const mobile = window.matchMedia?.("(max-width: 47.98rem)").matches === true;
-    $("#portfolio-group-sidebar").hidden = mobile;
-    $("#portfolio-group-mobile").hidden = !mobile;
   }
   function renderPortfolioView(hasRows) {
     document.querySelectorAll("[data-portfolio-view]").forEach((control) => {
@@ -2707,19 +2687,11 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
     control.addEventListener("click", () => selectPortfolioView(control.dataset.portfolioView));
     control.addEventListener("keydown", handlePortfolioViewKeydown);
   });
-  window.matchMedia?.("(max-width: 47.98rem)").addEventListener("change", renderPortfolioResponsive);
-  $("#portfolio-filter").addEventListener("change", (event) => {
-    state.portfolioFilter = event.target.value;
-    render();
-  });
   document.querySelectorAll("[data-investment-group]").forEach((control) => {
     control.addEventListener("click", (event) => {
       event.preventDefault();
       state.portfolioFilter = control.dataset.investmentGroup;
       render();
-    });
-    control.addEventListener("keydown", (event) => {
-      if (event.key === " ") { event.preventDefault(); control.click(); }
     });
   });
   $("#portfolio-clear-search").addEventListener("click", () => {

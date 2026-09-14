@@ -294,7 +294,7 @@ test("Plan is a separate Base-plan projection workspace with aligned portfolio c
   assert.match(indexHtml, /id="plan-assumptions-dialog"/);
   assert.match(indexHtml, /id="property-dialog"/);
   assert.match(indexHtml, /<script src="plan\.js\?v=20260907-plan-automatic-v1"><\/script>/);
-  assert.match(indexHtml, /<script type="module" src="brokerage\.js\?v=20260914-plan-recovery"><\/script>/);
+  assert.match(indexHtml, /<script type="module" src="brokerage\.js\?v=20260914-portfolio-003"><\/script>/);
   assert.match(homeSource, /function routePlan\(\)/);
   assert.match(homeSource, /function renderPlan\(summary\)/);
   assert.match(homeSource, /function renderPlanChart/);
@@ -346,8 +346,11 @@ test("Home never falls back to fabricated assets and Portfolio is a functional r
   assert.match(indexHtml, /id="portfolio-search"/);
   assert.match(indexHtml, /id="portfolio-add-asset"/);
   assert.match(indexHtml, /id="portfolio-holding-sort"/);
-  assert.match(portfolioWorkspace, /id="portfolio-filter"[^>]*aria-label="Filter investments"/);
-  assert.match(portfolioWorkspace, /<option value="retirement">Retirement/);
+  assert.match(portfolioWorkspace, /id="portfolio-group-filters"[^>]*role="group"[^>]*aria-label="Filter investments by group"/);
+  for (const group of ["all", "brokerage", "retirement", "crypto"]) {
+    assert.match(portfolioWorkspace, new RegExp(`<button[^>]*acadia-page-header-pattern-filter[^>]*type="button"[^>]*data-investment-group="${group}"[^>]*aria-pressed="${group === "all"}"`));
+  }
+  assert.doesNotMatch(portfolioWorkspace, /portfolio-group-sidebar|portfolio-group-mobile|id="portfolio-filter"/);
   assert.doesNotMatch(portfolioWorkspace, /data-portfolio-filter="brokerage"/);
   assert.match(indexHtml, /id="portfolio-holdings-grid"/);
   assert.match(indexHtml, /id="portfolio-add-property"/);
@@ -416,7 +419,7 @@ test("Portfolio uses Acadia disclosure, preview cards and native controls with c
   assert.match(workspace, /id="portfolio-summary-property-equity"/);
   assert.match(workspace, /id="portfolio-recurring-total"/);
   assert.match(workspace, /id="portfolio-allocation-disclosure" class="acadia-accordion-item"/);
-  assert.match(workspace, /id="portfolio-holdings-grid" class="acadia-grid"/);
+  assert.match(workspace, /id="portfolio-holdings-grid" class="acadia-grid acadia-insight-grid"/);
   assert.match(workspace, /id="portfolio-reset-filters"/);
   assert.match(indexHtml, /id="property-dialog" class="acadia-dialog is-form-modal"/);
   assert.match(indexHtml, /id="delete-property-dialog" class="acadia-dialog is-form-modal"/);
