@@ -18,7 +18,7 @@
     <a class="acadia-skip-link" href="#main-content">Skip to content</a>
     <div class="acadia-responsive-navbar">
       <nav class="acadia-navbar" aria-label="Primary desktop navigation">
-        <a class="acadia-navbar-brand" href="index.html" aria-label="Mercury Home"><span class="acadia-mark"><img src="assets/mercury-mark.svg" alt="" width="16" height="16"></span><span>Mercury</span></a>
+        <a class="acadia-navbar-brand" href="index.html" aria-label="Mercury Home"><span class="acadia-mark"><img src="assets/mercury-portfolio-mark.svg" alt="" width="16" height="16"></span><span>Mercury</span></a>
         <div class="acadia-navbar-links"><a class="acadia-navbar-link is-active" href="index.html" data-nav-page="home" aria-current="page">Home</a><a class="acadia-navbar-link" href="#portfolio" data-nav-page="portfolio">Portfolio</a><a class="acadia-navbar-link" href="#income" data-nav-page="income">Income</a><a class="acadia-navbar-link" href="#plan" data-nav-page="plan">Plan</a><details class="acadia-action-menu"><summary class="acadia-action-menu-trigger acadia-navbar-link" aria-label="Profile account actions">Profile</summary><div class="acadia-action-menu-panel"><span class="acadia-action-menu-item" data-account-label role="status">Sign in</span><button class="acadia-action-menu-item" data-sign-out type="button" hidden>Sign out</button><div class="acadia-field"><label class="acadia-label" for="appearance-desktop">Appearance</label><select id="appearance-desktop" class="acadia-control" data-acadia-theme-select><option value="system">System</option><option value="light">Light</option><option value="dark">Dark</option></select></div></div></details></div>
         <div class="acadia-navbar-actions"><button class="acadia-icon-action" type="button" data-acadia-theme-toggle aria-label="Change theme"><i class="fa-solid fa-circle-half-stroke acadia-icon" data-acadia-theme-toggle-icon aria-hidden="true"></i></button></div>
       </nav>
@@ -62,31 +62,34 @@
         <header class="acadia-page-header-pattern is-title-only"><div class="acadia-page-header-pattern-actions"><h1 class="acadia-page-header-pattern-title">Portfolio</h1><button id="portfolio-add-asset" class="acadia-button acadia-button-primary" type="button"><i class="fa-solid fa-plus acadia-icon" aria-hidden="true"></i> Add asset</button></div></header>
         <section class="acadia-stack" aria-label="Portfolio holdings and property">
           <section id="portfolio-investment-results" class="acadia-card-content" aria-labelledby="portfolio-holdings-title">
+            <div class="acadia-page-header-pattern acadia-page-header-pattern-body">
+            <div class="acadia-page-header-pattern-actions">
               <div class="acadia-field" id="portfolio-summary" role="group" aria-label="Selected investment group">
-                <h2 id="portfolio-holdings-title" class="acadia-page-header-pattern-section-title acadia-page-header-pattern-title">All investments</h2>
-                <strong id="portfolio-summary-investments" class="acadia-title acadia-page-header-pattern-title">$0.00</strong>
-                <div class="acadia-cluster"><span id="portfolio-holdings-count" class="acadia-text-muted">0 assets</span><span id="portfolio-group-share" class="acadia-text-muted" hidden></span></div>
-                <small id="portfolio-valuation-status" class="acadia-text-muted" hidden></small>
+                <div class="acadia-cluster"><h2 id="portfolio-holdings-title" class="acadia-page-header-pattern-section-title acadia-page-header-pattern-title">Investments</h2><strong id="portfolio-summary-investments" class="acadia-lead acadia-page-header-pattern-title" style="color: var(--acadia-color-brand)">$0.00</strong><span id="portfolio-holdings-count" class="acadia-text-muted">0 assets</span></div>
+                <span id="portfolio-group-share" class="acadia-text-muted" hidden></span><small id="portfolio-valuation-status" class="acadia-text-muted" hidden></small>
               </div>
-            <div class="acadia-page-header-pattern">
+              <div class="acadia-cluster acadia-page-header-pattern-tools">
+              <label class="acadia-form-control" data-acadia-form-variant="select"><span class="acadia-sr-only">Sort investments</span><select id="portfolio-holding-sort" class="acadia-control" aria-label="Sort investments"><option value="value">Value</option><option value="name">Name A–Z</option><option value="updated">Last updated</option></select></label>
+                <div id="portfolio-market-periods" class="acadia-tabs" role="group" aria-label="Investment price period" style="--acadia-tab-visual-min-height: var(--acadia-target-size-touch)"><button class="acadia-tab is-active" type="button" data-portfolio-market-period="1w" aria-pressed="true" aria-controls="portfolio-holdings-grid">1W</button><button class="acadia-tab" type="button" data-portfolio-market-period="1m" aria-pressed="false" aria-controls="portfolio-holdings-grid">1M</button><button class="acadia-tab" type="button" data-portfolio-market-period="6m" aria-pressed="false" aria-controls="portfolio-holdings-grid">6M</button><button class="acadia-tab" type="button" data-portfolio-market-period="1y" aria-pressed="false" aria-controls="portfolio-holdings-grid">1Y</button></div>
+              <div id="portfolio-view-tabs" class="acadia-tabs" role="tablist" aria-label="Investment view">
+                <button id="portfolio-cards-tab" class="acadia-tab is-active" type="button" role="tab" data-portfolio-view="cards" aria-controls="portfolio-cards-panel" aria-selected="true" tabindex="0">Cards</button>
+                <button id="portfolio-table-tab" class="acadia-tab" type="button" role="tab" data-portfolio-view="table" aria-controls="portfolio-table-panel" aria-selected="false" tabindex="-1">Table</button>
+              </div>
+
+              </div>
+            </div>
+            <div id="portfolio-investments-toolbar" class="acadia-page-header-pattern-section" role="group" aria-label="Find and organise investments">
               <div id="portfolio-group-filters" class="acadia-page-header-pattern-filters" role="group" aria-label="Filter investments by group">
                 <button class="acadia-badge acadia-badge-round acadia-page-header-pattern-filter" type="button" data-investment-group="all" aria-pressed="true" aria-controls="portfolio-investment-results"><i class="fa-solid fa-check acadia-icon" aria-hidden="true"></i>All investments</button>
                 <button class="acadia-badge acadia-badge-round acadia-page-header-pattern-filter" type="button" data-investment-group="brokerage" aria-pressed="false" aria-controls="portfolio-investment-results"><i class="fa-solid fa-check acadia-icon" aria-hidden="true" hidden></i>Brokerage</button>
                 <button class="acadia-badge acadia-badge-round acadia-page-header-pattern-filter" type="button" data-investment-group="retirement" aria-pressed="false" aria-controls="portfolio-investment-results"><i class="fa-solid fa-check acadia-icon" aria-hidden="true" hidden></i>Retirement</button>
                 <button class="acadia-badge acadia-badge-round acadia-page-header-pattern-filter" type="button" data-investment-group="crypto" aria-pressed="false" aria-controls="portfolio-investment-results"><i class="fa-solid fa-check acadia-icon" aria-hidden="true" hidden></i>Crypto</button>
               </div>
-            <div id="portfolio-investments-toolbar" class="acadia-page-header-pattern-section" role="group" aria-label="Find and organise investments">
               <div class="acadia-field"><label class="acadia-search-control acadia-page-header-pattern-search"><span class="acadia-sr-only">Search assets</span><input class="acadia-control" id="portfolio-search" type="search" placeholder="Search assets"><i class="fa-solid fa-magnifying-glass acadia-icon acadia-control-icon" aria-hidden="true"></i></label></div>
-              <div class="acadia-cluster acadia-page-header-pattern-tools">
-              <div id="portfolio-view-tabs" class="acadia-tabs" role="tablist" aria-label="Investment view">
-                <button id="portfolio-cards-tab" class="acadia-tab is-active" type="button" role="tab" data-portfolio-view="cards" aria-controls="portfolio-cards-panel" aria-selected="true" tabindex="0">Cards</button>
-                <button id="portfolio-table-tab" class="acadia-tab" type="button" role="tab" data-portfolio-view="table" aria-controls="portfolio-table-panel" aria-selected="false" tabindex="-1">Table</button>
-              </div>
-              <label class="acadia-form-control" data-acadia-form-variant="select"><span class="acadia-sr-only">Sort investments</span><select id="portfolio-holding-sort" class="acadia-control" aria-label="Sort investments"><option value="value">Highest value</option><option value="name">Name A–Z</option><option value="updated">Last updated</option></select></label></div>
-            </div>
             </div>
             <div id="portfolio-search-feedback" class="acadia-page-header-pattern-actions" hidden><span id="portfolio-search-count" class="acadia-text-muted" role="status" aria-live="polite"></span><button id="portfolio-clear-search" class="acadia-button acadia-button-quiet" type="button">Clear search</button></div>
-            <div id="portfolio-cards-panel" class="acadia-stack" role="tabpanel" aria-labelledby="portfolio-cards-tab"><div id="portfolio-holdings-grid" class="acadia-grid acadia-insight-grid"></div></div>
+            </div>
+            <div id="portfolio-cards-panel" class="acadia-stack" role="tabpanel" aria-labelledby="portfolio-cards-tab"><div id="portfolio-holdings-grid" class="acadia-grid" style="grid-template-columns: repeat(auto-fit, minmax(min(100%, 20rem), 1fr))"></div></div>
             <div id="portfolio-table-panel" class="acadia-stack" role="tabpanel" aria-labelledby="portfolio-table-tab" hidden>
               <div class="acadia-table-responsive"><div class="acadia-table-wide"><div id="portfolio-holdings-table-wrap" class="acadia-table-wrap" data-acadia-component-table tabindex="0" role="region" aria-label="Investment comparison" aria-describedby="portfolio-table-help">
                 <table id="portfolio-holdings-table" class="acadia-table is-compact">
@@ -100,19 +103,25 @@
             </div>
             <div id="portfolio-holdings-empty" class="acadia-status-row is-info"><span class="acadia-status-icon" aria-hidden="true"><i class="fa-solid fa-circle-info acadia-icon"></i></span><div><strong id="portfolio-holdings-empty-title">No assets yet</strong><p id="portfolio-holdings-empty-copy">Add an asset to begin your private Brokerage portfolio.</p><button id="portfolio-reset-filters" class="acadia-button acadia-button-quiet" type="button" hidden>Clear filters</button></div></div>
           </section>
-          <details id="portfolio-allocation-disclosure" class="acadia-accordion-item">
-            <summary id="portfolio-allocation-title" class="acadia-accordion-summary">Portfolio allocation</summary>
-            <div class="acadia-accordion-panel"><div id="portfolio-allocation" class="acadia-stack"></div></div>
-          </details>
-          <div class="acadia-grid" id="portfolio-context">
+          <div class="acadia-stack" id="portfolio-context">
           <section class="acadia-stack" id="portfolio-recurring" aria-labelledby="portfolio-recurring-title">
-            <div class="acadia-field"><div class="acadia-cluster"><h2 id="portfolio-recurring-title" class="acadia-page-header-pattern-section-title">Recurring</h2><span id="portfolio-recurring-count" class="acadia-text-muted">0 assets</span></div><span id="portfolio-recurring-total" class="acadia-cluster acadia-section-header-caption" style="min-block-size: var(--acadia-target-size-touch)">$0 weekly equivalent</span></div>
+            <div class="acadia-page-header-pattern-section"><div class="acadia-cluster"><h2 id="portfolio-recurring-title" class="acadia-page-header-pattern-section-title">Recurring</h2><span id="portfolio-recurring-count" class="acadia-text-muted">0 assets</span></div><div class="acadia-cluster"><details id="portfolio-add-recurring" class="acadia-action-menu"><summary class="acadia-action-menu-trigger acadia-button acadia-button-quiet" aria-label="Add recurring investment"><i class="fa-solid fa-plus acadia-icon" aria-hidden="true"></i> Add recurring</summary><div id="portfolio-recurring-choices" class="acadia-action-menu-panel"></div></details><label class="acadia-form-control" data-acadia-form-variant="select"><span class="acadia-sr-only">Sort recurring investments</span><select id="portfolio-recurring-sort" class="acadia-control"><option value="value">Value</option><option value="name">Name</option></select></label></div></div>
+            <div class="acadia-grid" style="grid-template-columns: repeat(auto-fit, minmax(min(100%, 20rem), 1fr))" aria-label="Recurring investment equivalents">
+              <article class="acadia-card is-content"><div class="acadia-field"><strong id="portfolio-recurring-weekly" class="acadia-lead">$0</strong><span class="acadia-text-muted">Weekly investments</span></div></article>
+              <article class="acadia-card is-content"><div class="acadia-field"><strong id="portfolio-recurring-monthly" class="acadia-lead">$0</strong><span class="acadia-text-muted">Monthly investments</span></div></article>
+              <article class="acadia-card is-content"><div class="acadia-field"><strong id="portfolio-recurring-annual" class="acadia-lead">$0</strong><span class="acadia-text-muted">Annual investments</span></div></article>
+            </div>
+            <small id="portfolio-recurring-total" class="acadia-text-muted">Equivalent totals across saved schedules.</small>
             <div id="portfolio-recurring-panel" class="acadia-stack">
               <div class="acadia-card is-content"><div class="acadia-card-content"><div id="portfolio-recurring-list" class="acadia-object-list" role="list"></div><p id="portfolio-recurring-empty" class="acadia-text-muted">Set a recurring amount in asset details.</p></div></div>
             </div>
           </section>
-          <section class="acadia-stack" aria-labelledby="portfolio-properties-title"><div class="acadia-field"><div class="acadia-cluster"><h2 id="portfolio-properties-title" tabindex="-1" class="acadia-page-header-pattern-section-title">Property</h2><span id="portfolio-properties-count" class="acadia-text-muted">0 properties</span></div><div class="acadia-page-header-pattern-actions"><span class="acadia-section-header-caption">Equity <span id="portfolio-summary-property-equity">$0</span></span><div class="acadia-cluster"><button id="portfolio-add-property" class="acadia-icon-action" style="--acadia-icon-action-size: var(--acadia-target-size-touch)" type="button" aria-label="Add property" title="Add property"><i class="fa-solid fa-plus acadia-icon" aria-hidden="true"></i></button><details id="portfolio-property-sort" class="acadia-page-header-pattern-sort"><summary class="acadia-badge acadia-badge-grey acadia-badge-round acadia-page-header-pattern-sort-trigger" aria-label="Sort property"><span id="portfolio-property-sort-label">Value</span><i class="fa-solid fa-chevron-down acadia-icon" aria-hidden="true"></i></summary><div class="acadia-page-header-pattern-sort-menu" role="group" aria-label="Property sort"><button class="acadia-page-header-pattern-sort-option" type="button" data-property-sort="value" aria-pressed="true">Value</button><button class="acadia-page-header-pattern-sort-option" type="button" data-property-sort="name" aria-pressed="false">Name</button></div></details></div></div></div><p id="property-recovery-status" class="acadia-sr-only" role="status" aria-live="polite"></p><div id="portfolio-properties-grid" class="acadia-stack" aria-live="polite"></div><div id="portfolio-properties-empty" class="acadia-status-row is-info"><span class="acadia-status-icon" aria-hidden="true"><i class="fa-solid fa-circle-info acadia-icon"></i></span><div><strong id="portfolio-properties-empty-title">No properties yet</strong><p id="portfolio-properties-empty-copy">Add a property to include its equity in your net worth.</p><button id="property-retry-data" class="acadia-button acadia-button-secondary" type="button" hidden>Retry properties</button></div></div></section>
+          <section class="acadia-stack" aria-labelledby="portfolio-properties-title"><div class="acadia-page-header-pattern-section"><div class="acadia-cluster"><h2 id="portfolio-properties-title" tabindex="-1" class="acadia-page-header-pattern-section-title">Property</h2><strong id="portfolio-summary-property-value" class="acadia-lead" style="color: var(--acadia-color-brand)">$0</strong><span id="portfolio-properties-count" class="acadia-text-muted">0 properties</span></div><div class="acadia-page-header-pattern-actions"><span id="portfolio-summary-property-equity" hidden>$0</span><div class="acadia-cluster"><button id="portfolio-add-property" class="acadia-button acadia-button-quiet" type="button"><i class="fa-solid fa-plus acadia-icon" aria-hidden="true"></i> Add property</button><details id="portfolio-property-sort" class="acadia-page-header-pattern-sort"><summary class="acadia-badge acadia-badge-grey acadia-badge-round acadia-page-header-pattern-sort-trigger" aria-label="Sort property"><span id="portfolio-property-sort-label">Value</span><i class="fa-solid fa-chevron-down acadia-icon" aria-hidden="true"></i></summary><div class="acadia-page-header-pattern-sort-menu" role="group" aria-label="Property sort"><button class="acadia-page-header-pattern-sort-option" type="button" data-property-sort="value" aria-pressed="true">Value</button><button class="acadia-page-header-pattern-sort-option" type="button" data-property-sort="name" aria-pressed="false">Name</button></div></details></div></div></div><p id="property-recovery-status" class="acadia-sr-only" role="status" aria-live="polite"></p><div id="portfolio-properties-grid" class="acadia-stack" aria-live="polite"></div><div id="portfolio-properties-empty" class="acadia-status-row is-info"><span class="acadia-status-icon" aria-hidden="true"><i class="fa-solid fa-circle-info acadia-icon"></i></span><div><strong id="portfolio-properties-empty-title">No properties yet</strong><p id="portfolio-properties-empty-copy">Add a property to include its equity in your net worth.</p><button id="property-retry-data" class="acadia-button acadia-button-secondary" type="button" hidden>Retry properties</button></div></div></section>
           </div>
+          <details id="portfolio-allocation-disclosure" class="acadia-accordion-item">
+            <summary id="portfolio-allocation-title" class="acadia-accordion-summary">Portfolio allocation</summary>
+            <div class="acadia-accordion-panel"><div id="portfolio-allocation" class="acadia-stack"></div></div>
+          </details>
         </section>
       </section>
 
@@ -230,11 +239,11 @@
     <dialog id="delete-property-dialog" class="acadia-dialog is-form-modal" aria-labelledby="delete-property-title" aria-describedby="delete-property-description" hidden><form id="delete-property-form" class="acadia-dialog-form" method="dialog"><div class="acadia-dialog-header"><div class="acadia-dialog-intro"><strong class="acadia-dialog-title" id="delete-property-title">Delete property?</strong><p id="delete-property-description">This removes the property and its equity from your net worth.</p></div></div><p id="delete-property-status" class="acadia-field-hint" role="status" aria-live="polite"></p><div class="acadia-dialog-actions acadia-cluster"><button id="cancel-delete-property" class="acadia-button acadia-button-secondary" type="button">Cancel</button><button id="confirm-delete-property" class="acadia-button acadia-button-danger" type="submit">Delete property</button></div></form></dialog>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.112.3/dist/umd/supabase.min.js"></script>
-    <script src="portfolio.js?v=20260914-home-006"></script>
+    <script src="portfolio.js?v=20260914-portfolio-007"></script>
     <script src="income.js?v=20260904-budget-v1"></script>
     <script src="plan.js?v=20260914-property-purchase"></script>
     <script src="dashboard.js?v=20260912-home-history"></script>
-    <script src="market-history.js?v=20260914-home-006"></script>
-  <script type="module" src="brokerage.js?v=20260914-home-006"></script>
+    <script src="market-history.js?v=20260914-portfolio-007"></script>
+  <script type="module" src="brokerage.js?v=20260914-portfolio-007"></script>
   </body>
 </html>

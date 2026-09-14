@@ -92,7 +92,7 @@ test("Home composes a minimal Acadia dashboard", () => {
   assert.match(indexHtml, /acadia-action-menu-trigger acadia-navbar-link" aria-label="Profile account actions">Profile/);
   assert.match(indexHtml, /data-nav-page="portfolio"/);
   assert.match(indexHtml, /--acadia-mobile-tab-count: 5/);
-  assert.match(indexHtml, /assets\/mercury-mark\.svg/);
+  assert.match(indexHtml, /assets\/mercury-portfolio-mark\.svg/);
 });
 
 test("Mercury follows the Figma navigation order with the active Plan workspace", () => {
@@ -141,8 +141,8 @@ test("Home uses genuine performance history and ranks holdings with properties",
   assert.match(homeSource, /Crypto/);
   assert.match(homeSource, /Brokerage/);
   assert.match(homeSource, /Manual valuation/);
-  assert.match(homeSource, /Market value/);
-  assert.match(homeSource, /Mortgage/);
+  assert.match(homeSource, /market value/);
+  assert.match(homeSource, /mortgage/);
   assert.doesNotMatch(homeSource, /holdingFilter|holdingSort|matchingHoldingRows|renderHoldingFilters/);
   assert.match(homeSource, /summarizePerformance/);
   assert.match(homeSource, /data-performance-period/);
@@ -201,7 +201,7 @@ test("holding cards compact large share counts while preserving fractional share
   assert.match(homeSource, /displayCardShares\(row\.asset\.shares\)/);
 });
 
-test("Portfolio comparison retains source-backed return and yield while cards stay minimal", () => {
+test("Portfolio cards and comparison retain source-backed return and yield", () => {
   const homeRenderer = homeSource.slice(
     homeSource.indexOf("function renderHoldings(summary)"),
     homeSource.indexOf("function matchingPortfolioHoldingRows(summary)"),
@@ -217,8 +217,8 @@ test("Portfolio comparison retains source-backed return and yield while cards st
   assert.match(homeSource, /Trailing 12-month dividend yield/);
   assert.match(homeSource, /\["crypto", "cash"\]/);
   assert.match(homeSource, /isLoading \? "Loading…" : "Not set"/);
-  assert.doesNotMatch(homeSource, /fa-chart-line/);
-  assert.doesNotMatch(homeSource, /fa-coins/);
+  assert.match(homeSource, /fa-chart-line/);
+  assert.match(homeSource, /fa-coins/);
   assert.match(homeSource, /returnShortLabel/);
   assert.match(homeSource, /metrics\.yieldValue/);
   assert.doesNotMatch(homeRenderer, /showMetrics: true/);
@@ -295,7 +295,7 @@ test("Plan is a separate Base-plan projection workspace with aligned portfolio c
   assert.match(indexHtml, /id="plan-assumptions-dialog"/);
   assert.match(indexHtml, /id="property-dialog"/);
   assert.match(indexHtml, /<script src="plan\.js\?v=20260914-property-purchase"><\/script>/);
-  assert.match(indexHtml, /<script type="module" src="brokerage\.js\?v=20260914-home-006"><\/script>/);
+  assert.match(indexHtml, /<script type="module" src="brokerage\.js\?v=20260914-portfolio-007"><\/script>/);
   assert.match(homeSource, /function routePlan\(\)/);
   assert.match(homeSource, /function renderPlan\(summary\)/);
   assert.match(homeSource, /function renderPlanChart/);
@@ -329,7 +329,7 @@ test("the quick add dialog matches the compact Figma flow and keeps manual recov
   assert.match(homeSource, /setQuickAddStatus\(error\.message \|\| "This asset could not be saved\."\)/);
   assert.match(homeSource, /normalizeContributionPlan/);
   assert.match(homeSource, /calculateQuotePreviewValueCents/);
-  assert.match(indexHtml, /<script src="portfolio\.js\?v=20260914-home-006"><\/script>/);
+  assert.match(indexHtml, /<script src="portfolio\.js\?v=20260914-portfolio-007"><\/script>/);
   assert.match(homeSource, /is_retirement: \$\("#asset-retirement"\)\.checked/);
   assert.match(homeSource, /\$\("#asset-symbol"\)\.focus\(\)/);
   assert.match(homeSource, /Edit details/);
@@ -420,7 +420,7 @@ test("Portfolio uses Acadia disclosure, preview cards and native controls with c
   assert.match(workspace, /id="portfolio-summary-property-equity"/);
   assert.match(workspace, /id="portfolio-recurring-total"/);
   assert.match(workspace, /id="portfolio-allocation-disclosure" class="acadia-accordion-item"/);
-  assert.match(workspace, /id="portfolio-holdings-grid" class="acadia-grid acadia-insight-grid"/);
+  assert.match(workspace, /id="portfolio-holdings-grid" class="acadia-grid"/);
   assert.match(workspace, /id="portfolio-reset-filters"/);
   assert.match(indexHtml, /id="property-dialog" class="acadia-dialog is-form-modal"/);
   assert.match(indexHtml, /id="delete-property-dialog" class="acadia-dialog is-form-modal"/);

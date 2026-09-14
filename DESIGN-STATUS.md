@@ -1,5 +1,7 @@
 # Mercury — Design Status
 
+Portfolio now follows Figma frame `110:7662`: three-column market-price cards, four range controls, full-width recurring equivalents/schedules and compact property purchase gain/loss. Shared Acadia remains unchanged; one inline responsive grid adapter supplies the requested card width. See `automation/portfolio-figma/2026-09-14/review.md` for current checks, browser evidence and remaining acceptance boundaries. Older Portfolio composition notes below are historical.
+
 2026-09-14 Home layout: unboxed wide history, four separate summary cards and a full-width four-card Top assets row now follow the founder reference. Unit-price/share and property purchase-price context are visible. Daily 1D/1W/1M/1Y/All ranges preserve saved-data semantics. Current visual gate and evidence: `design-qa.md`.
 
 2026-09-14: Asset detail now leads with daily USD market-price history and four ranges, independently of holding size or personal return. Acadia 0.3.2 supplies the unchanged chart, card, typography and control primitives. All 208 automated checks pass; local 320/390/768/1440px, 200% text, keyboard/range, draft and provider-recovery checks pass. Current evidence: `automation/market-history/2026-09-14/review.md`. Earlier entries below are historical.

@@ -33,7 +33,7 @@ function controller() {
     fetch:async()=>({ok:false,json:async()=>({error:'provider unavailable'})}),
   });
   const source = fs.readFileSync(require.resolve('../brokerage.js'),'utf8').replace(/^import .*;\n/, '').replace('  initialise();',
-    '  window.testController = {loadMarketHistory,renderMarketHistory,clearMarketHistory,initialise,loadData,readWithDeadline,retryPlanSettings,openPlanAssumptionsDialog,savePlanAssumptions,retryProperties,hydrateProviderMetrics,ensurePlanSettings,state,render,renderHomeChanges,renderHomeGrowth,renderIncomeRecovery,retryIncomeData,missingIncomeYieldRows,renderIncomeYieldRecovery,renderPlan,renderQuickQuotePreview,refreshCurrentAssetPrice,restorePortfolioAssetFocus,renderHistory,renderAsset,canQuote,lookupQuote,saveQuickAsset,navigateToAsset,navigateBackFromAsset,routeAssetId,openFormDialog,hasPendingWrite,hasUnsavedWork,matchingPortfolioHoldingRows,sortHoldingRows,holdingValueLabel,renderPortfolioView,renderPortfolioSummary,detailHolding,openPropertyDialog,saveProperty};');
+    '  window.testController = {syncPortfolioMarketHistory,clearPortfolioMarketHistory,portfolioMarketHistory,renderRecurringInvestments,loadMarketHistory,renderMarketHistory,clearMarketHistory,initialise,loadData,readWithDeadline,retryPlanSettings,openPlanAssumptionsDialog,savePlanAssumptions,retryProperties,hydrateProviderMetrics,ensurePlanSettings,state,render,renderHomeChanges,renderHomeGrowth,renderIncomeRecovery,retryIncomeData,missingIncomeYieldRows,renderIncomeYieldRecovery,renderPlan,renderQuickQuotePreview,refreshCurrentAssetPrice,restorePortfolioAssetFocus,renderHistory,renderAsset,canQuote,lookupQuote,saveQuickAsset,navigateToAsset,navigateBackFromAsset,routeAssetId,openFormDialog,hasPendingWrite,hasUnsavedWork,matchingPortfolioHoldingRows,sortHoldingRows,holdingValueLabel,renderPortfolioView,renderPortfolioSummary,detailHolding,openPropertyDialog,saveProperty};');
   vm.runInContext(source,context);
   const api=window.testController;
   api.state.client={auth:{getSession:async()=>({data:{session:{access_token:'isolated-test'}}})}};
@@ -504,6 +504,7 @@ test('Portfolio asset entry focuses its task and restores the originating card o
     node('#asset-title').focus=()=>focused.push('title');
     node('#asset-detail-contribution').focus=()=>focused.push('contribution');
     node('#portfolio-add-asset').focus=()=>focused.push('add');
+    node('#portfolio-add-recurring summary').focus=()=>focused.push('add-recurring');
     const card={dataset:{holdingId:'test'},focus:()=>focused.push('card')};
     const recurring={dataset:{editId:'test'},focus:()=>focused.push('recurring')};
     document.querySelectorAll=(selector)=>selector.includes('recurring-list')?[recurring]:[card];
@@ -518,7 +519,7 @@ test('Portfolio asset entry focuses its task and restores the originating card o
     assert.equal(focused.at(-1),section==='recurring'?'recurring':'card');
     document.querySelectorAll=()=>[];
     api.restorePortfolioAssetFocus('#asset/test');
-    assert.equal(focused.at(-1),'add','removed or filtered records have a safe return target');
+    assert.equal(focused.at(-1),section==='recurring'?'add-recurring':'add','removed or filtered records have a safe return target');
   }
 });
 
@@ -1308,4 +1309,66 @@ test('market history retries failed reads without writes and ignores a replaced 
   finish({ ok:true,json:async()=>({currency:'USD',points:[{time:Date.now(),price:999}]}) });
   await request;
   assert.equal(node('#asset-market-price').textContent, 'new account');
+});
+
+test('Portfolio market cards limit concurrent reads, reuse ranges and discard departed-card responses', async () => {
+  const { api, context, window } = editableAsset();
+  api.clearMarketHistory(); api.state.account={id:'test-account'};
+  window.location.hash = '#portfolio';
+  const base = api.state.holdings[0];
+  api.state.holdings = Array.from({length:5}, (_,i) => ({...base,id:`card-${i}`,symbol:`FUND${i}`,instrument_type:'etf'}));
+  const rows = api.state.holdings.map(holding => ({asset:{id:holding.id}}));
+  const requests = [];
+  context.fetch = async (url, options) => new Promise(resolve => requests.push({url,options,resolve}));
+  api.syncPortfolioMarketHistory(rows);
+  await new Promise(resolve => setImmediate(resolve));
+  assert.equal(requests.length, 3);
+  api.syncPortfolioMarketHistory(rows);
+  assert.equal(requests.length, 3, 're-render cannot launch duplicate reads');
+  requests[0].resolve({ok:true,json:async()=>({currency:'USD',points:[{time:Date.now(),price:100}]})});
+  await new Promise(resolve => setImmediate(resolve));
+  assert.equal(requests.length, 4, 'the next queued card starts when a slot is free');
+  assert.equal(api.portfolioMarketHistory.get('card-0').data.points[0].price,100);
+  api.clearPortfolioMarketHistory();
+  assert.equal(api.portfolioMarketHistory.size,0);
+  requests.slice(1).forEach(request => {
+    assert.equal(request.options.signal.aborted,true);
+    request.resolve({ok:true,json:async()=>({currency:'USD',points:[{time:Date.now(),price:999}]})});
+  });
+  await new Promise(resolve => setImmediate(resolve));
+  assert.equal(api.portfolioMarketHistory.size,0,'late results cannot revive an old Portfolio');
+  assert.equal(requests.length,4,'cleared queues cannot restart');
+});
+
+test('Portfolio history rejects replaced accounts and retries only explicitly after failure', async () => {
+  const { api, context, window } = editableAsset();
+  api.clearMarketHistory(); api.state.account={id:'test-account'}; window.location.hash='#portfolio';
+  const holding=api.state.holdings[0];
+  const rows=[{asset:{id:holding.id}}];
+  let calls=0;
+  context.fetch=async()=>{calls++;throw new Error('provider failed')};
+  api.syncPortfolioMarketHistory(rows);
+  await new Promise(resolve=>setImmediate(resolve));
+  assert.equal(api.portfolioMarketHistory.get(holding.id).error,true);
+  api.syncPortfolioMarketHistory(rows);
+  await new Promise(resolve=>setImmediate(resolve));
+  assert.equal(calls,1,'ordinary rerenders must not create a retry loop');
+  const old=api.portfolioMarketHistory.get(holding.id);
+  api.state.account={id:'new-account'};
+  api.syncPortfolioMarketHistory(rows);
+  await new Promise(resolve=>setImmediate(resolve));
+  assert.notEqual(api.portfolioMarketHistory.get(holding.id),old);
+  assert.equal(old.controller.signal.aborted,true);
+  api.clearPortfolioMarketHistory();
+});
+
+test('recurring equivalents reconcile weekly and monthly schedules', () => {
+  const {api,node}=editableAsset();api.clearMarketHistory();
+  const base=api.state.holdings[0];
+  api.state.holdings=[{...base,id:'weekly',contribution_cents:10000,contribution_frequency:'weekly'},{...base,id:'monthly',contribution_cents:20000,contribution_frequency:'monthly'}];
+  node('#portfolio-recurring-choices').querySelector=()=>null;
+  api.renderRecurringInvestments();
+  assert.equal(node('#portfolio-recurring-weekly').textContent,'$146');
+  assert.equal(node('#portfolio-recurring-monthly').textContent,'$633');
+  assert.equal(node('#portfolio-recurring-annual').textContent,'$7,600');
 });

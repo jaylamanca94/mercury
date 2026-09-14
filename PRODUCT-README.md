@@ -44,3 +44,8 @@ Mercury is a private personal finance workspace. Its first shipped product surfa
 ## Operational setup
 
 Follow [`supabase/README.md`](supabase/README.md) to reconcile the existing migration baseline before applying schema changes, then configure the documented environment variables and private authentication flow. Until configured, Mercury presents a dedicated configuration state with retry. Temporary account-read failures have their own recovery state; neither is shown as an empty portfolio.
+
+
+## Portfolio market-card design — 2026-09-14
+
+Implement Figma Portfolio frame `110:7662` with market-price movement on investment cards, independent of personal cost, shares and recurring contributions. Reuse the existing authenticated market-history source; no broker connection, trading action or new database table is added. The unlabelled dashed comparison series is not a defined benchmark. Recurring displays saved schedules and their equivalent weekly/monthly/annual totals; adding a schedule edits the existing holding. Property market-value gain/loss remains distinct from equity. See the current README and design contract for state handling and source boundaries.

@@ -78,3 +78,13 @@ test('history endpoint authenticates before fetching bounded public history and 
   await assert.rejects(getMarketHistory({ symbol: 'CASH', instrumentType: 'cash' }), /unavailable/);
   assert.equal(providerCalls, 1);
 });
+
+test('Portfolio week and six-month ranges include only the requested daily market observations', () => {
+  const history = { currency: 'USD', points: [point(190, 50), point(180, 60), point(8, 70), point(7, 80), point(0, 90)] };
+  const week = summarizeMarketHistory(history, '1w', now);
+  assert.deepEqual(week.points, [point(7, 80), point(0, 90)]);
+  assert.equal(week.change, 10);
+  const sixMonths = summarizeMarketHistory(history, '6m', now);
+  assert.equal(sixMonths.points.length, 4);
+  assert.equal(sixMonths.change, 30);
+});

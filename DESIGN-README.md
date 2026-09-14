@@ -4,6 +4,19 @@ Use this file as the visual and interaction source of truth for Mercury. Keep th
 
 > **Home simplification — 2026-09-05:** The original Figma dashboard hierarchy is restored on Home: headline/history, compact allocation, paired portfolio changes and two secondary estimates and four asset cards. The Portfolio, Income and Plan contracts below remain active. Legacy economy-dashboard guidance is historical reference.
 
+## Portfolio Figma implementation — 2026-09-14
+
+This section supersedes earlier Portfolio compact-card and two-column context guidance. Source: Figma `CSCV8qZu9ryspC07K36vTg`, node `110:7662`.
+
+- Keep Investments, selected value and count inline, with Value sort, 1W/1M/6M/1Y and Cards/Table controls. Retain the existing search/group row so saved filtering remains available. Use wrapping Page Header Actions so tablet controls cannot squeeze the headline into a narrow column.
+- Investment Content Cards use standard padding, identity/value, description, annualised-return/yield icons, group badge, 160px Card Trend and a short market-price caption. Omit non-applicable crypto/cash yield; never substitute missing metrics with zero. Menus and whole-card keyboard entry coexist without triggering one another.
+- Use Acadia Grid with the single documented inline 20rem minimum-column adapter for 3/2/1 responsive columns. Reuse the same grid for recurring summaries. All colours, spacing, typography, control anatomy and curves remain canonical; `acadia.css`, fonts and curve utility are unchanged. The exact Figma mark is an exported asset, not a recreated vector.
+- Market charts use real daily USD unit prices and the initial selected price as a horizontal baseline. The unlabelled second Figma series has no defined benchmark source and is omitted. Use semantic falling colour, brand rising colour, and explicit Up/Down text. A one-point range remains a point; an empty/failed range has no curve. Preserve range selection across filtering and asset Back. Retry retains focus during loading and returns to the card when recovery removes its button.
+- Recurring and Property are full-width consecutive sections. Recurring has three equivalent totals and one compact schedule list; Add recurring picks an existing asset and focuses Contribution. Name/annual-equivalent Value sort affects rows only. Use 52 weeks / 12 months, not four-week-month arithmetic from illustrative numbers.
+- Property identity pairs with current market value. Show purchase price, signed percentage and dollar gain/loss together, with costs/rental-income exclusions and separately labelled equity/debt. Missing purchase prices retain Add purchase price. Zero purchase price has a dollar movement and explicit unavailable percentage. Property sort follows its market-value headline. Allocation remains an optional disclosure after records.
+
+Evidence: `automation/portfolio-figma/2026-09-14/review.md`. Saved-owner data, physical devices and VoiceOver acceptance are separate from isolated browser evidence.
+
 ## Portfolio refinement — 2026-09-14
 
 - Replace the wide investment sidebar and separate phone selector with one set of native Acadia Page Header filter buttons. Keep the selected value, count and share together; a checkmark supplements the pressed colour.

@@ -139,3 +139,10 @@ Changed flow: Portfolio/Home → Asset detail → market-price range → holding
 ## Home reference layout — 2026-09-14
 
 Home → history range → four summary cards → Top assets → Asset detail/property editor → Back. Lead chart is unboxed; Day change, All-time change, Expected annual growth and Annual dividends form four separate cards with amount/percentage pairs; Top assets spans the page with price/share or purchase-price context. Allocation remains available in Portfolio. Preserve valuation coverage, period/summary independence, sparse history, keyboard activation, add/edit, return focus and 320px/200% text usability.
+
+
+## Portfolio Figma frame — 2026-09-14
+
+Existing Review Portfolio / Review asset / Recurring / Property flows are extended, with no new persistence entity. Cards gain 1W/1M/6M/1Y daily market-price ranges, source/date descriptions, loading/one-point/empty/unsupported/failure/retry states, bounded parallel reads and stale-context cancellation. Cards/Table and filter/search/sort retain existing behaviour. Add recurring chooses a saved asset, focuses Contribution, and uses its existing guarded Save/Cancel; Back returns to the recurring row or Add recurring if no schedule exists. Weekly/monthly/annual summaries use 52/12 equivalents and sorting uses annual value. Property cards lead with market value and keep purchase gain/loss, equity and debt distinct. Allocation follows the records.
+
+Required QA: source comparison, desktop/tablet/phone and enlarged text; price ranges and no fabricated chart states; inline retry and account/navigation races; Cards/Table/filter/search/sort; asset/recurring/property entry, saved drafts and return focus. Current evidence is recorded in `automation/portfolio-figma/2026-09-14/review.md`; authenticated owner-data and physical-device acceptance remain separate.
