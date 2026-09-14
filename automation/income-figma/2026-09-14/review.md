@@ -35,3 +35,9 @@ Screenshots in this folder: desktop.png, desktop-light.png, tablet.png, phone.pn
 ## Acceptance boundary
 
 Authenticated owner-data writes, physical devices and VoiceOver were not newly tested. Query scoping, acknowledgement/conflict handling and late-response isolation have controller coverage. Production publication and signed-out access are recorded below once verified.
+
+## Production receipt
+
+Source commit `e6aa50b30df12d0be6915681819dd776966b0279` was pushed to `origin/main` and verified remotely. Git-triggered deployment `mercury-1ywfskf6k-jayson-lamanca-s-projects.vercel.app` is READY; hosted checks passed 217/217 and deployment completed at 2026-09-14T19:03:43Z. Canonical `https://mercury-psi-six.vercel.app/` served byte-identical index.html, brokerage.js, styles.css, acadia.css and income.js, all HTTP 200.
+
+Fresh canonical browser check at `#income`: Your private dashboard sign-in heading is visible and the private Income workspace is hidden. Authenticated owner-data writes were not exercised.
