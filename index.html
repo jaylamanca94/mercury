@@ -12,7 +12,7 @@
     <link rel="preload" href="fonts/Syncopate-Regular.ttf" as="font" type="font/ttf" crossorigin>
     <link rel="preload" href="fonts/Syncopate-Bold.ttf" as="font" type="font/ttf" crossorigin>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" referrerpolicy="no-referrer">
-    <link rel="stylesheet" href="styles.css?v=20260915-summary-captions">
+    <link rel="stylesheet" href="styles.css?v=20260915-portfolio-cards">
   </head>
   <body class="acadia-app">
     <a class="acadia-skip-link" href="#main-content">Skip to content</a>
@@ -70,7 +70,7 @@
               </div>
               <div class="acadia-cluster acadia-page-header-pattern-tools">
               <label class="acadia-form-control" data-acadia-form-variant="select"><span class="acadia-sr-only">Sort investments</span><select id="portfolio-holding-sort" class="acadia-control" aria-label="Sort investments"><option value="value">Value</option><option value="name">Name A–Z</option><option value="updated">Last updated</option></select></label>
-                <div id="portfolio-market-periods" class="acadia-tabs" role="group" aria-label="Investment price period" style="--acadia-tab-visual-min-height: var(--acadia-target-size-touch)"><button class="acadia-tab is-active" type="button" data-portfolio-market-period="1w" aria-pressed="true" aria-controls="portfolio-holdings-grid">1W</button><button class="acadia-tab" type="button" data-portfolio-market-period="1m" aria-pressed="false" aria-controls="portfolio-holdings-grid">1M</button><button class="acadia-tab" type="button" data-portfolio-market-period="6m" aria-pressed="false" aria-controls="portfolio-holdings-grid">6M</button><button class="acadia-tab" type="button" data-portfolio-market-period="1y" aria-pressed="false" aria-controls="portfolio-holdings-grid">1Y</button></div>
+                <div id="portfolio-market-periods" class="acadia-tabs" role="group" aria-label="Investment price period"><button class="acadia-tab is-active" type="button" data-portfolio-market-period="1w" aria-pressed="true" aria-controls="portfolio-holdings-grid">1W</button><button class="acadia-tab" type="button" data-portfolio-market-period="1m" aria-pressed="false" aria-controls="portfolio-holdings-grid">1M</button><button class="acadia-tab" type="button" data-portfolio-market-period="6m" aria-pressed="false" aria-controls="portfolio-holdings-grid">6M</button><button class="acadia-tab" type="button" data-portfolio-market-period="1y" aria-pressed="false" aria-controls="portfolio-holdings-grid">1Y</button></div>
               <div id="portfolio-view-tabs" class="acadia-tabs" role="tablist" aria-label="Investment view">
                 <button id="portfolio-cards-tab" class="acadia-tab is-active" type="button" role="tab" data-portfolio-view="cards" aria-controls="portfolio-cards-panel" aria-selected="true" tabindex="0">Cards</button>
                 <button id="portfolio-table-tab" class="acadia-tab" type="button" role="tab" data-portfolio-view="table" aria-controls="portfolio-table-panel" aria-selected="false" tabindex="-1">Table</button>
@@ -89,7 +89,7 @@
             </div>
             <div id="portfolio-search-feedback" class="acadia-page-header-pattern-actions" hidden><span id="portfolio-search-count" class="acadia-text-muted" role="status" aria-live="polite"></span><button id="portfolio-clear-search" class="acadia-button acadia-button-quiet" type="button">Clear search</button></div>
             </div>
-            <div id="portfolio-cards-panel" class="acadia-stack" role="tabpanel" aria-labelledby="portfolio-cards-tab"><div id="portfolio-holdings-grid" class="acadia-grid" style="grid-template-columns: repeat(auto-fit, minmax(min(100%, 20rem), 1fr))"></div></div>
+            <div id="portfolio-cards-panel" class="acadia-stack" role="tabpanel" aria-labelledby="portfolio-cards-tab"><p id="portfolio-card-context" class="acadia-text-muted">Price change per share/unit · Allocation of total net worth.</p><div id="portfolio-holdings-grid" class="acadia-grid" style="grid-template-columns: repeat(auto-fit, minmax(min(100%, 20rem), 1fr))"></div></div>
             <div id="portfolio-table-panel" class="acadia-stack" role="tabpanel" aria-labelledby="portfolio-table-tab" hidden>
               <div class="acadia-table-responsive"><div class="acadia-table-wide"><div id="portfolio-holdings-table-wrap" class="acadia-table-wrap" data-acadia-component-table tabindex="0" role="region" aria-label="Investment comparison" aria-describedby="portfolio-table-help">
                 <table id="portfolio-holdings-table" class="acadia-table is-compact">
@@ -265,8 +265,8 @@
     <script src="income.js?v=20260904-budget-v1"></script>
     <script src="data/property-markets.js?v=534e9fd3224c"></script>
     <script src="plan.js?v=20260914-change-cards-023"></script>
-    <script src="dashboard.js?v=20260914-home-groups-024"></script>
+    <script src="dashboard.js?v=20260915-portfolio-cards"></script>
     <script src="market-history.js?v=20260914-portfolio-007"></script>
-  <script type="module" src="brokerage.js?v=20260915-summary-captions"></script>
+  <script type="module" src="brokerage.js?v=20260915-portfolio-cards"></script>
   </body>
 </html>

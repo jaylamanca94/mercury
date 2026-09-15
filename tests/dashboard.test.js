@@ -171,3 +171,29 @@ test('Home preserves empty, zero, negative equity and unknown appreciation disti
   assert.equal(homeGroups([], [homeProperty(10000,20000,0)])[3].growthRate,0);
   assert.equal(homeGroups([], [homeProperty(10000,0,.04),homeProperty(10000,0,null)])[3].growthRate,null);
 });
+
+const { summarizeNetWorthAllocation: netWorthAllocation } = require('../dashboard');
+const { totalNetWorthCents } = require('../plan');
+test('card allocation includes property equity and uses the complete denominator for any visible holding', () => {
+  const property = { id: 'home', name: 'Home', currentValueCents: 30000000, mortgageBalanceCents: 10000000 };
+  const netWorth = totalNetWorthCents(20000000, [property]);
+  assert.equal(netWorthAllocation(10000000, netWorth).rate, .25);
+  assert.equal(netWorthAllocation(10000000, netWorth).showRing, true);
+  // A filtered card receives the same complete net worth, never the visible group sum.
+  assert.deepEqual([10000000].map(value => netWorthAllocation(value, netWorth)),
+    [10000000, 10000000].map(value => netWorthAllocation(value, netWorth)).slice(0, 1));
+  assert.equal(netWorthAllocation(0, netWorth).rate, 0);
+  assert.equal(netWorthAllocation(netWorth, netWorth).rate, 1);
+});
+test('card allocation withholds unavailable and non-positive denominators without clamping negative equity', () => {
+  for (const total of [null, undefined, NaN, 0, -100]) {
+    assert.equal(netWorthAllocation(100, total).rate, null);
+    assert.equal(netWorthAllocation(100, total).showRing, false);
+  }
+  for (const value of [null, undefined, NaN, -1]) assert.equal(netWorthAllocation(value, 100).rate, null);
+  const netWorth = totalNetWorthCents(10000, [{ id: 'home', name: 'Home', currentValueCents: 5000, mortgageBalanceCents: 10000 }]);
+  const result = netWorthAllocation(10000, netWorth);
+  assert.equal(result.rate, 2);
+  assert.equal(result.showRing, false);
+  assert.match(result.reason, /property equity is negative/);
+});

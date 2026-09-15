@@ -75,3 +75,10 @@ Previous: **0.2.0**. Founder approved structured property geography and automati
 ## Home portfolio-group overview — 2026-09-14, 0.2.4
 
 Current: **0.2.4**. Figma section `98:5696` replaces the ranked Top assets section with Brokerage, Crypto, Retirement and Property summaries. Keep four groups visible, including empty groups, while counting actual holdings/properties. Investment groups show their current value and available historical-growth/dividend-yield estimates; Property shows equity and sourced annual appreciation of market value. Group actions navigate into the existing Portfolio flow. Classification and missing-data rules stay consistent with Portfolio; salary, advice, benchmark sourcing and intraday data are outside this change. Exact reference numbers and the ambiguous net-worth percentage are not product data.
+
+
+## Portfolio asset-card refinement — 2026-09-15
+
+Figma card `222:3187` defines the clean investment-card presentation. One shared period selector updates daily market-price trends and signed per-share/unit changes. These figures describe the instrument’s price movement, not the owner’s investment gain/loss; share counts, purchases and dividends do not enter that calculation. Cards retain current holding value, name and access to asset details, with editing/additional metrics available there and in Table view.
+
+Each card’s allocation ring is its current holding value divided by complete current net worth, including property equity, consistent with Home. Filtering and changing the period never change its denominator. Unavailable valuations or non-positive net worth withhold percentages; negative property equity can produce a share above 100%, displayed as text with an explanation rather than a misleading ring. The existing expandable allocation panel remains explicitly investment-only. No API, database, account-connection or persistence changes are introduced.

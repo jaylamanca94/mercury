@@ -33,7 +33,7 @@ function controller() {
     fetch:async()=>({ok:false,json:async()=>({error:'provider unavailable'})}),
   });
   const source = fs.readFileSync(require.resolve('../brokerage.js'),'utf8').replace(/^import .*;\n/, '').replace('  initialise();',
-    '  window.testController = {editPlanScenario,savePlanScenario,planProjection,observeAuthSession,sessionToken,editIncomeSource,saveInlineIncomeSource,cancelInlineIncomeSource,incomeSourceDrafts,syncPortfolioMarketHistory,clearPortfolioMarketHistory,portfolioMarketHistory,renderRecurringInvestments,loadMarketHistory,renderMarketHistory,clearMarketHistory,initialise,loadData,readWithDeadline,retryPlanSettings,openPlanAssumptionsDialog,savePlanAssumptions,retryProperties,hydrateProviderMetrics,ensurePlanSettings,state,render,renderHomeChanges,renderHomeGrowth,renderIncomeRecovery,retryIncomeData,missingIncomeYieldRows,renderIncomeYieldRecovery,renderPlan,renderQuickQuotePreview,refreshCurrentAssetPrice,restorePortfolioAssetFocus,renderHistory,renderAsset,canQuote,lookupQuote,saveQuickAsset,navigateToAsset,navigateBackFromAsset,routeAssetId,openFormDialog,hasPendingWrite,hasUnsavedWork,matchingPortfolioHoldingRows,sortHoldingRows,holdingValueLabel,renderPortfolioView,renderPortfolioSummary,detailHolding,openPropertyDialog,saveProperty};');
+    '  window.testController = {renderPortfolioMarketCharts,currentNetWorthCents,holdingAllocationMarkup,editPlanScenario,savePlanScenario,planProjection,observeAuthSession,sessionToken,editIncomeSource,saveInlineIncomeSource,cancelInlineIncomeSource,incomeSourceDrafts,syncPortfolioMarketHistory,clearPortfolioMarketHistory,portfolioMarketHistory,renderRecurringInvestments,loadMarketHistory,renderMarketHistory,clearMarketHistory,initialise,loadData,readWithDeadline,retryPlanSettings,openPlanAssumptionsDialog,savePlanAssumptions,retryProperties,hydrateProviderMetrics,ensurePlanSettings,state,render,renderHomeChanges,renderHomeGrowth,renderIncomeRecovery,retryIncomeData,missingIncomeYieldRows,renderIncomeYieldRecovery,renderPlan,renderQuickQuotePreview,refreshCurrentAssetPrice,restorePortfolioAssetFocus,renderHistory,renderAsset,canQuote,lookupQuote,saveQuickAsset,navigateToAsset,navigateBackFromAsset,routeAssetId,openFormDialog,hasPendingWrite,hasUnsavedWork,matchingPortfolioHoldingRows,sortHoldingRows,holdingValueLabel,renderPortfolioView,renderPortfolioSummary,detailHolding,openPropertyDialog,saveProperty};');
   vm.runInContext(source,context);
   const api=window.testController;
   api.state.client={auth:{onAuthStateChange(callback){ window.authChanged = callback; return {data:{subscription:{unsubscribe(){}}}}; },getSession:async()=>({data:{session:{access_token:'isolated-test'}}})}};
@@ -1616,4 +1616,48 @@ test('Plan reports combined wealth but missing property reads withhold it and ex
  assert.match(node('#plan-value-breakdown').textContent,/Property equity \$250,000.00/);
  api.state.propertiesAvailable=false;api.renderPlan(summary);
  assert.equal(node('#plan-outlook').hidden,true);assert.equal(node('#plan-projected-value').textContent,'Not set');assert.equal(node('#plan-review-portfolio').hidden,false);
+});
+
+
+test('card allocation uses Home net worth and withholds incomplete investment or property coverage', () => {
+  const { api } = editableAsset();
+  api.state.holdings = [{id: 'card'}];
+  api.state.properties = [{id:'home', name:'Home',current_value_cents:300000, mortgage_balance_cents:100000}];
+  const summary = {rows:[{}], totalMarketValueCents:200000};
+  const worth = api.currentNetWorthCents(summary);
+  assert.equal(worth,400000);
+  assert.match(api.holdingAllocationMarkup({marketValueCents:100000},worth), /25% of total net worth/);
+  assert.match(api.holdingAllocationMarkup({marketValueCents:100000},worth), /90deg/);
+  api.state.propertiesAvailable=false;
+  assert.equal(api.currentNetWorthCents(summary),null);
+  api.state.propertiesAvailable=true;
+  assert.equal(api.currentNetWorthCents({...summary,rows:[]}),null);
+});
+
+test('card footers show signed unit-price movement and preserve fractional changes and history states', () => {
+  const { api, node } = editableAsset();
+  const holding = api.state.holdings[0];
+  const slot = node('market-slot'); slot.dataset.holdingMarket=holding.id; slot.contains=()=>false;
+  node('#portfolio-holdings-grid').querySelectorAll=()=>[slot];
+  const now=Date.now();
+  for (const [first,last,rate,amount,tone] of [[100,102,'+2%','+$2.00','positive'],[100,99,'-1%','-$1.00','negative'],[100,100,'0%','$0.00','neutral'],[.00002,.000021,'+5%','+$0.000001','positive']]) {
+    api.portfolioMarketHistory.set(holding.id,{data:{source:'Test source',currency:'USD',points:[{time:now-86400000,price:first},{time:now,price:last}]}});
+    api.renderPortfolioMarketCharts();
+    assert.ok(slot.innerHTML.includes(`>${rate}</strong>`),slot.innerHTML);
+    assert.ok(slot.innerHTML.includes(`>${amount}</span>`),slot.innerHTML);
+    assert.ok(slot.innerHTML.includes(`is-${tone}`));
+    assert.match(slot.innerHTML,/per share or unit/);
+    assert.match(slot.innerHTML,/Test source/);
+  }
+  for (const points of [[],[{time:now,price:100}]]) {
+    api.portfolioMarketHistory.set(holding.id,{data:{source:'Test source',currency:'USD',points}});
+    api.renderPortfolioMarketCharts();
+    assert.match(slot.innerHTML,/Price change per share or unit: —/);
+  }
+  api.portfolioMarketHistory.set(holding.id,{pending:true});api.renderPortfolioMarketCharts();
+  assert.match(slot.innerHTML,/Loading market prices/);
+  api.portfolioMarketHistory.set(holding.id,{error:true});api.renderPortfolioMarketCharts();
+  assert.match(slot.innerHTML,/Retry prices/);
+  holding.instrument_type='cash';api.portfolioMarketHistory.delete(holding.id);api.renderPortfolioMarketCharts();
+  assert.match(slot.innerHTML,/No market-price history/);
 });

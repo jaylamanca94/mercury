@@ -1,0 +1,21 @@
+[
+  {
+    "desktopGeometry": {
+      "chart": 160,
+      "gap": "24px",
+      "padding": "32px",
+      "ring": 64,
+      "tab": 32
+    }
+  },
+  {
+    "interactions": "Shared period, stable net-worth allocation, search/filter/sort, Table/Cards, keyboard detail navigation and editable shares passed"
+  },
+  {
+    "states": "One-point, flat movement, retry focus, unavailable property valuations, and allocation above 100% passed"
+  },
+  {
+    "responsive": "1512, 834, 400, 320px; 200% text at 320px; light/dark; no horizontal overflow",
+    "browserErrors": []
+  }
+]

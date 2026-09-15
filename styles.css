@@ -143,3 +143,74 @@
   color: var(--mercury-summary-caption);
   font-weight: var(--acadia-font-weight-regular);
 }
+
+/* Portfolio composition from Figma 222:3187. Acadia owns cards and trends;
+   the allocation adapter supplies a live data ring until Acadia publishes one. */
+#portfolio-holdings-grid .mercury-holding-card {
+  --acadia-content-card-padding: min(var(--acadia-section-padding-standard), 8vw);
+  --acadia-card-trend-height: 10rem;
+  --acadia-card-trend-color: var(--acadia-color-brand);
+  --mercury-card-red: var(--acadia-text-red, var(--acadia-system-red-60));
+  box-sizing: border-box;
+  min-width: 0;
+}
+.mercury-holding-header {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--acadia-space-1);
+  align-items: flex-start;
+  min-height: 4rem;
+}
+.mercury-holding-header > .acadia-field { flex: 1 1 10rem; min-width: 0; gap: 0.25rem; }
+.mercury-holding-header .acadia-cluster { gap: var(--acadia-space-1); }
+.mercury-holding-value, .mercury-price-change.is-positive { color: var(--acadia-color-brand); }
+.mercury-holding-market { display: grid; gap: var(--acadia-space-3); min-width: 0; }
+.mercury-holding-card .acadia-card-trend-chart.is-negative,
+.mercury-price-change.is-negative { color: var(--mercury-card-red); }
+.mercury-price-change.is-neutral { color: var(--acadia-color-text-muted); }
+.mercury-holding-market .acadia-card-trend { box-sizing: border-box; }
+.mercury-holding-market .acadia-card-trend-empty { color: var(--acadia-color-text-muted); }
+.mercury-holding-period-change {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  column-gap: var(--acadia-space-2);
+  row-gap: var(--acadia-space-1);
+}
+.mercury-holding-period-change > :first-child { margin-inline-end: auto; }
+.mercury-allocation-ring {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 4rem;
+  flex: 0 0 4rem;
+  min-height: 4rem;
+  font-size: var(--acadia-type-size-caption, 0.75rem);
+  font-weight: var(--acadia-font-weight-bold);
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+.mercury-allocation-ring::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: conic-gradient(var(--acadia-color-brand) var(--mercury-allocation-angle), var(--acadia-color-border-strong) 0);
+  mask: radial-gradient(farthest-side, transparent calc(100% - 4px), #000 calc(100% - 4px));
+}
+.mercury-allocation-ring > span { padding: 0.375rem; }
+.mercury-allocation-ring.is-unavailable::before { display: none; }
+.mercury-allocation-note { flex-basis: 100%; }
+#portfolio-market-periods { flex-wrap: wrap; }
+@media (forced-colors: active) {
+  .mercury-allocation-ring::before { display: none; }
+}
+
+[data-acadia-theme="dark"] #portfolio-holdings-grid .mercury-holding-card {
+  --mercury-card-red: var(--acadia-text-red, var(--acadia-system-red-50));
+}
+@media (prefers-color-scheme: dark) {
+  [data-acadia-theme="system"] #portfolio-holdings-grid .mercury-holding-card {
+    --mercury-card-red: var(--acadia-text-red, var(--acadia-system-red-50));
+  }
+}

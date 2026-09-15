@@ -37,7 +37,7 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
     totalNetWorthCents,
     weeklyEquivalentRecurringContributionCents,
   } = window.MercuryPlan;
-  const { investmentGroup, summarizeInvestmentGroups, summarizeHomeGroups, summarizePlanningPosition, summarizeHoldingAllocation, summarizeDashboardHistory, summarizeAllTimeChange } = window.MercuryDashboard;
+  const { investmentGroup, summarizeInvestmentGroups, summarizeHomeGroups, summarizePlanningPosition, summarizeHoldingAllocation, summarizeNetWorthAllocation, summarizeDashboardHistory, summarizeAllTimeChange } = window.MercuryDashboard;
   const { summarizeMarketHistory } = window.MercuryMarketHistory;
   const $ = (selector) => document.querySelector(selector);
   const currency = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 });
@@ -490,26 +490,27 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
   function holdingValueLabel(row) {
     return row.marketValueCents === null ? "Needs valuation" : displayCurrency(row.marketValueCents / 100);
   }
-  function renderHoldingCards(grid, rows) {
+  function holdingAllocationMarkup(row, netWorthCents) {
+    const allocation = summarizeNetWorthAllocation(row.marketValueCents, netWorthCents);
+    const label = allocation.rate === null ? "—" : percentage.format(allocation.rate);
+    const description = allocation.rate === null ? allocation.reason
+      : `${label} of total net worth. ${allocation.reason}`.trim();
+    return `<div class="mercury-allocation-ring${allocation.showRing ? "" : " is-unavailable"}" ${allocation.showRing ? `style="--mercury-allocation-angle: ${allocation.rate * 360}deg"` : ""} role="img" aria-label="${escapeHtml(description)}" title="${escapeHtml(description)}"><span aria-hidden="true">${escapeHtml(label)}</span></div>${allocation.reason ? `<small class="acadia-text-muted mercury-allocation-note">${escapeHtml(allocation.reason)}</small>` : ""}`;
+  }
+  function renderHoldingCards(grid, rows, netWorthCents) {
     grid.replaceChildren(...rows.map((row) => {
       const card = document.createElement("article");
       const title = row.asset.symbol || row.asset.name;
-      const group = investmentGroup(row.asset);
-      const classification = `${group[0].toUpperCase()}${group.slice(1)}`;
-      const metrics = holdingMetricSummary(row);
-      card.className = "acadia-card is-content is-interactive";
-      card.style.setProperty("--acadia-card-trend-height", "10rem");
-      card.style.setProperty("--acadia-card-trend-color", "var(--acadia-color-brand)");
+      card.className = "acadia-card is-content is-interactive mercury-holding-card";
       card.dataset.holdingId = row.asset.id;
       card.tabIndex = 0;
       card.setAttribute("role", "link");
       card.setAttribute("aria-label", `Open ${title} asset details, ${row.marketValueCents === null ? "Needs valuation" : preciseCurrency.format(row.marketValueCents / 100)}`);
-      card.innerHTML = `<div class="acadia-card-actions">${holdingActionMenuMarkup(row)}</div><div class="acadia-field"><div class="acadia-cluster"><strong class="acadia-lead">${escapeHtml(title)}</strong><span style="color: var(--acadia-color-brand)" title="${escapeHtml(row.marketValueCents === null ? "Needs valuation" : preciseCurrency.format(row.marketValueCents / 100))}">${escapeHtml(holdingValueLabel(row))}</span></div><span class="acadia-text-muted">${escapeHtml(row.asset.name || instrumentLabel(row.asset.instrumentType))}</span></div><div class="acadia-cluster"><span class="acadia-icon-with-text acadia-icon-with-text-brand" title="${escapeHtml(metrics.returnLabel)}" aria-label="${escapeHtml(metrics.returnLabel)}: ${escapeHtml(metrics.returnValue)}"><i class="fa-solid fa-chart-line acadia-icon acadia-icon-with-text-icon" aria-hidden="true"></i>${escapeHtml(metrics.returnValue)}</span>${metrics.hasYield ? `<span class="acadia-icon-with-text acadia-icon-with-text-brand" title="${escapeHtml(metrics.yieldLabel)}" aria-label="${escapeHtml(metrics.yieldLabel)}: ${escapeHtml(metrics.yieldValue)}"><i class="fa-solid fa-coins acadia-icon acadia-icon-with-text-icon" aria-hidden="true"></i>${escapeHtml(metrics.yieldValue)}</span>` : ""}</div><div class="acadia-cluster"><span class="acadia-badge acadia-badge-grey acadia-badge-round">${classification}</span></div><div data-holding-market="${escapeHtml(row.asset.id)}" class="acadia-field"></div>`;
+      card.innerHTML = `<div class="mercury-holding-header"><div class="acadia-field"><div class="acadia-cluster"><strong class="acadia-lead">${escapeHtml(title)}</strong><span class="mercury-holding-value" title="${escapeHtml(row.marketValueCents === null ? "Needs valuation" : preciseCurrency.format(row.marketValueCents / 100))}">${escapeHtml(holdingValueLabel(row))}</span></div><span class="acadia-text-muted">${escapeHtml(row.asset.name || instrumentLabel(row.asset.instrumentType))}</span></div>${holdingAllocationMarkup(row, netWorthCents)}</div><div data-holding-market="${escapeHtml(row.asset.id)}" class="mercury-holding-market"></div>`;
       card.addEventListener("click", openHoldingFromEvent);
       card.addEventListener("keydown", keyOpenHolding);
       return card;
     }));
-    bindPortfolioHoldingActions(grid);
   }
   function openHomeGroup(id) {
     leaveWorkspace(() => {
@@ -694,7 +695,7 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
     const matchingRows = matchingPortfolioHoldingRows(summary);
     const rows = sortHoldingRows(matchingRows, state.portfolioSort);
     const grid = $("#portfolio-holdings-grid");
-    renderHoldingCards(grid, rows);
+    renderHoldingCards(grid, rows, currentNetWorthCents(summary));
     renderPortfolioTable(rows);
     renderPortfolioView(rows.length > 0);
     syncPortfolioMarketHistory(rows);
@@ -1622,21 +1623,25 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
       const { points, first, last, change, changeRate } = summarizeMarketHistory(entry?.data, portfolioMarketPeriod);
       let chart = "";
       let description = "Market-price history unavailable";
-      let caption = !supported ? "No market-price history" : !entry || entry.pending ? "Loading market prices…" : entry.error ? "Market prices unavailable" : !points.length ? "No prices in this range" : `${entry.data.source} · ${marketDate(last.time)}`;
+      const caption = !supported ? "No market-price history" : !entry || entry.pending ? "Loading market prices…" : entry.error ? "Market prices unavailable" : !points.length ? "No prices in this range" : `${entry.data.source} · ${marketDate(last.time)}`;
       if (points.length) {
         const movement = change === null ? "One recorded price" : `${change > 0 ? "Up" : change < 0 ? "Down" : "No change"} ${percentage.format(Math.abs(changeRate))}`;
-        description = `${holding.symbol} daily market price in USD, ${marketPrice.format(first.price)} on ${marketDate(first.time)} to ${marketPrice.format(last.price)} on ${marketDate(last.time)}. ${movement}. Starting-price baseline. Excludes dividends and personal gain or loss.`;
+        description = `${holding.symbol} daily market price per share or unit in USD from ${entry.data.source}, ${marketPrice.format(first.price)} on ${marketDate(first.time)} to ${marketPrice.format(last.price)} on ${marketDate(last.time)}. ${movement}. Starting-price baseline. Excludes dividends and personal gain or loss.`;
         if (points.length === 1) chart = '<svg class="acadia-card-trend-chart is-primary" viewBox="0 0 100 100" aria-hidden="true"><circle class="acadia-card-trend-point" cx="50" cy="50" r="2.5"></circle></svg>';
         else {
           const prices = points.map(point => point.price), min = Math.min(...prices), span = Math.max(...prices) - min;
           const geometry = points.map(point => ({ x: (point.time - first.time) / (last.time - first.time) * 1000, y: span ? 94 - (point.price - min) / span * 84 : 50 }));
           const path = buildCardTrendPath(geometry);
-          chart = `<svg class="acadia-card-trend-chart ${change < 0 ? "is-negative" : "is-primary"}" viewBox="0 0 1000 100" preserveAspectRatio="none" aria-hidden="true"><path class="acadia-card-trend-area" d="${path} L 1000 100 L 0 100 Z"></path><polyline class="acadia-card-trend-baseline" points="0,${geometry[0].y} 1000,${geometry[0].y}"></polyline><path class="acadia-card-trend-line" d="${path}"></path></svg>`;
+          chart = `<svg class="acadia-card-trend-chart ${change < 0 ? "is-negative" : change > 0 ? "is-primary" : "is-neutral"}" viewBox="0 0 1000 100" preserveAspectRatio="none" aria-hidden="true"><path class="acadia-card-trend-area" d="${path} L 1000 100 L 0 100 Z"></path><polyline class="acadia-card-trend-baseline" points="0,${geometry[0].y} 1000,${geometry[0].y}"></polyline><path class="acadia-card-trend-line" d="${path}"></path></svg>`;
         }
-        caption = `${marketPrice.format(last.price)} · ${movement} · ${portfolioMarketPeriod.toUpperCase()}`;
       }
+      const direction = change === null || change === 0 ? "neutral" : change < 0 ? "negative" : "positive";
+      const changeFormatter = change !== null && Math.abs(change) >= 0.01 ? preciseCurrency : marketPrice;
+      const priceChange = change === null ? "—" : `${change > 0 ? "+" : ""}${changeFormatter.format(change)}`;
+      const rateChange = changeRate === null ? "—" : displaySignedPercentage(changeRate);
+      const source = points.length ? `${entry.data.source} · ${marketDate(first.time)} – ${marketDate(last.time)}` : caption;
       // Skip identical content so unrelated completions cannot remove a focused retry.
-      const markup = `<div class="${points.length ? "acadia-card-trend" : "acadia-card-trend acadia-card-trend-empty"}" role="img" aria-label="${escapeHtml(description)}">${chart || escapeHtml(caption)}</div>${points.length ? `<small class="acadia-text-muted" title="${escapeHtml(`${entry.data.source} · ${marketDate(first.time)} – ${marketDate(last.time)}`)}">${escapeHtml(caption)}</small>` : ""}${entry?.error ? `<button class="acadia-button acadia-button-quiet" type="button" data-retry-card-market aria-label="Retry market prices for ${escapeHtml(holding.symbol)}">Retry prices</button>` : ""}`;
+      const markup = `<div class="${points.length ? "acadia-card-trend" : "acadia-card-trend acadia-card-trend-empty"}" role="img" aria-label="${escapeHtml(description)}">${chart || escapeHtml(caption)}</div><div class="mercury-holding-period-change" title="${escapeHtml(source)}"><span class="acadia-text-muted">${portfolioMarketPeriod.toUpperCase()}</span><strong class="mercury-price-change is-${direction}" aria-label="Price change: ${escapeHtml(rateChange)}">${escapeHtml(rateChange)}</strong><span class="acadia-text-muted" aria-label="Price change per share or unit: ${escapeHtml(priceChange)}">${escapeHtml(priceChange)}</span></div>${entry?.error ? `<button class="acadia-button acadia-button-quiet" type="button" data-retry-card-market aria-label="Retry market prices for ${escapeHtml(holding.symbol)}">Retry prices</button>` : ""}`;
       if (slot.innerHTML !== markup) {
         const restoreFocus = slot.contains(document.activeElement);
         slot.innerHTML = markup;

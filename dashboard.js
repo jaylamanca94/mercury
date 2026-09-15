@@ -84,6 +84,17 @@ function summarizeHoldingAllocation(assets) {
     rows: totalValueCents > 0 ? rows.map((row) => ({ ...row, allocationRate: row.valueCents / totalValueCents })) : [] };
 }
 
+// The caller supplies Home's complete, unfiltered net worth (including property equity).
+function summarizeNetWorthAllocation(valueCents, netWorthCents) {
+  if (!Number.isSafeInteger(valueCents) || valueCents < 0 || !Number.isSafeInteger(netWorthCents)) {
+    return { rate: null, showRing: false, reason: "Complete valuations are needed for allocation." };
+  }
+  if (netWorthCents <= 0) return { rate: null, showRing: false, reason: "Allocation requires positive net worth." };
+  const rate = valueCents / netWorthCents;
+  return { rate, showRing: rate <= 1,
+    reason: rate > 1 ? "Exceeds total net worth because property equity is negative." : "" };
+}
+
 function summarizeDashboardHistory(snapshots, period = "all") {
   const unique = new Map();
   for (const snapshot of snapshots) {
@@ -106,6 +117,6 @@ function summarizeAllTimeChange(snapshots, currentValueCents) {
     changeRate: available && first.totalValueCents > 0 ? changeCents / first.totalValueCents : null };
 }
 
-const dashboardContract = { HISTORY_MINIMUM_DAYS, investmentGroup, summarizeInvestmentGroups, summarizeHomeGroups, summarizePlanningPosition, summarizeHoldingAllocation, summarizeDashboardHistory, summarizeAllTimeChange };
+const dashboardContract = { HISTORY_MINIMUM_DAYS, investmentGroup, summarizeInvestmentGroups, summarizeHomeGroups, summarizePlanningPosition, summarizeHoldingAllocation, summarizeNetWorthAllocation, summarizeDashboardHistory, summarizeAllTimeChange };
 if (typeof module !== "undefined") module.exports = dashboardContract;
 if (typeof window !== "undefined") window.MercuryDashboard = dashboardContract;

@@ -201,7 +201,7 @@ test("holding cards compact large share counts while preserving fractional share
   assert.match(homeSource, /displayCardShares\(row\.asset\.shares\)/);
 });
 
-test("Portfolio cards and comparison retain source-backed return and yield", () => {
+test("Portfolio comparison retains source-backed return and yield alongside price-movement cards", () => {
   const homeRenderer = homeSource.slice(
     homeSource.indexOf("function renderHoldings(summary)"),
     homeSource.indexOf("function matchingPortfolioHoldingRows(summary)"),
@@ -222,7 +222,7 @@ test("Portfolio cards and comparison retain source-backed return and yield", () 
   assert.match(homeSource, /returnShortLabel/);
   assert.match(homeSource, /metrics\.yieldValue/);
   assert.doesNotMatch(homeRenderer, /showMetrics: true/);
-  assert.match(portfolioRenderer, /renderHoldingCards\(grid, rows\)/);
+  assert.match(portfolioRenderer, /renderHoldingCards\(grid, rows, currentNetWorthCents\(summary\)\)/);
   assert.match(homeSource, /function hydrateProviderMetrics\(\)/);
   assert.match(homeSource, /includeMetrics: true/);
   assert.match(homeSource, /providerMetricsPending/);
@@ -285,7 +285,7 @@ test("Plan provides one hero projection, four statistics and live scenario contr
   assert.match(indexHtml, /id="plan-assumptions-dialog"/);
   assert.match(indexHtml, /id="property-dialog"/);
   assert.match(indexHtml, /<script src="plan\.js\?v=20260914-change-cards-023"><\/script>/);
-  assert.match(indexHtml, /<script type="module" src="brokerage\.js\?v=20260915-summary-captions"><\/script>/);
+  assert.match(indexHtml, /<script type="module" src="brokerage\.js\?v=20260915-portfolio-cards"><\/script>/);
   assert.match(homeSource, /function routePlan\(\)/);
   assert.match(homeSource, /function renderPlan\(summary\)/);
   assert.match(homeSource, /function renderPlanChart/);
@@ -385,7 +385,7 @@ test("Portfolio investments switch between shared Cards and Table presentations"
   assert.match(homeSource, /portfolioView: "cards"/);
   assert.match(homeSource, /function renderPortfolioView\(hasRows\)/);
   assert.match(homeSource, /function renderPortfolioTable\(rows\)/);
-  assert.match(homeSource, /renderHoldingCards\(grid, rows\);\s*renderPortfolioTable\(rows\);/);
+  assert.match(homeSource, /renderHoldingCards\(grid, rows, currentNetWorthCents\(summary\)\);\s*renderPortfolioTable\(rows\);/);
   assert.match(homeSource, /state\.portfolioView === "table"/);
   assert.match(homeSource, /data-portfolio-table-sort-heading/);
   assert.match(homeSource, /state\.portfolioSort === "name" \? "ascending" : "descending"/);
