@@ -1,3 +1,11 @@
+# Design QA — Home Figma section 98:5696
+
+Home 0.2.4 follows the desktop/tablet/phone group-card reference using unchanged Acadia components and bounded composition adapters. Four portfolio groups replace Top assets; classification, source-backed rates, missing values, menu/keyboard navigation and focused Portfolio entry are verified locally. Desktop/tablet/phone, 320px and 200% text checks show no horizontal overflow. Existing real-history scope, dated endpoints and accurate estimate labels are preserved.
+
+Evidence and differences from the static reference: [Home review](automation/home-groups/2026-09-14/review.md). The browser uses synthetic local data; deployed owner-data and physical-device acceptance remain separate.
+
+---
+
 # Design QA — Income Figma section 129:4938
 
 Result: **passed** for the implemented Income composition and bounded local flow coverage.

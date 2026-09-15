@@ -14,7 +14,7 @@ const designReadme = fs.readFileSync(path.join(root, "DESIGN-README.md"), "utf8"
 const productReadme = fs.readFileSync(path.join(root, "PRODUCT-README.md"), "utf8");
 const personalFinancePivot = fs.readFileSync(path.join(root, "docs", "personal-finance-pivot.md"), "utf8");
 
-test("Home consumes Acadia without a Mercury presentation layer", () => {
+test("Home consumes canonical Acadia components with documented composition adapters", () => {
   assert.match(styles, /^@import url\("acadia\.css\?v=20260914-346c874"\);/);
   assert.match(acadiaStyles, /\.acadia-responsive-navbar/);
   assert.match(acadiaStyles, /\.acadia-card\.is-content/);
@@ -67,7 +67,7 @@ test("Home composes a minimal Acadia dashboard", () => {
   assert.match(indexHtml, /id="home-growth"/);
   assert.match(indexHtml, /id="home-passive-income"/);
   assert.match(indexHtml, />Estimated annual income</);
-  assert.match(indexHtml, />Top assets</);
+  assert.match(indexHtml, /id="holdings-title"[^>]*>Portfolio</);
   assert.doesNotMatch(indexHtml, />Dashboard</);
   assert.doesNotMatch(indexHtml, /id="holding-search"|id="holding-sort"|id="holding-filters"/);
   assert.match(indexHtml, /id="performance-periods" class="acadia-tabs" role="tablist"/);
@@ -127,18 +127,18 @@ test("Mercury composes the complete Acadia responsive Navbar", () => {
   assert.match(homeSource, /document\.querySelectorAll\("\[data-sign-out\]"\)/);
 });
 
-test("Home uses genuine performance history and ranks holdings with properties", () => {
+test("Home uses genuine performance history and grouped portfolio destinations", () => {
   assert.match(homeSource, /if \(!performance\.showTrend\)/);
-  assert.match(homeSource, /slice\(0, 4\)/);
+  assert.match(homeSource, /summarizeHomeGroups/);
   assert.match(homeSource, /acadia-card-trend-chart/);
   assert.match(homeSource, /acadia-card-trend-baseline/);
-  assert.match(homeSource, /kind: "property"/);
+  assert.match(homeSource, /data-home-group/);
   assert.match(homeSource, /propertyEquityCents\(model\)/);
   assert.match(homeSource, /acadia-card is-content/);
-  assert.doesNotMatch(styles, /#home-workspace|mercury-home|mercury-command-grid/);
+  assert.doesNotMatch(styles, /mercury-command-grid/);
   assert.match(indexHtml, /id="home-add-asset"/);
   assert.match(homeSource, /Retirement/);
-  assert.match(homeSource, /Crypto/);
+  assert.match(fs.readFileSync(path.join(root, "dashboard.js"), "utf8"), /Crypto/);
   assert.match(homeSource, /Brokerage/);
   assert.match(homeSource, /Manual valuation/);
   assert.match(homeSource, /market value/);
@@ -285,7 +285,7 @@ test("Plan provides one hero projection, four statistics and live scenario contr
   assert.match(indexHtml, /id="plan-assumptions-dialog"/);
   assert.match(indexHtml, /id="property-dialog"/);
   assert.match(indexHtml, /<script src="plan\.js\?v=20260914-change-cards-023"><\/script>/);
-  assert.match(indexHtml, /<script type="module" src="brokerage\.js\?v=20260914-change-cards-023"><\/script>/);
+  assert.match(indexHtml, /<script type="module" src="brokerage\.js\?v=20260914-home-groups-024"><\/script>/);
   assert.match(homeSource, /function routePlan\(\)/);
   assert.match(homeSource, /function renderPlan\(summary\)/);
   assert.match(homeSource, /function renderPlanChart/);

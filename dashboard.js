@@ -27,6 +27,30 @@ function summarizeInvestmentGroups(rows) {
     allocationRate: total > 0 && group.valueCents !== null ? group.valueCents / total : null }));
 }
 
+// Home groups use the same rounded, source-backed estimates as its summary.
+// Plan overrides and expected-return inputs must not become historical returns.
+function summarizeHomeGroups(rows, properties, { propertiesAvailable = true, pendingIds = new Set() } = {}) {
+  const investments = summarizeInvestmentGroups(rows);
+  const groups = ["brokerage", "crypto", "retirement"].map(id => {
+    const group = investments.find(group => group.id === id);
+    const members = rows.filter(row => investmentGroup(row.asset) === id);
+    const pending = members.some(row => pendingIds.has(row.asset.id));
+    const rate = field => group.valueCents > 0 && !pending && members.every(row => Number.isSafeInteger(row[field]))
+      ? members.reduce((sum, row) => sum + row[field], 0) / group.valueCents : null;
+    return { ...group, pending, growthRate: rate("estimatedAnnualGrowthCents"),
+      yieldRate: rate("estimatedAnnualIncomeCents"), hasYield: id !== "crypto" };
+  });
+  const marketValue = properties.reduce((sum, property) => sum + property.currentValueCents, 0);
+  const appreciation = properties.map(property => DashboardPlan.propertyAppreciation(property));
+  groups.push({ id: "property", name: "Property", count: propertiesAvailable ? properties.length : null,
+    valueCents: propertiesAvailable ? DashboardPlan.totalPropertyEquityCents(properties) : null,
+    growthRate: propertiesAvailable && marketValue > 0 && appreciation.every(value => value.rate !== null)
+      ? properties.reduce((sum, property, index) => sum + property.currentValueCents * appreciation[index].rate, 0) / marketValue : null,
+    growthSource: propertiesAvailable ? appreciation.map(value => value.source).join("; ") : "Property data unavailable",
+    hasYield: false, pending: false });
+  return groups;
+}
+
 function summarizePlanningPosition({ sources = [], categories = [], holdings = [], passiveAnnualCents = null,
   sourcesAvailable = true, categoriesAvailable = true, holdingsAvailable = true, passiveAvailable = true,
   period = "month" } = {}) {
@@ -82,6 +106,6 @@ function summarizeAllTimeChange(snapshots, currentValueCents) {
     changeRate: available && first.totalValueCents > 0 ? changeCents / first.totalValueCents : null };
 }
 
-const dashboardContract = { HISTORY_MINIMUM_DAYS, investmentGroup, summarizeInvestmentGroups, summarizePlanningPosition, summarizeHoldingAllocation, summarizeDashboardHistory, summarizeAllTimeChange };
+const dashboardContract = { HISTORY_MINIMUM_DAYS, investmentGroup, summarizeInvestmentGroups, summarizeHomeGroups, summarizePlanningPosition, summarizeHoldingAllocation, summarizeDashboardHistory, summarizeAllTimeChange };
 if (typeof module !== "undefined") module.exports = dashboardContract;
 if (typeof window !== "undefined") window.MercuryDashboard = dashboardContract;

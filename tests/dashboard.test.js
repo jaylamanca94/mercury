@@ -122,3 +122,52 @@ test('Home short ranges use recorded daily observations and calendar-month bound
   assert.equal(history(records,'1d').changeCents, 100);
   assert.equal(history(records.slice(0,1),'1d').changeCents, null);
 });
+
+const homeGroups = require('../dashboard').summarizeHomeGroups;
+const homeRow = (id, type, retirement, value, growth, income) => ({ asset: {id, instrumentType:type, isRetirement:retirement}, marketValueCents:value, estimatedAnnualGrowthCents:growth, estimatedAnnualIncomeCents:income });
+const homeProperty = (value, debt, rate) => ({currentValueCents:value, mortgageBalanceCents:debt, annualAppreciationRate:rate});
+test('Home groups conserve value, classify retirement crypto once and weight existing rounded estimates', () => {
+  const groups = homeGroups([
+    homeRow('a','stock',false,10000,1000,200), homeRow('b','etf',false,30000,-600,300),
+    homeRow('c','crypto',false,5000,1000,0), homeRow('d','crypto',true,20000,2000,0),
+  ], [homeProperty(50000,20000,.04),homeProperty(10000,15000,0)]);
+  assert.deepEqual(groups.map(g=>[g.id,g.count,g.valueCents]), [['brokerage',2,40000],['crypto',1,5000],['retirement',1,20000],['property',2,25000]]);
+  assert.equal(groups[0].growthRate,.01);
+  assert.equal(groups[0].yieldRate,.0125);
+  assert.equal(groups[2].growthRate,.1);
+  assert.equal(groups[3].growthRate,2000/60000);
+  assert.equal(groups[1].hasYield,false);
+  assert.equal(groups[3].hasYield,false);
+});
+test('Home withholds incomplete group amounts and metrics without hiding known groups or asset counts', () => {
+  const rows = [homeRow('a','stock',false,10000,1000,200),homeRow('b','stock',false,null,null,null),homeRow('c','crypto',false,5000,1000,0)];
+  const groups = homeGroups(rows, [homeProperty(10000,0,.03)],{propertiesAvailable:false});
+  assert.equal(groups[0].count,2);
+  assert.equal(groups[0].valueCents,null);
+  assert.equal(groups[0].growthRate,null);
+  assert.equal(groups[0].yieldRate,null);
+  assert.equal(groups[1].valueCents,5000);
+  assert.equal(groups[1].growthRate,.2);
+  assert.equal(groups[3].count,null);
+  assert.equal(groups[3].valueCents,null);
+  assert.equal(groups[3].growthRate,null);
+});
+test('Home pending estimates affect only their group and never fall back to Plan assumptions', () => {
+  const a=homeRow('a','stock',false,10000,null,200);
+  a.asset.expectedAnnualReturnRate=.99;
+  const b=homeRow('b','crypto',false,10000,0,0);
+  const groups=homeGroups([a,b],[],{pendingIds:new Set(['a'])});
+  assert.equal(groups[0].pending,true);
+  assert.equal(groups[0].growthRate,null);
+  assert.equal(groups[0].yieldRate,null);
+  assert.equal(groups[1].pending,false);
+  assert.equal(groups[1].growthRate,0);
+  assert.equal(homeGroups([a],[])[0].growthRate,null);
+});
+test('Home preserves empty, zero, negative equity and unknown appreciation distinctions', () => {
+  const empty=homeGroups([],[]);
+  assert.ok(empty.every(g=>g.count===0 && g.valueCents===0 && g.growthRate===null));
+  assert.equal(homeGroups([], [homeProperty(10000,20000,0)])[3].valueCents,-10000);
+  assert.equal(homeGroups([], [homeProperty(10000,20000,0)])[3].growthRate,0);
+  assert.equal(homeGroups([], [homeProperty(10000,0,.04),homeProperty(10000,0,null)])[3].growthRate,null);
+});

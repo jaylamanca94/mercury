@@ -1,0 +1,102 @@
+{
+  "layouts": [
+    {
+      "name": "desktop",
+      "cardHeights": [
+        209,
+        209,
+        209,
+        209
+      ],
+      "groupColumns": 4,
+      "groups": "7 assets",
+      "overflow": false,
+      "summaryColumns": 4,
+      "width": 1512
+    },
+    {
+      "name": "tablet",
+      "cardHeights": [
+        209,
+        209,
+        209,
+        209
+      ],
+      "groupColumns": 2,
+      "groups": "7 assets",
+      "overflow": false,
+      "summaryColumns": 2,
+      "width": 834
+    },
+    {
+      "name": "phone",
+      "cardHeights": [
+        209,
+        209,
+        209,
+        209
+      ],
+      "groupColumns": 1,
+      "groups": "7 assets",
+      "overflow": false,
+      "summaryColumns": 1,
+      "width": 400
+    },
+    {
+      "name": "narrow-phone",
+      "cardHeights": [
+        209,
+        209,
+        209,
+        209
+      ],
+      "groupColumns": 1,
+      "groups": "7 assets",
+      "overflow": false,
+      "summaryColumns": 1,
+      "width": 320
+    },
+    {
+      "name": "small-desktop",
+      "cardHeights": [
+        209,
+        209,
+        209,
+        209
+      ],
+      "groupColumns": 4,
+      "groups": "7 assets",
+      "overflow": false,
+      "summaryColumns": 4,
+      "width": 1200
+    },
+    {
+      "name": "200-percent-text",
+      "overflow": false,
+      "rangeButtons": [
+        {
+          "height": 88,
+          "width": 100.34375
+        },
+        {
+          "height": 88,
+          "width": 109.40625
+        },
+        {
+          "height": 88,
+          "width": 106.546875
+        },
+        {
+          "height": 88,
+          "width": 97.28125
+        },
+        {
+          "height": 88,
+          "width": 104.640625
+        }
+      ],
+      "width": 320
+    }
+  ],
+  "interactions": "Group menu and unchanged refresh; Brokerage, Retirement keyboard, Property and View portfolio navigation; stale search reset; focus; 1D point and End key; partial valuations; property retry destination; empty groups and Add asset dialog; no browser errors."
+}
