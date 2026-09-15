@@ -82,12 +82,6 @@
   width: 100%; padding-inline-start: calc(var(--acadia-field-padding-x) + 1ch);
 }
 
-/* Home change cards use Acadia’s semantic negative colour for both value parts. */
-#metric-change-value.is-danger, #metric-change-rate.is-danger,
-#all-time-change-value.is-danger, #all-time-change-rate.is-danger {
-  color: var(--acadia-status-danger-text);
-}
-
 /* Home section 98:5696: four/two/one columns and the reference chart height.
    Acadia owns the card, menu, typography, colour and focus treatments. */
 #home-statistics, #holdings-grid {
@@ -124,5 +118,28 @@
   #home-workspace .acadia-page-header-pattern-meta { flex-direction: column; align-items: flex-start; }
 }
 
-#home-statistics .is-positive { color: var(--acadia-status-success-text); }
-#home-statistics .is-danger { color: var(--acadia-status-danger-text); }
+/* Acadia Text roles, scoped to Home while the vendored release predates them.
+   Fallbacks match Acadia 55026a0; native aliases take precedence after adoption. */
+#home-statistics {
+  --mercury-summary-green: var(--acadia-text-green, var(--acadia-system-green-50));
+  --mercury-summary-red: var(--acadia-text-red, var(--acadia-system-red-60));
+  --mercury-summary-caption: var(--acadia-text-medium, #3d4551);
+}
+[data-acadia-theme="dark"] #home-statistics {
+  --mercury-summary-green: var(--acadia-text-green, var(--acadia-system-green-40));
+  --mercury-summary-red: var(--acadia-text-red, var(--acadia-system-red-50));
+  --mercury-summary-caption: var(--acadia-text-medium, #8d9297);
+}
+@media (prefers-color-scheme: dark) {
+  [data-acadia-theme="system"] #home-statistics {
+    --mercury-summary-green: var(--acadia-text-green, var(--acadia-system-green-40));
+    --mercury-summary-red: var(--acadia-text-red, var(--acadia-system-red-50));
+    --mercury-summary-caption: var(--acadia-text-medium, #8d9297);
+  }
+}
+#home-statistics .acadia-lead.is-positive { color: var(--mercury-summary-green); }
+#home-statistics .acadia-lead.is-danger { color: var(--mercury-summary-red); }
+#home-statistics .acadia-card-metric-value-row > span {
+  color: var(--mercury-summary-caption);
+  font-weight: var(--acadia-font-weight-regular);
+}

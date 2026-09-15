@@ -826,7 +826,7 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
     const available = state.configured && Boolean(state.account) && !missingValuations;
     const loading = available && state.providerMetricsPending.size > 0;
     const growth = available && !loading ? summary.totalEstimatedAnnualGrowthCents : null;
-    setMovement("#home-growth-rate", growth !== null && summary.totalMarketValueCents > 0 ? growth / summary.totalMarketValueCents : null, displaySignedPercentage, { hideWhenUnavailable: true });
+    setMovement("#home-growth-rate", growth !== null && summary.totalMarketValueCents > 0 ? growth / summary.totalMarketValueCents : null, value => percentage.format(value), { hideWhenUnavailable: true });
     setMovement("#home-growth", growth, value => displayCurrency(value / 100));
     $("#home-growth-context").classList.toggle("acadia-sr-only", growth !== null);
     setText("#home-growth", loading ? "Loading…" : growth === null ? "Unavailable" : displayCurrency(growth / 100));
@@ -842,7 +842,7 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
     const complete = state.configured && Boolean(state.account) && summary.rows.length === state.holdings.length;
     const lifetime = summarizeAllTimeChange(state.snapshots, complete ? summary.totalMarketValueCents : null);
     setMovement("#all-time-change-value", lifetime.changeCents, displaySignedCurrency);
-    setMovement("#all-time-change-rate", lifetime.changeRate, value => `(${percentage.format(Math.abs(value))})`, { hideWhenUnavailable: true });
+    setMovement("#all-time-change-rate", lifetime.changeRate, value => percentage.format(value), { hideWhenUnavailable: true });
     setText("#all-time-change-context", !complete ? "Complete investment values unavailable"
       : !lifetime.startDate ? "Awaiting first recorded value"
       : lifetime.changeRate === null ? "Percentage unavailable from $0" : "");
@@ -850,7 +850,7 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
     const dayCents = complete ? summary.totalDayChangeCents : null;
     const dayRate = complete ? summary.totalDayChangeRate : null;
     setMovement("#metric-change-value", dayCents, displaySignedCurrency);
-    setMovement("#metric-change-rate", dayRate, value => `(${percentage.format(Math.abs(value))})`, { hideWhenUnavailable: true });
+    setMovement("#metric-change-rate", dayRate, value => percentage.format(value), { hideWhenUnavailable: true });
     setText("#day-change-context", !complete ? "Complete investment values unavailable"
       : dayCents === null ? "Previous close unavailable for some investments"
       : dayRate === null ? "Percentage unavailable from $0"

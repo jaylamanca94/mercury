@@ -980,7 +980,7 @@ test('Home growth withholds incomplete history and valuations and recovers after
   api.state.providerMetricsPending.clear();api.renderHomeGrowth(complete);
   assert.equal(node('#home-growth').textContent,'$123');
   api.renderHomeGrowth({...complete,totalMarketValueCents:123000});
-  assert.equal(node('#home-growth-rate').textContent,'+10%');
+  assert.equal(node('#home-growth-rate').textContent,'10%');
   api.renderHomeGrowth({...complete,totalMarketValueCents:0});
   assert.equal(node('#home-growth-rate').hidden,true);
   api.renderHomeGrowth({...complete,totalEstimatedAnnualGrowthCents:null});
@@ -1006,9 +1006,9 @@ test('Home lifetime and day changes stay independent of chart range and recover 
   for(const period of ['all','3m','6m','1y']) {
     api.state.performancePeriod=period; api.renderHomeChanges(summary);
     assert.equal(node('#all-time-change-value').textContent,'+$100');
-    assert.equal(node('#all-time-change-rate').textContent,'(10%)');
+    assert.equal(node('#all-time-change-rate').textContent,'10%');
     assert.equal(node('#metric-change-value').textContent,'-$10');
-    assert.equal(node('#metric-change-rate').textContent,'(0.9%)');
+    assert.equal(node('#metric-change-rate').textContent,'-0.9%');
     assert.equal(node('#day-change-context').hidden,true);
     assert.equal(node('#all-time-change-context').hidden,true);
     assert.equal(node('#all-time-change-context').textContent,'');

@@ -1,0 +1,124 @@
+[
+  {
+    "theme": "light",
+    "cards": [
+      [
+        {
+          "colour": "rgb(158, 57, 75)",
+          "size": "20px",
+          "text": "-$2.9k",
+          "weight": "700"
+        },
+        {
+          "colour": "rgb(61, 69, 81)",
+          "size": "16px",
+          "text": "-0.61%",
+          "weight": "400"
+        }
+      ],
+      [
+        {
+          "colour": "rgb(46, 131, 103)",
+          "size": "20px",
+          "text": "+$74k",
+          "weight": "700"
+        },
+        {
+          "colour": "rgb(61, 69, 81)",
+          "size": "16px",
+          "text": "18.38%",
+          "weight": "400"
+        }
+      ],
+      [
+        {
+          "colour": "rgb(46, 131, 103)",
+          "size": "20px",
+          "text": "$38k",
+          "weight": "700"
+        },
+        {
+          "colour": "rgb(61, 69, 81)",
+          "size": "16px",
+          "text": "8%",
+          "weight": "400"
+        }
+      ],
+      [
+        {
+          "colour": "rgb(46, 131, 103)",
+          "size": "20px",
+          "text": "$9.2k",
+          "weight": "700"
+        },
+        {
+          "colour": "rgb(61, 69, 81)",
+          "size": "16px",
+          "text": "1.95%",
+          "weight": "400"
+        }
+      ]
+    ]
+  },
+  {
+    "theme": "dark",
+    "cards": [
+      [
+        {
+          "colour": "rgb(205, 66, 91)",
+          "size": "20px",
+          "text": "-$2.9k",
+          "weight": "700"
+        },
+        {
+          "colour": "rgb(141, 146, 151)",
+          "size": "16px",
+          "text": "-0.61%",
+          "weight": "400"
+        }
+      ],
+      [
+        {
+          "colour": "rgb(52, 163, 126)",
+          "size": "20px",
+          "text": "+$74k",
+          "weight": "700"
+        },
+        {
+          "colour": "rgb(141, 146, 151)",
+          "size": "16px",
+          "text": "18.38%",
+          "weight": "400"
+        }
+      ],
+      [
+        {
+          "colour": "rgb(52, 163, 126)",
+          "size": "20px",
+          "text": "$38k",
+          "weight": "700"
+        },
+        {
+          "colour": "rgb(141, 146, 151)",
+          "size": "16px",
+          "text": "8%",
+          "weight": "400"
+        }
+      ],
+      [
+        {
+          "colour": "rgb(52, 163, 126)",
+          "size": "20px",
+          "text": "$9.2k",
+          "weight": "700"
+        },
+        {
+          "colour": "rgb(141, 146, 151)",
+          "size": "16px",
+          "text": "1.95%",
+          "weight": "400"
+        }
+      ]
+    ]
+  }
+]
