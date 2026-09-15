@@ -1,0 +1,34 @@
+{
+  "sizes": [
+    {
+      "inset": "4px",
+      "overflow": false,
+      "rail": 42,
+      "tab": 32,
+      "width": 1512
+    },
+    {
+      "inset": "4px",
+      "overflow": false,
+      "rail": 42,
+      "tab": 32,
+      "width": 834
+    },
+    {
+      "inset": "4px",
+      "overflow": false,
+      "rail": 54,
+      "tab": 44,
+      "width": 400
+    },
+    {
+      "inset": "4px",
+      "overflow": false,
+      "rail": 54,
+      "tab": 44,
+      "width": 320
+    }
+  ],
+  "keyboard": "Home, ArrowRight and End select the expected range",
+  "browserErrors": []
+}
