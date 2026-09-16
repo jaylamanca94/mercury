@@ -165,3 +165,8 @@ Changed flows: Add/Edit property → city, state and county/independent city →
 ## Portfolio responsive summary and controls — 2026-09-16
 
 Changed existing Manage holdings in Portfolio / Recurring / Property presentation: compact group and responsive period disclosures; search/sort behind the page ellipsis; two all-investment summary cards; three/two/one asset grid; tablet three-column recurring totals; compact record menus. Summary change uses recorded investment-account values including deposits/withdrawals, independent of the selected records; card changes remain per share/unit and rings remain total-net-worth shares. Zero/one history records, zero baseline, incomplete current valuation, no search matches, Cards/Table continuity, keyboard menus, recurring edit/Back focus and property edit/Cancel remain explicit. No canonical flow or persistence entity added. Required local coverage and results: `automation/portfolio-full/2026-09-16/review.md`.
+
+
+## Portfolio market-performance correction — 2026-09-16
+
+Supersedes the recorded-account summary decision above. Existing Portfolio flow now calculates market-price movement at constant current share counts across **all** holdings, using shared observed dates. Filters/search/Table do not remove assets from the calculation or cancel their required market reads. Missing quantities/history withhold the total. A summary-level retry covers failures in filtered-out assets and Table view; focus stays on Retry through loading then moves to the recovered figure. Individual card price changes and net-worth allocation remain unchanged. No persistence or new canonical flow. Evidence: `automation/portfolio-market-summary/2026-09-16/review.md`.

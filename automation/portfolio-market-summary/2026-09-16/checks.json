@@ -1,0 +1,14 @@
+{
+  "summary": "-$32",
+  "rate": "-0.01%",
+  "passed": [
+    "snapshot independence",
+    "group/search/Table independence",
+    "shared period",
+    "offscreen asset failure withholds entire total",
+    "summary retry in Table preserves focus",
+    "missing share count withholds total",
+    "dark/light desktop and 320px containment",
+    "no browser errors"
+  ]
+}

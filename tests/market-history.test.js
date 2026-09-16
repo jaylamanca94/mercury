@@ -88,3 +88,63 @@ test('Portfolio week and six-month ranges include only the requested daily marke
   assert.equal(sixMonths.points.length, 4);
   assert.equal(sixMonths.change, 30);
 });
+
+const { summarizePortfolioMarketHistory: basket } = require('../market-history');
+const basketRow = (id, shares, extra = {}) => ({ asset: { id, shares, instrumentType: 'etf', valuationBasis: 'shares-and-price', ...extra } });
+const history = points => ({ currency: 'USD', source: 'Test closes', points });
+
+test('portfolio market change holds current units constant and weights the starting market value', () => {
+  const rows = [basketRow('a', 2), basketRow('b', 3)];
+  const histories = new Map([['a', history([point(7,100), point(0,110)])], ['b', history([point(7,50), point(0,40)])]]);
+  const result = basket(rows, histories, '1w', now);
+  assert.equal(result.changeCents, -1000); // +20 and -30 dollars
+  assert.equal(result.changeRate, -10 / 350);
+  assert.equal(result.startDate, '2026-09-07');assert.equal(result.endDate, '2026-09-14');
+  // Account snapshots, cost, current quotes and contributions do not enter price movement.
+  const changed = rows.map(row => ({...row, marketValueCents:99999999, deposits:999999, withdrawals:999999}));
+  assert.deepEqual(basket(changed, histories, '1w', now), result);
+  assert.equal(basket([basketRow('a',4),basketRow('b',6)],histories,'1w',now).changeCents,-2000);
+  assert.equal(basket([basketRow('a',4),basketRow('b',6)],histories,'1w',now).changeRate,result.changeRate);
+});
+
+test('portfolio market history uses common observed dates across stock and crypto calendars', () => {
+  const histories = new Map([
+    ['stock',history([point(7,100),point(4,120),point(3,110)])],
+    ['coin',history([point(6,20),point(4,30),point(3,40),point(0,90)])],
+  ]);
+  const result=basket([basketRow('stock',2),basketRow('coin',3)],histories,'1w',now);
+  assert.equal(result.startDate,'2026-09-10');assert.equal(result.endDate,'2026-09-11');
+  assert.equal(result.changeCents,1000);assert.equal(result.changeRate,10/330);
+  histories.set('coin',history([point(2,30),point(0,40)]));
+  assert.equal(basket([basketRow('stock',2),basketRow('coin',3)],histories,'1w',now).changeCents,null);
+});
+
+test('portfolio totals never silently exclude missing history or unknown share counts', () => {
+  const good=history([point(7,100),point(0,110)]);
+  for(const bad of [null,history([]),history([point(0,100)]),{...good,currency:'EUR'}]) {
+    const result=basket([basketRow('a',2),basketRow('b',1)],new Map([['a',good],['b',bad]]),'1w',now);
+    assert.equal(result.changeCents,null);assert.equal(result.changeRate,null);
+  }
+  for(const shares of [null,undefined,NaN,-1]) assert.equal(basket([basketRow('a',shares)],new Map([['a',good]]),'1w',now).changeCents,null);
+  assert.equal(basket([basketRow('a',2,{valuationBasis:'manual-value'})],new Map([['a',good]]),'1w',now).changeCents,null);
+  assert.equal(basket([],new Map(),'1w',now).changeRate,null);
+});
+
+test('portfolio market totals preserve fractional prices and aggregate before rounding cents', () => {
+  const rows=[basketRow('a',15000),basketRow('b',15000)];
+  const histories=new Map(rows.map(row=>[row.asset.id,history([point(7,.00001),point(0,.000011)])]));
+  const result=basket(rows,histories,'1w',now);
+  assert.equal(result.changeCents,3);assert.ok(Math.abs(result.changeRate-.1)<1e-12);
+  const flat=basket([basketRow('a',5)],new Map([['a',history([point(7,20),point(0,20)])]]),'1w',now);
+  assert.equal(flat.changeCents,0);assert.equal(flat.changeRate,0);
+});
+
+test('cash has zero price movement and stays in the portfolio starting-value denominator', () => {
+  const cash={asset:{id:'cash',instrumentType:'cash'},marketValueCents:10000};
+  const histories=new Map([['a',history([point(7,100),point(0,110)])]]);
+  const result=basket([basketRow('a',1),cash],histories,'1w',now);
+  assert.equal(result.changeCents,1000);assert.equal(result.changeRate,.05);
+  assert.equal(basket([cash],new Map(),'1w',now).changeRate,0);
+  assert.equal(basket([{...cash,marketValueCents:null}],new Map(),'1w',now).changeCents,null);
+  assert.equal(basket([basketRow('zero',0),cash],new Map(),'1w',now).changeCents,0);
+});

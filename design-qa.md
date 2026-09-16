@@ -1,3 +1,7 @@
+# Design QA — Portfolio market-performance correction, 16 September 2026
+
+The two Portfolio summary cards now use market-price performance at current share counts, excluding deposits and withdrawals. This supersedes the recorded-value summary choice below. Complete-market-history, common-date, fractional-price, current-quantity and zero/negative/flat cases pass, along with filter/search/Table independence and recovery. 266 automated checks pass. Evidence: `automation/portfolio-market-summary/2026-09-16/review.md`.
+
 # Design QA — Portfolio Figma section 110:10301
 
 Portfolio now composes the two all-investment summary cards, compact responsive controls and three/two/one investment grid, followed by full-width Recurring and Property. The founder-selected recorded value change includes deposits/withdrawals; individual card movements remain per unit and allocation rings remain complete-net-worth shares with integer labels. 262 checks and isolated 1512/834/400/320px light/dark, enlarged-text, menu/focus and editing-navigation checks pass. Full evidence, reference mapping and acceptance boundaries: `automation/portfolio-full/2026-09-16/review.md`.

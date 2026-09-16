@@ -33,7 +33,7 @@ function controller() {
     fetch:async()=>({ok:false,json:async()=>({error:'provider unavailable'})}),
   });
   const source = fs.readFileSync(require.resolve('../brokerage.js'),'utf8').replace(/^import .*;\n/, '').replace('  initialise();',
-    '  window.testController = {renderPortfolioRecordedChange,selectPortfolioMarketPeriod,renderPortfolioMarketCharts,currentNetWorthCents,holdingAllocationMarkup,editPlanScenario,savePlanScenario,planProjection,observeAuthSession,sessionToken,editIncomeSource,saveInlineIncomeSource,cancelInlineIncomeSource,incomeSourceDrafts,syncPortfolioMarketHistory,clearPortfolioMarketHistory,portfolioMarketHistory,renderRecurringInvestments,loadMarketHistory,renderMarketHistory,clearMarketHistory,initialise,loadData,readWithDeadline,retryPlanSettings,openPlanAssumptionsDialog,savePlanAssumptions,retryProperties,hydrateProviderMetrics,ensurePlanSettings,state,render,renderHomeChanges,renderHomeGrowth,renderIncomeRecovery,retryIncomeData,missingIncomeYieldRows,renderIncomeYieldRecovery,renderPlan,renderQuickQuotePreview,refreshCurrentAssetPrice,restorePortfolioAssetFocus,renderHistory,renderAsset,canQuote,lookupQuote,saveQuickAsset,navigateToAsset,navigateBackFromAsset,routeAssetId,openFormDialog,hasPendingWrite,hasUnsavedWork,matchingPortfolioHoldingRows,sortHoldingRows,holdingValueLabel,renderPortfolioView,renderPortfolioSummary,detailHolding,openPropertyDialog,saveProperty};');
+    '  window.testController = {renderPortfolioMarketChange,selectPortfolioMarketPeriod,renderPortfolioMarketCharts,currentNetWorthCents,holdingAllocationMarkup,editPlanScenario,savePlanScenario,planProjection,observeAuthSession,sessionToken,editIncomeSource,saveInlineIncomeSource,cancelInlineIncomeSource,incomeSourceDrafts,syncPortfolioMarketHistory,clearPortfolioMarketHistory,portfolioMarketHistory,renderRecurringInvestments,loadMarketHistory,renderMarketHistory,clearMarketHistory,initialise,loadData,readWithDeadline,retryPlanSettings,openPlanAssumptionsDialog,savePlanAssumptions,retryProperties,hydrateProviderMetrics,ensurePlanSettings,state,render,renderHomeChanges,renderHomeGrowth,renderIncomeRecovery,retryIncomeData,missingIncomeYieldRows,renderIncomeYieldRecovery,renderPlan,renderQuickQuotePreview,refreshCurrentAssetPrice,restorePortfolioAssetFocus,renderHistory,renderAsset,canQuote,lookupQuote,saveQuickAsset,navigateToAsset,navigateBackFromAsset,routeAssetId,openFormDialog,hasPendingWrite,hasUnsavedWork,matchingPortfolioHoldingRows,sortHoldingRows,holdingValueLabel,renderPortfolioView,renderPortfolioSummary,detailHolding,openPropertyDialog,saveProperty};');
   vm.runInContext(source,context);
   const api=window.testController;
   api.state.client={auth:{onAuthStateChange(callback){ window.authChanged = callback; return {data:{subscription:{unsubscribe(){}}}}; },getSession:async()=>({data:{session:{access_token:'isolated-test'}}})}};
@@ -1663,48 +1663,27 @@ test('card footers show signed unit-price movement and preserve fractional chang
 });
 
 
-test('Portfolio recorded value change uses account snapshots, independent of cards, filters and current holdings', () => {
-  const {api,node} = controller();
-  api.state.snapshots = [
-    {snapshot_date:'2026-08-16',total_value_cents:100000},
-    {snapshot_date:'2026-09-09',total_value_cents:200000},
-    {snapshot_date:'2026-09-16',total_value_cents:250000},
-  ];
-  api.selectPortfolioMarketPeriod('1w');
-  assert.equal(node('#portfolio-period-change').textContent,'+$500');
-  assert.equal(node('#portfolio-period-change-rate').textContent,'+25%');
-  assert.equal(node('#portfolio-current-change-rate').textContent,'+25%');
-  assert.match(node('#portfolio-value-context').textContent,/Includes deposits and withdrawals/);
-  assert.match(node('#portfolio-value-context').textContent,/Sep 9, 2026 – Sep 16, 2026/);
-  api.state.portfolioFilter='crypto'; api.state.portfolioView='table';
-  node('#portfolio-search').value='No matches';
-  api.state.holdings=[{id:'unrelated',shares:99999}];
-  api.renderPortfolioRecordedChange();
-  assert.equal(node('#portfolio-period-change').textContent,'+$500');
-  api.selectPortfolioMarketPeriod('1m');
-  assert.equal(node('#portfolio-period-change').textContent,'+$1.5k');
-  assert.equal(node('#portfolio-period-change-rate').textContent,'+150%');
-  assert.equal(node('#portfolio-period-caption').textContent,'1 month change');
-  assert.equal(node('#portfolio-period-label').textContent,'1M');
-});
 
-test('Portfolio snapshot summaries preserve unavailable, zero-baseline, flat and negative states', () => {
-  const {api,node}=controller();
-  const snapshot=(day,value)=>({snapshot_date:`2026-09-${day}`,total_value_cents:value});
-  for(const snapshots of [[],[snapshot('16',12345)]]) {
-    api.state.snapshots=snapshots;api.renderPortfolioRecordedChange();
-    assert.equal(node('#portfolio-period-change').textContent,'—');
-    assert.equal(node('#portfolio-period-change-rate').textContent,'');
-    assert.equal(node('#portfolio-current-change-rate').hidden,true);
-    assert.match(node('#portfolio-value-context').textContent,/change unavailable/);
-  }
-  api.state.snapshots=[snapshot('15',0),snapshot('16',10000)];api.renderPortfolioRecordedChange();
-  assert.equal(node('#portfolio-period-change').textContent,'+$100');
-  assert.equal(node('#portfolio-period-change-rate').textContent,'');
-  api.state.snapshots=[snapshot('15',10000),snapshot('16',10000)];api.renderPortfolioRecordedChange();
-  assert.equal(node('#portfolio-period-change').textContent,'$0');
-  assert.equal(node('#portfolio-period-change-rate').textContent,'0%');
-  api.state.snapshots=[snapshot('15',10000),snapshot('16',5000)];api.renderPortfolioRecordedChange();
-  assert.equal(node('#portfolio-period-change').textContent,'-$50');
-  assert.equal(node('#portfolio-period-change-rate').textContent,'-50%');
+test('Portfolio summary uses all holdings in Cards and Table without using account snapshots', async () => {
+  const {api,node,window,context}=editableAsset();api.clearMarketHistory();
+  window.location.hash='#portfolio';api.state.account={id:'test-account'};
+  const base=api.state.holdings[0];
+  api.state.holdings=[{...base,id:'a',symbol:'AAA',instrument_type:'stock'},{...base,id:'b',symbol:'BBB',instrument_type:'stock'}];
+  const rows=api.state.holdings.map(holding=>({asset:{id:holding.id,shares:2,instrumentType:'stock',valuationBasis:'shares-and-price'}}));
+  const now=Date.now();
+  context.fetch=async()=>({ok:true,json:async()=>({currency:'USD',source:'Test history',points:[{time:now-86400000,price:100},{time:now,price:110}]})});
+  api.syncPortfolioMarketHistory(rows);await new Promise(resolve=>setImmediate(resolve));
+  assert.equal(node('#portfolio-period-change').textContent,'+$40');
+  assert.equal(node('#portfolio-current-change-rate').textContent,'+10%');
+  api.state.snapshots=[{snapshot_date:'2026-01-01',total_value_cents:100},{snapshot_date:'2026-09-16',total_value_cents:999999999}];
+  api.state.portfolioView='table';api.state.portfolioFilter='crypto';node('#portfolio-search').value='no match';
+  api.syncPortfolioMarketHistory(rows);
+  assert.equal(api.portfolioMarketHistory.size,2);
+  assert.equal(node('#portfolio-period-change').textContent,'+$40');
+  assert.match(node('#portfolio-value-context').textContent,/Excludes deposits, withdrawals, dividends and property/);
+  api.portfolioMarketHistory.get('b').error=true;api.renderPortfolioMarketChange();
+  assert.equal(node('#portfolio-period-change').textContent,'—');
+  assert.equal(node('#portfolio-current-change-rate').hidden,true);
+  assert.equal(node('#portfolio-market-retry').hidden,false);
+  api.clearPortfolioMarketHistory();
 });

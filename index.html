@@ -90,9 +90,9 @@
             </div>
             <div id="portfolio-statistics" class="acadia-grid" aria-label="All investment summary" aria-describedby="portfolio-value-context">
               <article class="acadia-card is-content"><div class="acadia-field"><div class="acadia-card-metric-value-row"><strong id="portfolio-current-total" class="acadia-lead">—</strong><span id="portfolio-current-change-rate"></span></div><span class="acadia-text-muted">All investments</span></div></article>
-              <article class="acadia-card is-content"><div class="acadia-field"><div class="acadia-card-metric-value-row"><strong id="portfolio-period-change" class="acadia-lead">—</strong><span id="portfolio-period-change-rate" class="acadia-text-muted"></span></div><span id="portfolio-period-caption" class="acadia-text-muted">1 week change</span></div></article>
+              <article class="acadia-card is-content"><div class="acadia-field"><div class="acadia-card-metric-value-row"><strong id="portfolio-period-change" class="acadia-lead" tabindex="-1">—</strong><span id="portfolio-period-change-rate" class="acadia-text-muted"></span></div><span id="portfolio-period-caption" class="acadia-text-muted">1 week market change</span></div></article>
             </div>
-            <div id="portfolio-metric-context" class="acadia-field"><small id="portfolio-value-context" class="acadia-text-muted">Recorded value change across all investments · Includes deposits and withdrawals · Excludes property.</small><small id="portfolio-card-context" class="acadia-text-muted">Asset cards: Price change per share/unit · Allocation of total net worth.</small></div>
+            <div id="portfolio-metric-context" class="acadia-field"><small id="portfolio-value-context" class="acadia-text-muted">Market-price change across current holdings · Excludes deposits, withdrawals, dividends and property.</small><button id="portfolio-market-retry" class="acadia-button acadia-button-quiet" type="button" hidden>Retry market history</button><small id="portfolio-card-context" class="acadia-text-muted">Asset cards: Price change per share/unit · Allocation of total net worth.</small></div>
             <div id="portfolio-cards-panel" class="acadia-stack" role="tabpanel" aria-labelledby="portfolio-cards-tab"><div id="portfolio-holdings-grid" class="acadia-grid"></div></div>
             <div id="portfolio-table-panel" class="acadia-stack" role="tabpanel" aria-labelledby="portfolio-table-tab" hidden>
               <div class="acadia-table-responsive"><div class="acadia-table-wide"><div id="portfolio-holdings-table-wrap" class="acadia-table-wrap" data-acadia-component-table tabindex="0" role="region" aria-label="Investment comparison" aria-describedby="portfolio-table-help">
@@ -270,7 +270,7 @@
     <script src="data/property-markets.js?v=534e9fd3224c"></script>
     <script src="plan.js?v=20260914-change-cards-023"></script>
     <script src="dashboard.js?v=20260916-asset-types"></script>
-    <script src="market-history.js?v=20260914-portfolio-007"></script>
-  <script type="module" src="brokerage.js?v=20260916-portfolio-page"></script>
+    <script src="market-history.js?v=20260916-market-summary"></script>
+  <script type="module" src="brokerage.js?v=20260916-market-summary"></script>
   </body>
 </html>

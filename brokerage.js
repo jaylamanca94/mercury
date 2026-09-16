@@ -38,7 +38,7 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
     weeklyEquivalentRecurringContributionCents,
   } = window.MercuryPlan;
   const { holdingAssetTypeLabel, investmentGroup, summarizeInvestmentGroups, summarizeHomeGroups, summarizePlanningPosition, summarizeHoldingAllocation, summarizeNetWorthAllocation, summarizeDashboardHistory, summarizeAllTimeChange } = window.MercuryDashboard;
-  const { summarizeMarketHistory } = window.MercuryMarketHistory;
+  const { summarizeMarketHistory, summarizePortfolioMarketHistory } = window.MercuryMarketHistory;
   const $ = (selector) => document.querySelector(selector);
   const currency = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 });
   const compactCurrency = new Intl.NumberFormat("en-US", {
@@ -707,7 +707,7 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
     renderHoldingCards(grid, rows, currentNetWorthCents(summary));
     renderPortfolioTable(rows);
     renderPortfolioView(rows.length > 0);
-    syncPortfolioMarketHistory(rows);
+    syncPortfolioMarketHistory(portfolioHoldingRows(summary));
     const searching = Boolean($("#portfolio-search").value.trim());
     $("#portfolio-search-feedback").hidden = !searching;
     setText("#portfolio-search-count", searching ? `${rows.length} ${rows.length === 1 ? "match" : "matches"}` : "");
@@ -1587,7 +1587,7 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
     } finally { clearTimeout(timer); }
   }
   function syncPortfolioMarketHistory(rows) {
-    portfolioMarketRows = state.portfolioView === "cards" ? rows : [];
+    portfolioMarketRows = rows;
     const wanted = new Set(portfolioMarketRows.map(row => row.asset.id));
     for (const [id, entry] of portfolioMarketHistory) {
       const holding = state.holdings.find(item => item.id === id);
@@ -1600,7 +1600,7 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
     pumpPortfolioMarketHistory();
   }
   function pumpPortfolioMarketHistory() {
-    if (!state.user || !state.account || !routePortfolio() || state.portfolioView !== "cards") return;
+    if (!state.user || !state.account || !routePortfolio()) return;
     let pending = [...portfolioMarketHistory.values()].filter(entry => entry.pending).length;
     for (const row of portfolioMarketRows) {
       if (pending >= 3) break;
@@ -1617,21 +1617,33 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
       });
     }
   }
-  function renderPortfolioRecordedChange() {
-    // Account snapshots intentionally ignore the current asset filter and search.
-    // Their value movement includes deposits/withdrawals, not personal returns.
-    const history = summarizeDashboardHistory(state.snapshots, portfolioMarketPeriod);
+  function renderPortfolioMarketChange() {
+    const histories = new Map([...portfolioMarketHistory].filter(([, entry]) => !entry.pending && !entry.error).map(([id, entry]) => [id, entry.data]));
+    const movement = summarizePortfolioMarketHistory(portfolioMarketRows, histories, portfolioMarketPeriod);
+    const needsHistory = portfolioMarketRows.filter(row => row.asset.instrumentType !== "cash" && row.asset.shares !== 0);
+    const loading = needsHistory.some(row => {
+      const holding = state.holdings.find(item => item.id === row.asset.id);
+      const entry = portfolioMarketHistory.get(row.asset.id);
+      return holding?.symbol && (!entry || entry.pending);
+    });
+    const failed = needsHistory.some(row => portfolioMarketHistory.get(row.asset.id)?.error);
     const labels = { "1w": "1 week", "1m": "1 month", "6m": "6 month", "1y": "1 year" };
-    setMovement("#portfolio-period-change", history.changeCents, displaySignedCurrency);
-    const rate = history.changeRate === null ? "" : displaySignedPercentage(history.changeRate);
-    setText("#portfolio-period-change-rate", rate);
-    setMovement("#portfolio-current-change-rate", history.changeRate, displaySignedPercentage, { hideWhenUnavailable: true });
-    setText("#portfolio-period-caption", `${labels[portfolioMarketPeriod]} change`);
-    const dates = history.recordedDays > 1 ? `${historyDateLabel(history.startDate)} – ${historyDateLabel(history.endDate)}`
-      : history.recordedDays === 1 ? `Only one recorded value, ${historyDateLabel(history.endDate)}; change unavailable`
-      : "No recorded values; change unavailable";
-    setText("#portfolio-value-context", `Recorded value change across all investments · Includes deposits and withdrawals · Excludes property. ${dates}.`);
-    $("#portfolio-period-change").setAttribute("title", history.changeCents === null ? dates : `${preciseCurrency.format(history.changeCents / 100)} · ${dates}`);
+    setMovement("#portfolio-period-change", movement.changeCents, displaySignedCurrency);
+    if (loading) setText("#portfolio-period-change", "Loading…");
+    setText("#portfolio-period-change-rate", movement.changeRate === null ? "" : displaySignedPercentage(movement.changeRate));
+    setMovement("#portfolio-current-change-rate", movement.changeRate, displaySignedPercentage, { hideWhenUnavailable: true });
+    setText("#portfolio-period-caption", `${labels[portfolioMarketPeriod]} market change`);
+    const dates = movement.startDate ? `${historyDateLabel(movement.startDate)} – ${historyDateLabel(movement.endDate)}` : "";
+    const status = loading ? "Loading market history…" : failed ? "Market history unavailable for some investments. Retry to calculate the total." : movement.reason;
+    setText("#portfolio-value-context", `Market-price change across current holdings · Excludes deposits, withdrawals, dividends and property. ${dates || status}`);
+    $("#portfolio-period-change").setAttribute("title", movement.changeCents === null ? status : `${preciseCurrency.format(movement.changeCents / 100)} · Current share counts held constant${dates ? ` · ${dates} · ${movement.sources.join(", ")}` : ""}`);
+    const retry = $("#portfolio-market-retry");
+    // Keep the same button through retries, including while Table is selected.
+    const wasFocused = document.activeElement === retry;
+    retry.hidden = !failed && !(wasFocused && loading);
+    retry.setAttribute("aria-disabled", String(loading));
+    retry.textContent = loading ? "Retrying…" : "Retry market history";
+    if (wasFocused && retry.hidden) $("#portfolio-period-change").focus();
   }
   function renderPortfolioMarketCharts() {
     document.querySelectorAll("[data-portfolio-market-period]").forEach(control => {
@@ -1640,7 +1652,7 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
       control.setAttribute("aria-pressed", String(selected));
     });
     setText("#portfolio-period-label", portfolioMarketPeriod.toUpperCase());
-    renderPortfolioRecordedChange();
+    renderPortfolioMarketChange();
     $("#portfolio-holdings-grid").querySelectorAll("[data-holding-market]").forEach(slot => {
       const holding = state.holdings.find(item => item.id === slot.dataset.holdingMarket);
       if (!holding) return;
@@ -3153,6 +3165,12 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
     }
   }
 
+  $("#portfolio-market-retry").addEventListener("click", () => {
+    if ($("#portfolio-market-retry").getAttribute("aria-disabled") === "true") return;
+    for (const [id, entry] of portfolioMarketHistory) if (entry.error) portfolioMarketHistory.delete(id);
+    pumpPortfolioMarketHistory();
+    renderPortfolioMarketChange();
+  });
   function selectPortfolioMarketPeriod(period) {
     if (!["1w", "1m", "6m", "1y"].includes(period)) return;
     portfolioMarketPeriod = period;
