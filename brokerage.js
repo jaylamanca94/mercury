@@ -492,9 +492,9 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
   }
   function holdingAllocationMarkup(row, netWorthCents) {
     const allocation = summarizeNetWorthAllocation(row.marketValueCents, netWorthCents);
-    const label = allocation.rate === null ? "—" : percentage.format(allocation.rate);
+    const label = allocation.rate === null ? "—" : wholePercentage.format(allocation.rate);
     const description = allocation.rate === null ? allocation.reason
-      : `${label} of total net worth. ${allocation.reason}`.trim();
+      : `${percentage.format(allocation.rate)} of total net worth. ${allocation.reason}`.trim();
     return `<div class="mercury-allocation-ring${allocation.showRing ? "" : " is-unavailable"}" ${allocation.showRing ? `style="--mercury-allocation-angle: ${allocation.rate * 360}deg"` : ""} role="img" aria-label="${escapeHtml(description)}" title="${escapeHtml(description)}"><span aria-hidden="true">${escapeHtml(label)}</span></div>${allocation.reason ? `<small class="acadia-text-muted mercury-allocation-note">${escapeHtml(allocation.reason)}</small>` : ""}`;
   }
   function renderHoldingCards(grid, rows, netWorthCents) {
