@@ -216,13 +216,15 @@
 }
 
 /* Portfolio section 110:10301: responsive page composition over Acadia primitives.
-   Search/sort remain in a compact disclosure; current account history stays distinct
-   from each card's price movement and net-worth allocation. */
+   Shared periods and responsive actions preserve the price-movement and
+   net-worth allocation contracts across desktop, tablet and phone. */
+body:has(#portfolio-workspace:not([hidden])) { --acadia-shell-max-width: var(--acadia-page-max-width-wide); }
 #portfolio-workspace .acadia-card.is-content {
   --acadia-content-card-padding: min(var(--acadia-section-padding-standard), 8vw);
   box-sizing: border-box;
 }
-#portfolio-page-heading { display: grid; grid-template-columns: 1fr auto; }
+#portfolio-page-heading { display: grid; grid-template-columns: minmax(0, 1fr) auto; }
+#portfolio-phone-menu { display: none; }
 #portfolio-investment-results { gap: var(--acadia-space-3); }
 #portfolio-statistics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 #portfolio-holdings-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
@@ -268,7 +270,12 @@
 @media (max-width: 767px) {
   #portfolio-workspace { margin-inline: min(var(--acadia-space-1), 2vw); }
   #portfolio-page-heading { grid-template-columns: 1fr auto; }
-  #portfolio-add-asset { grid-row: 2; justify-self: start; }
+  #portfolio-add-asset, #portfolio-group-picker, #portfolio-period-picker { display: none; }
+  #portfolio-phone-menu { display: block; }
+  #portfolio-phone-menu .acadia-action-menu-panel { width: min(18rem, calc(100vw - 3rem)); max-height: calc(100dvh - var(--acadia-mobile-dock-clearance) - 5rem); overflow-y: auto; box-sizing: border-box; }
+  #portfolio-phone-menu .acadia-action-menu-item { white-space: normal; }
+  #portfolio-market-periods { display: flex; }
+  #portfolio-recurring-sort, #portfolio-property-sort { order: -1; }
   #portfolio-investment-results > .acadia-page-header-pattern > .acadia-page-header-pattern-actions { flex-direction: column; align-items: flex-start; }
   #portfolio-investment-results .acadia-page-header-pattern-tools { flex-direction: column-reverse; align-items: flex-start; }
   #portfolio-summary > .acadia-cluster { flex-direction: column; align-items: flex-start; gap: var(--acadia-space-1); }
@@ -276,7 +283,7 @@
   #portfolio-recurring .acadia-page-header-pattern-section > .acadia-cluster:first-child { flex-direction: column; align-items: flex-start; gap: var(--acadia-space-1); }
 }
 @media (min-width: 768px) {
-  #portfolio-holdings-grid { grid-template-columns: repeat(auto-fit, minmax(min(100%, max(20rem, calc((100% - 3rem) / 3))), 1fr)); }
+  #portfolio-holdings-grid { grid-template-columns: repeat(auto-fill, minmax(min(100%, 20rem), 1fr)); }
 }
 /* Intrinsic reflow keeps large text and disclosed menus inside a narrow phone. */
 #portfolio-view-tabs { max-width: 100%; flex-wrap: wrap; box-sizing: border-box; }
@@ -289,8 +296,6 @@
 #portfolio-group-filters .acadia-badge { white-space: normal; }
 #portfolio-page-heading .acadia-button { max-width: 100%; white-space: normal; }
 @container (max-width: 20rem) {
-  #portfolio-page-heading > h1 { grid-column: 1 / -1; }
-  #portfolio-page-heading > #portfolio-add-asset { grid-column: 1; padding-inline: min(var(--acadia-space-2), 3vw); justify-self: start; }
   #portfolio-page-heading:has(> h1) { column-gap: 0; }
 }
 @media (min-width: 768px) and (hover: hover) and (pointer: fine) {

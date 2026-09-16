@@ -221,7 +221,7 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
     } else if ((fromHome ? ["", "#"].includes(window.location.hash) : routePortfolio()) && previousHash.startsWith("#asset/")) {
       const selector = fromHome ? "#holdings-grid [data-holding-id]" : section === "recurring" ? "#portfolio-recurring-list [data-edit-id]" : "#portfolio-holdings-grid [data-holding-id]";
       const target = [...document.querySelectorAll(selector)].find((element) => (element.dataset.editId || element.dataset.holdingId) === id);
-      const returnTarget = target || $(fromHome ? "#home-add-asset" : section === "recurring" ? "#portfolio-add-recurring summary" : "#portfolio-add-asset");
+      const returnTarget = target || $(fromHome ? "#home-add-asset" : section === "recurring" ? "#portfolio-add-recurring summary" : window.matchMedia?.("(max-width: 767px)").matches ? "#portfolio-phone-menu summary" : "#portfolio-add-asset");
       const menu = returnTarget.closest?.(".acadia-action-menu");
       if (menu && returnTarget.tagName !== "SUMMARY") menu.open = true;
       returnTarget.focus();
@@ -302,6 +302,7 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
   }
   function setControlsDisabled(disabled) {
     $("#portfolio-add-asset").disabled = disabled;
+    $("#portfolio-phone-add-asset").disabled = disabled;
     $("#home-add-asset").disabled = disabled;
     $("#portfolio-add-property").disabled = disabled || !state.propertiesAvailable;
     $("#add-income").disabled = disabled || !state.incomeSourcesAvailable;
@@ -592,7 +593,8 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
     setText("#portfolio-recurring-monthly", currency.format(Math.round(annualCents / 12) / 100));
     setText("#portfolio-recurring-annual", currency.format(annualCents / 100));
     setText("#portfolio-recurring-total", "Equivalent totals across saved schedules · 52 weeks / 12 months per year");
-    $("#portfolio-recurring-sort").value = state.recurringSort;
+    setText("#portfolio-recurring-sort-label", state.recurringSort === "name" ? "Name" : "Value");
+    document.querySelectorAll("[data-recurring-sort]").forEach(control => control.setAttribute("aria-pressed", String(control.dataset.recurringSort === state.recurringSort)));
     const choices = $("#portfolio-recurring-choices");
     choices.innerHTML = state.holdings.map(holding => `<button class="acadia-action-menu-item" type="button" data-edit-id="${escapeHtml(holding.id)}" data-asset-section="recurring">${escapeHtml(holding.symbol || holding.name)}</button>`).join("") || '<button class="acadia-action-menu-item" type="button" data-recurring-add-asset>Add an asset first</button>';
     bindPortfolioHoldingActions(choices);
@@ -606,13 +608,17 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
     bindPortfolioHoldingActions(list);
     $("#portfolio-recurring-empty").hidden = assets.length > 0;
   }
+  function portfolioGroupTrigger() {
+    return $(window.matchMedia?.("(max-width: 767px)").matches ? "#portfolio-phone-menu summary" : "#portfolio-group-picker summary");
+  }
   function renderPortfolioFilters(summary) {
     const groups = summarizeInvestmentGroups(portfolioHoldingRows(summary));
     for (const group of groups) {
       const selected = group.id === state.portfolioFilter;
-      const button = $(`[data-investment-group="${group.id}"]`);
-      button.setAttribute("aria-pressed", String(selected));
-      button.querySelector(".acadia-icon").hidden = !selected;
+      document.querySelectorAll(`[data-investment-group="${group.id}"]`).forEach(button => {
+        button.setAttribute("aria-pressed", String(selected));
+        button.querySelector(".acadia-icon").hidden = !selected;
+      });
       if (selected) {
         setText("#portfolio-holdings-title", group.id === "all" ? "Investments" : group.name);
         setText("#portfolio-group-label", group.id === "all" ? "All" : group.name);
@@ -1913,7 +1919,7 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
   }
 
   const dialogTriggers = [
-    ["#home-add-asset, #portfolio-add-asset", "asset-dialog"],
+    ["#home-add-asset, #portfolio-add-asset, #portfolio-phone-add-asset", "asset-dialog"],
     ["#asset-delete", "delete-asset-dialog"],
     ["#add-income, [data-edit-income-source]", "income-source-dialog"],
     ["[data-delete-income-source]", "delete-income-source-dialog"],
@@ -3197,6 +3203,7 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
     }));
   });
   $("#portfolio-add-asset").addEventListener("click", openQuickAdd);
+  $("#portfolio-phone-add-asset").addEventListener("click", openQuickAdd);
   $("#home-add-asset").addEventListener("click", openQuickAdd);
   $("#close-dialog").addEventListener("click", () => $("#asset-dialog").close());
   $("#cancel-dialog").addEventListener("click", () => $("#asset-dialog").close());
@@ -3262,14 +3269,15 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
       event.preventDefault();
       state.portfolioFilter = control.dataset.investmentGroup;
       $("#portfolio-group-picker").open = false;
+      $("#portfolio-phone-menu").open = false;
       render();
-      $("#portfolio-group-picker summary").focus();
+      portfolioGroupTrigger().focus();
     });
   });
   $("#portfolio-reset-filters").addEventListener("click", () => {
     state.portfolioFilter = "all";
     render();
-    $("#portfolio-group-picker summary").focus();
+    portfolioGroupTrigger().focus();
   });
   document.querySelectorAll("[data-performance-period]").forEach((control) => {
     control.addEventListener("click", () => {
@@ -3346,9 +3354,13 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
   $("#cancel-delete-property").addEventListener("click", closeDeletePropertyDialog);
   $("#delete-property-dialog").addEventListener("close", () => { $("#delete-property-dialog").hidden = true; });
   protectDialog("#delete-property-dialog", "#delete-property-form", deleteProperty);
-  $("#portfolio-recurring-sort").addEventListener("change", () => {
-    state.recurringSort = $("#portfolio-recurring-sort").value;
-    renderRecurringInvestments(portfolio());
+  document.querySelectorAll("[data-recurring-sort]").forEach(control => {
+    control.addEventListener("click", () => {
+      state.recurringSort = control.dataset.recurringSort;
+      $("#portfolio-recurring-sort").open = false;
+      renderRecurringInvestments(portfolio());
+      $("#portfolio-recurring-sort summary").focus();
+    });
   });
   document.querySelectorAll("[data-property-sort]").forEach((control) => {
     control.addEventListener("click", () => {

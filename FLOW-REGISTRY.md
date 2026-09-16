@@ -174,3 +174,7 @@ Supersedes the recorded-account summary decision above. Existing Portfolio flow 
 ## Automatic investment ordering — 2026-09-16
 
 Supersedes earlier Portfolio search and sorting controls. Both Cards and Table always show investment assets by current holding value, highest first; unvalued assets stay visible at the end. Remove the page search/sort disclosure, search feedback and interactive table sorting. Group, shared period, Cards/Table, asset editing and empty-group recovery remain. Recurring and Property retain their separate sorting controls. No calculation, persistence or canonical flow added. Evidence: `automation/portfolio-value-order/2026-09-16/review.md`.
+
+## Portfolio Studio Display and phone actions — 2026-09-16
+
+Existing Manage holdings flow now supports the updated 2048px five-column frame and phone ellipsis for Add asset/group selection. All phone periods remain visible, and tablet retains its compact disclosure. Group, range and Cards/Table state stay shared across viewports. Close/cancel and empty-group recovery return focus to the visible trigger. Recurring Value/Name sorting uses a native disclosure. 267 checks pass; current responsive/menu evidence is in `automation/portfolio-responsive-frames/2026-09-16/review.md`. No canonical flow added.

@@ -33,7 +33,7 @@ function controller() {
     fetch:async()=>({ok:false,json:async()=>({error:'provider unavailable'})}),
   });
   const source = fs.readFileSync(require.resolve('../brokerage.js'),'utf8').replace(/^import .*;\n/, '').replace('  initialise();',
-    '  window.testController = {renderPortfolioMarketChange,selectPortfolioMarketPeriod,renderPortfolioMarketCharts,currentNetWorthCents,holdingAllocationMarkup,editPlanScenario,savePlanScenario,planProjection,observeAuthSession,sessionToken,editIncomeSource,saveInlineIncomeSource,cancelInlineIncomeSource,incomeSourceDrafts,syncPortfolioMarketHistory,clearPortfolioMarketHistory,portfolioMarketHistory,renderRecurringInvestments,loadMarketHistory,renderMarketHistory,clearMarketHistory,initialise,loadData,readWithDeadline,retryPlanSettings,openPlanAssumptionsDialog,savePlanAssumptions,retryProperties,hydrateProviderMetrics,ensurePlanSettings,state,render,renderHomeChanges,renderHomeGrowth,renderIncomeRecovery,retryIncomeData,missingIncomeYieldRows,renderIncomeYieldRecovery,renderPlan,renderQuickQuotePreview,refreshCurrentAssetPrice,restorePortfolioAssetFocus,renderHistory,renderAsset,canQuote,lookupQuote,saveQuickAsset,navigateToAsset,navigateBackFromAsset,routeAssetId,openFormDialog,hasPendingWrite,hasUnsavedWork,matchingPortfolioHoldingRows,sortHoldingRows,holdingValueLabel,renderPortfolioView,renderPortfolioSummary,detailHolding,openPropertyDialog,saveProperty};');
+    '  window.testController = {renderPortfolioFilters,renderPortfolioMarketChange,selectPortfolioMarketPeriod,renderPortfolioMarketCharts,currentNetWorthCents,holdingAllocationMarkup,editPlanScenario,savePlanScenario,planProjection,observeAuthSession,sessionToken,editIncomeSource,saveInlineIncomeSource,cancelInlineIncomeSource,incomeSourceDrafts,syncPortfolioMarketHistory,clearPortfolioMarketHistory,portfolioMarketHistory,renderRecurringInvestments,loadMarketHistory,renderMarketHistory,clearMarketHistory,initialise,loadData,readWithDeadline,retryPlanSettings,openPlanAssumptionsDialog,savePlanAssumptions,retryProperties,hydrateProviderMetrics,ensurePlanSettings,state,render,renderHomeChanges,renderHomeGrowth,renderIncomeRecovery,retryIncomeData,missingIncomeYieldRows,renderIncomeYieldRecovery,renderPlan,renderQuickQuotePreview,refreshCurrentAssetPrice,restorePortfolioAssetFocus,renderHistory,renderAsset,canQuote,lookupQuote,saveQuickAsset,navigateToAsset,navigateBackFromAsset,routeAssetId,openFormDialog,hasPendingWrite,hasUnsavedWork,matchingPortfolioHoldingRows,sortHoldingRows,holdingValueLabel,renderPortfolioView,renderPortfolioSummary,detailHolding,openPropertyDialog,saveProperty};');
   vm.runInContext(source,context);
   const api=window.testController;
   api.state.client={auth:{onAuthStateChange(callback){ window.authChanged = callback; return {data:{subscription:{unsubscribe(){}}}}; },getSession:async()=>({data:{session:{access_token:'isolated-test'}}})}};
@@ -47,6 +47,7 @@ test('signed-out route changes show only authentication and disable private crea
     assert.equal(node('#auth-panel').hidden,false);
     for(const page of ['home','portfolio','income','plan','asset'])assert.equal(node(`#${page}-workspace`).hidden,true);
     assert.equal(node('#portfolio-add-asset').disabled,true);
+    assert.equal(node('#portfolio-phone-add-asset').disabled,true);
     assert.equal(node('#home-add-asset').disabled,true);
     assert.equal(document.title,'Mercury | Sign in');
   }
@@ -1675,4 +1676,28 @@ test('Portfolio summary uses all holdings in Cards and Table without using accou
   assert.equal(node('#portfolio-current-change-rate').hidden,true);
   assert.equal(node('#portfolio-market-retry').hidden,false);
   api.clearPortfolioMarketHistory();
+});
+
+
+test('phone Portfolio filters share selection and recovery returns to the visible action menu',()=>{
+  const {api,node,window,document}=controller();
+  window.matchMedia=()=>({matches:true});
+  api.state.portfolioFilter='retirement';
+  for(const group of ['all','brokerage','retirement','crypto']) {
+    const buttons=[node(`desktop-${group}`),node(`phone-${group}`)];
+    for(const button of buttons)button.setAttribute=(key,value)=>{button[key]=value};
+    const previous=document.querySelectorAll;
+    document.querySelectorAll=selector=>selector===`[data-investment-group="${group}"]`?buttons:previous(selector);
+  }
+  api.renderPortfolioFilters({rows:[]});
+  for(const group of ['all','brokerage','retirement','crypto'])for(const prefix of ['desktop','phone']) {
+    assert.equal(node(`${prefix}-${group}`)['aria-pressed'],String(group==='retirement'));
+    assert.equal(node(`${prefix}-${group} .acadia-icon`).hidden,group!=='retirement');
+  }
+  let focused=false;node('#portfolio-phone-menu summary').focus=()=>{focused=true};
+  document.querySelectorAll=()=>[];
+  node('#portfolio-reset-filters').listeners.click();
+  assert.equal(api.state.portfolioFilter,'all');assert.equal(focused,true);
+  focused=false;api.navigateToAsset('removed');window.location.hash='#portfolio';
+  api.restorePortfolioAssetFocus('#asset/removed');assert.equal(focused,true);
 });
