@@ -454,8 +454,8 @@ test('a queued close event cannot hide a newly reopened discard confirmation', (
 });
 
 
-test('Portfolio retains unvalued holdings in search and mutually exclusive investment groups',()=>{
-  const {api,node}=controller();
+test('Portfolio retains unvalued holdings in mutually exclusive investment groups',()=>{
+  const {api}=controller();
   const base={instrument_type:'stock',valuation_basis:'shares-and-price',shares:10,manual_price_cents:null,manual_value_cents:null};
   api.state.holdings=[{...base,id:'known',symbol:'KNOWN'}, {...base,id:'missing',symbol:'MISSING',instrument_type:'crypto',is_retirement:true}];
   const known={asset:{id:'known',symbol:'KNOWN',instrumentType:'stock'},marketValueCents:20000};
@@ -465,33 +465,30 @@ test('Portfolio retains unvalued holdings in search and mutually exclusive inves
   assert.equal(rows[1].marketValueCents,null);
   assert.equal(api.holdingValueLabel(rows[1]),'Needs valuation');
   assert.equal(api.sortHoldingRows(rows)[0].asset.id,'known');
-  assert.equal(api.sortHoldingRows(rows,'name')[1].asset.id,'missing');
   api.state.portfolioFilter='brokerage';
   assert.equal(api.matchingPortfolioHoldingRows(summary)[0].asset.id,'known');
   api.state.portfolioFilter='crypto';
   assert.equal(api.matchingPortfolioHoldingRows(summary).length,0);
   api.state.portfolioFilter='retirement';
   assert.equal(api.matchingPortfolioHoldingRows(summary)[0].asset.id,'missing');
-  node('#portfolio-search').value='known';
-  assert.equal(api.matchingPortfolioHoldingRows(summary).length,0);
   api.state.portfolioFilter='all';
   assert.equal(api.matchingPortfolioHoldingRows(summary)[0].asset.id,'known');
   assert.equal(summary.rows.length,1, 'display recovery must not manufacture a valuation');
 });
 
-test('Portfolio view switches preserve sort and filters and keep mobile sorting available',()=>{
-  const {api,node}=controller();
-  api.state.portfolioFilter='retirement';api.state.portfolioSort='name';
-  node('#portfolio-search').value='fund';
+test('Portfolio views preserve the selected group and descending value order',()=>{
+  const {api,node}=controller();api.state.portfolioFilter='retirement';
+  const rows=[{asset:{id:'missing'},marketValueCents:null},{asset:{id:'low'},marketValueCents:100},{asset:{id:'zero'},marketValueCents:0},{asset:{id:'high'},marketValueCents:20000}];
   for(const view of ['table','cards']) {
     api.state.portfolioView=view;api.renderPortfolioView(true);
-    assert.equal(node('#portfolio-holding-sort').hidden,false);
     assert.equal(node('#portfolio-table-panel').hidden,view!=='table');
     assert.equal(node('#portfolio-cards-panel').hidden,view!=='cards');
     assert.equal(api.state.portfolioFilter,'retirement');
-    assert.equal(api.state.portfolioSort,'name');
-    assert.equal(node('#portfolio-search').value,'fund');
+    assert.deepEqual(Array.from(api.sortHoldingRows(rows),row=>row.asset.id),['high','low','zero','missing']);
   }
+  rows[1].marketValueCents=30000;
+  assert.equal(api.sortHoldingRows(rows)[0].asset.id,'low','updated valuations automatically change the order');
+  assert.equal(rows[0].asset.id,'missing','sorting does not mutate the source rows');
 });
 
 test('Portfolio incomplete valuation is explained without showing a partial total',()=>{
@@ -505,11 +502,10 @@ test('Portfolio incomplete valuation is explained without showing a partial tota
   assert.equal(node('#portfolio-summary-investments').textContent,'$400.00');
 });
 
-test('selected Portfolio group keeps its complete value through search and explains incomplete portfolio allocation',()=>{
+test('selected Portfolio group keeps its complete value and explains incomplete portfolio allocation',()=>{
   const {api,node}=controller();
   api.state.holdings=[{id:'retirement',is_retirement:true},{id:'missing'}];
   api.state.portfolioFilter='retirement';
-  node('#portfolio-search').value='no match';
   api.renderPortfolioSummary({rows:[{asset:{id:'retirement',isRetirement:true},marketValueCents:29500000}]});
   assert.equal(node('#portfolio-summary-investments').textContent,'$295,000.00');
   assert.equal(node('#portfolio-holdings-count').textContent,'1 asset');
@@ -932,22 +928,15 @@ test('a stalled quote response body times out without exposing a superseded symb
 });
 
 
-test('clearing Portfolio search preserves selected group, view and sort and returns to search',()=>{
-  const {api,node}=controller();
-  api.render();
-  api.state.portfolioFilter='retirement';
-  api.state.portfolioView='table';
-  api.state.portfolioSort='name';
-  node('#portfolio-search').value='no match';
-  let focused=false;node('#portfolio-search').focus=()=>{focused=true};
-  node('#portfolio-clear-search').listeners.click();
-  assert.equal(node('#portfolio-search').value,'');
-  assert.equal(api.state.portfolioFilter,'retirement');
+test('View all investments clears the group and returns focus to its picker',()=>{
+  const {api,node}=controller();api.render();
+  api.state.portfolioFilter='retirement';api.state.portfolioView='table';
+  let focused=false;node('#portfolio-group-picker summary').focus=()=>{focused=true};
+  node('#portfolio-reset-filters').listeners.click();
+  assert.equal(api.state.portfolioFilter,'all');
   assert.equal(api.state.portfolioView,'table');
-  assert.equal(api.state.portfolioSort,'name');
   assert.equal(focused,true);
 });
-
 
 test('Home growth automatically uses historical returns and ignores manual return assumptions',()=>{
   const {api,node}=controller();
@@ -1676,7 +1665,7 @@ test('Portfolio summary uses all holdings in Cards and Table without using accou
   assert.equal(node('#portfolio-period-change').textContent,'+$40');
   assert.equal(node('#portfolio-current-change-rate').textContent,'+10%');
   api.state.snapshots=[{snapshot_date:'2026-01-01',total_value_cents:100},{snapshot_date:'2026-09-16',total_value_cents:999999999}];
-  api.state.portfolioView='table';api.state.portfolioFilter='crypto';node('#portfolio-search').value='no match';
+  api.state.portfolioView='table';api.state.portfolioFilter='crypto';
   api.syncPortfolioMarketHistory(rows);
   assert.equal(api.portfolioMarketHistory.size,2);
   assert.equal(node('#portfolio-period-change').textContent,'+$40');

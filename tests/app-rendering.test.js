@@ -285,7 +285,7 @@ test("Plan provides one hero projection, four statistics and live scenario contr
   assert.match(indexHtml, /id="plan-assumptions-dialog"/);
   assert.match(indexHtml, /id="property-dialog"/);
   assert.match(indexHtml, /<script src="plan\.js\?v=20260914-change-cards-023"><\/script>/);
-  assert.match(indexHtml, /<script type="module" src="brokerage\.js\?v=20260916-market-summary"><\/script>/);
+  assert.match(indexHtml, /<script type="module" src="brokerage\.js\?v=20260916-value-order"><\/script>/);
   assert.match(homeSource, /function routePlan\(\)/);
   assert.match(homeSource, /function renderPlan\(summary\)/);
   assert.match(homeSource, /function renderPlanChart/);
@@ -334,9 +334,9 @@ test("Home never falls back to fabricated assets and Portfolio is a functional r
   assert.match(homeSource, /renderPortfolio/);
   assert.match(homeSource, /setActiveNavigation\("portfolio"\)/);
   assert.match(indexHtml, /id="portfolio-workspace" class="acadia-stack" hidden/);
-  assert.match(indexHtml, /id="portfolio-search"/);
+  assert.doesNotMatch(indexHtml, /id="portfolio-search"/);
   assert.match(indexHtml, /id="portfolio-add-asset"/);
-  assert.match(indexHtml, /id="portfolio-holding-sort"/);
+  assert.doesNotMatch(indexHtml, /id="portfolio-holding-sort"/);
   assert.match(portfolioWorkspace, /id="portfolio-group-filters"[^>]*role="group"[^>]*aria-label="Filter investments by group"/);
   for (const group of ["all", "brokerage", "retirement", "crypto"]) {
     assert.match(portfolioWorkspace, new RegExp(`<button[^>]*acadia-page-header-pattern-filter[^>]*type="button"[^>]*data-investment-group="${group}"[^>]*aria-pressed="${group === "all"}"`));
@@ -350,7 +350,7 @@ test("Home never falls back to fabricated assets and Portfolio is a functional r
   assert.match(indexHtml, /id="property-dialog"/);
   assert.match(indexHtml, /id="delete-property-dialog"/);
   assert.match(homeSource, /portfolioFilter/);
-  assert.match(homeSource, /portfolioSort/);
+  assert.doesNotMatch(homeSource, /portfolioSort/);
   assert.match(homeSource, /matchingPortfolioHoldingRows/);
   assert.match(homeSource, /investmentGroup\(row\.asset\) === state\.portfolioFilter/);
   assert.match(homeSource, /renderPortfolioHoldings/);
@@ -387,8 +387,8 @@ test("Portfolio investments switch between shared Cards and Table presentations"
   assert.match(homeSource, /function renderPortfolioTable\(rows\)/);
   assert.match(homeSource, /renderHoldingCards\(grid, rows, currentNetWorthCents\(summary\)\);\s*renderPortfolioTable\(rows\);/);
   assert.match(homeSource, /state\.portfolioView === "table"/);
-  assert.match(homeSource, /data-portfolio-table-sort-heading/);
-  assert.match(homeSource, /state\.portfolioSort === "name" \? "ascending" : "descending"/);
+  assert.match(portfolioWorkspace, /<th scope="col" aria-sort="descending">Value<\/th>/);
+  assert.doesNotMatch(homeSource, /data-portfolio-table-sort/);
   assert.match(homeSource, /\["ArrowRight", "ArrowDown"\]/);
   assert.match(homeSource, /\["ArrowLeft", "ArrowUp"\]/);
   assert.match(homeSource, /event\.key === "Home"/);
@@ -399,7 +399,7 @@ test("Portfolio investments switch between shared Cards and Table presentations"
   assert.match(portfolioWorkspace, /acadia-table-responsive/);
   assert.match(portfolioWorkspace, /acadia-table-wide/);
   assert.match(readme, /matching Cards or Table views/);
-  assert.match(designReadme, /Cards and Table preserve search/);
+  assert.match(designReadme, /Cards and Table preserve group selection and automatic descending value order/);
   assert.match(productReadme, /Cards and Table are peer views/);
 });
 
@@ -414,7 +414,7 @@ test("Portfolio uses Acadia disclosure, preview cards and native controls with c
   assert.match(workspace, /id="portfolio-reset-filters"/);
   assert.match(indexHtml, /id="property-dialog" class="acadia-dialog is-form-modal"/);
   assert.match(indexHtml, /id="delete-property-dialog" class="acadia-dialog is-form-modal"/);
-  assert.match(workspace, /select id="portfolio-holding-sort"[^>]*aria-label="Sort investments"/);
+  assert.doesNotMatch(workspace, /portfolio-investments-toolbar|portfolio-holding-sort|portfolio-search/);
   assert.doesNotMatch(workspace, /mercury-portfolio-summary|mercury-portfolio-toolbar|mercury-holding-card/);
   for (const name of ["accordion-plus.svg", "accordion-minus.svg"]) {
     assert.ok(fs.readFileSync(path.join(root, "assets", name)).length > 0);

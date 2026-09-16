@@ -55,7 +55,7 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
   const wholePercentage = new Intl.NumberFormat("en-US", { style: "percent", maximumFractionDigits: 0 });
   const state = {
     client: null, user: null, account: null, accounts: [], holdings: [], quotes: [], snapshots: [], incomeSources: [], incomeSourcesAvailable: true, budgetCategories: [], budgetCategoriesAvailable: true, planSettings: null, properties: [], propertiesAvailable: true, planDataAvailable: true,
-    startupStatus: null, startupMessage: "", startupRequestId: 0, dataRequestId: 0, metricsRequestId: 0, propertyReloadPending: false, planReloadPending: false, incomeReloadPending: false, incomeReloadFailed: false, providerMetrics: {}, providerMetricsPending: new Set(), configured: false, pendingQuote: null, quoteTimer: null, quoteRequestId: 0, portfolioFilter: "all", portfolioSort: "value", portfolioView: "cards", recurringSort: "value", propertySort: "value", performancePeriod: "all", incomePeriod: "month", incomeDividendSort: "value", planHorizon: 5, planSelectedYear: 5, incomeSourceDialogId: null, incomeSourceDeleteId: null, budgetCategoryDialogId: null, budgetCategoryDeleteId: null, propertyDialogId: null, propertyDeleteId: null,
+    startupStatus: null, startupMessage: "", startupRequestId: 0, dataRequestId: 0, metricsRequestId: 0, propertyReloadPending: false, planReloadPending: false, incomeReloadPending: false, incomeReloadFailed: false, providerMetrics: {}, providerMetricsPending: new Set(), configured: false, pendingQuote: null, quoteTimer: null, quoteRequestId: 0, portfolioFilter: "all", portfolioView: "cards", recurringSort: "value", propertySort: "value", performancePeriod: "all", incomePeriod: "month", incomeDividendSort: "value", planHorizon: 5, planSelectedYear: 5, incomeSourceDialogId: null, incomeSourceDeleteId: null, budgetCategoryDialogId: null, budgetCategoryDeleteId: null, propertyDialogId: null, propertyDeleteId: null,
   };
   let authSubscription = null;
   let observedAuthUserId;
@@ -390,20 +390,9 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
     if (value === "etf") return "ETF";
     return value.replaceAll("-", " ").replace(/\b\w/g, (letter) => letter.toUpperCase());
   }
-  function sortHoldingRows(rows, sort = "value") {
-    return [...rows].sort((left, right) => {
-      if (sort === "name") {
-        const leftName = left.asset.symbol || left.asset.name || left.asset.instrumentType;
-        const rightName = right.asset.symbol || right.asset.name || right.asset.instrumentType;
-        return leftName.localeCompare(rightName);
-      }
-      if (sort === "updated") {
-        const leftHolding = state.holdings.find((holding) => holding.id === left.asset.id);
-        const rightHolding = state.holdings.find((holding) => holding.id === right.asset.id);
-        return new Date(rightHolding?.updated_at || rightHolding?.created_at || 0) - new Date(leftHolding?.updated_at || leftHolding?.created_at || 0);
-      }
-      return (right.marketValueCents ?? -Infinity) - (left.marketValueCents ?? -Infinity);
-    });
+  function sortHoldingRows(rows) {
+    // Both views always show the largest current holdings first; missing values last.
+    return [...rows].sort((left, right) => (right.marketValueCents ?? -Infinity) - (left.marketValueCents ?? -Infinity));
   }
   function holdingRecord(row) {
     return state.holdings.find((holding) => holding.id === row.asset.id);
@@ -518,7 +507,6 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
   function openHomeGroup(id) {
     leaveWorkspace(() => {
       state.portfolioFilter = id === "property" ? "all" : id;
-      $("#portfolio-search").value = "";
       window.location.hash = "#portfolio";
       render();
       const target = $(id === "property"
@@ -564,13 +552,8 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
       || { asset: holdingAsset(holding), marketValueCents: null });
   }
   function matchingPortfolioHoldingRows(summary) {
-    const search = $("#portfolio-search").value.trim().toLowerCase();
-    return portfolioHoldingRows(summary).filter((row) => {
-      const matchesFilter = state.portfolioFilter === "all"
-        || investmentGroup(row.asset) === state.portfolioFilter;
-      const matchesSearch = `${row.asset.symbol || ""} ${row.asset.name || ""} ${row.asset.instrumentType}`.toLowerCase().includes(search);
-      return matchesFilter && matchesSearch;
-    });
+    return portfolioHoldingRows(summary).filter(row => state.portfolioFilter === "all"
+      || investmentGroup(row.asset) === state.portfolioFilter);
   }
   function recurringPortfolioAssets() {
     return state.holdings
@@ -622,16 +605,6 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
     }).join("");
     bindPortfolioHoldingActions(list);
     $("#portfolio-recurring-empty").hidden = assets.length > 0;
-  }
-  function renderPortfolioHoldingSort() {
-    $("#portfolio-holding-sort").value = state.portfolioSort;
-    document.querySelectorAll("[data-portfolio-table-sort-heading]").forEach((heading) => {
-      if (heading.dataset.portfolioTableSortHeading === state.portfolioSort) {
-        heading.setAttribute("aria-sort", state.portfolioSort === "name" ? "ascending" : "descending");
-      } else {
-        heading.removeAttribute("aria-sort");
-      }
-    });
   }
   function renderPortfolioFilters(summary) {
     const groups = summarizeInvestmentGroups(portfolioHoldingRows(summary));
@@ -699,28 +672,22 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
     bindPortfolioHoldingActions(objectList);
   }
   function renderPortfolioHoldings(summary) {
-    renderPortfolioHoldingSort();
     renderPortfolioFilters(summary);
     const matchingRows = matchingPortfolioHoldingRows(summary);
-    const rows = sortHoldingRows(matchingRows, state.portfolioSort);
+    const rows = sortHoldingRows(matchingRows);
     const grid = $("#portfolio-holdings-grid");
     renderHoldingCards(grid, rows, currentNetWorthCents(summary));
     renderPortfolioTable(rows);
     renderPortfolioView(rows.length > 0);
     syncPortfolioMarketHistory(portfolioHoldingRows(summary));
-    const searching = Boolean($("#portfolio-search").value.trim());
-    $("#portfolio-search-feedback").hidden = !searching;
-    setText("#portfolio-search-count", searching ? `${rows.length} ${rows.length === 1 ? "match" : "matches"}` : "");
     $("#portfolio-holdings-empty").hidden = rows.length > 0;
-    $("#portfolio-reset-filters").hidden = rows.length > 0 || searching || state.portfolioFilter === "all";
+    $("#portfolio-reset-filters").hidden = rows.length > 0 || state.portfolioFilter === "all";
     setText("#portfolio-reset-filters", "View all investments");
     if (!rows.length) {
       const hasAssets = state.holdings.length > 0;
       const groupName = summarizeInvestmentGroups(portfolioHoldingRows(summary)).find((group) => group.id === state.portfolioFilter).name;
-      setText("#portfolio-holdings-empty-title", searching ? "No matching assets" : hasAssets ? `No ${groupName.toLowerCase()} assets` : "No assets yet");
-      setText("#portfolio-holdings-empty-copy", searching
-        ? `Try another name or symbol${state.portfolioFilter === "all" ? "." : ` in ${groupName.toLowerCase()}.`}`
-        : hasAssets ? "Choose another group or add an asset." : "Add your first investment to get started.");
+      setText("#portfolio-holdings-empty-title", hasAssets ? `No ${groupName.toLowerCase()} assets` : "No assets yet");
+      setText("#portfolio-holdings-empty-copy", hasAssets ? "Choose another group or add an asset." : "Add your first investment to get started.");
     }
   }
 
@@ -3261,7 +3228,6 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
       openHomeGroup(event.target.dataset.homeGroup);
     }
   });
-  $("#portfolio-search").addEventListener("input", render);
   ["#income-dividends-search", "#income-sources-search", "#income-budget-search"].forEach((selector) => $(selector).addEventListener("input", render));
   ["dividends", "sources", "budget"].forEach((section) => $(`#income-${section}-clear`).addEventListener("click", () => {
     const search = $(`#income-${section}-search`);
@@ -3287,16 +3253,6 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
   $("#cancel-delete-budget-category").addEventListener("click", closeDeleteBudgetCategoryDialog);
   $("#delete-budget-category-dialog").addEventListener("close", () => { $("#delete-budget-category-dialog").hidden = true; });
   protectDialog("#delete-budget-category-dialog", "#delete-budget-category-form", deleteBudgetCategory);
-  $("#portfolio-holding-sort").addEventListener("change", (event) => {
-    state.portfolioSort = event.target.value;
-    render();
-  });
-  document.querySelectorAll("[data-portfolio-table-sort]").forEach((control) => {
-    control.addEventListener("click", () => {
-      state.portfolioSort = control.dataset.portfolioTableSort;
-      render();
-    });
-  });
   document.querySelectorAll("[data-portfolio-view]").forEach((control) => {
     control.addEventListener("click", () => selectPortfolioView(control.dataset.portfolioView));
     control.addEventListener("keydown", handlePortfolioViewKeydown);
@@ -3310,18 +3266,10 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
       $("#portfolio-group-picker summary").focus();
     });
   });
-  $("#portfolio-clear-search").addEventListener("click", () => {
-    $("#portfolio-search").value = "";
-    render();
-    $("#portfolio-investments-toolbar").open = true;
-    $("#portfolio-search").focus();
-  });
   $("#portfolio-reset-filters").addEventListener("click", () => {
     state.portfolioFilter = "all";
-    $("#portfolio-search").value = "";
     render();
-    $("#portfolio-investments-toolbar").open = true;
-    $("#portfolio-search").focus();
+    $("#portfolio-group-picker summary").focus();
   });
   document.querySelectorAll("[data-performance-period]").forEach((control) => {
     control.addEventListener("click", () => {
