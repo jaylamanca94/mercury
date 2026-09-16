@@ -39,33 +39,66 @@
   #income-summary-tools { flex-direction: column-reverse; align-items: flex-start; }
 }
 
-/* Plan's Figma composition uses the canonical Acadia surfaces and chart.
-   Intrinsic columns reflow for narrow viewports and enlarged text. */
-#plan-workspace .acadia-card.is-content {
-  --acadia-content-card-padding: min(var(--acadia-section-padding-standard), 6vw);
+/* Plan section 129:5989: summary, unboxed graph, current groups, then editing. */
+body:has(#plan-workspace:not([hidden])) { --acadia-shell-max-width: var(--acadia-page-max-width-wide); }
+#plan-workspace .acadia-card.is-content { --acadia-content-card-padding: min(var(--acadia-section-padding-standard), 8vw); box-sizing: border-box; }
+#plan-page-heading { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: min(var(--acadia-space-2), 2vw); }
+#plan-phone-menu { display: none; }
+#plan-statistics, #plan-assets-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+#plan-statistics .acadia-card { min-height: 7.3125rem; }
+#plan-statistics .acadia-card-metric-value-row { flex-wrap: wrap; }
+#plan-statistics .acadia-card-metric-value-row > span { font-size: var(--acadia-type-size-body); font-weight: var(--acadia-font-weight-regular); }
+#plan-statistics .is-positive { color: var(--acadia-text-green, var(--acadia-system-green-50)); }
+#plan-statistics .is-danger { color: var(--acadia-text-red, var(--acadia-system-red-60)); }
+#plan-value-rate.is-positive { color: var(--acadia-color-brand); }
+[data-acadia-theme="dark"] #plan-statistics .is-positive { color: var(--acadia-text-green, var(--acadia-system-green-40)); }
+[data-acadia-theme="dark"] #plan-statistics .is-danger { color: var(--acadia-text-red, var(--acadia-system-red-50)); }
+[data-acadia-theme="dark"] #plan-value-rate.is-positive { color: var(--acadia-color-brand); }
+@media (prefers-color-scheme: dark) {
+  [data-acadia-theme="system"] #plan-statistics .is-positive { color: var(--acadia-text-green, var(--acadia-system-green-40)); }
+  [data-acadia-theme="system"] #plan-statistics .is-danger { color: var(--acadia-text-red, var(--acadia-system-red-50)); }
+  [data-acadia-theme="system"] #plan-value-rate.is-positive { color: var(--acadia-color-brand); }
 }
-#plan-statistics { grid-template-columns: repeat(auto-fit, minmax(min(100%, 13rem), 1fr)); }
-#plan-controls { grid-template-columns: repeat(auto-fit, minmax(min(100%, 10rem), 1fr)); }
-#plan-asset-groups { grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr)); }
-#plan-value-chart { --acadia-card-trend-height: clamp(8rem, 16vw, 14rem); }
-.mercury-plan-hero-header { align-items: flex-start; }
+#plan-controls { grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start; }
+.mercury-plan-fields { grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start; }
+#plan-asset-groups, #plan-property-summary { display: contents; }
+#plan-assets-grid .acadia-card { min-height: 10.1875rem; }
+#plan-assets-grid .acadia-field { padding-inline-end: var(--acadia-icon-action-size); }
+#plan-assets-grid .acadia-lead { overflow-wrap: anywhere; }
+#plan-assets-grid .acadia-action-menu-panel { width: min(18rem, calc(100vw - 3rem)); box-sizing: border-box; }
+#plan-value-chart { --acadia-card-trend-height: 15.25rem; }
+.mercury-plan-hero-header { align-items: center; }
+#plan-horizons { gap: var(--acadia-space-1); flex-wrap: wrap; }
 .mercury-plan-year { display: grid; gap: var(--acadia-space-1); }
 #plan-selected-year { width: 100%; min-height: var(--acadia-touch-target); margin: 0; accent-color: var(--acadia-color-brand); }
 #plan-income-cadence { font-size: var(--acadia-type-size-small); }
+#plan-workspace .acadia-button { white-space: normal; max-width: 100%; }
+@media (min-width: 768px) and (hover: hover) and (pointer: fine) {
+  #plan-horizons .acadia-badge { min-height: var(--acadia-tab-visual-min-height, 2rem); padding-block: calc(var(--acadia-space-1) / 2 - 1px); }
+}
+@media (min-width: 768px) and (max-width: 1199px) {
+  body:has(#plan-workspace:not([hidden])) .acadia-responsive-navbar { display: grid; justify-items: center; padding: var(--acadia-space-3) var(--acadia-page-margin-tablet) 0; }
+  body:has(#plan-workspace:not([hidden])) .acadia-tablet-navigation { justify-self: center; }
+  #plan-workspace .acadia-card.is-content { --acadia-content-card-padding: min(var(--acadia-section-padding-standard), 3vw); }
+  #plan-assets-grid .acadia-card.is-content { --acadia-content-card-padding: var(--acadia-space-2); }
+  #plan-assets-grid .acadia-card-actions { --acadia-card-actions-inset: var(--acadia-space-1); }
+  #plan-assets-grid .acadia-lead { font-size: var(--acadia-type-size-body); }
+  #plan-assets-grid .acadia-field { padding-inline-end: calc(var(--acadia-icon-action-size) - var(--acadia-space-1)); }
+}
 @media (max-width: 767px) {
-  #plan-statistics, #plan-controls, #plan-asset-groups { grid-template-columns: minmax(0, 1fr); }
+  #plan-workspace { margin-inline: min(var(--acadia-space-1), 2vw); }
+  #plan-phone-menu { display: block; }
+  #plan-phone-menu .acadia-action-menu-panel { width: min(16rem, calc(100vw - 3rem)); box-sizing: border-box; }
+  #plan-age-date, .mercury-plan-hero-header { flex-direction: column; align-items: flex-start; }
+  #plan-age-date { gap: var(--acadia-space-1); }
+  #plan-statistics, #plan-controls, #plan-assets-grid, .mercury-plan-fields { grid-template-columns: minmax(0, 1fr); }
   #plan-scenario-actions { bottom: var(--acadia-mobile-dock-clearance); }
 }
-
-#plan-outlook { gap: var(--acadia-space-1); }
-.mercury-plan-hero-header > .acadia-cluster { min-width: 0; max-width: 100%; }
-#plan-outlook .acadia-tabs { flex-wrap: wrap; max-width: 100%; }
-#plan-workspace .acadia-button { white-space: normal; max-width: 100%; }
-@media (min-width: 768px) and (max-width: 1199px) {
-  #plan-statistics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+@media (min-width: 768px) {
+  #plan-statistics, #plan-assets-grid { grid-template-columns: repeat(auto-fit, minmax(min(100%, max(9rem, calc((100% - 4.5rem) / 4))), 1fr)); }
+  #plan-controls { grid-template-columns: repeat(auto-fit, minmax(min(100%, 20rem), 1fr)); }
+  .mercury-plan-fields { grid-template-columns: repeat(auto-fit, minmax(min(100%, max(8rem, calc((100% - 1.5rem) / 2))), 1fr)); }
 }
-
-#plan-hero-value { font-size: var(--acadia-type-size-heading-large); font-weight: var(--acadia-font-weight-bold); }
 
 /* Leave room for all native date segments plus its calendar affordance at
    enlarged phone text sizes; compress empty inset, not the entered date. */

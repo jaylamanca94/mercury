@@ -586,6 +586,29 @@ test('Portfolio asset entry focuses its task and restores the originating card o
   }
 });
 
+test('Plan starts at one year and keeps selected-year statistics synchronised',()=>{
+  const {api,node}=controller();
+  assert.equal(api.state.planHorizon,1);
+  assert.equal(api.state.planSelectedYear,1);
+  api.state.planDataAvailable=true;
+  api.state.holdings=[];
+  api.state.planSettings={expected_annual_return_rate:.05,distribution_yield_rate:.02,distribution_policy:'reinvest'};
+  node('#plan-value-axis').replaceChildren=()=>{};
+  const summary={rows:[],totalMarketValueCents:5000000,weeklyContributionRate:0};
+  let previous;
+  for (const year of [1,5,10,20]) {
+    api.state.planHorizon=year;api.state.planSelectedYear=year;
+    api.renderPlan(summary);
+    assert.equal(node('#plan-change-label').textContent,`${year} year change`);
+    assert.equal(node('#plan-selected-year').value,year);
+    assert.equal(node('#plan-selected-year').max,year);
+    assert.notEqual(node('#plan-projected-value').textContent,previous);
+    assert.match(node('#plan-value-rate').textContent,/^\+/);
+    assert.doesNotMatch(node('#plan-change-rate').textContent,/^\+/);
+    previous=node('#plan-projected-value').textContent;
+  }
+});
+
 test('Plan clears stale projections when valuation coverage is incomplete and recovers after repair',()=>{
   const {api,node}=controller();
   api.state.planDataAvailable=true;

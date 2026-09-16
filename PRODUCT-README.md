@@ -10,6 +10,10 @@
 - Evidence: `automation/income-figma/2026-09-14/review.md`. Local synthetic browser coverage is separate from authenticated owner-data persistence and physical-device/VoiceOver acceptance.
 
 
+## Plan responsive layout — 2026-09-16
+
+The founder’s Figma section `129:5989` sets the Plan hierarchy: age/date and 1Y/5Y/10Y/20Y controls, four projected summaries, graph, four current asset groups, then Weekly Spending and Retirement editing cards. Default 1Y. Tablet retains four columns when content fits; phone stacks and exposes Plan settings in the heading menu. Blank age selections remain supported. Net worth includes property equity; current group values remain distinct from projected summaries. Existing source-linked amounts, live drafts, Save/Cancel, recovery and projection calculations remain unchanged. No new persistence or provider contract.
+
 ## Mission
 
 Mercury is a private personal finance workspace. Its first shipped product surface is Brokerage: a calm, reliable place for one owner to record holdings and understand value, allocation, income, daily movement, and history without becoming a trading terminal or advice engine.

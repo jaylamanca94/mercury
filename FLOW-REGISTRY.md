@@ -178,3 +178,8 @@ Supersedes earlier Portfolio search and sorting controls. Both Cards and Table a
 ## Portfolio Studio Display and phone actions — 2026-09-16
 
 Existing Manage holdings flow now supports the updated 2048px five-column frame and phone ellipsis for Add asset/group selection. All phone periods remain visible, and tablet retains its compact disclosure. Group, range and Cards/Table state stay shared across viewports. Close/cancel and empty-group recovery return focus to the visible trigger. Recurring Value/Name sorting uses a native disclosure. 267 checks pass; current responsive/menu evidence is in `automation/portfolio-responsive-frames/2026-09-16/review.md`. No canonical flow added.
+
+
+## Plan responsive composition — 2026-09-16
+
+No canonical flows added. Existing Plan opens at 1Y, displays selected-year summaries above the graph, then current asset groups and two editing cards. Group menus navigate through the existing unsaved-work guard. Native age selectors preserve blank milestones; Save/Cancel and revision recovery are unchanged. Phone Plan settings returns focus to its menu trigger. Year selection and the exact breakdown remain in Projection assumptions. See `automation/plan-responsive-frames/2026-09-16/review.md` for synthetic browser and check evidence.

@@ -217,8 +217,8 @@ test("Portfolio comparison retains source-backed return and yield alongside pric
   assert.match(homeSource, /Trailing 12-month dividend yield/);
   assert.match(homeSource, /\["crypto", "cash"\]/);
   assert.match(homeSource, /isLoading \? "Loading…" : "Not set"/);
-  assert.match(homeSource, /fa-chart-line/);
-  assert.match(homeSource, /fa-coins/);
+  assert.match(homeSource, /Annual return assumption:/);
+  assert.match(homeSource, /Distribution yield:/);
   assert.match(homeSource, /returnShortLabel/);
   assert.match(homeSource, /metrics\.yieldValue/);
   assert.doesNotMatch(homeRenderer, /showMetrics: true/);
@@ -285,7 +285,7 @@ test("Plan provides one hero projection, four statistics and live scenario contr
   assert.match(indexHtml, /id="plan-assumptions-dialog"/);
   assert.match(indexHtml, /id="property-dialog"/);
   assert.match(indexHtml, /<script src="plan\.js\?v=20260914-change-cards-023"><\/script>/);
-  assert.match(indexHtml, /<script type="module" src="brokerage\.js\?v=20260916-responsive-frames"><\/script>/);
+  assert.match(indexHtml, /<script type="module" src="brokerage\.js\?v=20260916-plan-frames"><\/script>/);
   assert.match(homeSource, /function routePlan\(\)/);
   assert.match(homeSource, /function renderPlan\(summary\)/);
   assert.match(homeSource, /function renderPlanChart/);

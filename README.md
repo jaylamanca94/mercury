@@ -72,7 +72,7 @@ Use the published Acadia `main` revision, review its changelog and affected Comp
 
 ## Plan scenario — 0.1.1
 
-The Plan page implements Figma `129:4939`. Monetary defaults follow Income, category expenses and recurring investments. Inline edits are Plan-only overrides; Save Plan confirms persistence and Cancel restores the latest saved settings. Use Mercury amounts clears monetary overrides while retaining ages. Enter date of birth in Plan settings before using age-based controls. DOB is stored as a private date-only field. Existing approximate ages are not converted into invented dates; the old fields are retained only for older clients.
+The Plan page implements Figma section `129:5989` across desktop, tablet and phone. It defaults to 1Y, with summary cards above the graph, four current asset groups, and separate Weekly Spending/Retirement editing cards. The year slider and precise breakdown remain in Projection assumptions. Monetary defaults follow Income, category expenses and recurring investments. Inline edits are Plan-only overrides; Save Plan confirms persistence and Cancel restores the latest saved settings. Use Mercury amounts clears monetary overrides while retaining ages. Enter date of birth in Plan settings before using age-based controls. DOB is stored as a private date-only field. Existing approximate ages are not converted into invented dates; the old fields are retained only for older clients.
 
 Apply the forward migrations `supabase/migrations/20260914180000_plan_scenario.sql` and `supabase/migrations/20260914221500_plan_date_of_birth.sql` before deploying this client to another environment. The linked Mercury project already has these additive migrations and their ledger entries. No old migrations were replayed.
 
