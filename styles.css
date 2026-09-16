@@ -282,7 +282,6 @@
 @media (min-width: 768px) {
   #portfolio-holdings-grid { grid-template-columns: repeat(auto-fit, minmax(min(100%, max(20rem, calc((100% - 3rem) / 3))), 1fr)); }
 }
-#portfolio-metric-context { gap: 0.25rem; }
 /* Intrinsic reflow keeps large text and disclosed menus inside a narrow phone. */
 #portfolio-view-tabs { max-width: 100%; flex-wrap: wrap; box-sizing: border-box; }
 #portfolio-view-tabs .acadia-tab { min-width: 0; padding-inline: min(var(--acadia-space-2), 3vw); }
