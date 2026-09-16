@@ -197,3 +197,27 @@ test('card allocation withholds unavailable and non-positive denominators withou
   assert.equal(result.showRing, false);
   assert.match(result.reason, /property equity is negative/);
 });
+
+const { holdingAssetTypeLabel: assetTypeLabel } = require('../dashboard');
+test('asset-card types identify verified fund exposure despite legacy Other metadata and saved names', () => {
+  const expected = {VFIAX:'S&P 500',VOO:'S&P 500',VSMAX:'Small-Cap',VB:'Small-Cap',VTIAX:'International',VXUS:'International',VBTLX:'Bonds',VGT:'Technology'};
+  for (const [symbol,label] of Object.entries(expected)) {
+    const asset = {symbol: ` ${symbol.toLowerCase()} `,instrumentType:'other',allocationCategory:'other',name:'Other',isRetirement:true};
+    const before = {...asset};
+    assert.equal(assetTypeLabel(asset),label);
+    assert.deepEqual(asset,before,'display classification must not mutate saved metadata');
+  }
+});
+test('asset-card types use available classifications without guessing unknown symbols or fund names', () => {
+  assert.equal(assetTypeLabel({symbol:'BTC',instrumentType:'crypto'}),'Crypto');
+  assert.equal(assetTypeLabel({symbol:'VFIAX',instrumentType:'cash'}),'Cash');
+  assert.equal(assetTypeLabel({symbol:'UNKNOWN',allocationCategory:'bonds',instrumentType:'etf'}),'Bonds');
+  assert.equal(assetTypeLabel({allocationCategory:'international-equity'}),'International');
+  assert.equal(assetTypeLabel({allocationCategory:'domestic-equity'}),'U.S. Stocks');
+  assert.equal(assetTypeLabel({symbol:'UNKNOWN',instrumentType:'etf'}),'ETF');
+  assert.equal(assetTypeLabel({symbol:'UNKNOWN',instrumentType:'stock'}),'Stocks');
+  assert.equal(assetTypeLabel({symbol:'UNKNOWN',instrumentType:'mutual-fund'}),'Mutual Fund');
+  assert.equal(assetTypeLabel({symbol:'VFIAX.EXTRA',name:'S&P 500',instrumentType:'other'}),'Unclassified');
+  assert.equal(assetTypeLabel({symbol:'constructor',allocationCategory:'constructor',instrumentType:'constructor'}),'Unclassified');
+  assert.equal(assetTypeLabel(), 'Unclassified');
+});

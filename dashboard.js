@@ -6,6 +6,29 @@ const DashboardPlan = typeof module !== "undefined" ? require("./plan") : window
 const DashboardPortfolio = typeof module !== "undefined" ? require("./portfolio") : window.MercuryPortfolio;
 const HISTORY_MINIMUM_DAYS = 1;
 
+// Public fund exposure labels, verified against issuer references in DESIGN-README.md.
+// Exact USD fund symbols only; never infer a strategy from a ticker substring or name.
+const FUND_ASSET_TYPES = Object.freeze({
+  VFIAX: "S&P 500", VOO: "S&P 500",
+  VSMAX: "Small-Cap", VB: "Small-Cap",
+  VTIAX: "International", VXUS: "International",
+  VBTLX: "Bonds", VGT: "Technology",
+});
+const CATEGORY_ASSET_TYPES = Object.freeze({
+  "domestic-equity": "U.S. Stocks", "international-equity": "International",
+  bonds: "Bonds", crypto: "Crypto", cash: "Cash",
+});
+const INSTRUMENT_ASSET_TYPES = Object.freeze({
+  stock: "Stocks", etf: "ETF", "mutual-fund": "Mutual Fund", crypto: "Crypto", cash: "Cash",
+});
+function holdingAssetTypeLabel(asset = {}) {
+  const symbol = String(asset.symbol || "").trim().toUpperCase();
+  if (["crypto", "cash"].includes(asset.instrumentType)) return INSTRUMENT_ASSET_TYPES[asset.instrumentType];
+  if (Object.hasOwn(FUND_ASSET_TYPES, symbol)) return FUND_ASSET_TYPES[symbol];
+  if (Object.hasOwn(CATEGORY_ASSET_TYPES, asset.allocationCategory)) return CATEGORY_ASSET_TYPES[asset.allocationCategory];
+  return Object.hasOwn(INSTRUMENT_ASSET_TYPES, asset.instrumentType) ? INSTRUMENT_ASSET_TYPES[asset.instrumentType] : "Unclassified";
+}
+
 function investmentGroup(asset) {
   return asset.isRetirement ? "retirement" : asset.instrumentType === "crypto" ? "crypto" : "brokerage";
 }
@@ -117,6 +140,6 @@ function summarizeAllTimeChange(snapshots, currentValueCents) {
     changeRate: available && first.totalValueCents > 0 ? changeCents / first.totalValueCents : null };
 }
 
-const dashboardContract = { HISTORY_MINIMUM_DAYS, investmentGroup, summarizeInvestmentGroups, summarizeHomeGroups, summarizePlanningPosition, summarizeHoldingAllocation, summarizeNetWorthAllocation, summarizeDashboardHistory, summarizeAllTimeChange };
+const dashboardContract = { HISTORY_MINIMUM_DAYS, holdingAssetTypeLabel, investmentGroup, summarizeInvestmentGroups, summarizeHomeGroups, summarizePlanningPosition, summarizeHoldingAllocation, summarizeNetWorthAllocation, summarizeDashboardHistory, summarizeAllTimeChange };
 if (typeof module !== "undefined") module.exports = dashboardContract;
 if (typeof window !== "undefined") window.MercuryDashboard = dashboardContract;

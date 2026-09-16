@@ -1,0 +1,17 @@
+{
+  "labels": {
+    "BTC": "Crypto",
+    "ETH": "Crypto",
+    "VB": "Small-Cap",
+    "VBTLX": "Bonds",
+    "VFIAX": "S&P 500",
+    "VGT": "Technology",
+    "VOO": "S&P 500",
+    "VSMAX": "Small-Cap",
+    "VTIAX": "International",
+    "VXUS": "International"
+  },
+  "savedHoldingsUnchanged": true,
+  "phoneOverflow": false,
+  "browserErrors": []
+}

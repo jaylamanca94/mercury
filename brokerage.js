@@ -37,7 +37,7 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
     totalNetWorthCents,
     weeklyEquivalentRecurringContributionCents,
   } = window.MercuryPlan;
-  const { investmentGroup, summarizeInvestmentGroups, summarizeHomeGroups, summarizePlanningPosition, summarizeHoldingAllocation, summarizeNetWorthAllocation, summarizeDashboardHistory, summarizeAllTimeChange } = window.MercuryDashboard;
+  const { holdingAssetTypeLabel, investmentGroup, summarizeInvestmentGroups, summarizeHomeGroups, summarizePlanningPosition, summarizeHoldingAllocation, summarizeNetWorthAllocation, summarizeDashboardHistory, summarizeAllTimeChange } = window.MercuryDashboard;
   const { summarizeMarketHistory } = window.MercuryMarketHistory;
   const $ = (selector) => document.querySelector(selector);
   const currency = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 });
@@ -506,7 +506,7 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
       card.tabIndex = 0;
       card.setAttribute("role", "link");
       card.setAttribute("aria-label", `Open ${title} asset details, ${row.marketValueCents === null ? "Needs valuation" : preciseCurrency.format(row.marketValueCents / 100)}`);
-      card.innerHTML = `<div class="mercury-holding-header"><div class="acadia-field"><div class="acadia-cluster"><strong class="acadia-lead">${escapeHtml(title)}</strong><span class="mercury-holding-value" title="${escapeHtml(row.marketValueCents === null ? "Needs valuation" : preciseCurrency.format(row.marketValueCents / 100))}">${escapeHtml(holdingValueLabel(row))}</span></div><span class="acadia-text-muted">${escapeHtml(row.asset.name || instrumentLabel(row.asset.instrumentType))}</span></div>${holdingAllocationMarkup(row, netWorthCents)}</div><div data-holding-market="${escapeHtml(row.asset.id)}" class="mercury-holding-market"></div>`;
+      card.innerHTML = `<div class="mercury-holding-header"><div class="acadia-field"><div class="acadia-cluster"><strong class="acadia-lead">${escapeHtml(title)}</strong><span class="mercury-holding-value" title="${escapeHtml(row.marketValueCents === null ? "Needs valuation" : preciseCurrency.format(row.marketValueCents / 100))}">${escapeHtml(holdingValueLabel(row))}</span></div><span class="acadia-text-muted">${escapeHtml(holdingAssetTypeLabel(row.asset))}</span></div>${holdingAllocationMarkup(row, netWorthCents)}</div><div data-holding-market="${escapeHtml(row.asset.id)}" class="mercury-holding-market"></div>`;
       card.addEventListener("click", openHoldingFromEvent);
       card.addEventListener("keydown", keyOpenHolding);
       return card;

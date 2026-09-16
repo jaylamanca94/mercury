@@ -285,7 +285,7 @@ test("Plan provides one hero projection, four statistics and live scenario contr
   assert.match(indexHtml, /id="plan-assumptions-dialog"/);
   assert.match(indexHtml, /id="property-dialog"/);
   assert.match(indexHtml, /<script src="plan\.js\?v=20260914-change-cards-023"><\/script>/);
-  assert.match(indexHtml, /<script type="module" src="brokerage\.js\?v=20260915-portfolio-cards"><\/script>/);
+  assert.match(indexHtml, /<script type="module" src="brokerage\.js\?v=20260916-asset-types"><\/script>/);
   assert.match(homeSource, /function routePlan\(\)/);
   assert.match(homeSource, /function renderPlan\(summary\)/);
   assert.match(homeSource, /function renderPlanChart/);
