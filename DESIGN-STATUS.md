@@ -1,5 +1,7 @@
 # Mercury — Design Status
 
+2026-09-16 Portfolio: section `110:10301` now includes the two recorded-value summary cards and responsive desktop/tablet/phone controls. Recorded account change includes deposits/withdrawals; asset charts retain per-unit movement and allocation rings retain whole-percent net-worth labels. Search/sort, Cards/Table, recurring/property editing and enlarged-text menu containment are covered in `automation/portfolio-full/2026-09-16/review.md`. Earlier Portfolio composition reports are historical.
+
 Home 0.2.4 implements Figma section `98:5696`: four responsive summary cards and four portfolio groups replace Top assets. Group calculations preserve coverage and property-equity semantics; group navigation, keyboard focus, missing-data recovery, 320px enlarged text and desktop/tablet/phone layouts are checked locally. Ten canonical flows remain. Evidence: `automation/home-groups/2026-09-14/review.md`. Older Home composition reports below are historical.
 
 Plan 0.2.0 includes projected property equity with source-labelled county appreciation, structured geography and an optional override. Missing rates remain visible; debt stays fixed and property cannot cover investment spending. The existing ten canonical flows remain; property editing and Plan are extended.

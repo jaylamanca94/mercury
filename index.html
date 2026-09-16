@@ -12,7 +12,7 @@
     <link rel="preload" href="fonts/Syncopate-Regular.ttf" as="font" type="font/ttf" crossorigin>
     <link rel="preload" href="fonts/Syncopate-Bold.ttf" as="font" type="font/ttf" crossorigin>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" referrerpolicy="no-referrer">
-    <link rel="stylesheet" href="styles.css?v=20260915-portfolio-cards">
+    <link rel="stylesheet" href="styles.css?v=20260916-portfolio-page">
   </head>
   <body class="acadia-app">
     <a class="acadia-skip-link" href="#main-content">Skip to content</a>
@@ -59,7 +59,7 @@
       </section>
 
       <section id="portfolio-workspace" class="acadia-stack" hidden>
-        <header class="acadia-page-header-pattern is-title-only"><div class="acadia-page-header-pattern-actions"><h1 class="acadia-page-header-pattern-title">Portfolio</h1><button id="portfolio-add-asset" class="acadia-button acadia-button-primary" type="button"><i class="fa-solid fa-plus acadia-icon" aria-hidden="true"></i> Add asset</button></div></header>
+        <header class="acadia-page-header-pattern is-title-only"><div id="portfolio-page-heading" class="acadia-page-header-pattern-actions"><h1 class="acadia-page-header-pattern-title">Portfolio</h1><button id="portfolio-add-asset" class="acadia-button acadia-button-primary" type="button"><i class="fa-solid fa-plus acadia-icon" aria-hidden="true"></i> Add asset</button><details id="portfolio-investments-toolbar" class="acadia-action-menu"><summary class="acadia-action-menu-trigger acadia-icon-action" aria-label="Search and sort investments"><i class="fa-solid fa-ellipsis acadia-icon" aria-hidden="true"></i></summary><div class="acadia-action-menu-panel"><label class="acadia-search-control"><span class="acadia-sr-only">Search assets</span><input class="acadia-control" id="portfolio-search" type="search" placeholder="Search assets"><i class="fa-solid fa-magnifying-glass acadia-icon acadia-control-icon" aria-hidden="true"></i></label><label class="acadia-form-control" data-acadia-form-variant="select"><span>Sort investments</span><select id="portfolio-holding-sort" class="acadia-control" aria-label="Sort investments"><option value="value">Value</option><option value="name">Name A–Z</option><option value="updated">Last updated</option></select></label></div></details></div></header>
         <section class="acadia-stack" aria-label="Portfolio holdings and property">
           <section id="portfolio-investment-results" class="acadia-card-content" aria-labelledby="portfolio-holdings-title">
             <div class="acadia-page-header-pattern acadia-page-header-pattern-body">
@@ -69,8 +69,16 @@
                 <span id="portfolio-group-share" class="acadia-text-muted" hidden></span><small id="portfolio-valuation-status" class="acadia-text-muted" hidden></small>
               </div>
               <div class="acadia-cluster acadia-page-header-pattern-tools">
-              <label class="acadia-form-control" data-acadia-form-variant="select"><span class="acadia-sr-only">Sort investments</span><select id="portfolio-holding-sort" class="acadia-control" aria-label="Sort investments"><option value="value">Value</option><option value="name">Name A–Z</option><option value="updated">Last updated</option></select></label>
-                <div id="portfolio-market-periods" class="acadia-tabs" role="group" aria-label="Investment price period"><button class="acadia-tab is-active" type="button" data-portfolio-market-period="1w" aria-pressed="true" aria-controls="portfolio-holdings-grid">1W</button><button class="acadia-tab" type="button" data-portfolio-market-period="1m" aria-pressed="false" aria-controls="portfolio-holdings-grid">1M</button><button class="acadia-tab" type="button" data-portfolio-market-period="6m" aria-pressed="false" aria-controls="portfolio-holdings-grid">6M</button><button class="acadia-tab" type="button" data-portfolio-market-period="1y" aria-pressed="false" aria-controls="portfolio-holdings-grid">1Y</button></div>
+              <details id="portfolio-group-picker" class="acadia-page-header-pattern-sort"><summary class="acadia-badge acadia-badge-grey acadia-badge-round acadia-page-header-pattern-sort-trigger" aria-label="Filter investments"><span id="portfolio-group-label">All</span><i class="fa-solid fa-chevron-down acadia-icon" aria-hidden="true"></i></summary>
+                <div id="portfolio-group-filters" class="acadia-page-header-pattern-sort-menu" role="group" aria-label="Filter investments by group">
+                <button class="acadia-badge acadia-badge-round acadia-page-header-pattern-filter" type="button" data-investment-group="all" aria-pressed="true" aria-controls="portfolio-investment-results"><i class="fa-solid fa-check acadia-icon" aria-hidden="true"></i>All investments</button>
+                <button class="acadia-badge acadia-badge-round acadia-page-header-pattern-filter" type="button" data-investment-group="brokerage" aria-pressed="false" aria-controls="portfolio-investment-results"><i class="fa-solid fa-check acadia-icon" aria-hidden="true" hidden></i>Brokerage</button>
+                <button class="acadia-badge acadia-badge-round acadia-page-header-pattern-filter" type="button" data-investment-group="retirement" aria-pressed="false" aria-controls="portfolio-investment-results"><i class="fa-solid fa-check acadia-icon" aria-hidden="true" hidden></i>Retirement</button>
+                <button class="acadia-badge acadia-badge-round acadia-page-header-pattern-filter" type="button" data-investment-group="crypto" aria-pressed="false" aria-controls="portfolio-investment-results"><i class="fa-solid fa-check acadia-icon" aria-hidden="true" hidden></i>Crypto</button>
+              </div>
+              </details>
+                <div id="portfolio-market-periods" class="acadia-cluster" role="group" aria-label="Portfolio period"><button class="acadia-badge acadia-badge-round acadia-page-header-pattern-filter" type="button" data-portfolio-market-period="1w" aria-pressed="true" aria-controls="portfolio-holdings-grid">1W</button><button class="acadia-badge acadia-badge-round acadia-page-header-pattern-filter" type="button" data-portfolio-market-period="1m" aria-pressed="false" aria-controls="portfolio-holdings-grid">1M</button><button class="acadia-badge acadia-badge-round acadia-page-header-pattern-filter" type="button" data-portfolio-market-period="6m" aria-pressed="false" aria-controls="portfolio-holdings-grid">6M</button><button class="acadia-badge acadia-badge-round acadia-page-header-pattern-filter" type="button" data-portfolio-market-period="1y" aria-pressed="false" aria-controls="portfolio-holdings-grid">1Y</button></div>
+              <details id="portfolio-period-picker" class="acadia-page-header-pattern-sort"><summary class="acadia-badge acadia-badge-grey acadia-badge-round acadia-page-header-pattern-sort-trigger" aria-label="Portfolio period"><span id="portfolio-period-label">1W</span><i class="fa-solid fa-chevron-down acadia-icon" aria-hidden="true"></i></summary><div class="acadia-page-header-pattern-sort-menu" role="group" aria-label="Portfolio period"><button class="acadia-page-header-pattern-sort-option" type="button" data-portfolio-market-period="1w" aria-pressed="true">1W</button><button class="acadia-page-header-pattern-sort-option" type="button" data-portfolio-market-period="1m" aria-pressed="false">1M</button><button class="acadia-page-header-pattern-sort-option" type="button" data-portfolio-market-period="6m" aria-pressed="false">6M</button><button class="acadia-page-header-pattern-sort-option" type="button" data-portfolio-market-period="1y" aria-pressed="false">1Y</button></div></details>
               <div id="portfolio-view-tabs" class="acadia-tabs" role="tablist" aria-label="Investment view">
                 <button id="portfolio-cards-tab" class="acadia-tab is-active" type="button" role="tab" data-portfolio-view="cards" aria-controls="portfolio-cards-panel" aria-selected="true" tabindex="0">Cards</button>
                 <button id="portfolio-table-tab" class="acadia-tab" type="button" role="tab" data-portfolio-view="table" aria-controls="portfolio-table-panel" aria-selected="false" tabindex="-1">Table</button>
@@ -78,18 +86,14 @@
 
               </div>
             </div>
-            <div id="portfolio-investments-toolbar" class="acadia-page-header-pattern-section" role="group" aria-label="Find and organise investments">
-              <div id="portfolio-group-filters" class="acadia-page-header-pattern-filters" role="group" aria-label="Filter investments by group">
-                <button class="acadia-badge acadia-badge-round acadia-page-header-pattern-filter" type="button" data-investment-group="all" aria-pressed="true" aria-controls="portfolio-investment-results"><i class="fa-solid fa-check acadia-icon" aria-hidden="true"></i>All investments</button>
-                <button class="acadia-badge acadia-badge-round acadia-page-header-pattern-filter" type="button" data-investment-group="brokerage" aria-pressed="false" aria-controls="portfolio-investment-results"><i class="fa-solid fa-check acadia-icon" aria-hidden="true" hidden></i>Brokerage</button>
-                <button class="acadia-badge acadia-badge-round acadia-page-header-pattern-filter" type="button" data-investment-group="retirement" aria-pressed="false" aria-controls="portfolio-investment-results"><i class="fa-solid fa-check acadia-icon" aria-hidden="true" hidden></i>Retirement</button>
-                <button class="acadia-badge acadia-badge-round acadia-page-header-pattern-filter" type="button" data-investment-group="crypto" aria-pressed="false" aria-controls="portfolio-investment-results"><i class="fa-solid fa-check acadia-icon" aria-hidden="true" hidden></i>Crypto</button>
-              </div>
-              <div class="acadia-field"><label class="acadia-search-control acadia-page-header-pattern-search"><span class="acadia-sr-only">Search assets</span><input class="acadia-control" id="portfolio-search" type="search" placeholder="Search assets"><i class="fa-solid fa-magnifying-glass acadia-icon acadia-control-icon" aria-hidden="true"></i></label></div>
-            </div>
             <div id="portfolio-search-feedback" class="acadia-page-header-pattern-actions" hidden><span id="portfolio-search-count" class="acadia-text-muted" role="status" aria-live="polite"></span><button id="portfolio-clear-search" class="acadia-button acadia-button-quiet" type="button">Clear search</button></div>
             </div>
-            <div id="portfolio-cards-panel" class="acadia-stack" role="tabpanel" aria-labelledby="portfolio-cards-tab"><p id="portfolio-card-context" class="acadia-text-muted">Price change per share/unit · Allocation of total net worth.</p><div id="portfolio-holdings-grid" class="acadia-grid" style="grid-template-columns: repeat(auto-fit, minmax(min(100%, 20rem), 1fr))"></div></div>
+            <div id="portfolio-statistics" class="acadia-grid" aria-label="All investment summary" aria-describedby="portfolio-value-context">
+              <article class="acadia-card is-content"><div class="acadia-field"><div class="acadia-card-metric-value-row"><strong id="portfolio-current-total" class="acadia-lead">—</strong><span id="portfolio-current-change-rate"></span></div><span class="acadia-text-muted">All investments</span></div></article>
+              <article class="acadia-card is-content"><div class="acadia-field"><div class="acadia-card-metric-value-row"><strong id="portfolio-period-change" class="acadia-lead">—</strong><span id="portfolio-period-change-rate" class="acadia-text-muted"></span></div><span id="portfolio-period-caption" class="acadia-text-muted">1 week change</span></div></article>
+            </div>
+            <div id="portfolio-metric-context" class="acadia-field"><small id="portfolio-value-context" class="acadia-text-muted">Recorded value change across all investments · Includes deposits and withdrawals · Excludes property.</small><small id="portfolio-card-context" class="acadia-text-muted">Asset cards: Price change per share/unit · Allocation of total net worth.</small></div>
+            <div id="portfolio-cards-panel" class="acadia-stack" role="tabpanel" aria-labelledby="portfolio-cards-tab"><div id="portfolio-holdings-grid" class="acadia-grid"></div></div>
             <div id="portfolio-table-panel" class="acadia-stack" role="tabpanel" aria-labelledby="portfolio-table-tab" hidden>
               <div class="acadia-table-responsive"><div class="acadia-table-wide"><div id="portfolio-holdings-table-wrap" class="acadia-table-wrap" data-acadia-component-table tabindex="0" role="region" aria-label="Investment comparison" aria-describedby="portfolio-table-help">
                 <table id="portfolio-holdings-table" class="acadia-table is-compact">
@@ -106,7 +110,7 @@
           <div class="acadia-stack" id="portfolio-context">
           <section class="acadia-stack" id="portfolio-recurring" aria-labelledby="portfolio-recurring-title">
             <div class="acadia-page-header-pattern-section"><div class="acadia-cluster"><h2 id="portfolio-recurring-title" class="acadia-page-header-pattern-section-title">Recurring</h2><span id="portfolio-recurring-count" class="acadia-text-muted">0 assets</span></div><div class="acadia-cluster"><details id="portfolio-add-recurring" class="acadia-action-menu"><summary class="acadia-action-menu-trigger acadia-button acadia-button-quiet" aria-label="Add recurring investment"><i class="fa-solid fa-plus acadia-icon" aria-hidden="true"></i> Add recurring</summary><div id="portfolio-recurring-choices" class="acadia-action-menu-panel"></div></details><label class="acadia-form-control" data-acadia-form-variant="select"><span class="acadia-sr-only">Sort recurring investments</span><select id="portfolio-recurring-sort" class="acadia-control"><option value="value">Value</option><option value="name">Name</option></select></label></div></div>
-            <div class="acadia-grid" style="grid-template-columns: repeat(auto-fit, minmax(min(100%, 20rem), 1fr))" aria-label="Recurring investment equivalents">
+            <div id="portfolio-recurring-statistics" class="acadia-grid" aria-label="Recurring investment equivalents">
               <article class="acadia-card is-content"><div class="acadia-field"><strong id="portfolio-recurring-weekly" class="acadia-lead">$0</strong><span class="acadia-text-muted">Weekly investments</span></div></article>
               <article class="acadia-card is-content"><div class="acadia-field"><strong id="portfolio-recurring-monthly" class="acadia-lead">$0</strong><span class="acadia-text-muted">Monthly investments</span></div></article>
               <article class="acadia-card is-content"><div class="acadia-field"><strong id="portfolio-recurring-annual" class="acadia-lead">$0</strong><span class="acadia-text-muted">Annual investments</span></div></article>
@@ -267,6 +271,6 @@
     <script src="plan.js?v=20260914-change-cards-023"></script>
     <script src="dashboard.js?v=20260916-asset-types"></script>
     <script src="market-history.js?v=20260914-portfolio-007"></script>
-  <script type="module" src="brokerage.js?v=20260916-allocation-rounding"></script>
+  <script type="module" src="brokerage.js?v=20260916-portfolio-page"></script>
   </body>
 </html>

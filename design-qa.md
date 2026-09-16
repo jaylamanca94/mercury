@@ -1,3 +1,7 @@
+# Design QA — Portfolio Figma section 110:10301
+
+Portfolio now composes the two all-investment summary cards, compact responsive controls and three/two/one investment grid, followed by full-width Recurring and Property. The founder-selected recorded value change includes deposits/withdrawals; individual card movements remain per unit and allocation rings remain complete-net-worth shares with integer labels. 262 checks and isolated 1512/834/400/320px light/dark, enlarged-text, menu/focus and editing-navigation checks pass. Full evidence, reference mapping and acceptance boundaries: `automation/portfolio-full/2026-09-16/review.md`.
+
 # Design QA — Home Figma section 98:5696
 
 Home 0.2.4 follows the desktop/tablet/phone group-card reference using unchanged Acadia components and bounded composition adapters. Four portfolio groups replace Top assets; classification, source-backed rates, missing values, menu/keyboard navigation and focused Portfolio entry are verified locally. Desktop/tablet/phone, 320px and 200% text checks show no horizontal overflow. Existing real-history scope, dated endpoints and accurate estimate labels are preserved.

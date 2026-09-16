@@ -221,7 +221,10 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
     } else if ((fromHome ? ["", "#"].includes(window.location.hash) : routePortfolio()) && previousHash.startsWith("#asset/")) {
       const selector = fromHome ? "#holdings-grid [data-holding-id]" : section === "recurring" ? "#portfolio-recurring-list [data-edit-id]" : "#portfolio-holdings-grid [data-holding-id]";
       const target = [...document.querySelectorAll(selector)].find((element) => (element.dataset.editId || element.dataset.holdingId) === id);
-      (target || $(fromHome ? "#home-add-asset" : section === "recurring" ? "#portfolio-add-recurring summary" : "#portfolio-add-asset")).focus();
+      const returnTarget = target || $(fromHome ? "#home-add-asset" : section === "recurring" ? "#portfolio-add-recurring summary" : "#portfolio-add-asset");
+      const menu = returnTarget.closest?.(".acadia-action-menu");
+      if (menu && returnTarget.tagName !== "SUMMARY") menu.open = true;
+      returnTarget.focus();
     } else if (!routeAssetId()) {
       portfolioAssetNavigation = null;
     }
@@ -584,6 +587,9 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
       ? `${missingCount} ${missingCount === 1 ? "asset needs" : "assets need"} a valuation`
       : "Complete portfolio valuations to see allocation.");
     setText("#portfolio-summary-investments", group.valueCents === null ? "—" : preciseCurrency.format(group.valueCents / 100));
+    $("#portfolio-summary-investments").hidden = group.id === "all";
+    setText("#portfolio-current-total", groups[0].valueCents === null ? "—" : displayCurrency(groups[0].valueCents / 100));
+    $("#portfolio-current-total").setAttribute("title", groups[0].valueCents === null ? "Complete valuations unavailable" : preciseCurrency.format(groups[0].valueCents / 100));
     $("#portfolio-group-share").hidden = group.id === "all" || group.allocationRate === null;
     setText("#portfolio-group-share", group.allocationRate === null ? "" : `${(group.allocationRate * 100).toLocaleString("en-US", { maximumFractionDigits: 1 })}% of portfolio`);
     setText("#portfolio-summary-property-value", state.propertiesAvailable
@@ -612,7 +618,7 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
     list.innerHTML = assets.map((asset) => {
       const title = asset.symbol || asset.name;
       const cadence = asset.contributionFrequency === "monthly" ? "Monthly" : "Weekly";
-      return `<article class="acadia-object-card-header" role="listitem"><div class="acadia-cluster"><strong class="acadia-lead">${escapeHtml(title)}</strong><span style="color: var(--acadia-color-brand)" title="${escapeHtml(preciseCurrency.format(asset.contributionCents / 100))}">${escapeHtml(displayCurrency(asset.contributionCents / 100))}</span><span class="acadia-text-muted">${cadence}</span></div><button class="acadia-button acadia-button-quiet" type="button" data-edit-id="${escapeHtml(asset.id)}" data-asset-section="recurring" aria-label="Edit recurring investment for ${escapeHtml(title)}">Edit</button></article>`;
+      return `<article class="acadia-object-card-header" role="listitem"><div class="acadia-cluster"><strong class="acadia-lead">${escapeHtml(title)}</strong><span style="color: var(--acadia-color-brand)" title="${escapeHtml(preciseCurrency.format(asset.contributionCents / 100))}">${escapeHtml(displayCurrency(asset.contributionCents / 100))}</span><span class="acadia-text-muted">${cadence}</span></div><details class="acadia-action-menu"><summary class="acadia-action-menu-trigger acadia-icon-action" aria-label="Recurring actions for ${escapeHtml(title)}"><i class="fa-solid fa-ellipsis acadia-icon" aria-hidden="true"></i></summary><div class="acadia-action-menu-panel"><button class="acadia-action-menu-item" type="button" data-edit-id="${escapeHtml(asset.id)}" data-asset-section="recurring" aria-label="Edit recurring investment for ${escapeHtml(title)}">Edit recurring investment</button></div></details></article>`;
     }).join("");
     bindPortfolioHoldingActions(list);
     $("#portfolio-recurring-empty").hidden = assets.length > 0;
@@ -634,7 +640,10 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
       const button = $(`[data-investment-group="${group.id}"]`);
       button.setAttribute("aria-pressed", String(selected));
       button.querySelector(".acadia-icon").hidden = !selected;
-      if (selected) setText("#portfolio-holdings-title", group.id === "all" ? "Investments" : group.name);
+      if (selected) {
+        setText("#portfolio-holdings-title", group.id === "all" ? "Investments" : group.name);
+        setText("#portfolio-group-label", group.id === "all" ? "All" : group.name);
+      }
     }
   }
   function renderPortfolioView(hasRows) {
@@ -765,11 +774,11 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
       const rateLabel = change?.gainRate == null ? "" : new Intl.NumberFormat("en-US", { style: "percent", maximumFractionDigits: 2, signDisplay: "exceptZero" }).format(change.gainRate);
       const purchaseMarkup = change === null
         ? `<button class="acadia-button acadia-button-quiet" type="button" data-edit-property-id="${escapeHtml(model.id)}" data-property-field="purchase-price" aria-label="Add purchase price for ${escapeHtml(model.name)}">Add purchase price</button>`
-        : `<div class="acadia-cluster"><strong style="color: var(${change.gainCents < 0 ? "--acadia-status-danger-text" : "--acadia-color-brand"})">${escapeHtml(rateLabel || "Percentage unavailable")} <span class="acadia-sr-only">gain / loss</span></strong><span class="acadia-text-muted">${escapeHtml(preciseCurrency.format(model.purchasePriceCents / 100))} purchase price</span><span class="acadia-text-muted">${escapeHtml(gainLabel)} gain / loss</span></div><small class="acadia-text-muted">Since purchase · excludes costs and rental income.${change.gainRate === null ? " Percentage unavailable for a zero purchase price." : ""}</small>`;
+        : `<div class="acadia-cluster"><strong style="color: var(${change.gainCents < 0 ? "--acadia-status-danger-text" : "--acadia-color-brand"})">${escapeHtml(rateLabel || "Percentage unavailable")} <span class="acadia-sr-only">gain / loss</span></strong><span class="acadia-text-muted">${escapeHtml(preciseCurrency.format(model.purchasePriceCents / 100))} purchase price</span></div>`;
       const card = document.createElement("article");
       card.className = "acadia-card is-content";
       card.setAttribute("aria-label", `${model.name}${model.location ? `, ${model.location}` : ""}, market value ${displayCurrency(model.currentValueCents / 100)}, mortgage balance ${displayCurrency(model.mortgageBalanceCents / 100)}, equity ${displayCurrency(equityCents / 100)}`);
-      card.innerHTML = `<div class="acadia-card-actions" role="group" aria-label="Actions for ${escapeHtml(model.name)}"><details class="acadia-action-menu"><summary class="acadia-action-menu-trigger acadia-icon-action" aria-label="Actions for ${escapeHtml(model.name)}"><i class="fa-solid fa-ellipsis acadia-icon" aria-hidden="true"></i></summary><div class="acadia-action-menu-panel"><button class="acadia-action-menu-item" type="button" data-edit-property-id="${escapeHtml(model.id)}">Edit property</button><div class="acadia-action-menu-divider"></div><button class="acadia-action-menu-item is-danger" type="button" data-delete-property-id="${escapeHtml(model.id)}">Delete property</button></div></details></div><div class="acadia-field"><div class="acadia-cluster"><h3 class="acadia-lead">${escapeHtml(model.name)}</h3><span style="color: var(--acadia-color-brand)" title="${escapeHtml(preciseCurrency.format(model.currentValueCents / 100))}">${escapeHtml(displayCurrency(model.currentValueCents / 100))}<span class="acadia-sr-only"> market value</span></span></div>${model.location ? `<span class="acadia-text-muted">${escapeHtml(model.location)}</span>` : ""}</div>${purchaseMarkup}<div class="acadia-field"><span>${appreciation.rate === null ? "Appreciation not set" : `${percentage.format(appreciation.rate)} annual appreciation`}</span><small class="acadia-text-muted">${escapeHtml(appreciation.source)}</small></div><div class="acadia-cluster"><small class="acadia-text-muted">Equity ${escapeHtml(preciseCurrency.format(equityCents / 100))}</small><small class="acadia-text-muted">Debt ${escapeHtml(preciseCurrency.format(model.mortgageBalanceCents / 100))}</small></div>`;
+      card.innerHTML = `<div class="acadia-card-actions" role="group" aria-label="Actions for ${escapeHtml(model.name)}"><details class="acadia-action-menu"><summary class="acadia-action-menu-trigger acadia-icon-action" aria-label="Actions for ${escapeHtml(model.name)}"><i class="fa-solid fa-ellipsis acadia-icon" aria-hidden="true"></i></summary><div class="acadia-action-menu-panel"><div class="acadia-field"><strong>Property details</strong><span class="acadia-text-muted">${change === null ? "Purchase price not set" : `${escapeHtml(gainLabel)} since purchase · excludes costs and rental income.${change.gainRate === null ? " Percentage unavailable for a zero purchase price." : ""}`}</span><span class="acadia-text-muted">Equity ${escapeHtml(preciseCurrency.format(equityCents / 100))}</span><span class="acadia-text-muted">Debt ${escapeHtml(preciseCurrency.format(model.mortgageBalanceCents / 100))}</span><span class="acadia-text-muted">${appreciation.rate === null ? "Appreciation not set" : `${percentage.format(appreciation.rate)} annual appreciation`}</span><small class="acadia-text-muted">${escapeHtml(appreciation.source)}</small></div><div class="acadia-action-menu-divider"></div><button class="acadia-action-menu-item" type="button" data-edit-property-id="${escapeHtml(model.id)}">Edit property</button><div class="acadia-action-menu-divider"></div><button class="acadia-action-menu-item is-danger" type="button" data-delete-property-id="${escapeHtml(model.id)}">Delete property</button></div></details></div><div class="acadia-field"><div class="acadia-cluster"><h3 class="acadia-lead">${escapeHtml(model.name)}</h3><span style="color: var(--acadia-color-brand)" title="${escapeHtml(preciseCurrency.format(model.currentValueCents / 100))}">${escapeHtml(displayCurrency(model.currentValueCents / 100))}<span class="acadia-sr-only"> market value</span></span></div>${model.location ? `<span class="acadia-text-muted">${escapeHtml(model.location)}</span>` : ""}</div>${purchaseMarkup}`;
       return card;
     }));
     grid.querySelectorAll("[data-edit-property-id]").forEach((button) => {
@@ -1608,13 +1617,30 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
       });
     }
   }
+  function renderPortfolioRecordedChange() {
+    // Account snapshots intentionally ignore the current asset filter and search.
+    // Their value movement includes deposits/withdrawals, not personal returns.
+    const history = summarizeDashboardHistory(state.snapshots, portfolioMarketPeriod);
+    const labels = { "1w": "1 week", "1m": "1 month", "6m": "6 month", "1y": "1 year" };
+    setMovement("#portfolio-period-change", history.changeCents, displaySignedCurrency);
+    const rate = history.changeRate === null ? "" : displaySignedPercentage(history.changeRate);
+    setText("#portfolio-period-change-rate", rate);
+    setMovement("#portfolio-current-change-rate", history.changeRate, displaySignedPercentage, { hideWhenUnavailable: true });
+    setText("#portfolio-period-caption", `${labels[portfolioMarketPeriod]} change`);
+    const dates = history.recordedDays > 1 ? `${historyDateLabel(history.startDate)} – ${historyDateLabel(history.endDate)}`
+      : history.recordedDays === 1 ? `Only one recorded value, ${historyDateLabel(history.endDate)}; change unavailable`
+      : "No recorded values; change unavailable";
+    setText("#portfolio-value-context", `Recorded value change across all investments · Includes deposits and withdrawals · Excludes property. ${dates}.`);
+    $("#portfolio-period-change").setAttribute("title", history.changeCents === null ? dates : `${preciseCurrency.format(history.changeCents / 100)} · ${dates}`);
+  }
   function renderPortfolioMarketCharts() {
     document.querySelectorAll("[data-portfolio-market-period]").forEach(control => {
       const selected = control.dataset.portfolioMarketPeriod === portfolioMarketPeriod;
       control.classList.toggle("is-active", selected);
       control.setAttribute("aria-pressed", String(selected));
     });
-    $("#portfolio-market-periods").hidden = state.portfolioView !== "cards";
+    setText("#portfolio-period-label", portfolioMarketPeriod.toUpperCase());
+    renderPortfolioRecordedChange();
     $("#portfolio-holdings-grid").querySelectorAll("[data-holding-market]").forEach(slot => {
       const holding = state.holdings.find(item => item.id === slot.dataset.holdingMarket);
       if (!holding) return;
@@ -3127,11 +3153,17 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
     }
   }
 
+  function selectPortfolioMarketPeriod(period) {
+    if (!["1w", "1m", "6m", "1y"].includes(period)) return;
+    portfolioMarketPeriod = period;
+    if ($("#portfolio-period-picker").open) {
+      $("#portfolio-period-picker").open = false;
+      $("#portfolio-period-picker summary").focus();
+    }
+    renderPortfolioMarketCharts();
+  }
   document.querySelectorAll("[data-portfolio-market-period]").forEach(control => {
-    control.addEventListener("click", () => {
-      portfolioMarketPeriod = control.dataset.portfolioMarketPeriod;
-      renderPortfolioMarketCharts();
-    });
+    control.addEventListener("click", () => selectPortfolioMarketPeriod(control.dataset.portfolioMarketPeriod));
   });
   document.querySelectorAll("[data-market-period]").forEach(control => {
     control.addEventListener("click", () => {
@@ -3255,18 +3287,22 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
     control.addEventListener("click", (event) => {
       event.preventDefault();
       state.portfolioFilter = control.dataset.investmentGroup;
+      $("#portfolio-group-picker").open = false;
       render();
+      $("#portfolio-group-picker summary").focus();
     });
   });
   $("#portfolio-clear-search").addEventListener("click", () => {
     $("#portfolio-search").value = "";
     render();
+    $("#portfolio-investments-toolbar").open = true;
     $("#portfolio-search").focus();
   });
   $("#portfolio-reset-filters").addEventListener("click", () => {
     state.portfolioFilter = "all";
     $("#portfolio-search").value = "";
     render();
+    $("#portfolio-investments-toolbar").open = true;
     $("#portfolio-search").focus();
   });
   document.querySelectorAll("[data-performance-period]").forEach((control) => {

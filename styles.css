@@ -214,3 +214,94 @@
     --mercury-card-red: var(--acadia-text-red, var(--acadia-system-red-50));
   }
 }
+
+/* Portfolio section 110:10301: responsive page composition over Acadia primitives.
+   Search/sort remain in a compact disclosure; current account history stays distinct
+   from each card's price movement and net-worth allocation. */
+#portfolio-workspace .acadia-card.is-content {
+  --acadia-content-card-padding: min(var(--acadia-section-padding-standard), 8vw);
+  box-sizing: border-box;
+}
+#portfolio-page-heading { display: grid; grid-template-columns: 1fr auto auto; }
+#portfolio-investments-toolbar .acadia-action-menu-panel {
+  width: min(18rem, 80vw); box-sizing: border-box; gap: var(--acadia-space-2);
+}
+#portfolio-investment-results { gap: var(--acadia-space-3); }
+#portfolio-statistics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+#portfolio-holdings-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+#portfolio-recurring-statistics { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+#portfolio-statistics .acadia-card, #portfolio-recurring-statistics .acadia-card { min-height: 7.3125rem; }
+#portfolio-statistics .acadia-field, #portfolio-recurring-statistics .acadia-field { gap: 0.25rem; }
+#portfolio-statistics .acadia-card-metric-value-row > span { font-weight: var(--acadia-font-weight-regular); }
+#portfolio-current-change-rate.is-positive { color: var(--acadia-color-brand); }
+#portfolio-current-change-rate.is-danger, #portfolio-period-change.is-danger { color: var(--acadia-text-red, var(--acadia-system-red-60)); }
+#portfolio-period-change.is-positive { color: var(--acadia-text-green, var(--acadia-system-green-50)); }
+[data-acadia-theme="dark"] #portfolio-current-change-rate.is-danger,
+[data-acadia-theme="dark"] #portfolio-period-change.is-danger { color: var(--acadia-text-red, var(--acadia-system-red-50)); }
+[data-acadia-theme="dark"] #portfolio-period-change.is-positive { color: var(--acadia-text-green, var(--acadia-system-green-40)); }
+@media (prefers-color-scheme: dark) {
+  [data-acadia-theme="system"] #portfolio-current-change-rate.is-danger,
+  [data-acadia-theme="system"] #portfolio-period-change.is-danger { color: var(--acadia-text-red, var(--acadia-system-red-50)); }
+  [data-acadia-theme="system"] #portfolio-period-change.is-positive { color: var(--acadia-text-green, var(--acadia-system-green-40)); }
+}
+#portfolio-period-picker { display: none; }
+#portfolio-group-filters .acadia-badge { justify-content: flex-start; }
+#portfolio-market-periods { gap: var(--acadia-space-1); }
+#portfolio-recurring-list { gap: var(--acadia-space-3); }
+#portfolio-properties-grid .acadia-card { min-height: 10.1875rem; }
+#portfolio-properties-grid .acadia-action-menu-panel { width: min(20rem, 76vw); box-sizing: border-box; }
+@media (min-width: 768px) and (hover: hover) and (pointer: fine) {
+  #portfolio-market-periods .acadia-badge,
+  #portfolio-group-picker > summary, #portfolio-period-picker > summary {
+    min-height: var(--acadia-tab-visual-min-height, 2rem);
+  }
+}
+@media (max-width: 1199px) {
+  #portfolio-holdings-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  #portfolio-market-periods { display: none; }
+  #portfolio-period-picker { display: block; }
+}
+@media (min-width: 768px) and (max-width: 1199px) {
+  body:has(#portfolio-workspace:not([hidden])) .acadia-responsive-navbar {
+    display: grid; justify-items: center;
+    padding: var(--acadia-space-3) var(--acadia-page-margin-tablet) 0;
+  }
+  body:has(#portfolio-workspace:not([hidden])) .acadia-tablet-navigation { justify-self: center; }
+}
+@media (max-width: 767px) {
+  #portfolio-workspace { margin-inline: min(var(--acadia-space-1), 2vw); }
+  #portfolio-page-heading { grid-template-columns: 1fr auto; }
+  #portfolio-add-asset { grid-row: 2; justify-self: start; }
+  #portfolio-investments-toolbar { grid-column: 2; grid-row: 1; }
+  #portfolio-investment-results > .acadia-page-header-pattern > .acadia-page-header-pattern-actions { flex-direction: column; align-items: flex-start; }
+  #portfolio-investment-results .acadia-page-header-pattern-tools { flex-direction: column-reverse; align-items: flex-start; }
+  #portfolio-summary > .acadia-cluster { flex-direction: column; align-items: flex-start; gap: var(--acadia-space-1); }
+  #portfolio-statistics, #portfolio-holdings-grid, #portfolio-recurring-statistics { grid-template-columns: minmax(0, 1fr); }
+  #portfolio-recurring .acadia-page-header-pattern-section > .acadia-cluster:first-child { flex-direction: column; align-items: flex-start; gap: var(--acadia-space-1); }
+}
+@media (min-width: 768px) {
+  #portfolio-holdings-grid { grid-template-columns: repeat(auto-fit, minmax(min(100%, max(20rem, calc((100% - 3rem) / 3))), 1fr)); }
+}
+#portfolio-metric-context { gap: 0.25rem; }
+/* Intrinsic reflow keeps large text and disclosed menus inside a narrow phone. */
+#portfolio-view-tabs { max-width: 100%; flex-wrap: wrap; box-sizing: border-box; }
+#portfolio-view-tabs .acadia-tab { min-width: 0; padding-inline: min(var(--acadia-space-2), 3vw); }
+#portfolio-group-picker .acadia-page-header-pattern-sort-menu,
+#portfolio-period-picker .acadia-page-header-pattern-sort-menu {
+  min-inline-size: min(11rem, calc(100vw - 3rem));
+  max-inline-size: calc(100vw - 3rem); box-sizing: border-box;
+}
+#portfolio-group-filters .acadia-badge { white-space: normal; }
+#portfolio-page-heading .acadia-button { max-width: 100%; white-space: normal; }
+@container (max-width: 20rem) {
+  #portfolio-page-heading > h1 { grid-column: 1 / -1; }
+  #portfolio-page-heading > #portfolio-add-asset { grid-column: 1; padding-inline: min(var(--acadia-space-2), 3vw); justify-self: start; }
+  #portfolio-page-heading > #portfolio-investments-toolbar { grid-row: 2; align-self: center; }
+  #portfolio-page-heading:has(> h1) { column-gap: 0; }
+}
+@media (min-width: 768px) and (hover: hover) and (pointer: fine) {
+  #portfolio-market-periods .acadia-badge,
+  #portfolio-group-picker > summary, #portfolio-period-picker > summary {
+    padding-block: calc(var(--acadia-space-1) / 2 - 1px);
+  }
+}

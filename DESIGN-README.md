@@ -21,6 +21,20 @@ Use this file as the visual and interaction source of truth for Mercury. Keep th
 
 > **Home simplification — 2026-09-05:** The original Figma dashboard hierarchy is restored on Home: headline/history, compact allocation, paired portfolio changes and two secondary estimates and four asset cards. The Portfolio, Income and Plan contracts below remain active. Legacy economy-dashboard guidance is historical reference.
 
+## Portfolio responsive page — 2026-09-16
+
+Figma section `110:10301`, with desktop `110:7662`, tablet `226:8198` and phone `226:8989`, supersedes the older Portfolio toolbar and summary composition below. Preserve the later asset-card, exposure-label and whole-percentage allocation corrections.
+
+- Lead with Portfolio/Add asset and a compact search/sort disclosure. Investments/count pair with an All/Brokerage/Retirement/Crypto disclosure, shared period controls and Cards/Table. Desktop periods are separate 32px Acadia filter pills; tablet and phone use a native disclosure. Phone places Cards/Table, period and group vertically below the heading. Touch controls keep Acadia's larger targets; menus and tabs reflow at 320px with 200% text.
+- Two Acadia content cards show current **all-investment** value and selected-period **recorded account value change**. The latter uses the same deduplicated daily account snapshots and date-window calculations as Home. Its visible scope says deposits/withdrawals are included and property excluded, with actual available dates. The current-value card's small percentage repeats that recorded-period rate. Neither summary changes with asset filtering, search, sort or Cards/Table. The selected group's precise value/count/share remain in the section heading when scoped.
+- Keep zero, positive and negative movements distinct; zero/one snapshots show unavailable change, while a zero starting value withholds the percentage. Current valuations and previously recorded history have independent availability. No fabricated current snapshot or market-price total is inserted. Ranges end on the latest recorded date, which stays visible.
+- Investment cards retain 32px padding, 24px gaps, 64px rings and 160px charts; layout is three/two/one columns with intrinsic reflow for large text. Rings use total net worth, asset movements remain per-unit market prices, and the two scopes are stated beside the records. Required metric explanations add space beyond the illustrative Figma screenshot.
+- Recurring has three summary columns on desktop/tablet and one on phone. Each schedule's native ellipsis menu opens the existing Contribution editor; Back restores focus to its disclosed Edit action. Saved weekly/monthly schedules still use 52/12 equivalents. Native action targets can make rows taller than the illustrative 27px text row.
+- Property cards lead with name/current market value/location, then purchase price and signed price change. The existing ellipsis disclosure contains exact dollar movement, exclusions, equity/debt, appreciation/source and Edit/Delete. Missing purchase price keeps its repair action; no zero purchase value is inferred. Property allocation and totals retain existing semantics.
+- All surfaces, icons, type, focus and motion come from the unchanged Acadia snapshot. `styles.css` contains only scoped responsive composition, compact pill sizing and the previously documented semantic-colour/ring adapters. Table, record editing, allocation disclosure and recovery states remain available.
+
+Evidence: `automation/portfolio-full/2026-09-16/review.md`. Synthetic local checks are separate from deployment-source verification and authenticated owner/device acceptance.
+
 ## Portfolio Figma implementation — 2026-09-14
 
 This section supersedes earlier Portfolio compact-card and two-column context guidance. Source: Figma `CSCV8qZu9ryspC07K36vTg`, node `110:7662`.

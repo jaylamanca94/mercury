@@ -82,3 +82,10 @@ Current: **0.2.4**. Figma section `98:5696` replaces the ranked Top assets secti
 Figma card `222:3187` defines the clean investment-card presentation. One shared period selector updates daily market-price trends and signed per-share/unit changes. These figures describe the instrument’s price movement, not the owner’s investment gain/loss; share counts, purchases and dividends do not enter that calculation. Cards retain current holding value, name and access to asset details, with editing/additional metrics available there and in Table view.
 
 Each card’s allocation ring is its current holding value divided by complete current net worth, including property equity, consistent with Home. Filtering and changing the period never change its denominator. Unavailable valuations or non-positive net worth withhold percentages; negative property equity can produce a share above 100%, displayed as text with an explanation rather than a misleading ring. The existing expandable allocation panel remains explicitly investment-only. No API, database, account-connection or persistence changes are introduced.
+
+
+## Portfolio recorded-value summary — 2026-09-16
+
+The founder selected **recorded portfolio value change, including deposits and withdrawals** for the new period summary in Figma section `110:10301`. Use existing daily investment-account snapshots, independent of current group/search/view, and show actual dates. This is not investment performance or personal return; property is excluded from recorded investment history. Current all-investment value remains separate from the latest recorded endpoint. Missing history must not become zero movement.
+
+The shared 1W/1M/6M/1Y control updates this account summary and every visible asset's **per-unit market-price** chart. These are deliberately different measures with visible context. Allocation rings continue to use complete current net worth, including property equity; search/filter/range never change that denominator. No API, database, snapshot recording or persistence changes.

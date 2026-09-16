@@ -1,0 +1,18 @@
+[
+  {
+    "geometry": {
+      "chart": 160,
+      "gap": "24px",
+      "padding": "32px",
+      "ring": 64,
+      "tab": 32
+    },
+    "interactions": "Shared period, stable account summary and net-worth ring across group/search/Table, menu Escape and focus, card keyboard navigation, recurring edit and return focus, property details/edit/cancel passed"
+  },
+  {
+    "states": "One-price point, retry focus, zero and one snapshot summaries passed"
+  },
+  {
+    "responsive": "1512, 834, 400, 320px in both themes; 200% text at 320px; visible menu and tab containment; no browser errors"
+  }
+]
