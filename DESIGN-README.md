@@ -626,3 +626,10 @@ Updated responsive-frame evidence: `automation/portfolio-responsive-frames/2026-
 ## Property purchase-price caption — 2026-09-17
 
 Portfolio property cards use the existing compact currency formatter for the purchase-price caption (`$445k purchase price`). The exact amount remains in its hover title and the property editor; stored values and gain/loss calculations are unchanged.
+
+
+## Property amount fields — 2026-09-17
+
+Current market value, purchase price and debt balance use Acadia text fields with decimal keyboards so comma grouping is supported. Whole-dollar values omit `.00`; amounts of 1,000 or more display rounded whole dollars with grouping when unfocused. Focus exposes the exact grouped amount for editing; the exact USD amount is also in the title. Smaller fractional amounts retain up to two decimal places. Format on focus/blur, not during typing, to preserve caret behaviour.
+
+A bounded presentation adapter retains each exact amount independently of its display. Form snapshots compare canonical amounts so focus/blur do not create drafts. Untouched saved cents, entered cents, optional blanks and zero debt survive Save/Cancel/reopen. Validate grouping, non-negative amounts, two decimal places and safe integer cents before persistence. Do not round storage or change appreciation, share-count or per-unit-price controls. Shared Acadia CSS remains unchanged.

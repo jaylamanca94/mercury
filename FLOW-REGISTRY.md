@@ -188,3 +188,8 @@ No canonical flows added. Existing Plan opens at 1Y, displays selected-year summ
 ## Group-scoped Portfolio summaries — 2026-09-17
 
 Both summary cards now follow the active All investments/Brokerage/Retirement/Crypto filter: current group value in compact currency and selected-period market performance at current share counts. Captions use the same group percentage. Cards/Table preserves scope. Loading/error/retry aggregate only selected histories, while the shared cache and net-worth allocation-ring denominator remain unchanged. Empty groups show $0 with unavailable movement. No API, persistence or historical calculation changes.
+
+
+## Property amount entry formatting — 2026-09-17
+
+Existing Add/Edit property uses grouped monetary entry for current value, purchase price and debt. Focus/blur preserves exact amounts and does not create false unsaved changes. Grouped entry parses to cents; invalid grouping, negative values, excess decimals and unsafe amounts are rejected. Blank purchase price remains optional and blank debt remains zero. No canonical flow, API or persistence schema changes. Synthetic browser and regression evidence: `automation/property-amount-fields/2026-09-17/review.md`.

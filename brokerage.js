@@ -1886,7 +1886,7 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
   let lastRenderedHash = window.location.hash;
   function formSnapshot(form) {
     return JSON.stringify(Array.from(form.elements).filter((field) => field.name)
-      .map((field) => [field.name, field.type === "checkbox" ? field.checked : String(field.value)]));
+      .map((field) => [field.name, field.type === "checkbox" ? field.checked : formattedPropertyAmounts.has(field) ? propertyAmountSnapshot(field) : String(field.value)]));
   }
   function assetHasDraft() {
     return renderedAssetId !== null && assetFormSnapshot() !== assetFormBaseline;
@@ -2760,6 +2760,29 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
       setText("#property-appreciation-preview", `${assumption.rate === null ? "Appreciation not set" : `${percentage.format(assumption.rate)} / year`} · ${assumption.source}`);
     } catch (error) { setText("#property-appreciation-preview", error.message); }
   }
+  // Keep exact amounts separate from rounded field presentation.
+  const formattedPropertyAmounts = new Map();
+  const propertyAmountFields = { currentValue: "#property-current-value", purchasePrice: "#property-purchase-price", mortgageBalance: "#property-debt-balance" };
+  function propertyAmountValue(field, text = field.value) {
+    const previous = formattedPropertyAmounts.get(field);
+    if (previous && text === previous.display) return previous.raw;
+    const raw = String(text ?? "").trim();
+    if (!raw) return "";
+    if (!/^(?:(?:\d+|\d{1,3}(?:,\d{3})+)(?:\.\d{0,2})?|\.\d{1,2})$/.test(raw)) throw new Error("Enter a non-negative amount with up to two decimal places, such as 451,000.");
+    const amount = Number(raw.replaceAll(",", ""));
+    if (!Number.isSafeInteger(Math.round(amount * 100))) throw new Error("Enter a smaller amount.");
+    return String(amount);
+  }
+  function formatPropertyAmount(field, raw = propertyAmountValue(field), editing = false) {
+    const display = raw === "" ? "" : new Intl.NumberFormat("en-US", { maximumFractionDigits: editing || Number(raw) < 1000 ? 2 : 0 }).format(Number(raw));
+    formattedPropertyAmounts.set(field, { raw, display });
+    field.value = display;
+    field.title = raw === "" ? "" : `Exact amount: ${preciseCurrency.format(Number(raw))}`;
+    field.setCustomValidity?.("");
+  }
+  function propertyAmountSnapshot(field) {
+    try { return propertyAmountValue(field); } catch { return field.value; }
+  }
   let propertyEditContext = null;
   function openPropertyDialog(id = null, { focusPurchasePrice = false } = {}) {
     if (protectedDialogs.get($("#property-dialog"))?.pending) return;
@@ -2779,12 +2802,10 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
     setText("#property-dialog-title", property ? "Edit property" : "Add property");
     setText("#save-property", property ? "Save property" : "Add property");
     setText("#property-form-status", "");
-    if (property) {
-      const model = propertyModel(property);
-      $("#property-name").value = model.name;
-      $("#property-current-value").value = (model.currentValueCents / 100).toFixed(2);
-      $("#property-purchase-price").value = model.purchasePriceCents === null ? "" : (model.purchasePriceCents / 100).toFixed(2);
-      $("#property-debt-balance").value = (model.mortgageBalanceCents / 100).toFixed(2);
+    const model = property ? propertyModel(property) : null;
+    if (model) $("#property-name").value = model.name;
+    for (const [selector, value] of [["#property-current-value", model?.currentValueCents], ["#property-purchase-price", model?.purchasePriceCents], ["#property-debt-balance", model?.mortgageBalanceCents ?? 0]]) {
+      formatPropertyAmount($(selector), value == null ? "" : String(value / 100));
     }
     $("#property-dialog").hidden = false;
     openFormDialog("#property-dialog");
@@ -2808,9 +2829,9 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
         stateCode: getFormValue($("#property-form"), "stateCode"),
         countyFips: getFormValue($("#property-form"), "countyFips"),
         annualAppreciationRate: getFormValue($("#property-form"), "appreciation") === null || getFormValue($("#property-form"), "appreciation") === "" ? null : Number(getFormValue($("#property-form"), "appreciation")) / 100,
-        currentValueCents: cents(getFormValue($("#property-form"), "currentValue")),
-        purchasePriceCents: cents(getFormValue($("#property-form"), "purchasePrice")),
-        mortgageBalanceCents: cents(getFormValue($("#property-form"), "mortgageBalance")) ?? 0,
+        currentValueCents: cents(propertyAmountValue($(propertyAmountFields.currentValue), getFormValue($("#property-form"), "currentValue"))),
+        purchasePriceCents: cents(propertyAmountValue($(propertyAmountFields.purchasePrice), getFormValue($("#property-form"), "purchasePrice"))),
+        mortgageBalanceCents: cents(propertyAmountValue($(propertyAmountFields.mortgageBalance), getFormValue($("#property-form"), "mortgageBalance"))) ?? 0,
       });
       if (property.countyFips && !propertyMarkets?.counties.some(county => county.fips === property.countyFips && county.state === property.stateCode)) throw new Error("Select a county in the property’s state.");
       const payload = {
@@ -3372,6 +3393,19 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
   $("#close-property-dialog").addEventListener("click", closePropertyDialog);
   $("#cancel-property-dialog").addEventListener("click", closePropertyDialog);
   $("#property-dialog").addEventListener("close", () => { $("#property-dialog").hidden = true; });
+  for (const selector of Object.values(propertyAmountFields)) {
+    const field = $(selector);
+    field.addEventListener("input", () => {
+      try { propertyAmountValue(field); field.setCustomValidity(""); }
+      catch (error) { field.setCustomValidity(error.message); }
+    });
+    field.addEventListener("focus", () => {
+      try { formatPropertyAmount(field, propertyAmountValue(field), true); } catch { /* Keep invalid drafts editable. */ }
+    });
+    field.addEventListener("blur", () => {
+      try { formatPropertyAmount(field); } catch { /* Keep invalid drafts visible for correction. */ }
+    });
+  }
   $("#property-state").addEventListener("change", () => { renderPropertyCounties(); renderPropertyAppreciation(); });
   $("#property-county").addEventListener("change", renderPropertyAppreciation);
   $("#property-appreciation").addEventListener("input", renderPropertyAppreciation);

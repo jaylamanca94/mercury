@@ -101,3 +101,6 @@ Figma section `98:5696` supplies desktop, tablet and phone layouts. Home uses fo
 Historical growth and dividend yield aggregate the existing per-holding estimates using group investment value. Retirement takes precedence over crypto. Missing valuation or metric coverage withholds the affected amount/rate; loading is group-scoped. Property shows equity and a separate market-value-weighted appreciation assumption, with its source in the accessible label and tooltip. No personal records, APIs or schema changed.
 
 Acadia remains vendored unchanged. Home composition adapters set grid columns, minimum card sizes, chart height, tablet navigation alignment and phone insets; shared fonts, semantic colours, native menus and accessible controls remain canonical. The illustration's benchmark and net-worth percentage have no corresponding data source and are omitted. Real dated investment history, its scope note, All range, and accurate annual-estimate labels remain. Evidence: `automation/home-groups/2026-09-14/review.md`.
+
+
+Property monetary fields support comma-separated entry and rounded whole-dollar display for large amounts. Focus reveals exact cents; saving untouched formatted values preserves precision. This is presentation only, with the existing property storage contract unchanged.

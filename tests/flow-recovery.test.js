@@ -1317,7 +1317,7 @@ test('property purchase price survives save and reopen, can be cleared, and fail
   await api.saveProperty({preventDefault(){}});
   assert.equal(payload.purchase_price_cents,30000025);
   api.openPropertyDialog('property');
-  assert.equal(node('#property-purchase-price').value,'300000.25');
+  assert.equal(node('#property-purchase-price').value,'300,000');
   node('#property-form').fields.purchasePrice='';
   await api.saveProperty({preventDefault(){}});
   assert.equal(api.state.properties[0].purchase_price_cents,null);
@@ -1329,6 +1329,53 @@ test('property purchase price survives save and reopen, can be cleared, and fail
   assert.equal(node('#property-dialog').open,true);
   assert.equal(node('#property-form-status').textContent,'Save unavailable');
   assert.equal(node('#save-property').disabled,false);
+});
+
+test('formatted property amounts preserve cents through focus, blur and untouched saves', async () => {
+  const {api,node}=controller();
+  api.state.account={id:'account'};
+  api.state.properties=[{id:'property',account_id:'account',name:'Test house',current_value_cents:45100025,purchase_price_cents:44500075,mortgage_balance_cents:100099}];
+  const fields=[['#property-current-value','currentValue'],['#property-purchase-price','purchasePrice'],['#property-debt-balance','mortgageBalance']].map(([id,name])=>Object.assign(node(id),{name,setCustomValidity(message){this.error=message}}));
+  node('#property-form').elements=fields;
+  node('#property-form').fields={name:'Test house'};
+  let payload,writes=0;
+  api.state.client.from=()=>({update(value){payload=value;writes++;return this},eq(){return this},select(){return this},single(){return this},abortSignal(){return this},async then(resolve){resolve({data:{...api.state.properties[0],...payload}})}});
+  api.openPropertyDialog('property');
+  assert.deepEqual(fields.map(field=>field.value),['451,000','445,001','1,001']);
+  assert.equal(api.hasUnsavedWork(),false);
+  fields[0].listeners.focus();
+  assert.equal(fields[0].value,'451,000.25');
+  assert.equal(api.hasUnsavedWork(),false,'focusing must not create a draft');
+  fields[0].listeners.blur();
+  assert.equal(fields[0].value,'451,000');
+  assert.equal(api.hasUnsavedWork(),false,'rounding is presentation only');
+  await api.saveProperty({preventDefault(){}});
+  assert.equal(payload.current_value_cents,45100025);
+  assert.equal(payload.purchase_price_cents,44500075);
+  assert.equal(payload.mortgage_balance_cents,100099);
+  api.openPropertyDialog('property');
+  fields[0].listeners.focus();fields[0].value='1,234,567.89';fields[0].listeners.input();fields[0].listeners.blur();
+  assert.equal(fields[0].value,'1,234,568');
+  assert.equal(api.hasUnsavedWork(),true);
+  fields[1].value='';fields[1].listeners.input();fields[1].listeners.blur();
+  fields[2].value='123.45';fields[2].listeners.input();fields[2].listeners.blur();
+  assert.equal(fields[2].value,'123.45','small fractional amounts stay visible');
+  await api.saveProperty({preventDefault(){}});
+  assert.equal(payload.current_value_cents,123456789);
+  assert.equal(payload.purchase_price_cents,null);
+  assert.equal(payload.mortgage_balance_cents,12345);
+  api.openPropertyDialog('property');
+  for (const invalid of ['1,23','-1','12.345','1e6','Infinity','90071992547409999']) {
+    fields[0].value=invalid;fields[0].listeners.input();fields[0].listeners.blur();
+    assert.ok(fields[0].error,invalid);
+    assert.equal(fields[0].value,invalid,'invalid drafts remain editable');
+    await api.saveProperty({preventDefault(){}});
+    assert.equal(writes,2,'invalid input never writes');
+  }
+  fields[0].value='451,000';fields[0].listeners.input();
+  assert.equal(fields[0].error,'','correction clears native validity');
+  api.openPropertyDialog();
+  assert.deepEqual(fields.map(field=>field.value),['','','0'],'new property resets exact-value presentation state');
 });
 
 test('removing the purchase-price shortcut returns focus to its visible menu even when closed menu items report rectangles', () => {
