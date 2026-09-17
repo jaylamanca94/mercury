@@ -621,3 +621,8 @@ The second line of each investment card identifies exposure/type, rather than th
 Verified 2026-09-16. This is a bounded public-symbol catalogue, not a claim of universal automatic fund classification. Add classifications only with an issuer source. Existing known allocation categories provide International, Bonds, U.S. Stocks, Cash and Crypto fallbacks; other known instruments display Stocks, ETF or Mutual Fund.
 
 Updated responsive-frame evidence: `automation/portfolio-responsive-frames/2026-09-16/review.md`.
+
+
+## Property purchase-price caption — 2026-09-17
+
+Portfolio property cards use the existing compact currency formatter for the purchase-price caption (`$445k purchase price`). The exact amount remains in its hover title and the property editor; stored values and gain/loss calculations are unchanged.
