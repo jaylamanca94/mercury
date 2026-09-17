@@ -509,12 +509,14 @@ test('selected Portfolio group keeps its complete value and explains incomplete 
   api.state.portfolioFilter='retirement';
   api.renderPortfolioSummary({rows:[{asset:{id:'retirement',isRetirement:true},marketValueCents:29500000}]});
   assert.equal(node('#portfolio-summary-investments').textContent,'$295,000.00');
+  assert.equal(node('#portfolio-current-total').textContent,'$295k');
   assert.equal(node('#portfolio-holdings-count').textContent,'1 asset');
   assert.equal(node('#portfolio-group-share').hidden,true);
   assert.equal(node('#portfolio-valuation-status').hidden,false);
   assert.equal(node('#portfolio-valuation-status').textContent,'Complete portfolio valuations to see allocation.');
   api.renderPortfolioSummary({rows:[{asset:{id:'retirement',isRetirement:true},marketValueCents:29500000},{asset:{id:'missing'},marketValueCents:20500000}]});
   assert.equal(node('#portfolio-summary-investments').textContent,'$295,000.00');
+  assert.equal(node('#portfolio-current-total').textContent,'$295k');
   assert.equal(node('#portfolio-holdings-count').textContent,'1 asset');
   assert.equal(node('#portfolio-group-share').textContent,'59% of portfolio');
   assert.equal(node('#portfolio-valuation-status').hidden,true);
@@ -1677,26 +1679,53 @@ test('card footers show signed unit-price movement and preserve fractional chang
 
 
 
-test('Portfolio summary uses all holdings in Cards and Table without using account snapshots', async () => {
+test('Portfolio summaries follow the group and period in Cards and Table without using snapshots', async () => {
   const {api,node,window,context}=editableAsset();api.clearMarketHistory();
   window.location.hash='#portfolio';api.state.account={id:'test-account'};
   const base=api.state.holdings[0];
-  api.state.holdings=[{...base,id:'a',symbol:'AAA',instrument_type:'stock'},{...base,id:'b',symbol:'BBB',instrument_type:'stock'}];
-  const rows=api.state.holdings.map(holding=>({asset:{id:holding.id,shares:2,instrumentType:'stock',valuationBasis:'shares-and-price'}}));
+  api.state.holdings=[{...base,id:'a',symbol:'AAA',instrument_type:'stock',is_retirement:true},{...base,id:'b',symbol:'BBB',instrument_type:'stock',is_retirement:false}];
+  const rows=api.state.holdings.map(holding=>({asset:{id:holding.id,shares:2,instrumentType:'stock',valuationBasis:'shares-and-price',isRetirement:holding.is_retirement},marketValueCents:holding.id==='a'?3575216:5000000}));
   const now=Date.now();
-  context.fetch=async()=>({ok:true,json:async()=>({currency:'USD',source:'Test history',points:[{time:now-86400000,price:100},{time:now,price:110}]})});
+  context.fetch=async()=>({ok:true,json:async()=>({currency:'USD',source:'Test history',points:[{time:now-30*86400000,price:80},{time:now-86400000,price:100},{time:now,price:110}]})});
   api.syncPortfolioMarketHistory(rows);await new Promise(resolve=>setImmediate(resolve));
+  const summary={rows,totalMarketValueCents:8575216};
+  api.renderPortfolioSummary(summary);
+  assert.equal(node('#portfolio-current-total').textContent,'$86k');
+  assert.equal(node('#portfolio-current-label').textContent,'All investments');
   assert.equal(node('#portfolio-period-change').textContent,'+$40');
   assert.equal(node('#portfolio-current-change-rate').textContent,'+10%');
   api.state.snapshots=[{snapshot_date:'2026-01-01',total_value_cents:100},{snapshot_date:'2026-09-16',total_value_cents:999999999}];
-  api.state.portfolioView='table';api.state.portfolioFilter='crypto';
-  api.syncPortfolioMarketHistory(rows);
-  assert.equal(api.portfolioMarketHistory.size,2);
-  assert.equal(node('#portfolio-period-change').textContent,'+$40');
+  for (const view of ['cards','table']) {
+    api.state.portfolioView=view;api.state.portfolioFilter='retirement';
+    api.renderPortfolioSummary(summary);api.syncPortfolioMarketHistory(rows);
+    assert.equal(api.portfolioMarketHistory.size,2,'switching groups retains cached history');
+    assert.equal(node('#portfolio-current-total').textContent,'$36k');
+    assert.equal(node('#portfolio-current-label').textContent,'Retirement');
+    assert.equal(node('#portfolio-period-change').textContent,'+$20');
+    assert.equal(node('#portfolio-current-change-rate').textContent,'+10%');
+  }
+  api.selectPortfolioMarketPeriod('1y');
+  assert.equal(node('#portfolio-period-change').textContent,'+$60');
+  assert.equal(node('#portfolio-current-change-rate').textContent,'+37.5%');
+  assert.match(node('#portfolio-value-context').textContent,/selected current holdings/);
   assert.match(node('#portfolio-value-context').textContent,/Excludes deposits, withdrawals, dividends and property/);
-  api.portfolioMarketHistory.get('b').error=true;api.renderPortfolioMarketChange();
+  api.portfolioMarketHistory.get('b').pending=true;api.renderPortfolioMarketChange();
+  assert.equal(node('#portfolio-period-change').textContent,'+$60','outside loading does not hide the selected total');
+  api.portfolioMarketHistory.get('b').pending=false;api.portfolioMarketHistory.get('b').error=true;api.renderPortfolioMarketChange();
+  assert.equal(node('#portfolio-period-change').textContent,'+$60','outside failures do not hide the selected total');
+  assert.equal(node('#portfolio-market-retry').hidden,true);
+  api.state.portfolioFilter='brokerage';api.renderPortfolioMarketChange();
   assert.equal(node('#portfolio-period-change').textContent,'—');
   assert.equal(node('#portfolio-current-change-rate').hidden,true);
+  assert.equal(node('#portfolio-market-retry').hidden,false);
+  api.state.portfolioFilter='crypto';api.renderPortfolioSummary(summary);api.renderPortfolioMarketChange();
+  assert.equal(node('#portfolio-current-total').textContent,'$0');
+  assert.equal(node('#portfolio-period-change').textContent,'—');
+  assert.equal(node('#portfolio-current-change-rate').hidden,true);
+  assert.equal(node('#portfolio-market-retry').hidden,true);
+  api.state.portfolioFilter='all';api.renderPortfolioSummary(summary);api.renderPortfolioMarketChange();
+  assert.equal(node('#portfolio-current-total').textContent,'$86k');
+  assert.equal(node('#portfolio-period-change').textContent,'—','all investments still requires every history');
   assert.equal(node('#portfolio-market-retry').hidden,false);
   api.clearPortfolioMarketHistory();
 });

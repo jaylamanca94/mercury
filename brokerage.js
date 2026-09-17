@@ -553,7 +553,10 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
       || { asset: holdingAsset(holding), marketValueCents: null });
   }
   function matchingPortfolioHoldingRows(summary) {
-    return portfolioHoldingRows(summary).filter(row => state.portfolioFilter === "all"
+    return selectedPortfolioRows(portfolioHoldingRows(summary));
+  }
+  function selectedPortfolioRows(rows) {
+    return rows.filter(row => state.portfolioFilter === "all"
       || investmentGroup(row.asset) === state.portfolioFilter);
   }
   function recurringPortfolioAssets() {
@@ -572,8 +575,9 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
       : "Complete portfolio valuations to see allocation.");
     setText("#portfolio-summary-investments", group.valueCents === null ? "—" : preciseCurrency.format(group.valueCents / 100));
     $("#portfolio-summary-investments").hidden = group.id === "all";
-    setText("#portfolio-current-total", groups[0].valueCents === null ? "—" : displayCurrency(groups[0].valueCents / 100));
-    $("#portfolio-current-total").setAttribute("title", groups[0].valueCents === null ? "Complete valuations unavailable" : preciseCurrency.format(groups[0].valueCents / 100));
+    setText("#portfolio-current-total", group.valueCents === null ? "—" : displayCurrency(group.valueCents / 100));
+    setText("#portfolio-current-label", group.id === "all" ? "All investments" : group.name);
+    $("#portfolio-current-total").setAttribute("title", group.valueCents === null ? "Complete valuations unavailable" : preciseCurrency.format(group.valueCents / 100));
     $("#portfolio-group-share").hidden = group.id === "all" || group.allocationRate === null;
     setText("#portfolio-group-share", group.allocationRate === null ? "" : `${(group.allocationRate * 100).toLocaleString("en-US", { maximumFractionDigits: 1 })}% of portfolio`);
     setText("#portfolio-summary-property-value", state.propertiesAvailable
@@ -1612,8 +1616,9 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
   }
   function renderPortfolioMarketChange() {
     const histories = new Map([...portfolioMarketHistory].filter(([, entry]) => !entry.pending && !entry.error).map(([id, entry]) => [id, entry.data]));
-    const movement = summarizePortfolioMarketHistory(portfolioMarketRows, histories, portfolioMarketPeriod);
-    const needsHistory = portfolioMarketRows.filter(row => row.asset.instrumentType !== "cash" && row.asset.shares !== 0);
+    const selectedRows = selectedPortfolioRows(portfolioMarketRows);
+    const movement = summarizePortfolioMarketHistory(selectedRows, histories, portfolioMarketPeriod);
+    const needsHistory = selectedRows.filter(row => row.asset.instrumentType !== "cash" && row.asset.shares !== 0);
     const loading = needsHistory.some(row => {
       const holding = state.holdings.find(item => item.id === row.asset.id);
       const entry = portfolioMarketHistory.get(row.asset.id);
@@ -1628,7 +1633,7 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
     setText("#portfolio-period-caption", `${labels[portfolioMarketPeriod]} market change`);
     const dates = movement.startDate ? `${historyDateLabel(movement.startDate)} – ${historyDateLabel(movement.endDate)}` : "";
     const status = loading ? "Loading market history…" : failed ? "Market history unavailable for some investments. Retry to calculate the total." : movement.reason;
-    setText("#portfolio-value-context", `Market-price change across current holdings · Excludes deposits, withdrawals, dividends and property. ${dates || status}`);
+    setText("#portfolio-value-context", `Market-price change across selected current holdings · Excludes deposits, withdrawals, dividends and property. ${dates || status}`);
     $("#portfolio-period-change").setAttribute("title", movement.changeCents === null ? status : `${preciseCurrency.format(movement.changeCents / 100)} · Current share counts held constant${dates ? ` · ${dates} · ${movement.sources.join(", ")}` : ""}`);
     const retry = $("#portfolio-market-retry");
     // Keep the same button through retries, including while Table is selected.

@@ -183,3 +183,8 @@ Existing Manage holdings flow now supports the updated 2048px five-column frame 
 ## Plan responsive composition — 2026-09-16
 
 No canonical flows added. Existing Plan opens at 1Y, displays selected-year summaries above the graph, then current asset groups and two editing cards. Group menus navigate through the existing unsaved-work guard. Native age selectors preserve blank milestones; Save/Cancel and revision recovery are unchanged. Phone Plan settings returns focus to its menu trigger. Year selection and the exact breakdown remain in Projection assumptions. See `automation/plan-responsive-frames/2026-09-16/review.md` for synthetic browser and check evidence.
+
+
+## Group-scoped Portfolio summaries — 2026-09-17
+
+Both summary cards now follow the active All investments/Brokerage/Retirement/Crypto filter: current group value in compact currency and selected-period market performance at current share counts. Captions use the same group percentage. Cards/Table preserves scope. Loading/error/retry aggregate only selected histories, while the shared cache and net-worth allocation-ring denominator remain unchanged. Empty groups show $0 with unavailable movement. No API, persistence or historical calculation changes.
