@@ -15,7 +15,7 @@ const productReadme = fs.readFileSync(path.join(root, "PRODUCT-README.md"), "utf
 const personalFinancePivot = fs.readFileSync(path.join(root, "docs", "personal-finance-pivot.md"), "utf8");
 
 test("Home consumes canonical Acadia components with documented composition adapters", () => {
-  assert.match(styles, /^@import url\("acadia\.css\?v=20260914-346c874"\);/);
+  assert.match(styles, /^@import url\("acadia\.css\?v=20260918-2b80572"\);/);
   assert.match(acadiaStyles, /\.acadia-responsive-navbar/);
   assert.match(acadiaStyles, /\.acadia-card\.is-content/);
   assert.match(acadiaStyles, /\.acadia-dialog\.is-form-modal/);
@@ -285,7 +285,7 @@ test("Plan provides one hero projection, four statistics and live scenario contr
   assert.match(indexHtml, /id="plan-assumptions-dialog"/);
   assert.match(indexHtml, /id="property-dialog"/);
   assert.match(indexHtml, /<script src="plan\.js\?v=20260914-change-cards-023"><\/script>/);
-  assert.match(indexHtml, /<script type="module" src="brokerage\.js\?v=20260917-property-fields"><\/script>/);
+  assert.match(indexHtml, /<script type="module" src="brokerage\.js\?v=20260918-editor-revisions"><\/script>/);
   assert.match(homeSource, /function routePlan\(\)/);
   assert.match(homeSource, /function renderPlan\(summary\)/);
   assert.match(homeSource, /function renderPlanChart/);

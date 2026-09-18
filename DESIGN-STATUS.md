@@ -1,5 +1,13 @@
 # Mercury — Design Status
 
+**Current review: 2026-09-18.** Mercury 0.2.5 adopts published Acadia `2b80572` unchanged and makes stale-save recovery consistent across asset, source-detail, category and property editing. Current desktop/tablet/phone and 200% text evidence: `automation/review/2026-09-18/review.md`. Ten implemented flows; no new feature.
+
+Current next design opportunities (supersede historical lists below):
+1. Simplify conflict review further without discarding or silently merging a private draft; the current safe close/reopen path is explicit but takes extra steps.
+2. Remove the desktop Expenses scroll hint when the entire table already fits.
+3. Review the tablet Asset editor’s empty side column to improve use of space at intermediate widths.
+
+
 2026-09-16 Portfolio: section `110:10301` now includes the two market-performance summary cards and responsive desktop/tablet/phone controls. The founder's latest correction uses market-price performance at current share counts, excluding deposits/withdrawals; asset charts retain per-unit movement and allocation rings retain whole-percent net-worth labels. The earlier recorded-value summary choice is superseded. Search/sort, Cards/Table, recurring/property editing and enlarged-text menu containment are covered in `automation/portfolio-full/2026-09-16/review.md`. Earlier Portfolio composition reports are historical.
 
 Home 0.2.4 implements Figma section `98:5696`: four responsive summary cards and four portfolio groups replace Top assets. Group calculations preserve coverage and property-equity semantics; group navigation, keyboard focus, missing-data recovery, 320px enlarged text and desktop/tablet/phone layouts are checked locally. Ten canonical flows remain. Evidence: `automation/home-groups/2026-09-14/review.md`. Older Home composition reports below are historical.

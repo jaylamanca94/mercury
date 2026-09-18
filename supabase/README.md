@@ -33,3 +33,7 @@ Authenticated disposable-account checks verified omitted/null values, exact cent
 ## Date of birth — 0.1.1
 
 `20260914221500_plan_date_of_birth.sql` adds a private nullable `date_of_birth` date, bounded from 1900-01-01 to today, and permits it as the age anchor. Applied and recorded atomically on 2026-09-14. Existing rows are not backfilled. Legacy age columns remain for older clients; new clients ignore them and clear them after a confirmed DOB save. The existing owner RLS and revision trigger are unchanged. Disposable authenticated checks verified exact date persistence, leap day, stale-write rejection, date bounds and cleanup.
+
+## Revision-aware editors — 0.2.5
+
+No schema changes. On 2026-09-18, authenticated disposable-account checks verified the existing `updated_at` triggers on `holdings`, `income_sources`, `budget_categories` and `home_properties`. Conditional updates returned one row for the current revision and zero for stale/repeated or deleted revisions. A reviewed latest revision could save successfully. All created rows and the disposable account were deleted; each collection was rechecked empty. Browser editing now carries these revisions, including the explicit Property read/retry projections. This does not replace the migration rebuild or second-user isolation gate.

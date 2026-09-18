@@ -33,7 +33,7 @@ function controller() {
     fetch:async()=>({ok:false,json:async()=>({error:'provider unavailable'})}),
   });
   const source = fs.readFileSync(require.resolve('../brokerage.js'),'utf8').replace(/^import .*;\n/, '').replace('  initialise();',
-    '  window.testController = {renderPortfolioFilters,renderPortfolioMarketChange,selectPortfolioMarketPeriod,renderPortfolioMarketCharts,currentNetWorthCents,holdingAllocationMarkup,editPlanScenario,savePlanScenario,planProjection,observeAuthSession,sessionToken,editIncomeSource,saveInlineIncomeSource,cancelInlineIncomeSource,incomeSourceDrafts,syncPortfolioMarketHistory,clearPortfolioMarketHistory,portfolioMarketHistory,renderRecurringInvestments,loadMarketHistory,renderMarketHistory,clearMarketHistory,initialise,loadData,readWithDeadline,retryPlanSettings,openPlanAssumptionsDialog,savePlanAssumptions,retryProperties,hydrateProviderMetrics,ensurePlanSettings,state,render,renderHomeChanges,renderHomeGrowth,renderIncomeRecovery,retryIncomeData,missingIncomeYieldRows,renderIncomeYieldRecovery,renderPlan,renderQuickQuotePreview,refreshCurrentAssetPrice,restorePortfolioAssetFocus,renderHistory,renderAsset,canQuote,lookupQuote,saveQuickAsset,navigateToAsset,navigateBackFromAsset,routeAssetId,openFormDialog,hasPendingWrite,hasUnsavedWork,matchingPortfolioHoldingRows,sortHoldingRows,holdingValueLabel,renderPortfolioView,renderPortfolioSummary,detailHolding,openPropertyDialog,saveProperty};');
+    '  window.testController = {recordEditor,saveEditorRecord,openIncomeSourceDialog,saveIncomeSource,openBudgetCategoryDialog,saveBudgetCategory,saveAssetDetails,renderPortfolioFilters,renderPortfolioMarketChange,selectPortfolioMarketPeriod,renderPortfolioMarketCharts,currentNetWorthCents,holdingAllocationMarkup,editPlanScenario,savePlanScenario,planProjection,observeAuthSession,sessionToken,editIncomeSource,saveInlineIncomeSource,cancelInlineIncomeSource,incomeSourceDrafts,syncPortfolioMarketHistory,clearPortfolioMarketHistory,portfolioMarketHistory,renderRecurringInvestments,loadMarketHistory,renderMarketHistory,clearMarketHistory,initialise,loadData,readWithDeadline,retryPlanSettings,openPlanAssumptionsDialog,savePlanAssumptions,retryProperties,hydrateProviderMetrics,ensurePlanSettings,state,render,renderHomeChanges,renderHomeGrowth,renderIncomeRecovery,retryIncomeData,missingIncomeYieldRows,renderIncomeYieldRecovery,renderPlan,renderQuickQuotePreview,refreshCurrentAssetPrice,restorePortfolioAssetFocus,renderHistory,renderAsset,canQuote,lookupQuote,saveQuickAsset,navigateToAsset,navigateBackFromAsset,routeAssetId,openFormDialog,hasPendingWrite,hasUnsavedWork,matchingPortfolioHoldingRows,sortHoldingRows,holdingValueLabel,renderPortfolioView,renderPortfolioSummary,detailHolding,openPropertyDialog,saveProperty};');
   vm.runInContext(source,context);
   const api=window.testController;
   api.state.client={auth:{onAuthStateChange(callback){ window.authChanged = callback; return {data:{subscription:{unsubscribe(){}}}}; },getSession:async()=>({data:{session:{access_token:'isolated-test'}}})}};
@@ -166,7 +166,7 @@ test('Home asset entry and Back restore keyboard focus, with a fallback for rera
 
 test('background asset rendering preserves a draft; explicit reset reloads saved shares',()=>{
   const {api,node,window}=controller();window.location.hash='#asset/test';
-  api.state.holdings=[{id:'test',symbol:'TEST',name:'Test',instrument_type:'stock',allocation_category:'other',valuation_basis:'shares-and-price',shares:10,manual_price_cents:10000,manual_value_cents:null,expected_annual_return_rate:null,distribution_yield_rate:null,target_allocation_rate:null,weekly_contribution_rate:null,contribution_cents:null,contribution_frequency:null}];
+  api.state.holdings=[{id:'test',updated_at:'v1',symbol:'TEST',name:'Test',instrument_type:'stock',allocation_category:'other',valuation_basis:'shares-and-price',shares:10,manual_price_cents:10000,manual_value_cents:null,expected_annual_return_rate:null,distribution_yield_rate:null,target_allocation_rate:null,weekly_contribution_rate:null,contribution_cents:null,contribution_frequency:null}];
   api.renderAsset();assert.equal(node('#asset-detail-shares').value,10);
   node('#asset-detail-shares').value='17';api.renderAsset();assert.equal(node('#asset-detail-shares').value,'17');
   api.renderAsset({resetForm:true});assert.equal(node('#asset-detail-shares').value,10);
@@ -177,7 +177,7 @@ test('sign-in submission prevents duplicate sends and recovers from a thrown fai
   api.state.client.auth.signInWithOtp=()=>{calls++;return new Promise((_,reject)=>{finish=reject})};
   node('#email').value='audit@example.invalid';
   const submit=node('#magic-link-form').listeners.submit;
-  const first=submit({preventDefault(){}});await submit({preventDefault(){}});
+  const first=submit({preventDefault(){}});await new Promise(setImmediate);await submit({preventDefault(){}});
   assert.equal(calls,1);assert.equal(node('#send-magic-link').disabled,true);
   finish(new Error('Connection unavailable'));await first;
   assert.equal(node('#send-magic-link').disabled,false);
@@ -275,7 +275,7 @@ test('manual repair clears missing-price recovery while background rendering pre
 function editableAsset() {
   const view=controller(); const {api,node,window}=view;
   window.location.hash='#asset/test';
-  api.state.holdings=[{id:'test',symbol:'TEST',name:'Test',instrument_type:'stock',allocation_category:'other',valuation_basis:'shares-and-price',shares:10,manual_price_cents:10000,manual_value_cents:null,expected_annual_return_rate:null,distribution_yield_rate:null,target_allocation_rate:null,weekly_contribution_rate:null,contribution_cents:null,contribution_frequency:null}];
+  api.state.holdings=[{id:'test',updated_at:'v1',symbol:'TEST',name:'Test',instrument_type:'stock',allocation_category:'other',valuation_basis:'shares-and-price',shares:10,manual_price_cents:10000,manual_value_cents:null,expected_annual_return_rate:null,distribution_yield_rate:null,target_allocation_rate:null,weekly_contribution_rate:null,contribution_cents:null,contribution_frequency:null}];
   const fields=[['shares','shares'],['manual-price','manualPrice'],['valuation-basis','valuationBasis'],['retirement','isRetirement']].map(([id,name])=>{
     const field=node(`#asset-detail-${id}`);field.name=name;field.type=id==='retirement'?'checkbox':'number';return field;
   });
@@ -303,10 +303,10 @@ test('asset edit actions distinguish saved, changed, reverted and cancelled valu
 
 test('asset save captures enabled fields, locks editing, prevents duplicate writes and retains a failed draft',async()=>{
   const {api,node}=editableAsset();let finish,calls=0,payload;
-  api.state.client.from=()=>({update(value){payload=value;calls++;return {eq(){return new Promise(resolve=>{finish=resolve})}}}});
+  api.state.client.from=()=>({update(value){payload=value;calls++;return this},eq(){return this},select(){return this},maybeSingle(){return this},abortSignal(){return this},then(resolve){finish=resolve}});
   node('#asset-detail-shares').value='17';node('#asset-detail-form').listeners.input();
   const submit=node('#asset-detail-form').listeners.submit;
-  const first=submit({preventDefault(){}});await submit({preventDefault(){}});
+  const first=submit({preventDefault(){}});await new Promise(setImmediate);await submit({preventDefault(){}});
   assert.equal(calls,1);assert.equal(payload.shares,17);assert.equal(payload.manual_price_cents,10000);
   assert.equal(node('#asset-detail-shares').disabled,true);
   assert.equal(node('#asset-cancel').disabled,true);
@@ -342,9 +342,9 @@ test('changed asset navigation offers keep editing or discard; beforeunload warn
 
 test('pending asset writes block navigation without discarding the failed draft', async () => {
   const {api,node,window}=editableAsset();let finish;
-  api.state.client.from=()=>({update:()=>({eq:()=>new Promise(resolve=>{finish=resolve})})});
+  api.state.client.from=()=>({update(){return this},eq(){return this},select(){return this},maybeSingle(){return this},abortSignal(){return this},then(resolve){finish=resolve}});
   node('#asset-detail-shares').value='17';
-  const save=node('#asset-detail-form').listeners.submit({preventDefault(){}});
+  const save=node('#asset-detail-form').listeners.submit({preventDefault(){}});await new Promise(setImmediate);
   window.location.hash='#plan';api.render();
   assert.equal(window.location.hash,'#asset/test');
   assert.match(node('#asset-detail-status').textContent,/Please wait/);
@@ -373,14 +373,18 @@ test('all modal writes lock dismissal and fields, reject duplicate submits and r
     ['property','save-property',{name:'Home',location:'Test',currentValue:'1000',mortgageBalance:'0'},'propertyDialogId'],
   ]) {
     const {api,node}=controller();let finish,calls=0;
-    api.state.account={id:'account'};if(stateId)api.state[stateId]='existing';
+    api.state.account={id:'account'};
     api.state.client.from=()=>{const q={update(){return q},upsert(){return q},insert(){return q},eq(){return q},select(){return q},single(){return q},maybeSingle(){return q},abortSignal(){return q},then(resolve){calls++;return new Promise(r=>{finish=r}).then(resolve)}};return q};
     const form=node(`#${prefix}-form`), dialog=node(`#${prefix}-dialog`);
     form.fields=fields;
     const field={name:Object.keys(fields)[0],value:Object.values(fields)[0],disabled:false};
-    form.elements=[field,node(`#${saveId}`)];api.openFormDialog(`#${prefix}-dialog`);
+    form.elements=[field,node(`#${saveId}`)];
+    if(prefix==='income-source')api.openIncomeSourceDialog();
+    else if(prefix==='budget-category')api.openBudgetCategoryDialog();
+    else if(prefix==='property')api.openPropertyDialog();
+    else api.openFormDialog(`#${prefix}-dialog`);
     const submit=form.listeners.submit;const event={preventDefault(){},stopImmediatePropagation(){}};
-    const first=submit(event);await Promise.resolve();await submit(event);
+    const first=submit(event);await new Promise(setImmediate);await submit(event);
     assert.equal(calls,1,prefix);assert.equal(field.disabled,true,prefix);
     let prevented=false;dialog.listeners.cancel({...event,preventDefault(){prevented=true}});
     assert.equal(prevented,true,prefix);assert.equal(api.hasPendingWrite(),true,prefix);
@@ -1305,11 +1309,11 @@ test('a stalled Plan save unlocks the draft and never reports an unconfirmed wri
 test('property purchase price survives save and reopen, can be cleared, and failed saves retain the draft', async () => {
   const {api,node}=controller();
   api.state.account={id:'account'};
-  api.state.properties=[{id:'property',account_id:'account',name:'Test house',location:'Test region',current_value_cents:45000000,mortgage_balance_cents:20000000,purchase_price_cents:null,annual_appreciation_rate:null}];
+  api.state.properties=[{id:'property',updated_at:'v1',account_id:'account',name:'Test house',location:'Test region',current_value_cents:45000000,mortgage_balance_cents:20000000,purchase_price_cents:null,annual_appreciation_rate:null}];
   let payload,fail=false;
   api.state.client.from=table=>{
     assert.equal(table,'home_properties');
-    return {update(value){payload=value;return this},eq(){return this},select(){return this},single(){return this},abortSignal(){return this},async then(resolve){resolve(fail?{error:new Error('Save unavailable')}:{data:{...api.state.properties[0],...payload}})}};
+    return {update(value){payload=value;return this},eq(){return this},select(){return this},single(){return this},maybeSingle(){return this},abortSignal(){return this},async then(resolve){resolve(fail?{error:new Error('Save unavailable')}:{data:{...api.state.properties[0],...payload}})}};
   };
   api.openPropertyDialog('property',{focusPurchasePrice:true});
   assert.equal(node('#property-purchase-price').value,'');
@@ -1334,12 +1338,12 @@ test('property purchase price survives save and reopen, can be cleared, and fail
 test('formatted property amounts preserve cents through focus, blur and untouched saves', async () => {
   const {api,node}=controller();
   api.state.account={id:'account'};
-  api.state.properties=[{id:'property',account_id:'account',name:'Test house',current_value_cents:45100025,purchase_price_cents:44500075,mortgage_balance_cents:100099}];
+  api.state.properties=[{id:'property',updated_at:'v1',account_id:'account',name:'Test house',current_value_cents:45100025,purchase_price_cents:44500075,mortgage_balance_cents:100099}];
   const fields=[['#property-current-value','currentValue'],['#property-purchase-price','purchasePrice'],['#property-debt-balance','mortgageBalance']].map(([id,name])=>Object.assign(node(id),{name,setCustomValidity(message){this.error=message}}));
   node('#property-form').elements=fields;
   node('#property-form').fields={name:'Test house'};
   let payload,writes=0;
-  api.state.client.from=()=>({update(value){payload=value;writes++;return this},eq(){return this},select(){return this},single(){return this},abortSignal(){return this},async then(resolve){resolve({data:{...api.state.properties[0],...payload}})}});
+  api.state.client.from=()=>({update(value){payload=value;writes++;return this},eq(){return this},select(){return this},single(){return this},maybeSingle(){return this},abortSignal(){return this},async then(resolve){resolve({data:{...api.state.properties[0],...payload}})}});
   api.openPropertyDialog('property');
   assert.deepEqual(fields.map(field=>field.value),['451,000','445,001','1,001']);
   assert.equal(api.hasUnsavedWork(),false);
@@ -1647,16 +1651,16 @@ test('DOB saves reject future dates and preserve the entered draft after conflic
 
 test('property geography and automatic/custom appreciation survive save and reopen',async()=>{
  const {api,node}=controller();api.state.account={id:'account'};
- api.state.properties=[{id:'property',account_id:'account',name:'Synthetic',location:'Legacy location',current_value_cents:45000000,mortgage_balance_cents:20000000}];
+ api.state.properties=[{id:'property',updated_at:'v1',account_id:'account',name:'Synthetic',location:'Legacy location',current_value_cents:45000000,mortgage_balance_cents:20000000}];
  let payload;const filters=[];
- api.state.client.from=()=>({update(p){payload=p;return this},eq(k,v){filters.push([k,v]);return this},select(){return this},single(){return this},abortSignal(){return this},then(resolve){resolve({data:{...api.state.properties[0],...payload}})}});
+ api.state.client.from=()=>({update(p){payload=p;return this},eq(k,v){filters.push([k,v]);return this},select(){return this},single(){return this},maybeSingle(){return this},abortSignal(){return this},then(resolve){resolve({data:{...api.state.properties[0],...payload}})}});
  api.openPropertyDialog('property');
  assert.equal(node('#property-city').value,'');assert.match(node('#property-legacy-location').textContent,/Legacy location/);
  node('#property-form').fields={name:'Synthetic',city:'Roanoke',stateCode:'VA',countyFips:'51770',appreciation:'',currentValue:'450000',mortgageBalance:'200000'};
  await api.saveProperty({preventDefault(){}});api.openPropertyDialog('property');
  assert.equal(api.state.properties[0].county_fips,'51770');assert.equal(node('#property-city').value,'Roanoke');assert.equal(node('#property-state').value,'VA');assert.equal(node('#property-county').value,'51770');
  assert.equal(payload.annual_appreciation_rate,null);assert.match(node('#property-appreciation-preview').textContent,/FHFA.*Roanoke City/);
- assert.deepEqual(filters,[['id','property'],['account_id','account']]);
+ assert.deepEqual(filters,[['id','property'],['account_id','account'],['updated_at','v1']]);
  node('#property-form').fields.appreciation='0';await api.saveProperty({preventDefault(){}});api.openPropertyDialog('property');
  assert.equal(node('#property-appreciation').value,'0');assert.match(node('#property-appreciation-preview').textContent,/Custom/);
  node('#property-state').value='NY';node('#property-state').listeners.change();assert.equal(node('#property-county').value,'');
@@ -1664,7 +1668,7 @@ test('property geography and automatic/custom appreciation survive save and reop
 
 test('late property save cannot populate a replacement account',async()=>{
  const {api,node}=controller();api.state.account={id:'account'};
- let finish;api.state.client.from=()=>({insert(){return this},select(){return this},single(){return this},abortSignal(){return this},then(resolve){finish=resolve}});
+ let finish;api.state.client.from=()=>({insert(){return this},select(){return this},single(){return this},maybeSingle(){return this},abortSignal(){return this},then(resolve){finish=resolve}});
  api.openPropertyDialog();node('#property-form').fields={name:'Synthetic',city:'Synthetic city',currentValue:'450000',mortgageBalance:'200000'};
  const write=api.saveProperty({preventDefault(){}});await new Promise(setImmediate);
  api.state.account={id:'other'};api.state.properties=[];
@@ -1799,4 +1803,126 @@ test('phone Portfolio filters share selection and recovery returns to the visibl
   assert.equal(api.state.portfolioFilter,'all');assert.equal(focused,true);
   focused=false;api.navigateToAsset('removed');window.location.hash='#portfolio';
   api.restorePortfolioAssetFocus('#asset/removed');assert.equal(focused,true);
+});
+
+// The adapter models server-side conditional updates and returns detached rows,
+// so a refreshed collection cannot accidentally mutate an open editor baseline.
+function revisionStore(api, table, initial) {
+  let remote = structuredClone(initial), failRead = false;
+  const writes = [];
+  api.state.client.from = name => {
+    assert.equal(name, table);
+    let payload, inserting = false;
+    const filters = [];
+    const query = {
+      update(value) { payload = value; return this; },
+      insert(value) { payload = value; inserting = true; return this; },
+      eq(key, value) { filters.push([key, value]); return this; },
+      select() { return this; }, maybeSingle() { return this; }, abortSignal() { return this; },
+      then(resolve) {
+        if (!payload && failRead) return resolve({error: new Error('Read unavailable')});
+        if (payload) {
+          writes.push({payload, filters});
+          if (inserting || (remote && filters.every(([key,value]) => remote[key] === value))) {
+            remote = {...remote, ...payload, updated_at: `v${writes.length + 1}`};
+            return resolve({data: structuredClone(remote)});
+          }
+          return resolve({data:null});
+        }
+        resolve({data: remote ? structuredClone(remote) : null});
+      }
+    };
+    return query;
+  };
+  return {writes, get:()=>remote, set:value=>{remote=structuredClone(value)}, failReads:()=>{failRead=true}};
+}
+
+for (const kind of ['source', 'category', 'property', 'asset']) {
+  test(`${kind} editor rejects stale revisions repeatedly and saves only after reviewing the winner`, async () => {
+    const view = kind === 'asset' ? editableAsset() : controller();
+    const {api,node} = view;
+    api.state.account={id:'account'};
+    const specs = {
+      source: {table:'income_sources', collection:'incomeSources', row:{name:'Salary',income_type:'employment',amount_cents:10000,frequency:'monthly'}, open:()=>api.openIncomeSourceDialog('record'), save:()=>api.saveIncomeSource({preventDefault(){}}), form:'#income-source-form', status:'#income-source-form-status', fields:{name:'Draft',incomeType:'employment',amount:'200',frequency:'monthly'}},
+      category: {table:'budget_categories',collection:'budgetCategories',row:{name:'Food',monthly_amount_cents:10000},open:()=>api.openBudgetCategoryDialog('record'),save:()=>api.saveBudgetCategory({preventDefault(){}}),form:'#budget-category-form',status:'#budget-category-form-status',fields:{name:'Draft',monthlyAmount:'200'}},
+      property: {table:'home_properties',collection:'properties',row:{name:'Home',current_value_cents:100000,mortgage_balance_cents:0},open:()=>api.openPropertyDialog('record'),save:()=>api.saveProperty({preventDefault(){}}),form:'#property-form',status:'#property-form-status',fields:{name:'Draft',currentValue:'2000',mortgageBalance:'0'}},
+      asset: {table:'holdings',collection:'holdings',row:{...api.state.holdings[0]},open:()=>api.renderAsset({resetForm:true}),save:()=>api.saveAssetDetails({preventDefault(){}}),form:'#asset-detail-form',status:'#asset-detail-status',fields:{name:'Draft',shares:'17',manualPrice:'100',valuationBasis:'shares-and-price'}},
+    };
+    const spec=specs[kind], id=kind==='asset'?'test':'record';
+    const original={...spec.row,id,account_id:'account',updated_at:'v1'};
+    api.state[spec.collection]=[original];
+    const store=revisionStore(api,spec.table,original);
+    spec.open();node(spec.form).fields=spec.fields;
+    if(kind==='asset')node('#asset-detail-shares').value='17';
+    const winner={...original,name:'Changed elsewhere',updated_at:'v2'};
+    store.set(winner);
+    // A background read must not replace the opening revision either.
+    api.state[spec.collection]=[structuredClone(winner)];
+    await spec.save();await spec.save();
+    assert.equal(store.get().name,'Changed elsewhere');
+    assert.match(node(spec.status).textContent,/changed or was removed elsewhere/);
+    assert.equal(node(spec.form).fields.name,'Draft');
+    assert.equal(store.writes.length,2);
+    for(const write of store.writes)assert.deepEqual(write.filters,[['id',id],['account_id','account'],['updated_at','v1']]);
+    spec.open();node(spec.form).fields=spec.fields;
+    if(kind==='asset')node('#asset-detail-shares').value='18';
+    await spec.save();
+    assert.equal(store.get().name,'Draft');
+    assert.equal(api.state[spec.collection][0].updated_at,store.get().updated_at);
+    if(kind==='asset')assert.equal(node('#asset-detail-status').textContent,'Changes saved');
+  });
+}
+
+test('missing revisions, deleted rows and conflict-read failures never authorise blind updates',async()=>{
+  const {api}=controller();api.state.account={id:'account'};
+  const row={id:'source',account_id:'account',name:'Saved',updated_at:'v1'};
+  api.state.incomeSources=[row];const store=revisionStore(api,'income_sources',row);
+  await assert.rejects(api.saveEditorRecord(api.recordEditor({...row,updated_at:null}),'income_sources','incomeSources',{name:'Draft'},'source'),/revision is unavailable/);
+  assert.equal(store.writes.length,0);
+  const editor=api.recordEditor(row);store.set(null);store.failReads();
+  await assert.rejects(api.saveEditorRecord(editor,'income_sources','incomeSources',{name:'Draft'},'source'),/draft is unchanged/);
+  assert.equal(store.get(),null);assert.equal(editor.baseline.updated_at,'v1');
+});
+
+test('confirmed editor saves do not depend on an account reload and new-record retries keep their identity',async()=>{
+  const {api,node}=controller();api.state.account={id:'account'};
+  const store=revisionStore(api,'income_sources',null);
+  api.openIncomeSourceDialog();node('#income-source-form').fields={name:'New source',incomeType:'employment',amount:'200',frequency:'monthly'};
+  await api.saveIncomeSource({preventDefault(){}});
+  assert.equal(api.state.incomeSources.length,1);assert.equal(node('#income-source-dialog').open,false);
+  assert.equal(store.writes.length,1);assert.ok(store.get().id);
+  assert.equal(store.get().account_id,'account');
+  const editor=api.recordEditor(null), id=editor.id;
+  await api.saveEditorRecord(editor,'income_sources','incomeSources',{name:'One'},'source');
+  await api.saveEditorRecord(editor,'income_sources','incomeSources',{name:'Two'},'source');
+  assert.equal(store.writes.at(-1).payload.id,id);assert.equal(store.writes.at(-2).payload.id,id);
+});
+
+test('editor timeouts retain drafts, unlock controls and ignore late acknowledgements',async()=>{
+  const {api,node,context}=controller();api.state.account={id:'account'};
+  let timeout,finish,signal;
+  context.setTimeout=callback=>{timeout=callback;return 1};context.clearTimeout=()=>{};
+  api.state.client.from=()=>({insert(){return this},select(){return this},maybeSingle(){return this},abortSignal(value){signal=value;return this},then(resolve){finish=resolve}});
+  api.openBudgetCategoryDialog();node('#budget-category-form').fields={name:'Draft',monthlyAmount:'200'};
+  const pending=api.saveBudgetCategory({preventDefault(){}});await new Promise(setImmediate);
+  timeout();await pending;
+  assert.equal(signal.aborted,true);assert.equal(node('#save-budget-category').disabled,false);
+  assert.equal(node('#budget-category-dialog').open,true);assert.match(node('#budget-category-form-status').textContent,/could not be confirmed/);
+  finish({data:{id:'late'}});await new Promise(setImmediate);
+  assert.equal(api.state.budgetCategories.length,0);assert.equal(node('#budget-category-form').fields.name,'Draft');
+});
+
+test('late editor acknowledgements cannot enter a replacement account',async()=>{
+  for(const kind of ['source','category','asset']) {
+    const {api,node}=kind==='asset'?editableAsset():controller();api.state.account={id:'account'};
+    let finish;
+    api.state.client.from=()=>({update(){return this},insert(){return this},eq(){return this},select(){return this},maybeSingle(){return this},abortSignal(){return this},then(resolve){finish=resolve}});
+    let pending;
+    if(kind==='source'){api.openIncomeSourceDialog();node('#income-source-form').fields={name:'Draft',incomeType:'employment',amount:'200',frequency:'monthly'};pending=api.saveIncomeSource({preventDefault(){}})}
+    else if(kind==='category'){api.openBudgetCategoryDialog();node('#budget-category-form').fields={name:'Draft',monthlyAmount:'200'};pending=api.saveBudgetCategory({preventDefault(){}})}
+    else{api.renderAsset({resetForm:true});node('#asset-detail-shares').value='17';pending=api.saveAssetDetails({preventDefault(){}})}
+    await new Promise(setImmediate);api.state.account={id:'other'};api.state.incomeSources=[];api.state.budgetCategories=[];api.state.holdings=[];
+    finish({data:{id:kind==='asset'?'test':'late',name:'Wrong account'}});await pending;
+    assert.equal(api.state.incomeSources.length+api.state.budgetCategories.length+api.state.holdings.length,0);
+  }
 });

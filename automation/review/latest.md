@@ -1,3 +1,3 @@
 # Latest Mercury audit
 
-See [2026-09-14 session follow-through](2026-09-14/session/review.md): 0.0.9 closes stale session visibility, adopts Acadia `346c874` and fixes enlarged-text dialog compression. 222 automated checks and current synthetic browser flow checks pass. Live auth/provider/scheduler, other-editor concurrency, migration rebuild and physical accessibility gates remain explicit.
+See [2026-09-18 editor integrity and Acadia review](2026-09-18/review.md): 0.2.5 closes stale saves across four editors and adopts published Acadia `2b80572`, including its Home vector. 277 checks, authenticated disposable revision tests and current synthetic browser walkthroughs pass. Ten implemented flows unchanged. Migration rebuild, second-user isolation, real magic-link/provider/scheduler/export and physical accessibility remain explicit acceptance gates.

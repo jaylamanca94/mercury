@@ -1761,6 +1761,7 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
   let refreshingAssetId = null;
   let renderedAssetId = null;
   let assetFormBaseline = "";
+  let assetEditor = null;
   let savingAssetId = null;
   function assetFormSnapshot() {
     return JSON.stringify(Array.from($("#asset-detail-form").elements)
@@ -1850,6 +1851,7 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
     // Refresh the summary without replacing a draft while provider data arrives.
     if (renderedAssetId === id && !resetForm) return;
     renderedAssetId = id;
+    assetEditor = recordEditor(holding);
     setAssetRecoveryFeedback("");
     const setValue = (selector, value) => { $(selector).value = value ?? ""; };
     $("#asset-detail-form").hidden = false;
@@ -2387,32 +2389,33 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
   }
   async function saveAssetDetails(event) {
     event.preventDefault();
-    const holding = state.holdings.find((entry) => entry.id === routeAssetId());
-    if (!holding || savingAssetId || assetFormSnapshot() === assetFormBaseline) return;
+    const editor = assetEditor;
+    const holding = editor?.baseline;
+    if (!holding || !editor.current() || routeAssetId() !== holding.id || savingAssetId || assetFormSnapshot() === assetFormBaseline) return;
     try {
-      // Read enabled fields before locking the form; disabled fields are absent from FormData.
+      // Capture enabled fields and the revision originally shown, never a later refresh.
       const updates = detailHolding(holding);
       savingAssetId = holding.id;
       setDetailFormDisabled(true);
       syncAssetEditState();
       setAssetEditStatus("Saving changes…");
-      const { error } = await state.client.from("holdings").update(updates).eq("id", holding.id);
-      if (error) throw error;
-      await loadData();
+      const data = await saveEditorRecord(editor, "holdings", "holdings", updates, "asset", "Cancel to review the saved values, or reload if it was removed.");
+      if (!data || !editor.current()) return;
+      state.holdings = state.holdings.map(entry => entry.id === data.id ? data : entry);
       if (routeAssetId() === holding.id) {
         renderAsset({ resetForm: true });
         setAssetEditStatus("Changes saved");
       }
       setText("#data-status", "Saved to your private Brokerage account.");
     } catch (error) {
-      if (routeAssetId() === holding.id) setAssetEditStatus(error.message || "This asset could not be saved.");
+      if (editor.current() && routeAssetId() === holding.id) setAssetEditStatus(editorSaveError(error, "This asset could not be saved."));
     } finally {
       savingAssetId = null;
-      if (routeAssetId() === holding.id) {
+      if (editor.current() && routeAssetId() === holding.id) {
         setDetailFormDisabled(false);
         syncDetailValuationFields();
+        syncAssetEditState();
       }
-      if (routeAssetId() === renderedAssetId) syncAssetEditState();
     }
   }
 
@@ -2464,6 +2467,44 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
     }
   }
 
+  function recordEditor(record) {
+    return { baseline: record ? { ...record } : null, id: record?.id || crypto.randomUUID(), current: accountContext(), client: state.client, accountId: state.account?.id };
+  }
+  function editorSaveError(error, fallback) {
+    return error.message === "Read timed out"
+      ? "Saving could not be confirmed. Your draft is unchanged. Reload to check the saved record before trying again."
+      : error.message || fallback;
+  }
+  async function saveEditorRecord(editor, table, collection, payload, label, recovery = "Close and reopen to review the saved values, or reload if it was removed.") {
+    if (!editor.current()) return null;
+    const { baseline, client, accountId, id } = editor;
+    if (baseline && !baseline.updated_at) throw new Error("Reload before saving. The saved revision is unavailable; your draft is unchanged.");
+    const query = baseline
+      ? client.from(table).update(payload).eq("id", id).eq("account_id", accountId).eq("updated_at", baseline.updated_at)
+      : client.from(table).insert({ ...payload, id, account_id: accountId });
+    const { data, error } = await readWithDeadline(signal => query.select().maybeSingle().abortSignal(signal));
+    if (!editor.current()) return null;
+    if (error) throw error;
+    if (!data) {
+      // Refresh the saved record, keeping both draft and original revision intact.
+      // A repeated Save must not silently approve overwriting the newer version.
+      if (baseline) {
+        try {
+          const latest = await readWithDeadline(signal => client.from(table).select("*").eq("id", id).eq("account_id", accountId).maybeSingle().abortSignal(signal));
+          if (!editor.current()) return null;
+          if (!latest.error && latest.data) {
+            state[collection] = state[collection].map(entry => entry.id === id ? latest.data : entry);
+            render();
+          }
+        } catch { /* The draft remains recoverable even when the refresh fails. */ }
+      }
+      throw new Error(`This ${label} changed or was removed elsewhere. Your draft is unchanged. ${recovery}`);
+    }
+    return data;
+  }
+
+  let incomeSourceEditor = null;
+  let budgetCategoryEditor = null;
   function incomeSourcePayload(form, id) {
     const source = normalizeIncomeSource({
       id,
@@ -2486,6 +2527,7 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
     const form = $("#income-source-form");
     const existing = id ? state.incomeSources.find((source) => source.id === id) : null;
     state.incomeSourceDialogId = existing?.id || null;
+    incomeSourceEditor = recordEditor(existing);
     form.reset();
     setText("#income-source-dialog-title", existing ? "Edit income source" : "Add income");
     setText("#save-income-source", existing ? "Save" : "Add");
@@ -2502,24 +2544,27 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
   function closeIncomeSourceDialog() { $("#income-source-dialog").close(); }
   async function saveIncomeSource(event) {
     event.preventDefault();
+    const editor = incomeSourceEditor;
+    if (!editor || !editor.current() || !state.account) return;
     const save = $("#save-income-source");
     try {
       save.disabled = true;
-      save.textContent = state.incomeSourceDialogId ? "Saving…" : "Adding…";
-      const id = state.incomeSourceDialogId || crypto.randomUUID();
-      const payload = incomeSourcePayload($("#income-source-form"), id);
-      const request = state.incomeSourceDialogId
-        ? state.client.from("income_sources").update(payload).eq("id", id).eq("account_id", state.account.id)
-        : state.client.from("income_sources").insert(payload);
-      const { error } = await request;
-      if (error) throw error;
+      save.textContent = editor.baseline ? "Saving…" : "Adding…";
+      const payload = incomeSourcePayload($("#income-source-form"), editor.id);
+      const data = await saveEditorRecord(editor, "income_sources", "incomeSources", payload, "income source");
+      if (!data || !editor.current()) return;
+      state.incomeSources = editor.baseline
+        ? state.incomeSources.map(entry => entry.id === data.id ? data : entry)
+        : [...state.incomeSources, data];
+      render();
       closeIncomeSourceDialog();
-      await loadData();
     } catch (error) {
-      setText("#income-source-form-status", error.message || "This income source could not be saved.");
+      if (editor.current()) setText("#income-source-form-status", editorSaveError(error, "This income source could not be saved."));
     } finally {
-      save.disabled = false;
-      save.textContent = state.incomeSourceDialogId ? "Save" : "Add";
+      if (editor.current()) {
+        save.disabled = false;
+        save.textContent = editor.baseline ? "Save" : "Add";
+      }
     }
   }
   function openDeleteIncomeSourceDialog(id) {
@@ -2576,6 +2621,7 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
     const form = $("#budget-category-form");
     const existing = id ? state.budgetCategories.find((category) => category.id === id) : null;
     state.budgetCategoryDialogId = existing?.id || null;
+    budgetCategoryEditor = recordEditor(existing);
     form.reset();
     setText("#budget-category-dialog-title", existing ? "Edit category" : "Add category");
     setText("#save-budget-category", existing ? "Save" : "Add");
@@ -2590,25 +2636,27 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
   function closeBudgetCategoryDialog() { $("#budget-category-dialog").close(); }
   async function saveBudgetCategory(event) {
     event.preventDefault();
-    if (!state.account) return;
+    const editor = budgetCategoryEditor;
+    if (!editor || !editor.current() || !state.account) return;
     const save = $("#save-budget-category");
     try {
       save.disabled = true;
-      save.textContent = state.budgetCategoryDialogId ? "Saving…" : "Adding…";
-      const id = state.budgetCategoryDialogId || crypto.randomUUID();
-      const payload = budgetCategoryPayload($("#budget-category-form"), id);
-      const request = state.budgetCategoryDialogId
-        ? state.client.from("budget_categories").update(payload).eq("id", id).eq("account_id", state.account.id)
-        : state.client.from("budget_categories").insert(payload);
-      const { error } = await request;
-      if (error) throw error;
+      save.textContent = editor.baseline ? "Saving…" : "Adding…";
+      const payload = budgetCategoryPayload($("#budget-category-form"), editor.id);
+      const data = await saveEditorRecord(editor, "budget_categories", "budgetCategories", payload, "category");
+      if (!data || !editor.current()) return;
+      state.budgetCategories = editor.baseline
+        ? state.budgetCategories.map(entry => entry.id === data.id ? data : entry)
+        : [...state.budgetCategories, data];
+      render();
       closeBudgetCategoryDialog();
-      await loadData();
     } catch (error) {
-      setText("#budget-category-form-status", error.message || "This budget category could not be saved.");
+      if (editor.current()) setText("#budget-category-form-status", editorSaveError(error, "This category could not be saved."));
     } finally {
-      save.disabled = false;
-      save.textContent = state.budgetCategoryDialogId ? "Save" : "Add";
+      if (editor.current()) {
+        save.disabled = false;
+        save.textContent = editor.baseline ? "Save" : "Add";
+      }
     }
   }
   function openDeleteBudgetCategoryDialog(id) {
@@ -2783,7 +2831,7 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
   function propertyAmountSnapshot(field) {
     try { return propertyAmountValue(field); } catch { return field.value; }
   }
-  let propertyEditContext = null;
+  let propertyEditor = null;
   function openPropertyDialog(id = null, { focusPurchasePrice = false } = {}) {
     if (protectedDialogs.get($("#property-dialog"))?.pending) return;
     if (!state.propertiesAvailable) return;
@@ -2791,7 +2839,7 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
     const property = state.properties.find((entry) => entry.id === id);
     state.propertyDialogId = property?.id || null;
     form.reset();
-    propertyEditContext = accountContext();
+    propertyEditor = recordEditor(property);
     $("#property-state").innerHTML = '<option value="">Select state / outside US</option>' + [...new Set((propertyMarkets?.counties || []).map(county => county.state))].sort().map(code => `<option value="${code}">${code}</option>`).join("");
     $("#property-state").value = property?.state_code || "";
     $("#property-city").value = property?.city || "";
@@ -2814,9 +2862,10 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
   function closePropertyDialog() { $("#property-dialog").close(); }
   async function saveProperty(event) {
     event.preventDefault();
-    if (!state.account || (propertyEditContext && !propertyEditContext())) return;
-    const current = propertyEditContext || accountContext();
-    const { client, account, propertyDialogId } = state;
+    const editor = propertyEditor;
+    if (!state.account || !editor || !editor.current()) return;
+    const current = editor.current;
+    const { propertyDialogId } = state;
     const save = $("#save-property");
     try {
       save.disabled = true;
@@ -2846,22 +2895,20 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
         purchase_price_cents: property.purchasePriceCents,
         mortgage_balance_cents: property.mortgageBalanceCents,
       };
-      const query = propertyDialogId
-        ? client.from("home_properties").update(payload).eq("id", propertyDialogId).eq("account_id", account.id)
-        : client.from("home_properties").insert(payload);
-      const { data, error } = await readWithDeadline(signal => query.select().single().abortSignal(signal));
-      if (!current()) return;
-      if (error) throw error;
-      state.properties = state.propertyDialogId
+      const data = await saveEditorRecord(editor, "home_properties", "properties", payload, "property");
+      if (!data || !current()) return;
+      state.properties = editor.baseline
         ? state.properties.map((entry) => entry.id === data.id ? data : entry)
         : [...state.properties, data];
       render();
       closePropertyDialog();
     } catch (error) {
-      if (current()) setText("#property-form-status", error.message === "Read timed out" ? "Saving could not be confirmed. Your draft is retained. Reload to check before adding again." : error.message || "The property could not be saved.");
+      if (current()) setText("#property-form-status", editorSaveError(error, "The property could not be saved."));
     } finally {
-      save.disabled = false;
-      save.textContent = state.propertyDialogId ? "Save property" : "Add property";
+      if (current()) {
+        save.disabled = false;
+        save.textContent = editor.baseline ? "Save property" : "Add property";
+      }
     }
   }
   function openDeletePropertyDialog(id) {
@@ -2957,7 +3004,7 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
     setText("#property-recovery-status", "Retrying properties…");
     render();
     try {
-      const result = await readWithDeadline(signal => client.from("home_properties").select("id, account_id, name, location, city, state_code, county_fips, current_value_cents, purchase_price_cents, mortgage_balance_cents, annual_appreciation_rate, created_at").eq("account_id", account.id).order("created_at").abortSignal(signal));
+      const result = await readWithDeadline(signal => client.from("home_properties").select("id, account_id, name, location, city, state_code, county_fips, current_value_cents, purchase_price_cents, mortgage_balance_cents, annual_appreciation_rate, created_at, updated_at").eq("account_id", account.id).order("created_at").abortSignal(signal));
       if (!current()) return;
       if (result.error || !Array.isArray(result.data)) throw new Error("Property read failed");
       state.properties = result.data;
@@ -2988,7 +3035,7 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
       signal => client.from("income_sources").select("*").eq("account_id", account.id).order("created_at").abortSignal(signal),
       signal => client.from("budget_categories").select("*").eq("account_id", account.id).order("created_at").abortSignal(signal),
       signal => client.from("plan_settings").select("*").eq("account_id", account.id).maybeSingle().abortSignal(signal),
-      signal => client.from("home_properties").select("id, account_id, name, location, city, state_code, county_fips, current_value_cents, purchase_price_cents, mortgage_balance_cents, annual_appreciation_rate, created_at").eq("account_id", account.id).order("created_at").abortSignal(signal),
+      signal => client.from("home_properties").select("id, account_id, name, location, city, state_code, county_fips, current_value_cents, purchase_price_cents, mortgage_balance_cents, annual_appreciation_rate, created_at, updated_at").eq("account_id", account.id).order("created_at").abortSignal(signal),
     ].map(operation => readWithDeadline(operation)));
     if (!current() || requestId !== state.dataRequestId) return false;
     const [accounts, holdings, quotes, snapshots, incomeSources, budgetCategories, planSettings, properties] = results.map(result => result.status === "fulfilled" ? result.value : { error: result.reason });

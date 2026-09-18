@@ -98,6 +98,30 @@
    * intentionally raw ramps: products select semantic brand, action, focus,
    * and status roles rather than assigning these stops directly to UI state.
    */
+  /* Fixed Figma System ramps; only the Text aliases change with appearance. */
+  --acadia-system-acadia-5: #d5fbf3;
+  --acadia-system-acadia-10: #7efbe1;
+  --acadia-system-acadia-20: #29e1cb;
+  --acadia-system-acadia-30: #1dc2ae;
+  --acadia-system-acadia-40: #00a398;
+  --acadia-system-acadia-50: #008480;
+  --acadia-system-acadia-60: #0f6460;
+  --acadia-system-acadia-70: #0b4b3f;
+  --acadia-system-acadia-80: #123131;
+  --acadia-system-gray-cool-1: #fbfcfd;
+  --acadia-system-gray-cool-2: #f7f9fa;
+  --acadia-system-gray-cool-3: #f5f6f7;
+  --acadia-system-gray-cool-4: #f1f3f6;
+  --acadia-system-gray-cool-5: #edeff0;
+  --acadia-system-gray-cool-10: #dfe1e2;
+  --acadia-system-gray-cool-20: #c6cace;
+  --acadia-system-gray-cool-30: #a9aeb1;
+  --acadia-system-gray-cool-40: #8d9297;
+  --acadia-system-gray-cool-50: #71767a;
+  --acadia-system-gray-cool-60: #565c65;
+  --acadia-system-gray-cool-70: #3d4551;
+  --acadia-system-gray-cool-80: #2d2e2f;
+  --acadia-system-gray-cool-90: #1c1d1f;
   --acadia-system-red-5: #f8eff1;
   --acadia-system-red-10: #f3e1e4;
   --acadia-system-red-20: #ecbec6;
@@ -211,8 +235,15 @@
     inset 0 1px 1px rgba(255, 255, 255, 0.24),
     inset -1px 1px 4px rgba(255, 255, 255, 0.08);
   --acadia-control-select-icon: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
-  --acadia-color-text: #212529;
-  --acadia-color-text-muted: #495057;
+  /* Exact founder Text aliases. Small-text roles below account for surfaces. */
+  --acadia-text-dark: var(--acadia-system-gray-cool-90);
+  --acadia-text-light: var(--acadia-system-gray-cool-1);
+  --acadia-text-medium: var(--acadia-system-gray-cool-70);
+  --acadia-text-brand: var(--acadia-system-acadia-50);
+  --acadia-text-green: var(--acadia-system-green-50);
+  --acadia-text-red: var(--acadia-system-red-60);
+  --acadia-color-text: var(--acadia-text-dark);
+  --acadia-color-text-muted: var(--acadia-text-medium);
   --acadia-color-border: rgba(33, 37, 41, 0.1);
   --acadia-color-border-strong: rgba(33, 37, 41, 0.17);
   /*
@@ -251,8 +282,8 @@
     var(--acadia-palette-rose-100) 24%,
     transparent
   );
-  --acadia-color-brand: var(--acadia-palette-tiffany-100);
-  --acadia-color-brand-ink: var(--acadia-palette-tiffany-300);
+  --acadia-color-brand: var(--acadia-color-brand-ink);
+  --acadia-color-brand-ink: var(--acadia-system-acadia-60);
   --acadia-color-brand-bg: color-mix(
     in srgb,
     var(--acadia-palette-tiffany-100) 10%,
@@ -273,33 +304,34 @@
   --acadia-color-primary-hover: var(--acadia-color-action-hover);
   --acadia-color-primary-contrast: var(--acadia-color-action-contrast);
   --acadia-color-primary-ink: var(--acadia-color-action-ink);
-  --acadia-chrome-color-text: #212529;
-  --acadia-chrome-color-text-muted: #495057;
+  --acadia-chrome-color-text: var(--acadia-color-text);
+  --acadia-chrome-color-text-muted: var(--acadia-color-text-muted);
   --acadia-chrome-color-brand: var(--acadia-color-brand);
   --acadia-chrome-color-action: var(--acadia-color-action);
   --acadia-chrome-color-action-ink: var(--acadia-color-action-ink);
+  /* Status tints share the System ramps; legacy filled-action colours remain separate. */
   --acadia-color-danger: #dc3545;
-  --acadia-color-danger-bg: rgba(220, 53, 69, 0.1);
-  --acadia-color-danger-border: rgba(220, 53, 69, 0.24);
+  --acadia-color-danger-bg: color-mix(in srgb, var(--acadia-system-red-50) 10%, transparent);
+  --acadia-color-danger-border: color-mix(in srgb, var(--acadia-system-red-50) 24%, transparent);
   --acadia-color-warning: #b86b00;
-  --acadia-color-warning-bg: rgba(255, 193, 7, 0.14);
-  --acadia-color-warning-border: rgba(255, 193, 7, 0.34);
+  --acadia-color-warning-bg: color-mix(in srgb, var(--acadia-system-yellow-20) 14%, transparent);
+  --acadia-color-warning-border: color-mix(in srgb, var(--acadia-system-yellow-40) 34%, transparent);
   --acadia-color-success: #198754;
-  --acadia-color-success-bg: rgba(25, 135, 84, 0.1);
-  --acadia-color-success-border: rgba(25, 135, 84, 0.24);
-  --acadia-color-info: var(--acadia-color-action-ink);
-  --acadia-color-info-bg: rgba(0, 123, 120, 0.1);
-  --acadia-color-info-border: rgba(0, 123, 120, 0.24);
+  --acadia-color-success-bg: color-mix(in srgb, var(--acadia-system-green-50) 10%, transparent);
+  --acadia-color-success-border: color-mix(in srgb, var(--acadia-system-green-50) 24%, transparent);
+  --acadia-color-info: var(--acadia-system-blue-60);
+  --acadia-color-info-bg: color-mix(in srgb, var(--acadia-system-blue-50) 10%, transparent);
+  --acadia-color-info-border: color-mix(in srgb, var(--acadia-system-blue-50) 24%, transparent);
   --acadia-status-info-text: var(--acadia-color-info);
   --acadia-status-info-bg: var(--acadia-color-info-bg);
   --acadia-status-info-border: var(--acadia-color-info-border);
-  --acadia-status-success-text: var(--acadia-color-success);
+  --acadia-status-success-text: var(--acadia-system-green-60);
   --acadia-status-success-bg: var(--acadia-color-success-bg);
   --acadia-status-success-border: var(--acadia-color-success-border);
-  --acadia-status-warning-text: var(--acadia-color-warning);
+  --acadia-status-warning-text: var(--acadia-system-yellow-70);
   --acadia-status-warning-bg: var(--acadia-color-warning-bg);
   --acadia-status-warning-border: var(--acadia-color-warning-border);
-  --acadia-status-danger-text: var(--acadia-color-danger);
+  --acadia-status-danger-text: var(--acadia-text-red);
   --acadia-status-danger-bg: var(--acadia-color-danger-bg);
   --acadia-status-danger-border: var(--acadia-color-danger-border);
   --acadia-status-danger-ring: color-mix(
@@ -494,34 +526,35 @@
   --acadia-hover-lift: -1px;
   --acadia-pressed-scale: 0.98;
   --acadia-auth-content-max-width: 26rem;
-  --acadia-mobile-tabbar-height: 4rem;
-  --acadia-mobile-tabbar-bottom: 1.25rem;
+  --acadia-mobile-tabbar-height: 3.75rem;
+  --acadia-mobile-tabbar-bottom: 0.5rem;
   --acadia-mobile-tabbar-inset: 1rem;
-  --acadia-mobile-tabbar-padding-x: 0.25rem;
-  --acadia-mobile-tabbar-padding-y: 0.25rem;
-  --acadia-mobile-tabbar-max-width: 24rem;
-  --acadia-mobile-tab-min-height: 3.5rem;
+  --acadia-mobile-tabbar-padding-x: 0.375rem;
+  --acadia-mobile-tabbar-padding-y: 0.375rem;
+  --acadia-mobile-tabbar-max-width: 21.25rem;
+  --acadia-mobile-tab-min-height: 3rem;
+  --acadia-mobile-tab-width: 3.5rem;
+  --acadia-mobile-tab-gap: 0.5rem;
   --acadia-mobile-tab-active-width: 4.5rem;
   --acadia-mobile-tab-icon-size: 1.5rem;
-  --acadia-mobile-tab-active-icon-size: 1.75rem;
+  --acadia-mobile-tab-active-icon-size: var(--acadia-mobile-tab-icon-size);
   /* Icon-only destinations retain a physical minimum at enlarged text sizes. */
   --acadia-mobile-tab-min-inline-size: 44px;
   --acadia-tablet-nav-height: calc(var(--acadia-target-size-touch) + 0.625rem);
   --acadia-tablet-nav-inset: 0.25rem;
   --acadia-tablet-nav-gap: 0.5rem;
   --acadia-tablet-nav-active-height: var(--acadia-target-size-touch);
-  --acadia-mobile-nav-background: rgba(250, 250, 252, 0.84);
+  --acadia-mobile-nav-background: color-mix(in srgb, var(--acadia-system-gray-cool-3) 48%, transparent);
   --acadia-mobile-nav-border: rgba(15, 23, 42, 0.08);
   --acadia-mobile-nav-shadow:
-    0 1.125rem 2.75rem rgba(15, 23, 42, 0.14),
-    0 0.125rem 0.75rem rgba(15, 23, 42, 0.08),
-    inset 0 1px 0 rgba(255, 255, 255, 0.88),
-    inset 0 -1px 0 rgba(15, 23, 42, 0.04);
-  --acadia-mobile-nav-color: rgba(15, 23, 42, 0.82);
+    0 4px 24px rgba(0, 0, 0, 0.08),
+    inset 0 1px 1px rgba(255, 255, 255, 0.24),
+    inset 0 -1px 2px rgba(0, 0, 0, 0.16);
+  --acadia-mobile-nav-color: var(--acadia-system-gray-cool-70);
   --acadia-mobile-nav-hover-background: rgba(15, 23, 42, 0.06);
   --acadia-mobile-nav-hover-color: var(--acadia-color-text);
-  --acadia-mobile-nav-active-background: rgba(15, 23, 42, 0.1);
-  --acadia-mobile-nav-active-border: rgba(15, 23, 42, 0.06);
+  --acadia-mobile-nav-active-background: color-mix(in srgb, var(--acadia-system-gray-cool-20) 48%, transparent);
+  --acadia-mobile-nav-active-border: transparent;
   --acadia-mobile-nav-active-color: var(--acadia-color-text);
   --acadia-mobile-nav-focus-halo: rgba(15, 23, 42, 0.16);
   --acadia-mobile-dock-clearance: calc(
@@ -576,9 +609,9 @@
   color-scheme: dark;
   --acadia-color-page: #181a1e;
   --acadia-color-surface: #212529;
-  --acadia-color-surface-elevated: #212529;
-  --acadia-color-surface-muted: #212529;
-  --acadia-color-surface-raised: #212529;
+  --acadia-color-surface-elevated: #2b2f32;
+  --acadia-color-surface-muted: #1e2024;
+  --acadia-color-surface-raised: var(--acadia-color-surface-elevated);
   --acadia-surface-fill: #212529;
   --acadia-color-control: rgba(43, 47, 50, 0.94);
   --acadia-color-control-hover: rgba(43, 47, 50, 0.98);
@@ -594,12 +627,19 @@
   --acadia-field-disabled-background: #495057;
   --acadia-field-disabled-border: #41474a;
   --acadia-field-disabled-text: #c4c8cb;
-  --acadia-field-label-color: #e2e3e5;
-  --acadia-field-caption-color: #c4c8cb;
+  --acadia-field-label-color: var(--acadia-color-text);
+  --acadia-field-caption-color: var(--acadia-color-text-muted);
   --acadia-accordion-icon-filter: none;
   --acadia-control-select-icon: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23dee2e6' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
-  --acadia-color-text: #f5f5f5;
-  --acadia-color-text-muted: #ced4da;
+  /* Exact founder Text aliases. Small-text roles below account for surfaces. */
+  --acadia-text-dark: var(--acadia-system-gray-cool-1);
+  --acadia-text-light: var(--acadia-system-gray-cool-90);
+  --acadia-text-medium: var(--acadia-system-gray-cool-40);
+  --acadia-text-brand: var(--acadia-system-acadia-40);
+  --acadia-text-green: var(--acadia-system-green-40);
+  --acadia-text-red: var(--acadia-system-red-50);
+  --acadia-color-text: var(--acadia-text-dark);
+  --acadia-color-text-muted: var(--acadia-system-gray-cool-30);
   --acadia-color-border: rgba(255, 255, 255, 0.1);
   --acadia-color-border-strong: rgba(255, 255, 255, 0.17);
   --acadia-palette-tiffany-100: #00bdb6;
@@ -629,8 +669,8 @@
     var(--acadia-palette-rose-100) 28%,
     transparent
   );
-  --acadia-color-brand: var(--acadia-palette-tiffany-100);
-  --acadia-color-brand-ink: var(--acadia-palette-tiffany-100);
+  --acadia-color-brand: var(--acadia-color-brand-ink);
+  --acadia-color-brand-ink: var(--acadia-system-acadia-30);
   --acadia-color-brand-bg: color-mix(
     in srgb,
     var(--acadia-palette-tiffany-100) 14%,
@@ -641,32 +681,33 @@
     var(--acadia-palette-tiffany-100) 28%,
     transparent
   );
-  /* Tiffany 100 is the dark-theme pop. Filled controls intentionally use the
+  /* Paired Tiffany fills remain compatible. Filled controls intentionally use the
      contrast-safe 500 → 700 → 900 sequence with white labels. */
   --acadia-color-action: var(--acadia-palette-tiffany-500);
   --acadia-color-action-hover: var(--acadia-palette-tiffany-700);
   --acadia-color-action-pressed: var(--acadia-palette-tiffany-900);
-  --acadia-color-action-ink: var(--acadia-palette-tiffany-100);
+  --acadia-color-action-ink: var(--acadia-color-brand-ink);
   --acadia-color-primary-ink: var(--acadia-color-action-ink);
-  --acadia-chrome-color-text: #f5f5f5;
-  --acadia-chrome-color-text-muted: #ced4da;
+  --acadia-chrome-color-text: var(--acadia-color-text);
+  --acadia-chrome-color-text-muted: var(--acadia-color-text-muted);
   --acadia-chrome-color-brand: var(--acadia-color-brand);
   --acadia-chrome-color-action: var(--acadia-color-action);
   --acadia-chrome-color-action-ink: var(--acadia-color-action-ink);
-  --acadia-color-danger-bg: rgba(255, 69, 58, 0.14);
-  --acadia-color-danger-border: rgba(255, 69, 58, 0.28);
+  --acadia-color-danger-bg: color-mix(in srgb, var(--acadia-system-red-30) 14%, transparent);
+  --acadia-color-danger-border: color-mix(in srgb, var(--acadia-system-red-30) 28%, transparent);
   --acadia-color-warning: #ffd60a;
-  --acadia-color-warning-bg: rgba(255, 214, 10, 0.14);
-  --acadia-color-warning-border: rgba(255, 214, 10, 0.28);
-  --acadia-color-success-bg: rgba(48, 209, 88, 0.13);
-  --acadia-color-success-border: rgba(48, 209, 88, 0.28);
-  --acadia-color-info-bg: rgba(0, 123, 120, 0.2);
-  --acadia-color-info-border: rgba(0, 123, 120, 0.38);
-  --acadia-status-info-text: #4fd8d3;
-  --acadia-status-success-text: #30d158;
-  --acadia-status-warning-text: #ffd60a;
-  --acadia-status-danger-text: #ff453a;
-  --acadia-status-danger-ring: rgba(255, 69, 58, 0.28);
+  --acadia-color-warning-bg: color-mix(in srgb, var(--acadia-system-yellow-10) 8%, transparent);
+  --acadia-color-warning-border: color-mix(in srgb, var(--acadia-system-yellow-10) 28%, transparent);
+  --acadia-color-success-bg: color-mix(in srgb, var(--acadia-system-green-30) 13%, transparent);
+  --acadia-color-success-border: color-mix(in srgb, var(--acadia-system-green-30) 28%, transparent);
+  --acadia-color-info: var(--acadia-system-blue-30);
+  --acadia-color-info-bg: color-mix(in srgb, var(--acadia-system-blue-30) 14%, transparent);
+  --acadia-color-info-border: color-mix(in srgb, var(--acadia-system-blue-30) 28%, transparent);
+  --acadia-status-info-text: var(--acadia-color-info);
+  --acadia-status-success-text: var(--acadia-system-green-30);
+  --acadia-status-warning-text: var(--acadia-system-yellow-10);
+  --acadia-status-danger-text: var(--acadia-system-red-30);
+  --acadia-status-danger-ring: color-mix(in srgb, var(--acadia-status-danger-text) 28%, transparent);
   --acadia-color-focus: color-mix(
     in srgb,
     var(--acadia-palette-tiffany-100) 32%,
@@ -688,18 +729,18 @@
     0 0.5rem 1.625rem rgba(0, 0, 0, 0.2),
     inset 0 1px 0 rgba(255, 255, 255, 0.055);
   --acadia-liquid-glass-surface-fill: rgba(0, 0, 0, 0.48);
-  --acadia-mobile-nav-background: rgba(43, 47, 50, 0.64);
+  --acadia-mobile-nav-background: color-mix(in srgb, var(--acadia-system-gray-cool-80) 64%, transparent);
   --acadia-mobile-nav-border: rgba(255, 255, 255, 0.1);
   --acadia-mobile-nav-shadow:
-    0 0.25rem 1.5rem rgba(0, 0, 0, 0.08),
-    inset 0 0.0625rem 0.0625rem rgba(255, 255, 255, 0.24),
-    inset 0 -0.0625rem 0.125rem rgba(0, 0, 0, 0.16);
-  --acadia-mobile-nav-color: rgba(255, 255, 255, 0.88);
+    0 4px 24px rgba(0, 0, 0, 0.08),
+    inset 0 1px 1px rgba(255, 255, 255, 0.24),
+    inset 0 -1px 2px rgba(0, 0, 0, 0.16);
+  --acadia-mobile-nav-color: var(--acadia-system-gray-cool-30);
   --acadia-mobile-nav-hover-background: rgba(255, 255, 255, 0.1);
   --acadia-mobile-nav-hover-color: #ffffff;
-  --acadia-mobile-nav-active-background: rgba(226, 231, 214, 0.24);
-  --acadia-mobile-nav-active-border: rgba(255, 255, 255, 0.1);
-  --acadia-mobile-nav-active-color: #ffffff;
+  --acadia-mobile-nav-active-background: color-mix(in srgb, var(--acadia-system-gray-cool-20) 48%, transparent);
+  --acadia-mobile-nav-active-border: transparent;
+  --acadia-mobile-nav-active-color: var(--acadia-system-gray-cool-3);
   --acadia-mobile-nav-focus-halo: rgba(255, 255, 255, 0.22);
   /* The map canvas follows the selected map style, not the documentation
      theme. A dark docs shell must not recolour a north-up basemap into a
@@ -721,9 +762,9 @@
     color-scheme: dark;
     --acadia-color-page: #181a1e;
     --acadia-color-surface: #212529;
-    --acadia-color-surface-elevated: #212529;
-    --acadia-color-surface-muted: #212529;
-    --acadia-color-surface-raised: #212529;
+    --acadia-color-surface-elevated: #2b2f32;
+    --acadia-color-surface-muted: #1e2024;
+    --acadia-color-surface-raised: var(--acadia-color-surface-elevated);
     --acadia-surface-fill: #212529;
     --acadia-color-control: rgba(43, 47, 50, 0.94);
     --acadia-color-control-hover: rgba(43, 47, 50, 0.98);
@@ -735,12 +776,19 @@
     --acadia-field-disabled-background: #495057;
     --acadia-field-disabled-border: #41474a;
     --acadia-field-disabled-text: #c4c8cb;
-    --acadia-field-label-color: #e2e3e5;
-    --acadia-field-caption-color: #c4c8cb;
+    --acadia-field-label-color: var(--acadia-color-text);
+    --acadia-field-caption-color: var(--acadia-color-text-muted);
     --acadia-accordion-icon-filter: none;
     --acadia-control-select-icon: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23dee2e6' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
-    --acadia-color-text: #f5f5f5;
-    --acadia-color-text-muted: #ced4da;
+    /* Exact founder Text aliases. Small-text roles below account for surfaces. */
+    --acadia-text-dark: var(--acadia-system-gray-cool-1);
+    --acadia-text-light: var(--acadia-system-gray-cool-90);
+    --acadia-text-medium: var(--acadia-system-gray-cool-40);
+    --acadia-text-brand: var(--acadia-system-acadia-40);
+    --acadia-text-green: var(--acadia-system-green-40);
+    --acadia-text-red: var(--acadia-system-red-50);
+    --acadia-color-text: var(--acadia-text-dark);
+    --acadia-color-text-muted: var(--acadia-system-gray-cool-30);
     --acadia-color-border: rgba(255, 255, 255, 0.1);
     --acadia-color-border-strong: rgba(255, 255, 255, 0.17);
     --acadia-palette-tiffany-100: #00bdb6;
@@ -769,8 +817,8 @@
       var(--acadia-palette-rose-100) 28%,
       transparent
     );
-    --acadia-color-brand: var(--acadia-palette-tiffany-100);
-    --acadia-color-brand-ink: var(--acadia-palette-tiffany-100);
+    --acadia-color-brand: var(--acadia-color-brand-ink);
+    --acadia-color-brand-ink: var(--acadia-system-acadia-30);
     --acadia-color-brand-bg: color-mix(
       in srgb,
       var(--acadia-palette-tiffany-100) 14%,
@@ -784,27 +832,28 @@
     --acadia-color-action: var(--acadia-palette-tiffany-500);
     --acadia-color-action-hover: var(--acadia-palette-tiffany-700);
     --acadia-color-action-pressed: var(--acadia-palette-tiffany-900);
-    --acadia-color-action-ink: var(--acadia-palette-tiffany-100);
+    --acadia-color-action-ink: var(--acadia-color-brand-ink);
     --acadia-color-primary-ink: var(--acadia-color-action-ink);
-    --acadia-chrome-color-text: #f5f5f5;
-    --acadia-chrome-color-text-muted: #ced4da;
+    --acadia-chrome-color-text: var(--acadia-color-text);
+    --acadia-chrome-color-text-muted: var(--acadia-color-text-muted);
     --acadia-chrome-color-brand: var(--acadia-color-brand);
     --acadia-chrome-color-action: var(--acadia-color-action);
     --acadia-chrome-color-action-ink: var(--acadia-color-action-ink);
-    --acadia-color-danger-bg: rgba(255, 69, 58, 0.14);
-    --acadia-color-danger-border: rgba(255, 69, 58, 0.28);
+    --acadia-color-danger-bg: color-mix(in srgb, var(--acadia-system-red-30) 14%, transparent);
+    --acadia-color-danger-border: color-mix(in srgb, var(--acadia-system-red-30) 28%, transparent);
     --acadia-color-warning: #ffd60a;
-    --acadia-color-warning-bg: rgba(255, 214, 10, 0.14);
-    --acadia-color-warning-border: rgba(255, 214, 10, 0.28);
-    --acadia-color-success-bg: rgba(48, 209, 88, 0.13);
-    --acadia-color-success-border: rgba(48, 209, 88, 0.28);
-    --acadia-color-info-bg: rgba(0, 123, 120, 0.2);
-    --acadia-color-info-border: rgba(0, 123, 120, 0.38);
-    --acadia-status-info-text: #4fd8d3;
-    --acadia-status-success-text: #30d158;
-    --acadia-status-warning-text: #ffd60a;
-    --acadia-status-danger-text: #ff453a;
-    --acadia-status-danger-ring: rgba(255, 69, 58, 0.28);
+    --acadia-color-warning-bg: color-mix(in srgb, var(--acadia-system-yellow-10) 8%, transparent);
+    --acadia-color-warning-border: color-mix(in srgb, var(--acadia-system-yellow-10) 28%, transparent);
+    --acadia-color-success-bg: color-mix(in srgb, var(--acadia-system-green-30) 13%, transparent);
+    --acadia-color-success-border: color-mix(in srgb, var(--acadia-system-green-30) 28%, transparent);
+    --acadia-color-info: var(--acadia-system-blue-30);
+    --acadia-color-info-bg: color-mix(in srgb, var(--acadia-system-blue-30) 14%, transparent);
+    --acadia-color-info-border: color-mix(in srgb, var(--acadia-system-blue-30) 28%, transparent);
+    --acadia-status-info-text: var(--acadia-color-info);
+    --acadia-status-success-text: var(--acadia-system-green-30);
+    --acadia-status-warning-text: var(--acadia-system-yellow-10);
+    --acadia-status-danger-text: var(--acadia-system-red-30);
+    --acadia-status-danger-ring: color-mix(in srgb, var(--acadia-status-danger-text) 28%, transparent);
     --acadia-color-focus: color-mix(
       in srgb,
       var(--acadia-palette-tiffany-100) 32%,
@@ -826,18 +875,18 @@
       0 0.5rem 1.625rem rgba(0, 0, 0, 0.2),
       inset 0 1px 0 rgba(255, 255, 255, 0.055);
     --acadia-liquid-glass-surface-fill: rgba(0, 0, 0, 0.48);
-    --acadia-mobile-nav-background: rgba(43, 47, 50, 0.64);
+    --acadia-mobile-nav-background: color-mix(in srgb, var(--acadia-system-gray-cool-80) 64%, transparent);
     --acadia-mobile-nav-border: rgba(255, 255, 255, 0.1);
     --acadia-mobile-nav-shadow:
-      0 0.25rem 1.5rem rgba(0, 0, 0, 0.08),
-      inset 0 0.0625rem 0.0625rem rgba(255, 255, 255, 0.24),
-      inset 0 -0.0625rem 0.125rem rgba(0, 0, 0, 0.16);
-    --acadia-mobile-nav-color: rgba(255, 255, 255, 0.88);
+      0 4px 24px rgba(0, 0, 0, 0.08),
+      inset 0 1px 1px rgba(255, 255, 255, 0.24),
+      inset 0 -1px 2px rgba(0, 0, 0, 0.16);
+    --acadia-mobile-nav-color: var(--acadia-system-gray-cool-30);
     --acadia-mobile-nav-hover-background: rgba(255, 255, 255, 0.1);
     --acadia-mobile-nav-hover-color: #ffffff;
-    --acadia-mobile-nav-active-background: rgba(226, 231, 214, 0.24);
-    --acadia-mobile-nav-active-border: rgba(255, 255, 255, 0.1);
-    --acadia-mobile-nav-active-color: #ffffff;
+    --acadia-mobile-nav-active-background: color-mix(in srgb, var(--acadia-system-gray-cool-20) 48%, transparent);
+    --acadia-mobile-nav-active-border: transparent;
+    --acadia-mobile-nav-active-color: var(--acadia-system-gray-cool-3);
     --acadia-mobile-nav-focus-halo: rgba(255, 255, 255, 0.22);
   }
 }
@@ -1394,6 +1443,7 @@ details > summary:focus-visible {
 }
 
 .acadia-map-pattern-viewport {
+  box-sizing: border-box;
   inline-size: 100%;
   min-inline-size: 0;
   display: grid;
@@ -1401,7 +1451,7 @@ details > summary:focus-visible {
   grid-template-rows: max-content max-content minmax(10rem, 1fr) max-content;
   gap: var(--acadia-space-1);
   padding: var(--acadia-map-control-inset);
-  padding-block-end: calc(var(--acadia-map-control-inset) + 1.5rem);
+  padding-block-end: calc(var(--acadia-map-control-inset) + var(--acadia-target-size-control) + var(--acadia-space-2));
   background: var(--acadia-map-water);
   border: 1px solid var(--acadia-color-border-strong);
   border-radius: var(--acadia-radius-card);
@@ -1430,7 +1480,24 @@ details > summary:focus-visible {
 
 
 .acadia-maptiler-canvas { block-size: 100%; inline-size: 100%; }
+/* Keep the React canvas anchored even when provider CSS is imported last. */
+.acadia-map-pattern-canvas.acadia-maptiler-canvas { position: absolute; }
 .acadia-maptiler-canvas .maplibregl-ctrl-attrib { font-family: inherit; }
+.acadia-maptiler-canvas .maplibregl-ctrl-attrib.maplibregl-compact {
+  box-sizing: border-box;
+  min-block-size: var(--acadia-target-size-control);
+  min-inline-size: var(--acadia-target-size-control);
+  padding-inline-end: var(--acadia-target-size-control);
+}
+.acadia-maptiler-canvas .maplibregl-ctrl-attrib-button {
+  block-size: var(--acadia-target-size-control);
+  inline-size: var(--acadia-target-size-control);
+  background-position: center;
+  background-repeat: no-repeat;
+}
+.acadia-maptiler-canvas .maplibregl-ctrl-attrib-button:focus-visible {
+  box-shadow: var(--acadia-focus-ring);
+}
 
 .acadia-map-pattern-fallback {
   align-items: center;
@@ -3412,7 +3479,7 @@ main [id] {
 
 .acadia-action-menu-item.is-danger,
 .acadia-account-menu-item.is-danger {
-  color: var(--acadia-color-danger);
+  color: var(--acadia-status-danger-text);
 }
 
 .acadia-action-menu-item:disabled {
@@ -3553,19 +3620,18 @@ main [id] {
   box-shadow: var(--acadia-mobile-nav-shadow);
   color: var(--acadia-mobile-nav-color);
   display: flex;
-  gap: min(0.25rem, 4px);
+  gap: clamp(4px, calc((100% - 252px) / 4), var(--acadia-mobile-tab-gap));
   margin-inline: auto;
   max-width: min(100%, var(--acadia-mobile-tabbar-max-width), calc(100vw - 2 * min(var(--acadia-mobile-tabbar-inset), 16px)));
   min-height: var(--acadia-mobile-tabbar-height);
   padding:
-    var(--acadia-mobile-tabbar-padding-y)
-    min(var(--acadia-mobile-tabbar-padding-x), 4px)
-    var(--acadia-mobile-tabbar-padding-y);
+    calc(var(--acadia-mobile-tabbar-padding-y) - 1px)
+    calc(min(var(--acadia-mobile-tabbar-padding-x), 6px) - 1px);
   width: calc(
     var(--acadia-mobile-tab-active-width) +
-    (var(--acadia-mobile-tab-count, 5) - 1) * var(--acadia-mobile-tab-min-height) +
-    (var(--acadia-mobile-tab-count, 5) - 1) * 0.25rem +
-    2 * var(--acadia-mobile-tabbar-padding-x) + 2px
+    (var(--acadia-mobile-tab-count, 5) - 1) * var(--acadia-mobile-tab-width) +
+    (var(--acadia-mobile-tab-count, 5) - 1) * var(--acadia-mobile-tab-gap) +
+    2 * var(--acadia-mobile-tabbar-padding-x)
   );
 }
 
@@ -3594,7 +3660,7 @@ main [id] {
   gap: 0;
   justify-content: center;
   box-sizing: border-box;
-  flex: 0 1 var(--acadia-mobile-tab-min-height);
+  flex: 0 1 var(--acadia-mobile-tab-width);
   min-width: var(--acadia-mobile-tab-min-inline-size);
   line-height: 1;
   min-height: var(--acadia-mobile-tab-min-height);
@@ -3613,9 +3679,7 @@ main [id] {
 .acadia-mobile-tab.is-active:not([aria-current]) {
   background: var(--acadia-mobile-nav-active-background);
   border-color: var(--acadia-mobile-nav-active-border);
-  box-shadow:
-    inset 0 0.0625rem 0.0625rem rgba(255, 255, 255, 0.24),
-    inset 0 -0.0625rem 0.125rem rgba(0, 0, 0, 0.16);
+  box-shadow: none;
   color: var(--acadia-mobile-nav-active-color);
   flex-basis: var(--acadia-mobile-tab-active-width);
 }
@@ -4651,6 +4715,19 @@ main [id] {
   justify-content: center;
   line-height: 1;
   width: 1em;
+}
+
+/* Canonical Home glyph: Font Awesome Classic Solid house, shared with native.
+   Bundle the vector so consumer icon-font versions cannot change its shape. */
+.acadia-icon:is(.fa-house, .fa-home)::before {
+  content: "";
+  display: block;
+  width: 1em;
+  height: 1em;
+  background-color: currentColor;
+  -webkit-mask: url("./assets/icons/house-solid.svg") center / contain no-repeat;
+  mask: url("./assets/icons/house-solid.svg") center / contain no-repeat;
+  forced-color-adjust: none;
 }
 
 .acadia-icon-sm {
@@ -7743,7 +7820,7 @@ select.acadia-control {
 }
 
 .acadia-thumbnail-menu .acadia-action-menu-item.is-danger {
-  color: var(--acadia-color-danger);
+  color: var(--acadia-status-danger-text);
 }
 
 .acadia-thumbnail-menu .acadia-action-menu-item:not(:disabled):hover,

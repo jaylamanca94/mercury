@@ -20,6 +20,8 @@ Mercury is a private personal finance workspace. Its first shipped product surfa
 
 ## Release state
 
+Current: **0.2.5** — Existing asset, source-detail, category and property editors reject stale revisions, retain drafts and confirm returned records. Successful saves no longer depend on reloading unrelated collections. Published Acadia colour, surface, navigation and canonical Home-icon refinements are adopted unchanged. No feature, financial calculation, schema or owner-data change. Pre-1.0 acceptance gates remain open.
+
 Previous: **0.1.1** — At the founder's request, Plan now collects an optional private date of birth instead of approximate current age. DOB is required for retirement and stop-investing milestones; actual birthdays drive age and partial-month cash-flow changes. No date is inferred from existing ages. This supersedes the earlier no-DOB decision for this bounded Plan purpose.
 
 Previous: **0.1.0** — The founder's 2026-09-14 Plan reference explicitly expands the old portfolio-only projection into a cash-flow scenario: source-linked expenses, investments and income; an entered current age; stop-investing and retirement ages; a single hero graph and current asset groups. This supersedes the earlier exclusion of salary/expense modelling for this bounded Plan flow. Source records remain unchanged by scenario edits. The projection is illustrative and assumes monthly fixed nominal cash flows, employment/contract income ending at retirement, continuing benefits/other income, and portfolio-funded spending shortfalls. It does not establish retirement feasibility, tax treatment or access to restricted accounts.
@@ -78,7 +80,7 @@ Previous: **0.2.0**. Founder approved structured property geography and automati
 
 ## Home portfolio-group overview — 2026-09-14, 0.2.4
 
-Current: **0.2.4**. Figma section `98:5696` replaces the ranked Top assets section with Brokerage, Crypto, Retirement and Property summaries. Keep four groups visible, including empty groups, while counting actual holdings/properties. Investment groups show their current value and available historical-growth/dividend-yield estimates; Property shows equity and sourced annual appreciation of market value. Group actions navigate into the existing Portfolio flow. Classification and missing-data rules stay consistent with Portfolio; salary, advice, benchmark sourcing and intraday data are outside this change. Exact reference numbers and the ambiguous net-worth percentage are not product data.
+Previous: **0.2.4**. Figma section `98:5696` replaces the ranked Top assets section with Brokerage, Crypto, Retirement and Property summaries. Keep four groups visible, including empty groups, while counting actual holdings/properties. Investment groups show their current value and available historical-growth/dividend-yield estimates; Property shows equity and sourced annual appreciation of market value. Group actions navigate into the existing Portfolio flow. Classification and missing-data rules stay consistent with Portfolio; salary, advice, benchmark sourcing and intraday data are outside this change. Exact reference numbers and the ambiguous net-worth percentage are not product data.
 
 
 ## Portfolio asset-card refinement — 2026-09-15

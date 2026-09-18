@@ -1,5 +1,11 @@
 # Mercury Design README
 
+## Current Acadia and editor recovery — 2026-09-18
+
+- The complete published Acadia main snapshot `2b80572f46651f1b2f34a155381c481f201eb671` supersedes the older pins below. Styles, fonts, support vectors and Card Trend are copied unchanged; the bundled canonical Home vector is now included. Existing semantic roles inherit current text/status colours, distinct dark surfaces and the founder’s mobile Navbar geometry. No new local colour or component styling.
+- Existing form status regions explain conflicting or unconfirmed saves while retaining drafts. Close/reopen reviews refreshed modal values; Asset Cancel reviews the latest saved record. Repeated Save retains the original revision. Pending locks, discard confirmation and focus restoration remain in place.
+- Four main routes fit 320/390/768/1280px. Light/dark screenshots and 320px/200% text category conflict checks passed; the 258px dialog has no horizontal overflow, actions remain keyboard reachable, and the five phone destinations retain at least 44px widths. This is embedded-browser evidence, not physical-device or VoiceOver acceptance. See `automation/review/2026-09-18/review.md`.
+
 ## Session privacy and dialog containment — 2026-09-14
 
 - Acadia 0.3.2 published `346c874f64b45262ae4d7d6089fa67a61b1da898` is vendored unchanged. Native Accordion retains independent expansion, visible summary focus and plus/minus state; current 64px minimum summaries and whole-surface hover replace the older styles. Breadcrumb typography updates are included although the active product does not compose Breadcrumb.

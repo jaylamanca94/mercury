@@ -193,3 +193,9 @@ Both summary cards now follow the active All investments/Brokerage/Retirement/Cr
 ## Property amount entry formatting — 2026-09-17
 
 Existing Add/Edit property uses grouped monetary entry for current value, purchase price and debt. Focus/blur preserves exact amounts and does not create false unsaved changes. Grouped entry parses to cents; invalid grouping, negative values, excess decimals and unsafe amounts are rejected. Blank purchase price remains optional and blank debt remains zero. No canonical flow, API or persistence schema changes. Synthetic browser and regression evidence: `automation/property-amount-fields/2026-09-17/review.md`.
+
+## Editor integrity and Acadia follow-through — 2026-09-18
+
+Ten implemented canonical flows remain unchanged. Record/edit holding, Plan expected income (source details), Set category spending totals and supporting Property now compare the revision captured when editing began. Conflicting/deleted/missing-revision records never receive a blind overwrite or false success. Drafts survive failed/uncertain saves; close/reopen or Asset Cancel reviews refreshed saved values. Successful writes use returned rows directly.
+
+277 checks pass. Live disposable Supabase checks cover advancing revisions, stale/repeated/deleted zero-row updates and reviewed successful updates in all four tables; cleanup verified. Current synthetic browser coverage includes Home/history, Portfolio Cards/Table, quote-failure/manual Add, asset edit/return/delete, source conflict/review/save, category save/conflict, property save and Plan save. Four routes fit 320/390/768/1280px; enlarged-text modal actions remain reachable. Real magic-link email redemption, second-user RLS, actual provider/scheduler/export and physical accessibility are not accepted by these checks. Report: `automation/review/2026-09-18/review.md`.
