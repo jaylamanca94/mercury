@@ -57,7 +57,7 @@ Ten implemented canonical flows remain; supporting Property, responsive navigati
 
 ## Publication
 
-Implementation and documentation commit, remote-main verification and hosted-byte receipt are recorded after the authorised Git-triggered release.
+Implementation and audit commit `d6ba26d483fa602d49897ed8374e0ccfa03d04d2` was pushed to `origin/main`; the exact remote SHA was verified. [Vercel production deployment](https://vercel.com/jayson-lamanca-s-projects/mercury/346pNfJFMM7bAQ225kVxpaHTS8f8) succeeded. On 2026-09-18 at approximately 00:22 UTC, canonical `https://mercury-psi-six.vercel.app` returned HTTP 200 with byte-identical HTML, controller, product CSS, Acadia CSS and Home vector. CSP and nosniff were present on each. See [hosted receipt](hosted-receipt.json). Vercel does not expose package.json (404); version is recorded in source. Production browser sign-in remained usable; this is not authenticated browser acceptance. The final documentation receipt is committed separately.
 
 ## Captures
 

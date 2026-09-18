@@ -1,0 +1,42 @@
+[
+  {
+    "file": "index.html",
+    "status": 200,
+    "matches_local": true,
+    "sha256": "b71d9313c05107b68b2402f388a5b7069fc1db2765b6546aae6a70c1de92daa0",
+    "nosniff": "nosniff",
+    "csp": true
+  },
+  {
+    "file": "brokerage.js",
+    "status": 200,
+    "matches_local": true,
+    "sha256": "ef9bebe2dc11834ad9ca6654a50ef8d3fb40bb3fa4a5bc08fbdab49ffc51c60c",
+    "nosniff": "nosniff",
+    "csp": true
+  },
+  {
+    "file": "styles.css",
+    "status": 200,
+    "matches_local": true,
+    "sha256": "4fd8778be816cfda18d51a79e5072fd1150d7cfd19a2ca03be1b9b28500b0238",
+    "nosniff": "nosniff",
+    "csp": true
+  },
+  {
+    "file": "acadia.css",
+    "status": 200,
+    "matches_local": true,
+    "sha256": "f93a16d0574790eebd36339065b3873445ef3ab18b58b844a83018eb6828b78a",
+    "nosniff": "nosniff",
+    "csp": true
+  },
+  {
+    "file": "assets/icons/house-solid.svg",
+    "status": 200,
+    "matches_local": true,
+    "sha256": "379fe9f56a3ece34226fb9728b8b76cfbaa8255fba3421a2cdd53616f41c612a",
+    "nosniff": "nosniff",
+    "csp": true
+  }
+]
