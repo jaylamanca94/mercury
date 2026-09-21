@@ -20,7 +20,9 @@ Mercury is a private personal finance workspace. Its first shipped product surfa
 
 ## Release state
 
-Current: **0.2.5** — Existing asset, source-detail, category and property editors reject stale revisions, retain drafts and confirm returned records. Successful saves no longer depend on reloading unrelated collections. Published Acadia colour, surface, navigation and canonical Home-icon refinements are adopted unchanged. No feature, financial calculation, schema or owner-data change. Pre-1.0 acceptance gates remain open.
+Current: **0.2.6** — Account collections and scheduled snapshot inputs are read completely before calculations. Unavailable Income data is labelled explicitly and retries locally; redundant Expenses scrolling copy is removed. Acadia runtime assets match published 0.3.5 unchanged. No new feature, calculation, schema or owner-data change.
+
+Previous: **0.2.5** — Existing asset, source-detail, category and property editors reject stale revisions, retain drafts and confirm returned records. Successful saves no longer depend on reloading unrelated collections. Published Acadia colour, surface, navigation and canonical Home-icon refinements are adopted unchanged. No feature, financial calculation, schema or owner-data change. Pre-1.0 acceptance gates remain open.
 
 Previous: **0.1.1** — At the founder's request, Plan now collects an optional private date of birth instead of approximate current age. DOB is required for retirement and stop-investing milestones; actual birthdays drive age and partial-month cash-flow changes. No date is inferred from existing ages. This supersedes the earlier no-DOB decision for this bounded Plan purpose.
 

@@ -2,7 +2,7 @@
 
 > **10 implemented canonical flows; all have design and automated coverage at varying depths. One deferred export boundary. Initial account failures now offer visible retry; optional property failures remain local to Property. No flows added. Remote and physical-device acceptance gaps remain below.**
 
-**Last reviewed:** 2026-09-14
+**Last reviewed:** 2026-09-21
 
 | Flow | Product status | Meaningful entry → successful outcome | Major states | QA coverage |
 | --- | --- | --- | --- | --- |
@@ -199,3 +199,9 @@ Existing Add/Edit property uses grouped monetary entry for current value, purcha
 Ten implemented canonical flows remain unchanged. Record/edit holding, Plan expected income (source details), Set category spending totals and supporting Property now compare the revision captured when editing began. Conflicting/deleted/missing-revision records never receive a blind overwrite or false success. Drafts survive failed/uncertain saves; close/reopen or Asset Cancel reviews refreshed saved values. Successful writes use returned rows directly.
 
 277 checks pass. Live disposable Supabase checks cover advancing revisions, stale/repeated/deleted zero-row updates and reviewed successful updates in all four tables; cleanup verified. Current synthetic browser coverage includes Home/history, Portfolio Cards/Table, quote-failure/manual Add, asset edit/return/delete, source conflict/review/save, category save/conflict, property save and Plan save. Four routes fit 320/390/768/1280px; enlarged-text modal actions remain reachable. Real magic-link email redemption, second-user RLS, actual provider/scheduler/export and physical accessibility are not accepted by these checks. Report: `automation/review/2026-09-18/review.md`.
+
+## 2026-09-21 — complete account reads (0.2.6)
+
+Ten implemented canonical flows remain; no flow added. Home/history, Portfolio, Income/Expenses, Property and Plan now consume fully read collections. Required read failures stop partial totals; optional read failures retain their existing scoped recovery. Income counts and summary amounts say Unavailable instead of implying an unset or empty account. Daily snapshot generation pages every account/holding/quote collection and refuses incomplete inputs. Stable ordering, exact count checks, duplicate detection, aborts and an explicit size bound apply on initial and recovery reads.
+
+285 automated checks pass, including eight pagination regressions. Live authenticated disposable testing reproduced a 1,000-of-1,001 quote cap and verified full account-scoped retrieval and cleanup. Fresh local walkthrough, four responsive widths, dark appearance and 200% text recovery are recorded in `automation/review/2026-09-21/review.md`. Browser fixtures and real API acceptance remain separate; magic-link redemption, two-user isolation, migration rebuild and physical accessibility are still open.

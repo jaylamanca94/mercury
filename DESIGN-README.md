@@ -1,5 +1,12 @@
 # Mercury Design README
 
+## Complete-data recovery and Acadia review — 2026-09-21
+
+Income uses **Unavailable** for unknown summary amounts and source/category counts after a failed read; reserve zero counts for a confirmed empty collection. Retry preserves independently loaded data and restores the summary focus. The Expenses table no longer always tells people to scroll; it retains Acadia's responsive Table/Object List anatomy, region label and keyboard access. These are product copy/composition refinements, with no new shared primitive or CSS exception.
+
+All 13 vendored Acadia files are byte-identical to published main `d656e65db901964702e0d62187e4810ffba9902e` (0.3.5). Its newer changes affect documentation/reference controllers, not Mercury's runtime. Manifest provenance is updated without gratuitous asset changes. Current evidence: `automation/review/2026-09-21/review.md`.
+
+
 ## Current Acadia and editor recovery — 2026-09-18
 
 - The complete published Acadia main snapshot `2b80572f46651f1b2f34a155381c481f201eb671` supersedes the older pins below. Styles, fonts, support vectors and Card Trend are copied unchanged; the bundled canonical Home vector is now included. Existing semantic roles inherit current text/status colours, distinct dark surfaces and the founder’s mobile Navbar geometry. No new local colour or component styling.

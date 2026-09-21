@@ -20,7 +20,7 @@ function setup(t, fetcher) {
 function response() {
   return { headers: {}, setHeader(name, value) { this.headers[name] = value; }, status(code) { this.code = code; return this; }, json(body) { this.body = body; return this; } };
 }
-function json(body, status = 200) { return { ok: status < 400, status, json: async () => body }; }
+function json(body, status = 200) { return { ok: status < 400, status, headers: { get: () => Array.isArray(body) ? `0-${body.length-1}/${body.length}` : null }, json: async () => body }; }
 function request(authorization = "Bearer owner-token") { return { method: "GET", headers: { authorization }, query: { symbol: "VT" } }; }
 
 test("an unset or empty cron secret never authorises a service-role snapshot", async (t) => {
@@ -96,7 +96,7 @@ test("owner snapshots use their account filter and upsert a complete cent-safe v
       { id: "manual", valuation_basis: "manual-value", manual_value_cents: 2500 },
       { id: "quoted", valuation_basis: "shares-and-price", shares: "1.5", manual_price_cents: null },
     ]);
-    if (url.includes("/holding_quotes?")) return json([{ holding_id: "quoted", price_cents: 101, as_of: "2026-09-07T20:00:00Z" }]);
+    if (url.includes("/holding_quotes?")) return json([{ id: "quote", holding_id: "quoted", price_cents: 101, as_of: "2026-09-07T20:00:00Z" }]);
     assert.match(url, /portfolio_snapshots\?on_conflict=account_id,snapshot_date/);
     assert.equal(options.method, "POST");
     const body = JSON.parse(options.body);
@@ -127,4 +127,45 @@ test("configured cron requests retain the scheduled close gate without user auth
   const afterClose = response();
   await snapshot(request("Bearer test-cron"), afterClose);
   assert.equal(afterClose.code, 200);
+});
+
+test("snapshots read every quote page and use the newest quote beyond the API cap", async t => {
+  const writes=[], pages=[];
+  const history=Array.from({length:1001},(_,i)=>({id:'quote-'+i,holding_id:'asset',price_cents:100+i,as_of:new Date(Date.UTC(2023,0,1+i)).toISOString()}));
+  setup(t,async (url,options)=>{
+    if(url.endsWith('/auth/v1/user'))return json({id:ownerId});
+    if(url.includes('/accounts?'))return json([{id:accountId}]);
+    if(url.includes('/holdings?'))return json([{id:'asset',valuation_basis:'shares-and-price',shares:2}]);
+    if(url.includes('/holding_quotes?')) {
+      assert.match(url,new RegExp(`holdings.account_id=eq.${accountId}`));
+      assert.match(url,/holdings!inner\(account_id\)/);
+      assert.match(url,/order=id.asc/);
+      assert.equal(options.headers.Prefer,'count=exact');
+      const from=Number(new URL(url).searchParams.get('offset'));pages.push(from);
+      const body=history.slice(from,from+500);
+      return {...json(body),headers:{get:()=>`${from}-${from+body.length-1}/${history.length}`}};
+    }
+    writes.push(JSON.parse(options.body));return json(writes.at(-1));
+  });
+  const result=response();await snapshot(request(),result);
+  assert.equal(result.code,200);
+  assert.deepEqual(pages,[0,500,1000]);
+  assert.equal(writes[0][0].total_value_cents,2200);
+});
+
+test("truncated or changing snapshot reads never write partial daily history",async t=>{
+  let malformed=false;const writes=[];
+  setup(t,async(url,options)=>{
+    if(url.endsWith('/auth/v1/user'))return json({id:ownerId});
+    if(options.method==='POST'){writes.push(url);return json([]);}
+    if(url.includes('/accounts?'))return json([{id:accountId}]);
+    const from=Number(new URL(url).searchParams.get('offset'));
+    const body=from?[]:[{id:'asset',valuation_basis:'manual-value',manual_value_cents:500}];
+    return {...json(body),headers:{get:()=>malformed?null:`0-0/2`}};
+  });
+  for(malformed of [false,true]) {
+    const result=response();await snapshot(request(),result);
+    assert.equal(result.code,503);
+  }
+  assert.deepEqual(writes,[]);
 });

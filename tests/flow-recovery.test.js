@@ -20,6 +20,7 @@ function controller() {
   }
   const document = {body: node("body"),querySelector:node, querySelectorAll:()=>[], activeElement:null, listeners:{}, addEventListener(type, callback) { this.listeners[type] = callback; }};
   const window = {
+    MercuryCollectionRead: require('../collection-read'),
     MercuryMarketHistory: require('../market-history'),
     MercuryPortfolio: require('../portfolio'), MercuryIncome: require('../income'),
     MercuryPropertyMarkets: require('../data/property-markets'), MercuryPlan: require('../plan'), MercuryDashboard: require('../dashboard'),
@@ -195,8 +196,8 @@ function quickSaveFixture({quoteFailure = false, readFailure = false, holdingFai
   api.state.configured = true;
   const db = {holdings:[], holding_quotes:[], accounts:[api.state.account]};
   api.state.client.from = table => {
-    const q = {select(){return q},eq(){return q},order(){return q},abortSignal(){return q},maybeSingle(){return q},
-      then(resolve,reject){return Promise.resolve({data:db[table] || [],error:readFailure ? {message:'Read unavailable'} : null}).then(resolve,reject)},
+    const q = {select(){return q},eq(){return q},order(){return q},range(){return q},abortSignal(){return q},maybeSingle(){return q},
+      then(resolve,reject){return Promise.resolve({data:db[table] || [],count:(db[table] || []).length,error:readFailure ? {message:'Read unavailable'} : null}).then(resolve,reject)},
       async upsert(payload) {
         writes.push({table,payload});
         if (table === 'holdings' && holdingFailure) return {error:{message:'Holding unavailable'}};
@@ -702,7 +703,7 @@ test('successful price retry writes only a quote and hides recovery without repl
   const originalFrom=api.state.client.from;
   api.state.client.from=table=>{
     const q=originalFrom(table);
-    if(table==='holding_quotes')q.upsert=async payload=>{db.holding_quotes.push(payload);return {error:null}};
+    if(table==='holding_quotes')q.upsert=async payload=>{db.holding_quotes.push({id:'saved-quote',...payload});return {error:null}};
     return q;
   };
   await api.refreshCurrentAssetPrice();
@@ -837,8 +838,8 @@ function incomeReadRecoveryController() {
   const calls = [];
   const pending = [];
   api.state.client.from = table => {
-    const query = {select:()=>query, order:()=>query, eq(key,value) {calls.push({table,key,value});return query;},
-      then(resolve,reject) {return new Promise((done,fail)=>pending.push({table,done,fail})).then(resolve,reject);}};
+    const query = {select:()=>query, order:()=>query, range:()=>query, abortSignal:()=>query, eq(key,value) {calls.push({table,key,value});return query;},
+      then(resolve,reject) {return new Promise((done,fail)=>pending.push({table,done,fail})).then(result=>({...result,count:Array.isArray(result.data)?result.data.length:null})).then(resolve,reject);}};
     return query;
   };
   return {...harness,calls,pending};
@@ -847,7 +848,7 @@ function incomeReadRecoveryController() {
 test('Income retry reads only failed account collections, blocks duplicates and preserves successful partial recovery', async () => {
   const {api,node,window,calls,pending} = incomeReadRecoveryController();
   node('#income-sources-search').value = 'salary'; api.state.incomePeriod = 'year';
-  const first = api.retryIncomeData(); await Promise.resolve();
+  const first = api.retryIncomeData(); await new Promise(setImmediate);
   await api.retryIncomeData();
   assert.equal(calls.length, 2);
   assert.equal(calls.every(call=>call.key==='account_id' && call.value==='account'), true);
@@ -860,7 +861,7 @@ test('Income retry reads only failed account collections, blocks duplicates and 
   assert.equal(api.state.budgetCategoriesAvailable, false);
   assert.equal(api.state.incomeReloadFailed, true);
   assert.equal(api.state.incomeReloadPending, false);
-  const retry = api.retryIncomeData(); await Promise.resolve();
+  const retry = api.retryIncomeData(); await new Promise(setImmediate);
   assert.equal(calls.length, 3);
   assert.equal(calls[2].table, 'budget_categories');
   pending[2].done({data:[],error:null}); await retry;
@@ -873,12 +874,12 @@ test('Income retry reads only failed account collections, blocks duplicates and 
 
 test('Income retry retains unavailable state for API failures and refuses late cross-account data', async () => {
   const {api,pending} = incomeReadRecoveryController();
-  const first = api.retryIncomeData(); await Promise.resolve();
+  const first = api.retryIncomeData(); await new Promise(setImmediate);
   pending.forEach(p=>p.done({data:null,error:{message:'Not authorised'}})); await first;
   assert.equal(api.state.incomeSourcesAvailable, false);
   assert.equal(api.state.budgetCategoriesAvailable, false);
   assert.equal(api.state.incomeReloadFailed, true);
-  const second = api.retryIncomeData(); await Promise.resolve();
+  const second = api.retryIncomeData(); await new Promise(setImmediate);
   api.state.user = null;
   pending.slice(2).forEach(p=>p.done({data:[{id:'private'}],error:null})); await second;
   assert.equal(api.state.incomeSources.length, 0);
@@ -891,11 +892,11 @@ test('Income retry times out stalled reads and ignores their later result', asyn
   const timers = [];
   context.setTimeout = callback => {timers.push(callback);return timers.length;};
   context.clearTimeout = () => {};
-  const retry = api.retryIncomeData(); await Promise.resolve();
+  const retry = api.retryIncomeData(); await new Promise(setImmediate);
   timers.forEach(callback=>callback()); await retry;
   assert.equal(api.state.incomeReloadPending, false);
   assert.equal(api.state.incomeReloadFailed, true);
-  pending.forEach(p=>p.done({data:[{id:'late'}],error:null})); await Promise.resolve();
+  pending.forEach(p=>p.done({data:[{id:'late'}],error:null})); await new Promise(setImmediate);
   assert.equal(api.state.incomeSources.length, 0);
   assert.equal(api.state.incomeSourcesAvailable, false);
 });
@@ -1051,7 +1052,7 @@ function readFixture(view, read) {
   view.api.state.user = {id:'owner',email:'fixture'};
   view.api.state.account = {id:'account',name:'Brokerage'};
   view.api.state.client.from = table => {
-    const query = {select(){return this},eq(){return this},order(){return this},maybeSingle(){return this},single(){return this},upsert(){return this},insert(){return this},abortSignal(signal){this.signal=signal;return this},then(resolve,reject){return Promise.resolve().then(()=>read(table,this.signal)).then(resolve,reject)}};
+    const query = {select(){return this},eq(){return this},order(){return this},range(from,to){this.from=from;this.to=to;return this},maybeSingle(){return this},single(){return this},upsert(){return this},insert(){return this},abortSignal(signal){this.signal=signal;return this},then(resolve,reject){return Promise.resolve().then(()=>read(table,this.signal,this)).then(result=>({...result,count:result.count ?? (Array.isArray(result.data)?result.data.length:null)})).then(resolve,reject)}};
     return query;
   };
   return view;
@@ -1924,5 +1925,37 @@ test('late editor acknowledgements cannot enter a replacement account',async()=>
     await new Promise(setImmediate);api.state.account={id:'other'};api.state.incomeSources=[];api.state.budgetCategories=[];api.state.holdings=[];
     finish({data:{id:kind==='asset'?'test':'late',name:'Wrong account'}});await pending;
     assert.equal(api.state.incomeSources.length+api.state.budgetCategories.length+api.state.holdings.length,0);
+  }
+});
+
+test('account collections paginate completely before rendering', async () => {
+  const rows = Array.from({length:1001},(_,i)=>({id:'holding-'+i,shares:null,manual_price_cents:null,expected_annual_return_rate:null,distribution_yield_rate:null,target_allocation_rate:null,weekly_contribution_rate:null,symbol:'QA'+i,instrument_type:'cash',account_id:'account',valuation_basis:'manual-value',manual_value_cents:100}));
+  const calls=[];
+  const view=readFixture(controller(),(table,signal,query)=>{
+    calls.push({table,from:query.from,to:query.to});
+    if(table==='holdings')return {data:rows.slice(query.from,query.to+1),count:rows.length};
+    return accountRead(table);
+  });
+  view.window.location.hash='#asset/missing';
+  await view.api.loadData();
+  assert.equal(view.api.state.holdings.length,1001);
+  assert.deepEqual(calls.filter(c=>c.table==='holdings').map(c=>c.from),[0,500,1000]);
+});
+
+test('a failed later collection page preserves old records; optional failure offers local recovery',async()=>{
+  const rows=Array.from({length:500},(_,i)=>({id:'row-'+i}));
+  for(const table of ['holdings','home_properties','income_sources','budget_categories']) {
+    const {api}=readFixture(controller(),(name,signal,query)=>name===table
+      ? query.from ? {error:new Error('Second page unavailable')} : {data:rows,count:501}
+      : accountRead(name));
+    api.state.holdings=[{id:'old',valuation_basis:'manual-value',manual_value_cents:100}];
+    if(table==='holdings') {
+      await assert.rejects(api.loadData(),/Second page/);
+      assert.equal(api.state.holdings[0].id,'old');
+    } else {
+      await api.loadData();
+      const flag={home_properties:'propertiesAvailable',income_sources:'incomeSourcesAvailable',budget_categories:'budgetCategoriesAvailable'}[table];
+      assert.equal(api.state[flag],false);
+    }
   }
 });

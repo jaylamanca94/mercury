@@ -1,4 +1,5 @@
 const { currentUser } = require("../lib/portfolio-auth");
+const { readCompleteCollection } = require("../../collection-read");
 
 function newYorkDate(now = new Date()) {
   const parts = new Intl.DateTimeFormat("en-US", {
@@ -44,27 +45,39 @@ function totalValueCents(holdings, quotes) {
   }, 0);
 }
 
-async function supabase(path, { method = "GET", body } = {}) {
+async function supabase(path, { method = "GET", body, signal = AbortSignal.timeout(10000) } = {}) {
+  if (method === "GET") {
+    const result = await readCompleteCollection(async (from, to) => {
+      const response = await storageRequest(`${path}&order=id.asc&offset=${from}&limit=${to - from + 1}`, { method, signal });
+      const total = response.headers.get("content-range")?.split("/")[1];
+      return { data: await response.json(), count: /^\d+$/.test(total || "") ? Number(total) : null };
+    }, { signal });
+    return result.data;
+  }
+  const response = await storageRequest(path, { method, body, signal });
+  return response.json();
+}
+
+async function storageRequest(path, { method, body, signal }) {
   const response = await fetch(`${process.env.SUPABASE_URL}/rest/v1/${path}`, {
     method,
-    signal: AbortSignal.timeout(10000),
+    signal,
     headers: {
       apikey: process.env.SUPABASE_SERVICE_ROLE_KEY,
       Authorization: `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY}`,
       "Content-Type": "application/json",
-      Prefer: "return=representation,resolution=merge-duplicates",
+      Prefer: method === "GET" ? "count=exact" : "return=representation,resolution=merge-duplicates",
     },
     body: body ? JSON.stringify(body) : undefined,
   });
   if (!response.ok) throw new Error("Snapshot storage is unavailable.");
-  return response.json();
+  return response;
 }
 
 async function recordAccountSnapshot(account) {
   const holdings = await supabase(`holdings?account_id=eq.${account.id}&select=id,valuation_basis,manual_value_cents,manual_price_cents,shares`);
-  const ids = holdings.map((holding) => holding.id);
-  const quotes = ids.length
-    ? await supabase(`holding_quotes?holding_id=in.(${ids.join(",")})&select=holding_id,price_cents,as_of`)
+  const quotes = holdings.length
+    ? await supabase(`holding_quotes?holdings.account_id=eq.${account.id}&select=id,holding_id,price_cents,as_of,holdings!inner(account_id)`)
     : [];
   const total = totalValueCents(holdings, quotes);
   const snapshotDate = newYorkDate();

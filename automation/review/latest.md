@@ -1,3 +1,3 @@
-# Latest Mercury audit
+# Latest Mercury review
 
-See [2026-09-18 editor integrity and Acadia review](2026-09-18/review.md): 0.2.5 closes stale saves across four editors and adopts published Acadia `2b80572`, including its Home vector. 277 checks, authenticated disposable revision tests and current synthetic browser walkthroughs pass. Ten implemented flows unchanged. Migration rebuild, second-user isolation, real magic-link/provider/scheduler/export and physical accessibility remain explicit acceptance gates.
+2026-09-21 — [0.2.6 complete reads and recovery clarity](2026-09-21/review.md). Silent API truncation fixed in browser and snapshot inputs; Income distinguishes unavailable data; redundant Expenses hint removed. Published Acadia 0.3.5 runtime verified unchanged. 285 checks and live 1,001-quote pagination acceptance pass. Ten implemented flows unchanged; migration rebuild, second-user, email/provider/scheduler and physical-device acceptance remain open.

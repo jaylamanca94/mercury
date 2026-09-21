@@ -37,3 +37,7 @@ Authenticated disposable-account checks verified omitted/null values, exact cent
 ## Revision-aware editors — 0.2.5
 
 No schema changes. On 2026-09-18, authenticated disposable-account checks verified the existing `updated_at` triggers on `holdings`, `income_sources`, `budget_categories` and `home_properties`. Conditional updates returned one row for the current revision and zero for stale/repeated or deleted revisions. A reviewed latest revision could save successfully. All created rows and the disposable account were deleted; each collection was rechecked empty. Browser editing now carries these revisions, including the explicit Property read/retry projections. This does not replace the migration rebuild or second-user isolation gate.
+
+## Complete reads — 0.2.6
+
+No schema change. On 2026-09-21, the supplied test account authenticated successfully. A disposable account, holding and 1,001 quotes reproduced the default API cap (`Content-Range: 0-999/1001`); three count-checked pages retrieved all 1,001 distinct quote IDs, including the newest price. The account-filtered `holdings!inner(account_id)` join succeeded. The account and its dependent records were removed and accounts/holdings/quotes rechecked empty. No owner records changed. This is pagination acceptance, not two-user isolation or scheduled-production execution proof.

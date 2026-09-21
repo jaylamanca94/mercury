@@ -1,5 +1,8 @@
 # Mercury — Design Status
 
+2026-09-21: **0.2.6** prevents silently incomplete collection reads and clearly labels unavailable Income totals/counts. The redundant Expenses scroll hint is removed. Published Acadia 0.3.5 runtime alignment is verified unchanged. Twenty route/viewport combinations fit from 320–1280px; phone keyboard retry at 200% text and dark appearance checked. Ten implemented canonical flows unchanged. See `automation/review/2026-09-21/review.md`.
+
+
 **Current review: 2026-09-18.** Mercury 0.2.5 adopts published Acadia `2b80572` unchanged and makes stale-save recovery consistent across asset, source-detail, category and property editing. Current desktop/tablet/phone and 200% text evidence: `automation/review/2026-09-18/review.md`. Ten implemented flows; no new feature.
 
 Current next design opportunities (supersede historical lists below):
@@ -77,6 +80,6 @@ Income, Plan and the remaining deletion dialogs now use Acadia compact form comp
 
 ## Next design opportunities
 
-1. **Recover from session expiry during edits.** Verify real magic-link redemption and expired-session recovery using a disposable authenticated account; preserve the task while respecting private-data boundaries.
-2. **Recover unavailable Plan settings locally.** Account and Property now retry in place. Plan settings still need a focused retry path after an optional read fails.
-3. **Review long forms with the software keyboard.** Responsive browser checks pass; verify focused-field visibility, scrolling and action reachability on a physical phone.
+1. **Recover a real expired editing session.** Complete magic-link redemption and session-expiry acceptance with disposable authenticated data.
+2. **Review conflicting edits more directly.** Evaluate a compact saved-versus-draft comparison using Acadia's existing recovery anatomy; preserve explicit review before any overwrite.
+3. **Verify long forms with the software keyboard.** Check phone focus, final-field visibility, dock clearance and action reachability on a physical device with VoiceOver.

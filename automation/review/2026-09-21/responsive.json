@@ -1,0 +1,122 @@
+[
+  {
+    "overflow": false,
+    "pageWidth": 320,
+    "route": "home",
+    "width": 320
+  },
+  {
+    "overflow": false,
+    "pageWidth": 320,
+    "route": "#portfolio",
+    "width": 320
+  },
+  {
+    "overflow": false,
+    "pageWidth": 320,
+    "route": "#income",
+    "width": 320
+  },
+  {
+    "overflow": false,
+    "pageWidth": 320,
+    "route": "#income/budget",
+    "width": 320
+  },
+  {
+    "overflow": false,
+    "pageWidth": 320,
+    "route": "#plan",
+    "width": 320
+  },
+  {
+    "overflow": false,
+    "pageWidth": 390,
+    "route": "home",
+    "width": 390
+  },
+  {
+    "overflow": false,
+    "pageWidth": 390,
+    "route": "#portfolio",
+    "width": 390
+  },
+  {
+    "overflow": false,
+    "pageWidth": 390,
+    "route": "#income",
+    "width": 390
+  },
+  {
+    "overflow": false,
+    "pageWidth": 390,
+    "route": "#income/budget",
+    "width": 390
+  },
+  {
+    "overflow": false,
+    "pageWidth": 390,
+    "route": "#plan",
+    "width": 390
+  },
+  {
+    "overflow": false,
+    "pageWidth": 768,
+    "route": "home",
+    "width": 768
+  },
+  {
+    "overflow": false,
+    "pageWidth": 768,
+    "route": "#portfolio",
+    "width": 768
+  },
+  {
+    "overflow": false,
+    "pageWidth": 768,
+    "route": "#income",
+    "width": 768
+  },
+  {
+    "overflow": false,
+    "pageWidth": 768,
+    "route": "#income/budget",
+    "width": 768
+  },
+  {
+    "overflow": false,
+    "pageWidth": 768,
+    "route": "#plan",
+    "width": 768
+  },
+  {
+    "overflow": false,
+    "pageWidth": 1280,
+    "route": "home",
+    "width": 1280
+  },
+  {
+    "overflow": false,
+    "pageWidth": 1280,
+    "route": "#portfolio",
+    "width": 1280
+  },
+  {
+    "overflow": false,
+    "pageWidth": 1280,
+    "route": "#income",
+    "width": 1280
+  },
+  {
+    "overflow": false,
+    "pageWidth": 1280,
+    "route": "#income/budget",
+    "width": 1280
+  },
+  {
+    "overflow": false,
+    "pageWidth": 1280,
+    "route": "#plan",
+    "width": 1280
+  }
+]

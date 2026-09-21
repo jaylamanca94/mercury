@@ -976,15 +976,8 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
     state.incomeReloadFailed = false;
     render();
     try {
-      const results = await Promise.allSettled(collections.map(async ([table]) => {
-        let timer;
-        try {
-          return await Promise.race([
-            client.from(table).select("*").eq("account_id", account.id).order("created_at"),
-            new Promise((_, reject) => { timer = setTimeout(() => reject(new Error("Read timed out")), 10000); }),
-          ]);
-        } finally { clearTimeout(timer); }
-      }));
+      const results = await Promise.allSettled(collections.map(([table]) =>
+        readCollection(client, table, account.id)));
       // A late response must never populate a different or signed-out account.
       if (state.account !== account || state.user !== user || state.client !== client) return;
       results.forEach((result, index) => {
@@ -1195,7 +1188,7 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
     });
     const existing = Array.from(grid.children || []);
     if (cards.length !== existing.length || cards.some((card, index) => card !== existing[index])) grid.replaceChildren(...cards);
-    setText("#income-sources-count", `${matchingRows.length} ${matchingRows.length === 1 ? "source" : "sources"}`);
+    setText("#income-sources-count", !state.incomeSourcesAvailable ? "Unavailable" : `${matchingRows.length} ${matchingRows.length === 1 ? "source" : "sources"}`);
     $("#income-sources-empty").hidden = matchingRows.length > 0;
     $("#income-sources-clear").hidden = matchingRows.length > 0 || !$("#income-sources-search").value.trim();
     if (!matchingRows.length) {
@@ -1250,7 +1243,7 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
       container.querySelectorAll("[data-edit-budget-category]").forEach((control) => control.addEventListener("click", () => openBudgetCategoryDialog(control.dataset.editBudgetCategory)));
       container.querySelectorAll("[data-delete-budget-category]").forEach((control) => control.addEventListener("click", () => openDeleteBudgetCategoryDialog(control.dataset.deleteBudgetCategory)));
     });
-    setText("#income-budget-count", `${matchingRows.length} ${matchingRows.length === 1 ? "category" : "categories"}`);
+    setText("#income-budget-count", !state.budgetCategoriesAvailable ? "Unavailable" : `${matchingRows.length} ${matchingRows.length === 1 ? "category" : "categories"}`);
     $("#income-budget-empty").hidden = matchingRows.length > 0;
     $("#income-budget-clear").hidden = matchingRows.length > 0 || !$("#income-budget-search").value.trim();
     $("#income-budget-results").hidden = matchingRows.length === 0;
@@ -1288,10 +1281,10 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
       if (active) $("#income-summary").setAttribute("aria-labelledby", control.id);
     });
     const planning = planningPosition(summary, state.incomePeriod);
-    for (const [id, key] of [["total", "expectedCents"], ["earned", "recurringCents"], ["passive", "passiveCents"], ["expenses", "spendingCents"], ["investing", "investingCents"], ["balance", "balanceCents"]]) setText(`#income-${id}`, planningValue(planning[key]));
+    for (const [id, key] of [["total", "expectedCents"], ["earned", "recurringCents"], ["passive", "passiveCents"], ["expenses", "spendingCents"], ["investing", "investingCents"], ["balance", "balanceCents"]]) setText(`#income-${id}`, planning[key] === null ? "Unavailable" : planningValue(planning[key]));
     for (const [id, value] of [["balance", planning.balanceCents], ["earned", planning.recurringCents], ["passive", planning.passiveCents], ["expenses", planning.spendingCents === null ? null : planning.spendingCents === 0 ? 0 : -planning.spendingCents]]) {
-      setText(`#income-${id}`, value === null ? "Not set" : displayCurrency(value / 100));
-      $(`#income-${id}`).setAttribute("title", value === null ? "Not set" : preciseCurrency.format(value / 100));
+      setText(`#income-${id}`, value === null ? "Unavailable" : displayCurrency(value / 100));
+      $(`#income-${id}`).setAttribute("title", value === null ? "Unavailable" : preciseCurrency.format(value / 100));
     }
     setText("#income-balance-period", `/ ${incomePeriodLabel()}`);
     const recoveryMessage = renderIncomeRecovery(summary);
@@ -2956,6 +2949,16 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
     } finally { clearTimeout(timer); }
   }
 
+  function readCollection(client, table, accountId) {
+    const order = table === "holding_quotes" ? "as_of" : table === "portfolio_snapshots" ? "snapshot_date" : "created_at";
+    return readWithDeadline(signal => window.MercuryCollectionRead.readCompleteCollection((from, to) => {
+      const quote = table === "holding_quotes";
+      let query = client.from(table).select(quote ? "*, holdings!inner(account_id)" : "*", { count: "exact" });
+      if (accountId) query = query.eq(quote ? "holdings.account_id" : "account_id", accountId);
+      return query.order(order, { ascending: !quote }).order("id").range(from, to).abortSignal(signal);
+    }, { signal }));
+  }
+
   function accountContext() {
     const { client, user, account } = state;
     return () => state.client === client && state.user === user && state.account === account;
@@ -3004,7 +3007,7 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
     setText("#property-recovery-status", "Retrying properties…");
     render();
     try {
-      const result = await readWithDeadline(signal => client.from("home_properties").select("id, account_id, name, location, city, state_code, county_fips, current_value_cents, purchase_price_cents, mortgage_balance_cents, annual_appreciation_rate, created_at, updated_at").eq("account_id", account.id).order("created_at").abortSignal(signal));
+      const result = await readCollection(client, "home_properties", account.id);
       if (!current()) return;
       if (result.error || !Array.isArray(result.data)) throw new Error("Property read failed");
       state.properties = result.data;
@@ -3028,15 +3031,15 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
     const { client, account } = state;
     const requestId = ++state.dataRequestId;
     const results = await Promise.allSettled([
-      signal => client.from("accounts").select("*").order("created_at").abortSignal(signal),
-      signal => client.from("holdings").select("*").eq("account_id", account.id).order("created_at").abortSignal(signal),
-      signal => client.from("holding_quotes").select("*").order("as_of", { ascending: false }).abortSignal(signal),
-      signal => client.from("portfolio_snapshots").select("*").eq("account_id", account.id).order("snapshot_date").abortSignal(signal),
-      signal => client.from("income_sources").select("*").eq("account_id", account.id).order("created_at").abortSignal(signal),
-      signal => client.from("budget_categories").select("*").eq("account_id", account.id).order("created_at").abortSignal(signal),
-      signal => client.from("plan_settings").select("*").eq("account_id", account.id).maybeSingle().abortSignal(signal),
-      signal => client.from("home_properties").select("id, account_id, name, location, city, state_code, county_fips, current_value_cents, purchase_price_cents, mortgage_balance_cents, annual_appreciation_rate, created_at, updated_at").eq("account_id", account.id).order("created_at").abortSignal(signal),
-    ].map(operation => readWithDeadline(operation)));
+      readCollection(client, "accounts"),
+      readCollection(client, "holdings", account.id),
+      readCollection(client, "holding_quotes", account.id),
+      readCollection(client, "portfolio_snapshots", account.id),
+      readCollection(client, "income_sources", account.id),
+      readCollection(client, "budget_categories", account.id),
+      readWithDeadline(signal => client.from("plan_settings").select("*").eq("account_id", account.id).maybeSingle().abortSignal(signal)),
+      readCollection(client, "home_properties", account.id),
+    ]);
     if (!current() || requestId !== state.dataRequestId) return false;
     const [accounts, holdings, quotes, snapshots, incomeSources, budgetCategories, planSettings, properties] = results.map(result => result.status === "fulfilled" ? result.value : { error: result.reason });
     if (accounts.error || holdings.error || quotes.error || snapshots.error) {
