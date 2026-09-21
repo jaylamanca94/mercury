@@ -98,3 +98,7 @@ Release 0.2.6 is a compatible integrity/refinement patch. These gates still rule
 ![18-plan-saved-phone](18-plan-saved-phone.png)
 
 ![19-income-dark-phone](19-income-dark-phone.png)
+
+## Publication receipt
+
+Code/audit commit `c37fb2fde2c876f775784d589301a5ebc4faf9fb` was pushed to `origin/main` and its remote SHA verified. [Vercel deployment](https://vercel.com/jayson-lamanca-s-projects/mercury/HFAYrG8TTHDQFjsxPyUkxfPQpQDW) reports **SUCCESS**. Canonical production `https://mercury-psi-six.vercel.app` serves six checked public files with HTTP 200 and byte-identical local SHA-256 hashes, including the new shared collection reader; CSP and nosniff remain present. See `hosted-receipt.json`. This verifies publication, not the separate authenticated/physical acceptance gates.
