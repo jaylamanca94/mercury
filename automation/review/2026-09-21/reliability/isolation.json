@@ -1,0 +1,71 @@
+{
+  "tables": {
+    "accounts": {
+      "own_read": true,
+      "cross_user_read_update_delete_blocked": true,
+      "foreign_insert_blocked": true,
+      "ownership_transfer_blocked": true,
+      "anonymous_read_blocked": true,
+      "directions": 2
+    },
+    "holdings": {
+      "own_read": true,
+      "cross_user_read_update_delete_blocked": true,
+      "foreign_insert_blocked": true,
+      "ownership_transfer_blocked": true,
+      "anonymous_read_blocked": true,
+      "directions": 2
+    },
+    "income_sources": {
+      "own_read": true,
+      "cross_user_read_update_delete_blocked": true,
+      "foreign_insert_blocked": true,
+      "ownership_transfer_blocked": true,
+      "anonymous_read_blocked": true,
+      "directions": 2
+    },
+    "budget_categories": {
+      "own_read": true,
+      "cross_user_read_update_delete_blocked": true,
+      "foreign_insert_blocked": true,
+      "ownership_transfer_blocked": true,
+      "anonymous_read_blocked": true,
+      "directions": 2
+    },
+    "home_properties": {
+      "own_read": true,
+      "cross_user_read_update_delete_blocked": true,
+      "foreign_insert_blocked": true,
+      "ownership_transfer_blocked": true,
+      "anonymous_read_blocked": true,
+      "directions": 2
+    },
+    "plan_settings": {
+      "own_read": true,
+      "cross_user_read_update_delete_blocked": true,
+      "foreign_insert_blocked": true,
+      "ownership_transfer_blocked": true,
+      "anonymous_read_blocked": true,
+      "directions": 2
+    },
+    "holding_quotes": {
+      "own_read": true,
+      "cross_user_read_update_delete_blocked": true,
+      "foreign_insert_blocked": true,
+      "ownership_transfer_blocked": true,
+      "anonymous_read_blocked": true,
+      "directions": 2
+    },
+    "portfolio_snapshots": {
+      "own_read": true,
+      "cross_user_read_update_delete_blocked": true,
+      "foreign_insert_blocked": true,
+      "ownership_transfer_blocked": true,
+      "anonymous_read_blocked": true,
+      "directions": 2
+    }
+  },
+  "cleanup": true,
+  "authenticated_identities": 2,
+  "quote_join_isolation": true
+}

@@ -1,5 +1,7 @@
 # Mercury — Design Status
 
+2026-09-21: **0.2.7** closes remaining Add/quote/delete timeout and acknowledgement gaps using existing Acadia controls. Confirmed deletion updates locally and returns focus to a visible action. Live two-user database isolation passed; disposable identities and data were removed. See `automation/review/2026-09-21/reliability/review.md`.
+
 2026-09-21: **0.2.6** prevents silently incomplete collection reads and clearly labels unavailable Income totals/counts. The redundant Expenses scroll hint is removed. Published Acadia 0.3.5 runtime alignment is verified unchanged. Twenty route/viewport combinations fit from 320–1280px; phone keyboard retry at 200% text and dark appearance checked. Ten implemented canonical flows unchanged. See `automation/review/2026-09-21/review.md`.
 
 
@@ -7,7 +9,7 @@
 
 Current next design opportunities (supersede historical lists below):
 1. Simplify conflict review further without discarding or silently merging a private draft; the current safe close/reopen path is explicit but takes extra steps.
-2. Remove the desktop Expenses scroll hint when the entire table already fits.
+2. Completed in 0.2.6: removed the redundant desktop Expenses scroll hint.
 3. Review the tablet Asset editor’s empty side column to improve use of space at intermediate widths.
 
 

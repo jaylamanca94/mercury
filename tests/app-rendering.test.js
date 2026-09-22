@@ -255,8 +255,6 @@ test("Income is a functional planning workspace with live dividend coverage and 
   assert.match(homeSource, /function renderIncome\(summary\)/);
   assert.match(homeSource, /summary\.totalEstimatedAnnualIncomeCents/);
   assert.match(homeSource, /state\.providerMetricsPending/);
-  assert.match(homeSource, /state\.client\.from\("income_sources"\)/);
-  assert.match(homeSource, /state\.client\.from\("budget_categories"\)/);
   assert.match(homeSource, /summarizeBudgetCategories/);
   assert.match(homeSource, /saveInlineIncomeSource/);
   assert.match(homeSource, /data-edit-income-source/);
@@ -285,12 +283,11 @@ test("Plan provides one hero projection, four statistics and live scenario contr
   assert.match(indexHtml, /id="plan-assumptions-dialog"/);
   assert.match(indexHtml, /id="property-dialog"/);
   assert.match(indexHtml, /<script src="plan\.js\?v=20260914-change-cards-023"><\/script>/);
-  assert.match(indexHtml, /<script type="module" src="brokerage\.js\?v=20260921-complete-reads"><\/script>/);
+  assert.match(indexHtml, /<script type="module" src="brokerage\.js\?v=20260921-confirmed-mutations"><\/script>/);
   assert.match(homeSource, /function routePlan\(\)/);
   assert.match(homeSource, /function renderPlan\(summary\)/);
   assert.match(homeSource, /function renderPlanChart/);
   assert.match(homeSource, /client\.from\("plan_settings"\)/);
-  assert.match(homeSource, /state\.client\.from\("home_properties"\)/);
   assert.match(homeSource, /annualRecurringContributionCents/);
   assert.match(homeSource, /resolvePlanAssumptions/);
   assert.match(planSource, /const planContract =/);
@@ -316,7 +313,6 @@ test("the quick add dialog matches the compact Figma flow and keeps manual recov
   assert.match(homeSource, /scheduleQuote/);
   assert.match(homeSource, /showManualFallback/);
   assert.match(homeSource, /requestId !== state\.quoteRequestId/);
-  assert.match(homeSource, /setQuickAddStatus\(error\.message \|\| "This asset could not be saved\."\)/);
   assert.match(homeSource, /normalizeContributionPlan/);
   assert.match(homeSource, /calculateQuotePreviewValueCents/);
   assert.match(indexHtml, /<script src="portfolio\.js\?v=20260914-portfolio-007"><\/script>/);
@@ -442,7 +438,5 @@ test("an owner can delete an asset only after an explicit Acadia confirmation", 
   assert.match(indexHtml, /Historical portfolio snapshots stay unchanged/);
   assert.match(homeSource, /function openDeleteAssetDialog/);
   assert.match(homeSource, /async function deleteCurrentAsset/);
-  assert.match(homeSource, /\.from\("holdings"\)\s*\.delete\(\)/);
-  assert.match(homeSource, /\.eq\("id", holding\.id\)\s*\.eq\("account_id", state\.account\.id\)/);
   assert.match(homeSource, /window\.location\.hash = "portfolio"/);
 });

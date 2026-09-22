@@ -1832,7 +1832,7 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
     setText("#asset-recovery-title", notice ? "Asset saved" : "Price needed");
     setText("#asset-recovery-copy", [
       needsPrice ? (notice?.quoteFailed
-        ? "Its automatic price could not be saved. Retry the price or enter a manual valuation in Details."
+        ? "Its automatic price could not be confirmed. Retry the price or enter a manual valuation in Details."
         : "Retry the automatic price or enter a manual valuation in Details.") : "",
       notice?.reloadFailed ? "Account data could not be reloaded. Your saved asset is shown; reload the page to retry syncing." : "",
     ].filter(Boolean).join(" "));
@@ -2272,7 +2272,9 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
   async function saveQuickAsset(event) {
     event.preventDefault();
     const save = $("#save-asset");
-    if (save.disabled) return;
+    if (save.disabled || !state.account) return;
+    const current = accountContext();
+    const { client } = state;
     clearTimeout(state.quoteTimer);
     try {
       save.disabled = true;
@@ -2280,43 +2282,60 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
       if (!manualValuation() && !state.pendingQuote && !getFormValue($("#asset-form"), "manualPrice")) {
         await lookupQuote({ revealFallback: true });
       }
+      if (!current()) return;
       const holding = quickHolding();
-      const { error } = await state.client.from("holdings").upsert(holding, { onConflict: "id" });
+      const quote = state.pendingQuote;
+      // A stable insert ID prevents a retry after an uncertain response from
+      // overwriting a record that may already have been saved and edited.
+      const { data, error } = await readWithDeadline(signal => client.from("holdings")
+        .insert(holding).select().maybeSingle().abortSignal(signal));
+      if (!current()) return;
+      if (error?.code === "23505") throw new Error("This asset may already be saved. Reload to check it before adding again.");
       if (error) throw error;
-      // The holding is committed. Quote storage and reloading are separate
-      // outcomes and must never send the owner back through Add again.
-      state.holdings = [...state.holdings.filter((entry) => entry.id !== holding.id), holding];
+      if (data?.id !== holding.id) throw new Error("Saving could not be confirmed. Reload to check the saved asset before trying again.");
+      state.holdings = [...state.holdings.filter((entry) => entry.id !== holding.id), data];
       const notice = { quoteFailed: false, reloadFailed: false };
-      if (state.pendingQuote) {
+      if (quote) {
         const savedQuote = {
           holding_id: holding.id,
-          price_cents: state.pendingQuote.priceCents,
-          previous_close_cents: state.pendingQuote.priorCloseCents,
-          ...quoteDividendFields(holding.id, state.pendingQuote),
-          source: state.pendingQuote.source,
-          as_of: state.pendingQuote.asOf,
+          price_cents: quote.priceCents,
+          previous_close_cents: quote.priorCloseCents,
+          ...quoteDividendFields(holding.id, quote),
+          source: quote.source,
+          as_of: quote.asOf,
         };
         try {
-          const { error: quoteError } = await state.client.from("holding_quotes")
-            .upsert(savedQuote, { onConflict: "holding_id,as_of" });
-          if (quoteError) throw quoteError;
-          state.quotes = [...state.quotes.filter((quote) =>
-            quote.holding_id !== holding.id || quote.as_of !== savedQuote.as_of), savedQuote];
+          const confirmedQuote = await saveHoldingQuote(client, savedQuote);
+          if (!current()) return;
+          state.quotes = [...state.quotes.filter((entry) =>
+            entry.holding_id !== holding.id || entry.as_of !== savedQuote.as_of), confirmedQuote];
         } catch {
+          if (!current()) return;
           notice.quoteFailed = true;
         }
       }
       $("#asset-dialog").close();
       try { await loadData(); } catch { notice.reloadFailed = true; }
+      if (!current()) return;
       if (notice.quoteFailed || notice.reloadFailed) assetSaveNotices.set(holding.id, notice);
       setText("#data-status", "Asset saved to your private Brokerage account.");
       navigateToAsset(holding.id);
     } catch (error) {
-      setQuickAddStatus(error.message || "This asset could not be saved.");
+      if (current()) setQuickAddStatus(editorSaveError(error, "This asset could not be saved."));
     } finally {
-      save.disabled = false;
-      save.textContent = "Add";
+      if (current()) {
+        save.disabled = false;
+        save.textContent = "Add";
+      }
     }
+  }
+
+  async function saveHoldingQuote(client, quote) {
+    const { data, error } = await readWithDeadline(signal => client.from("holding_quotes")
+      .upsert(quote, { onConflict: "holding_id,as_of" }).select().maybeSingle().abortSignal(signal));
+    if (error) throw error;
+    if (!data || data.holding_id !== quote.holding_id) throw new Error("Price saving could not be confirmed. Reload to check the saved price.");
+    return data;
   }
 
   function detailHolding(holding) {
@@ -2431,19 +2450,12 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
     const holding = state.holdings.find((entry) => entry.id === routeAssetId());
     if (!holding || !state.account) return;
     const confirm = $("#confirm-delete-asset");
+    const current = accountContext();
     try {
       confirm.disabled = true;
       confirm.textContent = "Deleting…";
       setText("#delete-asset-status", "Deleting asset…");
-      const { data, error } = await state.client
-        .from("holdings")
-        .delete()
-        .eq("id", holding.id)
-        .eq("account_id", state.account.id)
-        .select("id")
-        .maybeSingle();
-      if (error) throw error;
-      if (!data) throw new Error("This asset could not be deleted.");
+      if (!await deleteAccountRecord("holdings", holding.id, current)) return;
       assetFormBaseline = assetFormSnapshot();
       state.holdings = state.holdings.filter((entry) => entry.id !== holding.id);
       state.quotes = state.quotes.filter((quote) => quote.holding_id !== holding.id);
@@ -2453,11 +2465,35 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
       window.location.hash = "portfolio";
       setText("#data-status", `${holding.symbol || holding.name || "Asset"} deleted from your private Brokerage account.`);
     } catch (error) {
-      setText("#delete-asset-status", error.message || "This asset could not be deleted.");
+      if (current()) setText("#delete-asset-status", deleteRecordError(error) || "This asset could not be deleted.");
     } finally {
-      confirm.disabled = false;
-      confirm.textContent = "Delete asset";
+      if (current()) {
+        confirm.disabled = false;
+        confirm.textContent = "Delete asset";
+      }
     }
+  }
+
+  function deleteRecordError(error) {
+    return error.message === "Read timed out"
+      ? "Deletion could not be confirmed. Reload to check the record, or retry deleting it."
+      : error.message;
+  }
+  async function deleteAccountRecord(table, id, current) {
+    const { client, account } = state;
+    const result = await readWithDeadline(signal => client.from(table).delete()
+      .eq("id", id).eq("account_id", account.id).select("id").maybeSingle().abortSignal(signal));
+    if (!current()) return false;
+    if (result.error) throw result.error;
+    if (result.data?.id === id) return true;
+    // A previous timed-out request may have committed. Confirm absence before
+    // treating an empty deletion response as success, including a safe retry.
+    const latest = await readWithDeadline(signal => client.from(table).select("id")
+      .eq("id", id).eq("account_id", account.id).maybeSingle().abortSignal(signal));
+    if (!current()) return false;
+    if (latest.error) throw latest.error;
+    if (latest.data) throw new Error("Deletion could not be confirmed. Reload to check the record before trying again.");
+    return true;
   }
 
   function recordEditor(record) {
@@ -2577,20 +2613,23 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
     const id = state.incomeSourceDeleteId;
     if (!id || !state.account) return;
     const confirm = $("#confirm-delete-income-source");
+    const current = accountContext();
     try {
       confirm.disabled = true;
       confirm.textContent = "Deleting…";
-      const { data, error } = await state.client.from("income_sources")
-        .delete().eq("id", id).eq("account_id", state.account.id).select("id").maybeSingle();
-      if (error) throw error;
-      if (!data) throw new Error("This income source could not be deleted.");
+      if (!await deleteAccountRecord("income_sources", id, current)) return;
+      state.incomeSources = state.incomeSources.filter(source => source.id !== id);
+      incomeSourceDrafts.delete(id);
+      state.incomeSourceDeleteId = null;
       closeDeleteIncomeSourceDialog();
-      await loadData();
+      render();
     } catch (error) {
-      setText("#delete-income-source-status", error.message || "This income source could not be deleted.");
+      if (current()) setText("#delete-income-source-status", deleteRecordError(error) || "This income source could not be deleted.");
     } finally {
-      confirm.disabled = false;
-      confirm.textContent = "Delete source";
+      if (current()) {
+        confirm.disabled = false;
+        confirm.textContent = "Delete source";
+      }
     }
   }
 
@@ -2669,20 +2708,22 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
     const id = state.budgetCategoryDeleteId;
     if (!id || !state.account) return;
     const confirm = $("#confirm-delete-budget-category");
+    const current = accountContext();
     try {
       confirm.disabled = true;
       confirm.textContent = "Deleting…";
-      const { data, error } = await state.client.from("budget_categories")
-        .delete().eq("id", id).eq("account_id", state.account.id).select("id").maybeSingle();
-      if (error) throw error;
-      if (!data) throw new Error("This budget category could not be deleted.");
+      if (!await deleteAccountRecord("budget_categories", id, current)) return;
+      state.budgetCategories = state.budgetCategories.filter(category => category.id !== id);
+      state.budgetCategoryDeleteId = null;
       closeDeleteBudgetCategoryDialog();
-      await loadData();
+      render();
     } catch (error) {
-      setText("#delete-budget-category-status", error.message || "This budget category could not be deleted.");
+      if (current()) setText("#delete-budget-category-status", deleteRecordError(error) || "This budget category could not be deleted.");
     } finally {
-      confirm.disabled = false;
-      confirm.textContent = "Delete category";
+      if (current()) {
+        confirm.disabled = false;
+        confirm.textContent = "Delete category";
+      }
     }
   }
 
@@ -2917,22 +2958,25 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
   function closeDeletePropertyDialog() { $("#delete-property-dialog").close(); }
   async function deleteProperty(event) {
     event.preventDefault();
-    if (!state.propertyDeleteId) return;
+    const id = state.propertyDeleteId;
+    if (!id || !state.account) return;
     const button = $("#confirm-delete-property");
+    const current = accountContext();
     try {
       button.disabled = true;
       button.textContent = "Deleting…";
-      const { error } = await state.client.from("home_properties").delete().eq("id", state.propertyDeleteId);
-      if (error) throw error;
-      state.properties = state.properties.filter((property) => property.id !== state.propertyDeleteId);
+      if (!await deleteAccountRecord("home_properties", id, current)) return;
+      state.properties = state.properties.filter((property) => property.id !== id);
       state.propertyDeleteId = null;
       closeDeletePropertyDialog();
       render();
     } catch (error) {
-      setText("#delete-property-status", error.message || "The property could not be deleted.");
+      if (current()) setText("#delete-property-status", deleteRecordError(error) || "The property could not be deleted.");
     } finally {
-      button.disabled = false;
-      button.textContent = "Delete property";
+      if (current()) {
+        button.disabled = false;
+        button.textContent = "Delete property";
+      }
     }
   }
 
@@ -3098,6 +3142,8 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
     if (!holding || holding.valuation_basis !== VALUATION_BASES.SHARES_AND_PRICE || !holding.symbol) {
       return setAssetEditStatus("This asset does not have an automatic price to refresh.");
     }
+    const current = accountContext();
+    const { client } = state;
     const focusOnRetry = document.activeElement === $("#asset-retry-price");
     try {
       refreshingAssetId = holding.id;
@@ -3105,6 +3151,7 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
       setAssetEditStatus("Refreshing price…");
       setAssetRecoveryFeedback("Refreshing price…");
       const quote = await requestQuote(holding.symbol, holding.instrument_type);
+      if (!current()) return;
       const savedQuote = {
         holding_id: holding.id,
         price_cents: quote.priceCents,
@@ -3113,12 +3160,13 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
         source: quote.source,
         as_of: quote.asOf,
       };
-      const { error } = await state.client.from("holding_quotes").upsert(savedQuote, { onConflict: "holding_id,as_of" });
-      if (error) throw error;
+      const confirmedQuote = await saveHoldingQuote(client, savedQuote);
+      if (!current()) return;
       state.quotes = [...state.quotes.filter((entry) =>
-        entry.holding_id !== holding.id || entry.as_of !== savedQuote.as_of), savedQuote];
+        entry.holding_id !== holding.id || entry.as_of !== savedQuote.as_of), confirmedQuote];
       let reloaded = true;
       try { await loadData(); } catch { reloaded = false; }
+      if (!current()) return;
       if (reloaded) assetSaveNotices.delete(holding.id);
       else assetSaveNotices.set(holding.id, { quoteFailed: false, reloadFailed: true });
       if (routeAssetId() === holding.id) {
@@ -3126,19 +3174,23 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
         setAssetRecoveryFeedback("");
       }
     } catch (error) {
-      if (routeAssetId() === holding.id) {
+      if (current() && routeAssetId() === holding.id) {
         const recovery = latestQuotes()[holding.id]
           ? "Last successful quote remains in place."
           : "No automatic price has been saved. Retry or enter a manual valuation.";
-        const message = `${error.message || "Price refresh failed."} ${recovery}`;
+        const message = error.message === "Read timed out" || error.message?.startsWith("Price saving could not be confirmed")
+          ? "Price saving could not be confirmed. Reload to check the saved price before trying again."
+          : `${error.message || "Price refresh failed."} ${recovery}`;
         setAssetEditStatus(message);
         setAssetRecoveryFeedback(message);
       }
     } finally {
-      refreshingAssetId = null;
-      if (routeAssetId()) {
-        renderAsset();
-        if (routeAssetId() === holding.id && focusOnRetry && $("#asset-recovery").hidden) $("#asset-title").focus();
+      if (current()) {
+        refreshingAssetId = null;
+        if (routeAssetId()) {
+          renderAsset();
+          if (routeAssetId() === holding.id && focusOnRetry && $("#asset-recovery").hidden) $("#asset-title").focus();
+        }
       }
     }
   }

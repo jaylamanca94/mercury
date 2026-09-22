@@ -196,13 +196,15 @@ function quickSaveFixture({quoteFailure = false, readFailure = false, holdingFai
   api.state.configured = true;
   const db = {holdings:[], holding_quotes:[], accounts:[api.state.account]};
   api.state.client.from = table => {
+    let payload = null;
     const q = {select(){return q},eq(){return q},order(){return q},range(){return q},abortSignal(){return q},maybeSingle(){return q},
-      then(resolve,reject){return Promise.resolve({data:db[table] || [],count:(db[table] || []).length,error:readFailure ? {message:'Read unavailable'} : null}).then(resolve,reject)},
-      async upsert(payload) {
+      insert(value){payload=value;return q},upsert(value){payload=value;return q},
+      then(resolve,reject){
+        if (!payload) return Promise.resolve({data:db[table] || [],count:(db[table] || []).length,error:readFailure ? {message:'Read unavailable'} : null}).then(resolve,reject);
         writes.push({table,payload});
-        if (table === 'holdings' && holdingFailure) return {error:{message:'Holding unavailable'}};
-        if (table === 'holding_quotes' && quoteFailure) throw new Error('Quote storage unavailable');
-        db[table].push(payload); return {error:null};
+        if (table === 'holdings' && holdingFailure) return Promise.resolve({error:{message:'Holding unavailable'}}).then(resolve,reject);
+        if (table === 'holding_quotes' && quoteFailure) return Promise.reject(new Error('Quote storage unavailable')).then(resolve,reject);
+        db[table].push(payload); return Promise.resolve({data:payload,error:null}).then(resolve,reject);
       }}; return q;
   };
   return {...view,writes,db};
@@ -221,7 +223,7 @@ test('partial Add completes once, opens the committed holding and exposes price 
   api.renderAsset();
   assert.equal(node('#asset-recovery').hidden,false);
   assert.equal(node('#asset-recovery-title').textContent,'Asset saved');
-  assert.match(node('#asset-recovery-copy').textContent,/automatic price could not be saved/);
+  assert.match(node('#asset-recovery-copy').textContent,/automatic price could not be confirmed/);
   assert.equal(node('#asset-manual-valuation').hidden,false);
   assert.equal(node('#discard-changes-dialog').open,undefined);
 });
@@ -399,7 +401,7 @@ test('Quick Add retains form values across a deferred quote lookup while fields 
   const {api,node}=controller();let finish;const writes=[];
   api.state.account={id:'account'};
   api.state.client.auth.getSession=()=>new Promise(resolve=>{finish=resolve});
-  api.state.client.from=(table)=>({upsert:async(payload)=>{writes.push({table,payload});return {error:{message:'Stop after payload validation'}}}});
+  api.state.client.from=(table)=>({insert(payload){writes.push({table,payload});return this},select(){return this},maybeSingle(){return this},abortSignal(){return this},then(resolve){return Promise.resolve({error:{message:'Stop after payload validation'}}).then(resolve)}});
   const form=node('#asset-form');
   const symbol=node('#asset-symbol');symbol.name='symbol';symbol.value='TEST';
   const shares=node('#asset-shares');shares.name='shares';shares.value='3';
@@ -422,11 +424,11 @@ test('deletion dialogs prevent duplicate writes and Escape until errors restore 
     api.state.account={id:'account'};
     api.state.holdings=[{id:'test'}];window.location.hash='#asset/test';
     if(stateKey)api.state[stateKey]='test';
-    api.state.client.from=()=>{const q={delete(){return q},eq(){return q},select(){return q},maybeSingle(){return q},then(resolve){calls++;return new Promise(r=>{finish=r}).then(resolve)}};return q};
+    api.state.client.from=()=>{const q={delete(){return q},eq(){return q},select(){return q},maybeSingle(){return q},abortSignal(){return q},then(resolve){calls++;return new Promise(r=>{finish=r}).then(resolve)}};return q};
     const form=node(`#${prefix}-form`),dialog=node(`#${prefix}-dialog`);
     api.openFormDialog(`#${prefix}-dialog`);
     const event={preventDefault(){},stopImmediatePropagation(){}};
-    const first=form.listeners.submit(event);await Promise.resolve();await form.listeners.submit(event);
+    const first=form.listeners.submit(event);await new Promise(setImmediate);await form.listeners.submit(event);
     assert.equal(calls,1,prefix);
     let prevented=false;dialog.listeners.cancel({...event,preventDefault(){prevented=true}});
     assert.equal(prevented,true,prefix);
@@ -703,7 +705,7 @@ test('successful price retry writes only a quote and hides recovery without repl
   const originalFrom=api.state.client.from;
   api.state.client.from=table=>{
     const q=originalFrom(table);
-    if(table==='holding_quotes')q.upsert=async payload=>{db.holding_quotes.push({id:'saved-quote',...payload});return {error:null}};
+    if(table==='holding_quotes')q.upsert=payload=>{const saved={id:'saved-quote',...payload};db.holding_quotes.push(saved);q.then=resolve=>Promise.resolve({data:saved,error:null}).then(resolve);return q};
     return q;
   };
   await api.refreshCurrentAssetPrice();
@@ -748,7 +750,7 @@ test('acknowledged asset deletion returns to Portfolio without a reload racing t
   api.state.account={id:'account'};
   api.state.quotes=[{holding_id:'test',price_cents:10000}];
   api.state.client.from=()=>({delete(){return this},eq(){return this},select(){return this},
-    maybeSingle:async()=>({data:{id:'test'},error:null}),order(){reads++;throw new Error('Unexpected reload')}});
+    maybeSingle(){return this},abortSignal(){return this},then(resolve){return Promise.resolve({data:{id:'test'},error:null}).then(resolve)},order(){reads++;throw new Error('Unexpected reload')}});
   api.openFormDialog('#delete-asset-dialog');
   await node('#delete-asset-form').listeners.submit({preventDefault(){}});
   assert.equal(reads,0);
@@ -1958,4 +1960,151 @@ test('a failed later collection page preserves old records; optional failure off
       assert.equal(api.state[flag],false);
     }
   }
+});
+
+const deletionCases = [
+  ['asset','holdings','holdings',null],
+  ['income-source','income_sources','incomeSources','incomeSourceDeleteId'],
+  ['budget-category','budget_categories','budgetCategories','budgetCategoryDeleteId'],
+  ['property','home_properties','properties','propertyDeleteId'],
+];
+function deletionFixture([kind,table,collection,idKey], response) {
+  const view=controller(), {api,node,window}=view, requests=[];
+  api.state.account={id:'account'};api.state.configured=true;
+  api.state[collection]=[{id:'test'}];api.state.quotes=[{holding_id:'test'}];
+  if(idKey)api.state[idKey]='test';
+  window.location.hash='#asset/test';
+  api.state.client.from=name=>{
+    assert.equal(name,table,'deletion must not reload unrelated collections');
+    const request={operation:'read',filters:[]};requests.push(request);
+    const q={delete(){request.operation='delete';return q},eq(k,v){request.filters.push([k,v]);return q},select(){return q},maybeSingle(){return q},abortSignal(signal){request.signal=signal;return q},then(resolve,reject){return Promise.resolve().then(()=>response(request)).then(resolve,reject)}};
+    return q;
+  };
+  api.openFormDialog(`#delete-${kind}-dialog`);
+  return {...view,requests,submit:()=>node(`#delete-${kind}-form`).listeners.submit({preventDefault(){}})};
+}
+for(const definition of deletionCases) {
+  const [kind,,collection]=definition;
+  test(`${kind} deletion confirms the scoped record without an unrelated reload`,async()=>{
+    const view=deletionFixture(definition,()=>({data:{id:'test'}}));
+    await view.submit();
+    assert.equal(view.api.state[collection].length,0);
+    assert.equal(view.node(`#delete-${kind}-dialog`).open,false);
+    assert.equal(view.requests.length,1);
+    assert.deepEqual(view.requests[0].filters,[['id','test'],['account_id','account']]);
+  });
+  test(`${kind} deletion timeout unlocks, ignores late success and can confirm an already-deleted retry`,async()=>{
+    let finish,expire,attempt=0;
+    const view=deletionFixture(definition,()=>++attempt===1?new Promise(resolve=>{finish=resolve}):{data:null});
+    view.context.setTimeout=fn=>{expire=fn;return 1};view.context.clearTimeout=()=>{};
+    const pending=view.submit();await new Promise(setImmediate);
+    expire();await pending;
+    assert.equal(view.api.hasPendingWrite(),false);
+    assert.equal(view.requests[0].signal.aborted,true);
+    assert.equal(view.api.state[collection].length,1);
+    assert.equal(view.node(`#delete-${kind}-dialog`).open,true);
+    assert.match(view.node(`#delete-${kind}-status`).textContent,/Deletion could not be confirmed/);
+    finish({data:{id:'test'}});await new Promise(setImmediate);
+    assert.equal(view.api.state[collection].length,1);
+    await view.submit();
+    assert.equal(view.api.state[collection].length,0);
+    assert.equal(view.requests.at(-1).operation,'read');
+    assert.equal(view.node(`#delete-${kind}-dialog`).open,false);
+  });
+  test(`${kind} deletion ignores an acknowledgement from a replaced account`,async()=>{
+    let finish;const view=deletionFixture(definition,()=>new Promise(resolve=>{finish=resolve}));
+    const pending=view.submit();await new Promise(setImmediate);
+    view.api.state.account={id:'replacement'};
+    view.api.state[collection]=[{id:'replacement-record'}];
+    view.node(`#delete-${kind}-status`).textContent='Replacement context';
+    finish({data:{id:'test'}});await pending;
+    assert.equal(view.api.state[collection][0].id,'replacement-record');
+    assert.equal(view.node(`#delete-${kind}-status`).textContent,'Replacement context');
+    assert.equal(view.node(`#delete-${kind}-dialog`).open,true);
+  });
+}
+
+test('empty deletion responses require a successful absence read; existing rows and failed reads remain retryable',async()=>{
+  for(const result of [{data:{id:'test'}},{error:{message:'Read unavailable'}}]) {
+    const view=deletionFixture(deletionCases[3],request=>request.operation==='delete'?{data:null}:result);
+    await view.submit();
+    assert.equal(view.api.state.properties.length,1);
+    assert.equal(view.node('#delete-property-dialog').open,true);
+    assert.match(view.node('#delete-property-status').textContent,/could not be confirmed|Read unavailable/);
+  }
+});
+
+test('Quick Add timeout retains its stable insert identity and cannot overwrite a saved record on retry',async()=>{
+  const {api,node,context}=quickSaveFixture();let finish,expire,payload,attempt=0;
+  const ids=[];
+  context.setTimeout=fn=>{expire=fn;return 1};context.clearTimeout=()=>{};
+  api.state.client.from=table=>{
+    assert.equal(table,'holdings');
+    const q={insert(value){payload=value;ids.push(value.id);return q},select(){return q},maybeSingle(){return q},abortSignal(){return q},then(resolve){return (++attempt===1?new Promise(r=>{finish=r}):Promise.resolve({error:{code:'23505'}})).then(resolve)}};return q;
+  };
+  const pending=api.saveQuickAsset({preventDefault(){}});await new Promise(setImmediate);
+  expire();await pending;
+  assert.equal(node('#save-asset').disabled,false);assert.equal(node('#asset-dialog').open,true);
+  assert.match(node('#quote-form-status').textContent,/Saving could not be confirmed/);
+  finish({data:payload});await new Promise(setImmediate);
+  assert.equal(api.state.holdings.length,0);
+  await api.saveQuickAsset({preventDefault(){}});
+  assert.equal(ids.length,2);assert.equal(ids[0],ids[1]);
+  assert.match(node('#quote-form-status').textContent,/may already be saved/);
+});
+
+test('Quick Add refuses empty acknowledgements and late holding acknowledgements after account replacement',async()=>{
+  for(const replacement of [false,true]) {
+    const {api,node}=quickSaveFixture();let finish,payload;
+    api.state.client.from=table=>{assert.equal(table,'holdings');const q={insert(value){payload=value;return q},select(){return q},maybeSingle(){return q},abortSignal(){return q},then(resolve){return new Promise(r=>{finish=r}).then(resolve)}};return q};
+    const pending=api.saveQuickAsset({preventDefault(){}});await new Promise(setImmediate);
+    if(replacement)api.state.account={id:'replacement'};
+    finish({data:replacement?payload:null});await pending;
+    assert.equal(api.state.holdings.length,0);assert.equal(api.state.quotes.length,0);
+    assert.equal(node('#asset-dialog').open,true);
+    if(!replacement)assert.match(node('#quote-form-status').textContent,/could not be confirmed/);
+  }
+});
+
+test('quote storage timeout releases price recovery, preserves the last confirmed price and ignores late success',async()=>{
+  const {api,node,window,context}=quickSaveFixture();
+  await api.saveQuickAsset({preventDefault(){}});window.location.hash='#'+window.location.hash;
+  context.fetch=async()=>({ok:true,json:async()=>({priceCents:2500,source:'Test',asOf:'2026-09-21T12:00:00Z'})});
+  let finish,expire,signal;
+  context.setTimeout=(fn,ms)=>{if(ms===10000)expire=fn;return 1};context.clearTimeout=()=>{};
+  api.state.client.from=table=>{assert.equal(table,'holding_quotes');const q={upsert(){return q},select(){return q},maybeSingle(){return q},abortSignal(value){signal=value;return q},then(resolve){return new Promise(r=>{finish=r}).then(resolve)}};return q};
+  const pending=api.refreshCurrentAssetPrice();await new Promise(setImmediate);
+  expire();await pending;
+  assert.equal(signal.aborted,true);assert.equal(node('#asset-refresh-price').disabled,false);
+  assert.match(node('#asset-detail-status').textContent,/Price saving could not be confirmed/);
+  assert.equal(api.state.quotes.at(-1).price_cents,1234);
+  finish({data:{holding_id:api.state.holdings[0].id,price_cents:2500}});await new Promise(setImmediate);
+  assert.equal(api.state.quotes.at(-1).price_cents,1234);
+});
+
+test('quote refresh cannot store a fetched price or adopt an acknowledgement after account replacement',async()=>{
+  for(const phase of ['lookup','storage']) {
+    const {api,node,window,context}=quickSaveFixture();
+    await api.saveQuickAsset({preventDefault(){}});window.location.hash='#'+window.location.hash;
+    let finish,writes=0;const quote={priceCents:2500,source:'Test',asOf:'2026-09-21T12:00:00Z'};
+    context.fetch=()=>phase==='lookup'?new Promise(resolve=>{finish=()=>resolve({ok:true,json:async()=>quote})}):Promise.resolve({ok:true,json:async()=>quote});
+    api.state.client.from=()=>{writes++;const q={upsert(){return q},select(){return q},maybeSingle(){return q},abortSignal(){return q},then(resolve){return new Promise(r=>{finish=()=>r({data:{holding_id:api.state.holdings[0].id,price_cents:2500}})}).then(resolve)}};return q};
+    const pending=api.refreshCurrentAssetPrice();await new Promise(setImmediate);
+    api.state.account={id:'replacement'};api.state.quotes=[];node('#asset-detail-status').textContent='Replacement context';
+    finish();await pending;
+    assert.equal(api.state.quotes.length,0);assert.equal(writes,phase==='lookup'?0:1);
+    assert.equal(node('#asset-detail-status').textContent,'Replacement context');
+  }
+});
+
+test('an empty quote acknowledgement never claims that an uncertain price was not saved',async()=>{
+  const {api,node,window,context}=quickSaveFixture();
+  await api.saveQuickAsset({preventDefault(){}});window.location.hash='#'+window.location.hash;
+  api.state.quotes=[];
+  context.fetch=async()=>({ok:true,json:async()=>({priceCents:2500,source:'Test',asOf:'2026-09-21T12:00:00Z'})});
+  api.state.client.from=()=>{const q={upsert(){return q},select(){return q},maybeSingle(){return q},abortSignal(){return q},then(resolve){return Promise.resolve({data:null}).then(resolve)}};return q};
+  await api.refreshCurrentAssetPrice();
+  assert.equal(api.state.quotes.length,0);
+  assert.match(node('#asset-detail-status').textContent,/could not be confirmed/);
+  assert.doesNotMatch(node('#asset-detail-status').textContent,/No automatic price has been saved/);
 });
