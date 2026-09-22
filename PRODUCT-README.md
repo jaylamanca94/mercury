@@ -20,7 +20,7 @@ Mercury is a private personal finance workspace. Its first shipped product surfa
 
 ## Release state
 
-Current: **0.2.7** — Saves and deletes recover from stalled or uncertain responses, require confirmation, and reject late results after an account change. Confirmed deletions update the current view directly. Live two-user isolation verified across all eight private tables with complete disposable-data cleanup. No feature, calculation, schema, policy or owner-data change.
+Current: **0.2.8** — Migration history is reconciled and the product schema rebuilds from an empty PostgreSQL 17 database with verified hosted parity, ownership, constraints and repeat-run safety. The existing hosted schema/data/history and all user flows remain unchanged. This closes the product-schema rebuild release gate; hosted services, real email, physical-device, provider/scheduler and backup/restore acceptance remain separate.
 
 Previous: **0.2.5** — Existing asset, source-detail, category and property editors reject stale revisions, retain drafts and confirm returned records. Successful saves no longer depend on reloading unrelated collections. Published Acadia colour, surface, navigation and canonical Home-icon refinements are adopted unchanged. No feature, financial calculation, schema or owner-data change. Pre-1.0 acceptance gates remain open.
 

@@ -4,33 +4,15 @@ const path = require("node:path");
 const test = require("node:test");
 
 const migration = fs.readFileSync(
-  path.join(__dirname, "..", "supabase", "migrations", "20260830_brokerage_mvp.sql"),
+  path.join(__dirname, "..", "supabase", "migrations", "20260903004833_remote_baseline.sql"),
   "utf8",
 );
-const contributionMigration = fs.readFileSync(
-  path.join(__dirname, "..", "supabase", "migrations", "20260901_asset_contribution.sql"),
-  "utf8",
-);
-const dividendMigration = fs.readFileSync(
-  path.join(__dirname, "..", "supabase", "migrations", "20260901_quote_dividend_data.sql"),
-  "utf8",
-);
-const incomeMigration = fs.readFileSync(
-  path.join(__dirname, "..", "supabase", "migrations", "20260902_income_sources.sql"),
-  "utf8",
-);
-const budgetMigration = fs.readFileSync(
-  path.join(__dirname, "..", "supabase", "migrations", "20260904_budget_categories.sql"),
-  "utf8",
-);
-const planMigration = fs.readFileSync(
-  path.join(__dirname, "..", "supabase", "migrations", "20260902_base_plan.sql"),
-  "utf8",
-);
-const propertyMigration = fs.readFileSync(
-  path.join(__dirname, "..", "supabase", "migrations", "20260903_property_portfolio.sql"),
-  "utf8",
-);
+const contributionMigration = migration;
+const dividendMigration = migration;
+const incomeMigration = migration;
+const budgetMigration = migration;
+const planMigration = migration;
+const propertyMigration = migration;
 const retirementMigration = fs.readFileSync(
   path.join(__dirname, "..", "supabase", "migrations", "20260903202800_retirement_holdings.sql"),
   "utf8",
@@ -122,4 +104,27 @@ test("property portfolio migration preserves the private property table while al
   assert.match(propertyMigration, /home_properties_name_not_blank/);
   assert.match(propertyMigration, /home_properties_location_not_blank/);
   assert.match(propertyMigration, /notify pgrst, 'reload schema'/);
+});
+
+test('active migrations have unique fourteen-digit versions in chronological order', () => {
+  const names = fs.readdirSync(path.join(__dirname, '..', 'supabase', 'migrations')).filter(name => name.endsWith('.sql')).sort();
+  const versions = names.map(name => {
+    assert.match(name, /^\d{14}_[a-z0-9_]+\.sql$/);
+    return name.split('_')[0];
+  });
+  assert.equal(new Set(versions).size, versions.length, 'duplicate versions break the migration ledger');
+  assert.equal(versions[0], '20260903004833', 'the verified hosted baseline must remain first');
+});
+
+test('the bootstrap baseline preserves every archived migration with its original checksum', () => {
+  const crypto = require('node:crypto');
+  const archive = path.join(__dirname, '..', 'supabase', 'archive', 'pre-baseline');
+  const manifest = JSON.parse(fs.readFileSync(path.join(archive, 'manifest.json'), 'utf8'));
+  const files = fs.readdirSync(archive).filter(name => name.endsWith('.sql')).sort();
+  assert.deepEqual(files, manifest.sources.map(source => source.file).sort());
+  for (const {file, sha256} of manifest.sources) {
+    const bytes = fs.readFileSync(path.join(archive, file));
+    assert.equal(crypto.createHash('sha256').update(bytes).digest('hex'), sha256, file);
+    assert.ok(migration.includes(bytes.toString('utf8').trim()), `baseline must retain ${file}`);
+  }
 });

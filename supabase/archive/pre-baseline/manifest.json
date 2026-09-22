@@ -1,0 +1,33 @@
+{
+  "baseline_version": "20260903004833",
+  "sources": [
+    {
+      "file": "20260830_brokerage_mvp.sql",
+      "sha256": "38467c1cb2b91896eef4c177046527db7c8ae03eb3b04353e305b71779dc1f76"
+    },
+    {
+      "file": "20260901_asset_contribution.sql",
+      "sha256": "4e7bd125e5c02a35b7cfea7c1c7f701daa502cd3ab3381ec8f91c2f7bee7e88d"
+    },
+    {
+      "file": "20260901_quote_dividend_data.sql",
+      "sha256": "bf74718bd9f025b5a0af4dc05318268caae7e830ccae4bfe4a9f0cc8053a15af"
+    },
+    {
+      "file": "20260902_base_plan.sql",
+      "sha256": "fca66c1d9aba27e49e8ed222de8f11b4075a493a3c2d3beb06fca16c7aac1736"
+    },
+    {
+      "file": "20260902_income_sources.sql",
+      "sha256": "e3bb5dfcfcc4afd7dfbc6ba5cad55142243252a67987c43b2e89f30bdf7e9e6f"
+    },
+    {
+      "file": "20260903_property_portfolio.sql",
+      "sha256": "604af814e4e3beb5dbae15513ae160fe6fe76e57ab64e9b862772a30a3d2481f"
+    },
+    {
+      "file": "20260904_budget_categories.sql",
+      "sha256": "7dc6bea6bf6a26bd27b1a4afe5a1aa0e50c653d98c94bb5c6163d271475c787d"
+    }
+  ]
+}

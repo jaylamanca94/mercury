@@ -1,0 +1,45 @@
+{
+  "hosted_schema_unchanged": true,
+  "local_remote_versions_match": true,
+  "remote_migrations": [
+    {
+      "name": "20260902_base_plan",
+      "statement_count": 1,
+      "version": "20260903004833"
+    },
+    {
+      "name": "retirement_holdings",
+      "statement_count": 1,
+      "version": "20260903202800"
+    },
+    {
+      "name": "function_security",
+      "statement_count": 2,
+      "version": "20260907133000"
+    },
+    {
+      "name": "property_purchase_price",
+      "statement_count": 1,
+      "version": "20260914144500"
+    },
+    {
+      "name": "plan_scenario",
+      "statement_count": 1,
+      "version": "20260914180000"
+    },
+    {
+      "name": "plan_date_of_birth",
+      "statement_count": 1,
+      "version": "20260914221500"
+    },
+    {
+      "name": "property_geography",
+      "statement_count": 1,
+      "version": "20260914230000"
+    }
+  ],
+  "pending_migrations": 0,
+  "production_migrations_applied": 0,
+  "production_ledger_repairs": 0,
+  "read_only_contract_sha256": "6cc130e2b4475975ebb6f46a1b80d9665a8f522f60476623056d8c21a0f84b80"
+}

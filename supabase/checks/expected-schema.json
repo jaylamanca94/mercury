@@ -1,0 +1,2673 @@
+{
+  "columns": [
+    {
+      "default": null,
+      "generated": "",
+      "identity": "",
+      "name": "account_type",
+      "not_null": true,
+      "table": "accounts",
+      "type": "text"
+    },
+    {
+      "default": "now()",
+      "generated": "",
+      "identity": "",
+      "name": "created_at",
+      "not_null": true,
+      "table": "accounts",
+      "type": "timestamp with time zone"
+    },
+    {
+      "default": "'USD'::bpchar",
+      "generated": "",
+      "identity": "",
+      "name": "currency",
+      "not_null": true,
+      "table": "accounts",
+      "type": "character(3)"
+    },
+    {
+      "default": "gen_random_uuid()",
+      "generated": "",
+      "identity": "",
+      "name": "id",
+      "not_null": true,
+      "table": "accounts",
+      "type": "uuid"
+    },
+    {
+      "default": "'Brokerage'::text",
+      "generated": "",
+      "identity": "",
+      "name": "name",
+      "not_null": true,
+      "table": "accounts",
+      "type": "text"
+    },
+    {
+      "default": "now()",
+      "generated": "",
+      "identity": "",
+      "name": "updated_at",
+      "not_null": true,
+      "table": "accounts",
+      "type": "timestamp with time zone"
+    },
+    {
+      "default": "auth.uid()",
+      "generated": "",
+      "identity": "",
+      "name": "user_id",
+      "not_null": true,
+      "table": "accounts",
+      "type": "uuid"
+    },
+    {
+      "default": "0",
+      "generated": "",
+      "identity": "",
+      "name": "weekly_contribution_cents",
+      "not_null": true,
+      "table": "accounts",
+      "type": "bigint"
+    },
+    {
+      "default": null,
+      "generated": "",
+      "identity": "",
+      "name": "account_id",
+      "not_null": true,
+      "table": "budget_categories",
+      "type": "uuid"
+    },
+    {
+      "default": "now()",
+      "generated": "",
+      "identity": "",
+      "name": "created_at",
+      "not_null": true,
+      "table": "budget_categories",
+      "type": "timestamp with time zone"
+    },
+    {
+      "default": "gen_random_uuid()",
+      "generated": "",
+      "identity": "",
+      "name": "id",
+      "not_null": true,
+      "table": "budget_categories",
+      "type": "uuid"
+    },
+    {
+      "default": null,
+      "generated": "",
+      "identity": "",
+      "name": "monthly_amount_cents",
+      "not_null": true,
+      "table": "budget_categories",
+      "type": "bigint"
+    },
+    {
+      "default": null,
+      "generated": "",
+      "identity": "",
+      "name": "name",
+      "not_null": true,
+      "table": "budget_categories",
+      "type": "text"
+    },
+    {
+      "default": "now()",
+      "generated": "",
+      "identity": "",
+      "name": "updated_at",
+      "not_null": true,
+      "table": "budget_categories",
+      "type": "timestamp with time zone"
+    },
+    {
+      "default": null,
+      "generated": "",
+      "identity": "",
+      "name": "annual_dividend_cents",
+      "not_null": false,
+      "table": "holding_quotes",
+      "type": "bigint"
+    },
+    {
+      "default": null,
+      "generated": "",
+      "identity": "",
+      "name": "as_of",
+      "not_null": true,
+      "table": "holding_quotes",
+      "type": "timestamp with time zone"
+    },
+    {
+      "default": "now()",
+      "generated": "",
+      "identity": "",
+      "name": "created_at",
+      "not_null": true,
+      "table": "holding_quotes",
+      "type": "timestamp with time zone"
+    },
+    {
+      "default": null,
+      "generated": "",
+      "identity": "",
+      "name": "distribution_yield_rate",
+      "not_null": false,
+      "table": "holding_quotes",
+      "type": "numeric(8,6)"
+    },
+    {
+      "default": null,
+      "generated": "",
+      "identity": "",
+      "name": "holding_id",
+      "not_null": true,
+      "table": "holding_quotes",
+      "type": "uuid"
+    },
+    {
+      "default": "gen_random_uuid()",
+      "generated": "",
+      "identity": "",
+      "name": "id",
+      "not_null": true,
+      "table": "holding_quotes",
+      "type": "uuid"
+    },
+    {
+      "default": null,
+      "generated": "",
+      "identity": "",
+      "name": "previous_close_cents",
+      "not_null": false,
+      "table": "holding_quotes",
+      "type": "bigint"
+    },
+    {
+      "default": null,
+      "generated": "",
+      "identity": "",
+      "name": "price_cents",
+      "not_null": true,
+      "table": "holding_quotes",
+      "type": "bigint"
+    },
+    {
+      "default": null,
+      "generated": "",
+      "identity": "",
+      "name": "source",
+      "not_null": true,
+      "table": "holding_quotes",
+      "type": "text"
+    },
+    {
+      "default": null,
+      "generated": "",
+      "identity": "",
+      "name": "account_id",
+      "not_null": true,
+      "table": "holdings",
+      "type": "uuid"
+    },
+    {
+      "default": null,
+      "generated": "",
+      "identity": "",
+      "name": "allocation_category",
+      "not_null": true,
+      "table": "holdings",
+      "type": "text"
+    },
+    {
+      "default": null,
+      "generated": "",
+      "identity": "",
+      "name": "capital_gains_policy",
+      "not_null": false,
+      "table": "holdings",
+      "type": "text"
+    },
+    {
+      "default": null,
+      "generated": "",
+      "identity": "",
+      "name": "contribution_cents",
+      "not_null": false,
+      "table": "holdings",
+      "type": "bigint"
+    },
+    {
+      "default": null,
+      "generated": "",
+      "identity": "",
+      "name": "contribution_frequency",
+      "not_null": false,
+      "table": "holdings",
+      "type": "text"
+    },
+    {
+      "default": "now()",
+      "generated": "",
+      "identity": "",
+      "name": "created_at",
+      "not_null": true,
+      "table": "holdings",
+      "type": "timestamp with time zone"
+    },
+    {
+      "default": null,
+      "generated": "",
+      "identity": "",
+      "name": "custom_policy_note",
+      "not_null": false,
+      "table": "holdings",
+      "type": "text"
+    },
+    {
+      "default": null,
+      "generated": "",
+      "identity": "",
+      "name": "distribution_yield_rate",
+      "not_null": false,
+      "table": "holdings",
+      "type": "numeric(8,6)"
+    },
+    {
+      "default": null,
+      "generated": "",
+      "identity": "",
+      "name": "dividend_policy",
+      "not_null": false,
+      "table": "holdings",
+      "type": "text"
+    },
+    {
+      "default": null,
+      "generated": "",
+      "identity": "",
+      "name": "expected_annual_return_rate",
+      "not_null": false,
+      "table": "holdings",
+      "type": "numeric(8,6)"
+    },
+    {
+      "default": "gen_random_uuid()",
+      "generated": "",
+      "identity": "",
+      "name": "id",
+      "not_null": true,
+      "table": "holdings",
+      "type": "uuid"
+    },
+    {
+      "default": null,
+      "generated": "",
+      "identity": "",
+      "name": "instrument_type",
+      "not_null": true,
+      "table": "holdings",
+      "type": "text"
+    },
+    {
+      "default": "false",
+      "generated": "",
+      "identity": "",
+      "name": "is_retirement",
+      "not_null": true,
+      "table": "holdings",
+      "type": "boolean"
+    },
+    {
+      "default": null,
+      "generated": "",
+      "identity": "",
+      "name": "manual_price_cents",
+      "not_null": false,
+      "table": "holdings",
+      "type": "bigint"
+    },
+    {
+      "default": null,
+      "generated": "",
+      "identity": "",
+      "name": "manual_value_cents",
+      "not_null": false,
+      "table": "holdings",
+      "type": "bigint"
+    },
+    {
+      "default": null,
+      "generated": "",
+      "identity": "",
+      "name": "name",
+      "not_null": false,
+      "table": "holdings",
+      "type": "text"
+    },
+    {
+      "default": null,
+      "generated": "",
+      "identity": "",
+      "name": "shares",
+      "not_null": false,
+      "table": "holdings",
+      "type": "numeric(20,8)"
+    },
+    {
+      "default": null,
+      "generated": "",
+      "identity": "",
+      "name": "symbol",
+      "not_null": false,
+      "table": "holdings",
+      "type": "text"
+    },
+    {
+      "default": null,
+      "generated": "",
+      "identity": "",
+      "name": "target_allocation_rate",
+      "not_null": false,
+      "table": "holdings",
+      "type": "numeric(8,6)"
+    },
+    {
+      "default": "now()",
+      "generated": "",
+      "identity": "",
+      "name": "updated_at",
+      "not_null": true,
+      "table": "holdings",
+      "type": "timestamp with time zone"
+    },
+    {
+      "default": null,
+      "generated": "",
+      "identity": "",
+      "name": "valuation_basis",
+      "not_null": true,
+      "table": "holdings",
+      "type": "text"
+    },
+    {
+      "default": null,
+      "generated": "",
+      "identity": "",
+      "name": "weekly_contribution_rate",
+      "not_null": false,
+      "table": "holdings",
+      "type": "numeric(8,6)"
+    },
+    {
+      "default": null,
+      "generated": "",
+      "identity": "",
+      "name": "account_id",
+      "not_null": true,
+      "table": "home_properties",
+      "type": "uuid"
+    },
+    {
+      "default": null,
+      "generated": "",
+      "identity": "",
+      "name": "annual_appreciation_rate",
+      "not_null": false,
+      "table": "home_properties",
+      "type": "numeric(8,6)"
+    },
+    {
+      "default": null,
+      "generated": "",
+      "identity": "",
+      "name": "city",
+      "not_null": false,
+      "table": "home_properties",
+      "type": "text"
+    },
+    {
+      "default": null,
+      "generated": "",
+      "identity": "",
+      "name": "county_fips",
+      "not_null": false,
+      "table": "home_properties",
+      "type": "text"
+    },
+    {
+      "default": "now()",
+      "generated": "",
+      "identity": "",
+      "name": "created_at",
+      "not_null": true,
+      "table": "home_properties",
+      "type": "timestamp with time zone"
+    },
+    {
+      "default": null,
+      "generated": "",
+      "identity": "",
+      "name": "current_value_cents",
+      "not_null": true,
+      "table": "home_properties",
+      "type": "bigint"
+    },
+    {
+      "default": "gen_random_uuid()",
+      "generated": "",
+      "identity": "",
+      "name": "id",
+      "not_null": true,
+      "table": "home_properties",
+      "type": "uuid"
+    },
+    {
+      "default": "false",
+      "generated": "",
+      "identity": "",
+      "name": "include_in_net_worth",
+      "not_null": true,
+      "table": "home_properties",
+      "type": "boolean"
+    },
+    {
+      "default": null,
+      "generated": "",
+      "identity": "",
+      "name": "location",
+      "not_null": false,
+      "table": "home_properties",
+      "type": "text"
+    },
+    {
+      "default": "0",
+      "generated": "",
+      "identity": "",
+      "name": "mortgage_balance_cents",
+      "not_null": true,
+      "table": "home_properties",
+      "type": "bigint"
+    },
+    {
+      "default": "'Home'::text",
+      "generated": "",
+      "identity": "",
+      "name": "name",
+      "not_null": true,
+      "table": "home_properties",
+      "type": "text"
+    },
+    {
+      "default": null,
+      "generated": "",
+      "identity": "",
+      "name": "purchase_price_cents",
+      "not_null": false,
+      "table": "home_properties",
+      "type": "bigint"
+    },
+    {
+      "default": null,
+      "generated": "",
+      "identity": "",
+      "name": "state_code",
+      "not_null": false,
+      "table": "home_properties",
+      "type": "text"
+    },
+    {
+      "default": "now()",
+      "generated": "",
+      "identity": "",
+      "name": "updated_at",
+      "not_null": true,
+      "table": "home_properties",
+      "type": "timestamp with time zone"
+    },
+    {
+      "default": null,
+      "generated": "",
+      "identity": "",
+      "name": "account_id",
+      "not_null": true,
+      "table": "income_sources",
+      "type": "uuid"
+    },
+    {
+      "default": null,
+      "generated": "",
+      "identity": "",
+      "name": "amount_cents",
+      "not_null": true,
+      "table": "income_sources",
+      "type": "bigint"
+    },
+    {
+      "default": "now()",
+      "generated": "",
+      "identity": "",
+      "name": "created_at",
+      "not_null": true,
+      "table": "income_sources",
+      "type": "timestamp with time zone"
+    },
+    {
+      "default": null,
+      "generated": "",
+      "identity": "",
+      "name": "frequency",
+      "not_null": true,
+      "table": "income_sources",
+      "type": "text"
+    },
+    {
+      "default": "gen_random_uuid()",
+      "generated": "",
+      "identity": "",
+      "name": "id",
+      "not_null": true,
+      "table": "income_sources",
+      "type": "uuid"
+    },
+    {
+      "default": null,
+      "generated": "",
+      "identity": "",
+      "name": "income_type",
+      "not_null": true,
+      "table": "income_sources",
+      "type": "text"
+    },
+    {
+      "default": null,
+      "generated": "",
+      "identity": "",
+      "name": "name",
+      "not_null": true,
+      "table": "income_sources",
+      "type": "text"
+    },
+    {
+      "default": "now()",
+      "generated": "",
+      "identity": "",
+      "name": "updated_at",
+      "not_null": true,
+      "table": "income_sources",
+      "type": "timestamp with time zone"
+    },
+    {
+      "default": null,
+      "generated": "",
+      "identity": "",
+      "name": "account_id",
+      "not_null": true,
+      "table": "plan_settings",
+      "type": "uuid"
+    },
+    {
+      "default": null,
+      "generated": "",
+      "identity": "",
+      "name": "age_reference_year",
+      "not_null": false,
+      "table": "plan_settings",
+      "type": "smallint"
+    },
+    {
+      "default": null,
+      "generated": "",
+      "identity": "",
+      "name": "annual_income_cents",
+      "not_null": false,
+      "table": "plan_settings",
+      "type": "bigint"
+    },
+    {
+      "default": "now()",
+      "generated": "",
+      "identity": "",
+      "name": "created_at",
+      "not_null": true,
+      "table": "plan_settings",
+      "type": "timestamp with time zone"
+    },
+    {
+      "default": null,
+      "generated": "",
+      "identity": "",
+      "name": "current_age",
+      "not_null": false,
+      "table": "plan_settings",
+      "type": "smallint"
+    },
+    {
+      "default": null,
+      "generated": "",
+      "identity": "",
+      "name": "date_of_birth",
+      "not_null": false,
+      "table": "plan_settings",
+      "type": "date"
+    },
+    {
+      "default": "'reinvest'::text",
+      "generated": "",
+      "identity": "",
+      "name": "distribution_policy",
+      "not_null": true,
+      "table": "plan_settings",
+      "type": "text"
+    },
+    {
+      "default": null,
+      "generated": "",
+      "identity": "",
+      "name": "distribution_yield_rate",
+      "not_null": false,
+      "table": "plan_settings",
+      "type": "numeric(8,6)"
+    },
+    {
+      "default": null,
+      "generated": "",
+      "identity": "",
+      "name": "expected_annual_return_rate",
+      "not_null": false,
+      "table": "plan_settings",
+      "type": "numeric(8,6)"
+    },
+    {
+      "default": "gen_random_uuid()",
+      "generated": "",
+      "identity": "",
+      "name": "id",
+      "not_null": true,
+      "table": "plan_settings",
+      "type": "uuid"
+    },
+    {
+      "default": null,
+      "generated": "",
+      "identity": "",
+      "name": "retirement_age",
+      "not_null": false,
+      "table": "plan_settings",
+      "type": "smallint"
+    },
+    {
+      "default": null,
+      "generated": "",
+      "identity": "",
+      "name": "stop_investing_age",
+      "not_null": false,
+      "table": "plan_settings",
+      "type": "smallint"
+    },
+    {
+      "default": "now()",
+      "generated": "",
+      "identity": "",
+      "name": "updated_at",
+      "not_null": true,
+      "table": "plan_settings",
+      "type": "timestamp with time zone"
+    },
+    {
+      "default": null,
+      "generated": "",
+      "identity": "",
+      "name": "weekly_expenses_cents",
+      "not_null": false,
+      "table": "plan_settings",
+      "type": "bigint"
+    },
+    {
+      "default": null,
+      "generated": "",
+      "identity": "",
+      "name": "weekly_investment_cents",
+      "not_null": false,
+      "table": "plan_settings",
+      "type": "bigint"
+    },
+    {
+      "default": null,
+      "generated": "",
+      "identity": "",
+      "name": "account_id",
+      "not_null": true,
+      "table": "portfolio_snapshots",
+      "type": "uuid"
+    },
+    {
+      "default": "gen_random_uuid()",
+      "generated": "",
+      "identity": "",
+      "name": "id",
+      "not_null": true,
+      "table": "portfolio_snapshots",
+      "type": "uuid"
+    },
+    {
+      "default": "now()",
+      "generated": "",
+      "identity": "",
+      "name": "recorded_at",
+      "not_null": true,
+      "table": "portfolio_snapshots",
+      "type": "timestamp with time zone"
+    },
+    {
+      "default": null,
+      "generated": "",
+      "identity": "",
+      "name": "snapshot_date",
+      "not_null": true,
+      "table": "portfolio_snapshots",
+      "type": "date"
+    },
+    {
+      "default": null,
+      "generated": "",
+      "identity": "",
+      "name": "total_value_cents",
+      "not_null": true,
+      "table": "portfolio_snapshots",
+      "type": "bigint"
+    }
+  ],
+  "constraints": [
+    {
+      "deferrable": false,
+      "deferred": false,
+      "definition": "CHECK ((account_type = 'brokerage'::text))",
+      "name": "accounts_account_type_check",
+      "table": "accounts",
+      "validated": true
+    },
+    {
+      "deferrable": false,
+      "deferred": false,
+      "definition": "CHECK ((currency = 'USD'::bpchar))",
+      "name": "accounts_currency_check",
+      "table": "accounts",
+      "validated": true
+    },
+    {
+      "deferrable": false,
+      "deferred": false,
+      "definition": "PRIMARY KEY (id)",
+      "name": "accounts_pkey",
+      "table": "accounts",
+      "validated": true
+    },
+    {
+      "deferrable": false,
+      "deferred": false,
+      "definition": "UNIQUE (user_id, account_type)",
+      "name": "accounts_user_id_account_type_key",
+      "table": "accounts",
+      "validated": true
+    },
+    {
+      "deferrable": false,
+      "deferred": false,
+      "definition": "FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE",
+      "name": "accounts_user_id_fkey",
+      "table": "accounts",
+      "validated": true
+    },
+    {
+      "deferrable": false,
+      "deferred": false,
+      "definition": "CHECK ((weekly_contribution_cents >= 0))",
+      "name": "accounts_weekly_contribution_cents_check",
+      "table": "accounts",
+      "validated": true
+    },
+    {
+      "deferrable": false,
+      "deferred": false,
+      "definition": "FOREIGN KEY (account_id) REFERENCES accounts(id) ON DELETE CASCADE",
+      "name": "budget_categories_account_id_fkey",
+      "table": "budget_categories",
+      "validated": true
+    },
+    {
+      "deferrable": false,
+      "deferred": false,
+      "definition": "CHECK ((monthly_amount_cents > 0))",
+      "name": "budget_categories_monthly_amount_cents_check",
+      "table": "budget_categories",
+      "validated": true
+    },
+    {
+      "deferrable": false,
+      "deferred": false,
+      "definition": "CHECK ((length(TRIM(BOTH FROM name)) > 0))",
+      "name": "budget_categories_name_check",
+      "table": "budget_categories",
+      "validated": true
+    },
+    {
+      "deferrable": false,
+      "deferred": false,
+      "definition": "PRIMARY KEY (id)",
+      "name": "budget_categories_pkey",
+      "table": "budget_categories",
+      "validated": true
+    },
+    {
+      "deferrable": false,
+      "deferred": false,
+      "definition": "CHECK ((annual_dividend_cents >= 0))",
+      "name": "holding_quotes_annual_dividend_cents_check",
+      "table": "holding_quotes",
+      "validated": true
+    },
+    {
+      "deferrable": false,
+      "deferred": false,
+      "definition": "CHECK (((distribution_yield_rate >= (0)::numeric) AND (distribution_yield_rate <= (1)::numeric)))",
+      "name": "holding_quotes_distribution_yield_rate_check",
+      "table": "holding_quotes",
+      "validated": true
+    },
+    {
+      "deferrable": false,
+      "deferred": false,
+      "definition": "UNIQUE (holding_id, as_of)",
+      "name": "holding_quotes_holding_id_as_of_key",
+      "table": "holding_quotes",
+      "validated": true
+    },
+    {
+      "deferrable": false,
+      "deferred": false,
+      "definition": "FOREIGN KEY (holding_id) REFERENCES holdings(id) ON DELETE CASCADE",
+      "name": "holding_quotes_holding_id_fkey",
+      "table": "holding_quotes",
+      "validated": true
+    },
+    {
+      "deferrable": false,
+      "deferred": false,
+      "definition": "PRIMARY KEY (id)",
+      "name": "holding_quotes_pkey",
+      "table": "holding_quotes",
+      "validated": true
+    },
+    {
+      "deferrable": false,
+      "deferred": false,
+      "definition": "CHECK ((previous_close_cents >= 0))",
+      "name": "holding_quotes_previous_close_cents_check",
+      "table": "holding_quotes",
+      "validated": true
+    },
+    {
+      "deferrable": false,
+      "deferred": false,
+      "definition": "CHECK ((price_cents >= 0))",
+      "name": "holding_quotes_price_cents_check",
+      "table": "holding_quotes",
+      "validated": true
+    },
+    {
+      "deferrable": false,
+      "deferred": false,
+      "definition": "FOREIGN KEY (account_id) REFERENCES accounts(id) ON DELETE CASCADE",
+      "name": "holdings_account_id_fkey",
+      "table": "holdings",
+      "validated": true
+    },
+    {
+      "deferrable": false,
+      "deferred": false,
+      "definition": "CHECK ((allocation_category = ANY (ARRAY['domestic-equity'::text, 'international-equity'::text, 'bonds'::text, 'crypto'::text, 'cash'::text, 'other'::text])))",
+      "name": "holdings_allocation_category_check",
+      "table": "holdings",
+      "validated": true
+    },
+    {
+      "deferrable": false,
+      "deferred": false,
+      "definition": "CHECK ((capital_gains_policy = ANY (ARRAY['reinvest'::text, 'transfer-to-bank'::text, 'transfer-to-fund'::text, 'hold-cash'::text, 'custom'::text])))",
+      "name": "holdings_capital_gains_policy_check",
+      "table": "holdings",
+      "validated": true
+    },
+    {
+      "deferrable": false,
+      "deferred": false,
+      "definition": "CHECK (((symbol IS NOT NULL) OR (name IS NOT NULL)))",
+      "name": "holdings_check",
+      "table": "holdings",
+      "validated": true
+    },
+    {
+      "deferrable": false,
+      "deferred": false,
+      "definition": "CHECK ((((valuation_basis = 'manual-value'::text) AND (manual_value_cents IS NOT NULL) AND (shares IS NULL) AND (manual_price_cents IS NULL)) OR ((valuation_basis = 'shares-and-price'::text) AND (shares IS NOT NULL) AND (manual_value_cents IS NULL))))",
+      "name": "holdings_check1",
+      "table": "holdings",
+      "validated": true
+    },
+    {
+      "deferrable": false,
+      "deferred": false,
+      "definition": "CHECK ((((dividend_policy <> 'custom'::text) AND (capital_gains_policy <> 'custom'::text)) OR (custom_policy_note IS NOT NULL)))",
+      "name": "holdings_check2",
+      "table": "holdings",
+      "validated": true
+    },
+    {
+      "deferrable": false,
+      "deferred": false,
+      "definition": "CHECK ((contribution_cents >= 0))",
+      "name": "holdings_contribution_cents_check",
+      "table": "holdings",
+      "validated": true
+    },
+    {
+      "deferrable": false,
+      "deferred": false,
+      "definition": "CHECK ((contribution_frequency = ANY (ARRAY['weekly'::text, 'monthly'::text])))",
+      "name": "holdings_contribution_frequency_check",
+      "table": "holdings",
+      "validated": true
+    },
+    {
+      "deferrable": false,
+      "deferred": false,
+      "definition": "CHECK (((contribution_cents IS NULL) OR (contribution_frequency IS NOT NULL)))",
+      "name": "holdings_contribution_requires_frequency",
+      "table": "holdings",
+      "validated": true
+    },
+    {
+      "deferrable": false,
+      "deferred": false,
+      "definition": "CHECK (((distribution_yield_rate >= (0)::numeric) AND (distribution_yield_rate <= (1)::numeric)))",
+      "name": "holdings_distribution_yield_rate_check",
+      "table": "holdings",
+      "validated": true
+    },
+    {
+      "deferrable": false,
+      "deferred": false,
+      "definition": "CHECK ((dividend_policy = ANY (ARRAY['reinvest'::text, 'transfer-to-bank'::text, 'transfer-to-fund'::text, 'hold-cash'::text, 'custom'::text])))",
+      "name": "holdings_dividend_policy_check",
+      "table": "holdings",
+      "validated": true
+    },
+    {
+      "deferrable": false,
+      "deferred": false,
+      "definition": "CHECK (((expected_annual_return_rate >= ('-1'::integer)::numeric) AND (expected_annual_return_rate <= (1)::numeric)))",
+      "name": "holdings_expected_annual_return_rate_check",
+      "table": "holdings",
+      "validated": true
+    },
+    {
+      "deferrable": false,
+      "deferred": false,
+      "definition": "CHECK ((instrument_type = ANY (ARRAY['mutual-fund'::text, 'etf'::text, 'stock'::text, 'crypto'::text, 'cash'::text, 'other'::text])))",
+      "name": "holdings_instrument_type_check",
+      "table": "holdings",
+      "validated": true
+    },
+    {
+      "deferrable": false,
+      "deferred": false,
+      "definition": "CHECK ((manual_price_cents >= 0))",
+      "name": "holdings_manual_price_cents_check",
+      "table": "holdings",
+      "validated": true
+    },
+    {
+      "deferrable": false,
+      "deferred": false,
+      "definition": "CHECK ((manual_value_cents >= 0))",
+      "name": "holdings_manual_value_cents_check",
+      "table": "holdings",
+      "validated": true
+    },
+    {
+      "deferrable": false,
+      "deferred": false,
+      "definition": "PRIMARY KEY (id)",
+      "name": "holdings_pkey",
+      "table": "holdings",
+      "validated": true
+    },
+    {
+      "deferrable": false,
+      "deferred": false,
+      "definition": "CHECK (((target_allocation_rate >= (0)::numeric) AND (target_allocation_rate <= (1)::numeric)))",
+      "name": "holdings_target_allocation_rate_check",
+      "table": "holdings",
+      "validated": true
+    },
+    {
+      "deferrable": false,
+      "deferred": false,
+      "definition": "CHECK ((valuation_basis = ANY (ARRAY['manual-value'::text, 'shares-and-price'::text])))",
+      "name": "holdings_valuation_basis_check",
+      "table": "holdings",
+      "validated": true
+    },
+    {
+      "deferrable": false,
+      "deferred": false,
+      "definition": "CHECK (((weekly_contribution_rate >= (0)::numeric) AND (weekly_contribution_rate <= (1)::numeric)))",
+      "name": "holdings_weekly_contribution_rate_check",
+      "table": "holdings",
+      "validated": true
+    },
+    {
+      "deferrable": false,
+      "deferred": false,
+      "definition": "FOREIGN KEY (account_id) REFERENCES accounts(id) ON DELETE CASCADE",
+      "name": "home_properties_account_id_fkey",
+      "table": "home_properties",
+      "validated": true
+    },
+    {
+      "deferrable": false,
+      "deferred": false,
+      "definition": "CHECK (((annual_appreciation_rate >= ('-1'::integer)::numeric) AND (annual_appreciation_rate <= (1)::numeric)))",
+      "name": "home_properties_annual_appreciation_rate_check",
+      "table": "home_properties",
+      "validated": true
+    },
+    {
+      "deferrable": false,
+      "deferred": false,
+      "definition": "CHECK (((city IS NULL) OR ((length(btrim(city)) >= 1) AND (length(btrim(city)) <= 120))))",
+      "name": "home_properties_city_valid",
+      "table": "home_properties",
+      "validated": true
+    },
+    {
+      "deferrable": false,
+      "deferred": false,
+      "definition": "CHECK (((county_fips IS NULL) OR ((county_fips ~ '^[0-9]{5}$'::text) AND (state_code IS NOT NULL))))",
+      "name": "home_properties_county_valid",
+      "table": "home_properties",
+      "validated": true
+    },
+    {
+      "deferrable": false,
+      "deferred": false,
+      "definition": "CHECK ((current_value_cents >= 0))",
+      "name": "home_properties_current_value_cents_check",
+      "table": "home_properties",
+      "validated": true
+    },
+    {
+      "deferrable": false,
+      "deferred": false,
+      "definition": "CHECK (((location IS NULL) OR (length(btrim(location)) > 0)))",
+      "name": "home_properties_location_not_blank",
+      "table": "home_properties",
+      "validated": true
+    },
+    {
+      "deferrable": false,
+      "deferred": false,
+      "definition": "CHECK ((mortgage_balance_cents >= 0))",
+      "name": "home_properties_mortgage_balance_cents_check",
+      "table": "home_properties",
+      "validated": true
+    },
+    {
+      "deferrable": false,
+      "deferred": false,
+      "definition": "CHECK ((length(btrim(name)) > 0))",
+      "name": "home_properties_name_not_blank",
+      "table": "home_properties",
+      "validated": true
+    },
+    {
+      "deferrable": false,
+      "deferred": false,
+      "definition": "PRIMARY KEY (id)",
+      "name": "home_properties_pkey",
+      "table": "home_properties",
+      "validated": true
+    },
+    {
+      "deferrable": false,
+      "deferred": false,
+      "definition": "CHECK (((purchase_price_cents >= 0) AND (purchase_price_cents <= '9007199254740991'::bigint)))",
+      "name": "home_properties_purchase_price_valid",
+      "table": "home_properties",
+      "validated": true
+    },
+    {
+      "deferrable": false,
+      "deferred": false,
+      "definition": "CHECK (((state_code IS NULL) OR (state_code ~ '^[A-Z]{2}$'::text)))",
+      "name": "home_properties_state_valid",
+      "table": "home_properties",
+      "validated": true
+    },
+    {
+      "deferrable": false,
+      "deferred": false,
+      "definition": "FOREIGN KEY (account_id) REFERENCES accounts(id) ON DELETE CASCADE",
+      "name": "income_sources_account_id_fkey",
+      "table": "income_sources",
+      "validated": true
+    },
+    {
+      "deferrable": false,
+      "deferred": false,
+      "definition": "CHECK ((amount_cents > 0))",
+      "name": "income_sources_amount_cents_check",
+      "table": "income_sources",
+      "validated": true
+    },
+    {
+      "deferrable": false,
+      "deferred": false,
+      "definition": "CHECK ((frequency = ANY (ARRAY['weekly'::text, 'biweekly'::text, 'twiceMonthly'::text, 'monthly'::text])))",
+      "name": "income_sources_frequency_check",
+      "table": "income_sources",
+      "validated": true
+    },
+    {
+      "deferrable": false,
+      "deferred": false,
+      "definition": "CHECK ((income_type = ANY (ARRAY['employment'::text, 'contract'::text, 'benefits'::text, 'other'::text])))",
+      "name": "income_sources_income_type_check",
+      "table": "income_sources",
+      "validated": true
+    },
+    {
+      "deferrable": false,
+      "deferred": false,
+      "definition": "CHECK ((length(TRIM(BOTH FROM name)) > 0))",
+      "name": "income_sources_name_check",
+      "table": "income_sources",
+      "validated": true
+    },
+    {
+      "deferrable": false,
+      "deferred": false,
+      "definition": "PRIMARY KEY (id)",
+      "name": "income_sources_pkey",
+      "table": "income_sources",
+      "validated": true
+    },
+    {
+      "deferrable": false,
+      "deferred": false,
+      "definition": "CHECK (((current_age IS NULL) = (age_reference_year IS NULL)))",
+      "name": "plan_scenario_age_pair",
+      "table": "plan_settings",
+      "validated": true
+    },
+    {
+      "deferrable": false,
+      "deferred": false,
+      "definition": "CHECK (((date_of_birth IS NOT NULL) OR (current_age IS NOT NULL) OR ((stop_investing_age IS NULL) AND (retirement_age IS NULL))))",
+      "name": "plan_scenario_age_required",
+      "table": "plan_settings",
+      "validated": true
+    },
+    {
+      "deferrable": false,
+      "deferred": false,
+      "definition": "FOREIGN KEY (account_id) REFERENCES accounts(id) ON DELETE CASCADE",
+      "name": "plan_settings_account_id_fkey",
+      "table": "plan_settings",
+      "validated": true
+    },
+    {
+      "deferrable": false,
+      "deferred": false,
+      "definition": "UNIQUE (account_id)",
+      "name": "plan_settings_account_id_key",
+      "table": "plan_settings",
+      "validated": true
+    },
+    {
+      "deferrable": false,
+      "deferred": false,
+      "definition": "CHECK (((age_reference_year >= 1900) AND (age_reference_year <= 2200)))",
+      "name": "plan_settings_age_reference_year_check",
+      "table": "plan_settings",
+      "validated": true
+    },
+    {
+      "deferrable": false,
+      "deferred": false,
+      "definition": "CHECK (((annual_income_cents >= 0) AND (annual_income_cents <= '5200000000000'::bigint)))",
+      "name": "plan_settings_annual_income_cents_check",
+      "table": "plan_settings",
+      "validated": true
+    },
+    {
+      "deferrable": false,
+      "deferred": false,
+      "definition": "CHECK (((current_age >= 0) AND (current_age <= 120)))",
+      "name": "plan_settings_current_age_check",
+      "table": "plan_settings",
+      "validated": true
+    },
+    {
+      "deferrable": false,
+      "deferred": false,
+      "definition": "CHECK (((date_of_birth >= '1900-01-01'::date) AND (date_of_birth <= CURRENT_DATE)))",
+      "name": "plan_settings_date_of_birth_check",
+      "table": "plan_settings",
+      "validated": true
+    },
+    {
+      "deferrable": false,
+      "deferred": false,
+      "definition": "CHECK ((distribution_policy = ANY (ARRAY['reinvest'::text, 'transfer-to-bank'::text, 'transfer-to-fund'::text, 'hold-cash'::text])))",
+      "name": "plan_settings_distribution_policy_check",
+      "table": "plan_settings",
+      "validated": true
+    },
+    {
+      "deferrable": false,
+      "deferred": false,
+      "definition": "CHECK (((distribution_yield_rate >= (0)::numeric) AND (distribution_yield_rate <= (1)::numeric)))",
+      "name": "plan_settings_distribution_yield_rate_check",
+      "table": "plan_settings",
+      "validated": true
+    },
+    {
+      "deferrable": false,
+      "deferred": false,
+      "definition": "CHECK (((expected_annual_return_rate >= ('-1'::integer)::numeric) AND (expected_annual_return_rate <= (1)::numeric)))",
+      "name": "plan_settings_expected_annual_return_rate_check",
+      "table": "plan_settings",
+      "validated": true
+    },
+    {
+      "deferrable": false,
+      "deferred": false,
+      "definition": "PRIMARY KEY (id)",
+      "name": "plan_settings_pkey",
+      "table": "plan_settings",
+      "validated": true
+    },
+    {
+      "deferrable": false,
+      "deferred": false,
+      "definition": "CHECK (((retirement_age >= 0) AND (retirement_age <= 120)))",
+      "name": "plan_settings_retirement_age_check",
+      "table": "plan_settings",
+      "validated": true
+    },
+    {
+      "deferrable": false,
+      "deferred": false,
+      "definition": "CHECK (((stop_investing_age >= 0) AND (stop_investing_age <= 120)))",
+      "name": "plan_settings_stop_investing_age_check",
+      "table": "plan_settings",
+      "validated": true
+    },
+    {
+      "deferrable": false,
+      "deferred": false,
+      "definition": "CHECK (((weekly_expenses_cents >= 0) AND (weekly_expenses_cents <= '100000000000'::bigint)))",
+      "name": "plan_settings_weekly_expenses_cents_check",
+      "table": "plan_settings",
+      "validated": true
+    },
+    {
+      "deferrable": false,
+      "deferred": false,
+      "definition": "CHECK (((weekly_investment_cents >= 0) AND (weekly_investment_cents <= '100000000000'::bigint)))",
+      "name": "plan_settings_weekly_investment_cents_check",
+      "table": "plan_settings",
+      "validated": true
+    },
+    {
+      "deferrable": false,
+      "deferred": false,
+      "definition": "FOREIGN KEY (account_id) REFERENCES accounts(id) ON DELETE CASCADE",
+      "name": "portfolio_snapshots_account_id_fkey",
+      "table": "portfolio_snapshots",
+      "validated": true
+    },
+    {
+      "deferrable": false,
+      "deferred": false,
+      "definition": "UNIQUE (account_id, snapshot_date)",
+      "name": "portfolio_snapshots_account_id_snapshot_date_key",
+      "table": "portfolio_snapshots",
+      "validated": true
+    },
+    {
+      "deferrable": false,
+      "deferred": false,
+      "definition": "PRIMARY KEY (id)",
+      "name": "portfolio_snapshots_pkey",
+      "table": "portfolio_snapshots",
+      "validated": true
+    },
+    {
+      "deferrable": false,
+      "deferred": false,
+      "definition": "CHECK ((total_value_cents >= 0))",
+      "name": "portfolio_snapshots_total_value_cents_check",
+      "table": "portfolio_snapshots",
+      "validated": true
+    }
+  ],
+  "functions": [
+    {
+      "config": [
+        "search_path=pg_catalog"
+      ],
+      "definition": "CREATE OR REPLACE FUNCTION public.set_updated_at()\nRETURNS trigger\nLANGUAGE plpgsql\nSET search_path TO 'pg_catalog'\nAS $function$\nbegin\nnew.updated_at = now();\nreturn new;\nend;\n$function$",
+      "name": "set_updated_at",
+      "security_definer": false
+    }
+  ],
+  "grants": [
+    {
+      "allowed": false,
+      "privilege": "DELETE",
+      "role": "anon",
+      "table": "accounts"
+    },
+    {
+      "allowed": false,
+      "privilege": "INSERT",
+      "role": "anon",
+      "table": "accounts"
+    },
+    {
+      "allowed": false,
+      "privilege": "REFERENCES",
+      "role": "anon",
+      "table": "accounts"
+    },
+    {
+      "allowed": false,
+      "privilege": "SELECT",
+      "role": "anon",
+      "table": "accounts"
+    },
+    {
+      "allowed": false,
+      "privilege": "TRIGGER",
+      "role": "anon",
+      "table": "accounts"
+    },
+    {
+      "allowed": false,
+      "privilege": "TRUNCATE",
+      "role": "anon",
+      "table": "accounts"
+    },
+    {
+      "allowed": false,
+      "privilege": "UPDATE",
+      "role": "anon",
+      "table": "accounts"
+    },
+    {
+      "allowed": true,
+      "privilege": "DELETE",
+      "role": "authenticated",
+      "table": "accounts"
+    },
+    {
+      "allowed": true,
+      "privilege": "INSERT",
+      "role": "authenticated",
+      "table": "accounts"
+    },
+    {
+      "allowed": true,
+      "privilege": "REFERENCES",
+      "role": "authenticated",
+      "table": "accounts"
+    },
+    {
+      "allowed": true,
+      "privilege": "SELECT",
+      "role": "authenticated",
+      "table": "accounts"
+    },
+    {
+      "allowed": true,
+      "privilege": "TRIGGER",
+      "role": "authenticated",
+      "table": "accounts"
+    },
+    {
+      "allowed": true,
+      "privilege": "TRUNCATE",
+      "role": "authenticated",
+      "table": "accounts"
+    },
+    {
+      "allowed": true,
+      "privilege": "UPDATE",
+      "role": "authenticated",
+      "table": "accounts"
+    },
+    {
+      "allowed": true,
+      "privilege": "DELETE",
+      "role": "service_role",
+      "table": "accounts"
+    },
+    {
+      "allowed": true,
+      "privilege": "INSERT",
+      "role": "service_role",
+      "table": "accounts"
+    },
+    {
+      "allowed": true,
+      "privilege": "REFERENCES",
+      "role": "service_role",
+      "table": "accounts"
+    },
+    {
+      "allowed": true,
+      "privilege": "SELECT",
+      "role": "service_role",
+      "table": "accounts"
+    },
+    {
+      "allowed": true,
+      "privilege": "TRIGGER",
+      "role": "service_role",
+      "table": "accounts"
+    },
+    {
+      "allowed": true,
+      "privilege": "TRUNCATE",
+      "role": "service_role",
+      "table": "accounts"
+    },
+    {
+      "allowed": true,
+      "privilege": "UPDATE",
+      "role": "service_role",
+      "table": "accounts"
+    },
+    {
+      "allowed": false,
+      "privilege": "DELETE",
+      "role": "anon",
+      "table": "budget_categories"
+    },
+    {
+      "allowed": false,
+      "privilege": "INSERT",
+      "role": "anon",
+      "table": "budget_categories"
+    },
+    {
+      "allowed": false,
+      "privilege": "REFERENCES",
+      "role": "anon",
+      "table": "budget_categories"
+    },
+    {
+      "allowed": false,
+      "privilege": "SELECT",
+      "role": "anon",
+      "table": "budget_categories"
+    },
+    {
+      "allowed": false,
+      "privilege": "TRIGGER",
+      "role": "anon",
+      "table": "budget_categories"
+    },
+    {
+      "allowed": false,
+      "privilege": "TRUNCATE",
+      "role": "anon",
+      "table": "budget_categories"
+    },
+    {
+      "allowed": false,
+      "privilege": "UPDATE",
+      "role": "anon",
+      "table": "budget_categories"
+    },
+    {
+      "allowed": true,
+      "privilege": "DELETE",
+      "role": "authenticated",
+      "table": "budget_categories"
+    },
+    {
+      "allowed": true,
+      "privilege": "INSERT",
+      "role": "authenticated",
+      "table": "budget_categories"
+    },
+    {
+      "allowed": true,
+      "privilege": "REFERENCES",
+      "role": "authenticated",
+      "table": "budget_categories"
+    },
+    {
+      "allowed": true,
+      "privilege": "SELECT",
+      "role": "authenticated",
+      "table": "budget_categories"
+    },
+    {
+      "allowed": true,
+      "privilege": "TRIGGER",
+      "role": "authenticated",
+      "table": "budget_categories"
+    },
+    {
+      "allowed": true,
+      "privilege": "TRUNCATE",
+      "role": "authenticated",
+      "table": "budget_categories"
+    },
+    {
+      "allowed": true,
+      "privilege": "UPDATE",
+      "role": "authenticated",
+      "table": "budget_categories"
+    },
+    {
+      "allowed": true,
+      "privilege": "DELETE",
+      "role": "service_role",
+      "table": "budget_categories"
+    },
+    {
+      "allowed": true,
+      "privilege": "INSERT",
+      "role": "service_role",
+      "table": "budget_categories"
+    },
+    {
+      "allowed": true,
+      "privilege": "REFERENCES",
+      "role": "service_role",
+      "table": "budget_categories"
+    },
+    {
+      "allowed": true,
+      "privilege": "SELECT",
+      "role": "service_role",
+      "table": "budget_categories"
+    },
+    {
+      "allowed": true,
+      "privilege": "TRIGGER",
+      "role": "service_role",
+      "table": "budget_categories"
+    },
+    {
+      "allowed": true,
+      "privilege": "TRUNCATE",
+      "role": "service_role",
+      "table": "budget_categories"
+    },
+    {
+      "allowed": true,
+      "privilege": "UPDATE",
+      "role": "service_role",
+      "table": "budget_categories"
+    },
+    {
+      "allowed": false,
+      "privilege": "DELETE",
+      "role": "anon",
+      "table": "holding_quotes"
+    },
+    {
+      "allowed": false,
+      "privilege": "INSERT",
+      "role": "anon",
+      "table": "holding_quotes"
+    },
+    {
+      "allowed": false,
+      "privilege": "REFERENCES",
+      "role": "anon",
+      "table": "holding_quotes"
+    },
+    {
+      "allowed": false,
+      "privilege": "SELECT",
+      "role": "anon",
+      "table": "holding_quotes"
+    },
+    {
+      "allowed": false,
+      "privilege": "TRIGGER",
+      "role": "anon",
+      "table": "holding_quotes"
+    },
+    {
+      "allowed": false,
+      "privilege": "TRUNCATE",
+      "role": "anon",
+      "table": "holding_quotes"
+    },
+    {
+      "allowed": false,
+      "privilege": "UPDATE",
+      "role": "anon",
+      "table": "holding_quotes"
+    },
+    {
+      "allowed": true,
+      "privilege": "DELETE",
+      "role": "authenticated",
+      "table": "holding_quotes"
+    },
+    {
+      "allowed": true,
+      "privilege": "INSERT",
+      "role": "authenticated",
+      "table": "holding_quotes"
+    },
+    {
+      "allowed": true,
+      "privilege": "REFERENCES",
+      "role": "authenticated",
+      "table": "holding_quotes"
+    },
+    {
+      "allowed": true,
+      "privilege": "SELECT",
+      "role": "authenticated",
+      "table": "holding_quotes"
+    },
+    {
+      "allowed": true,
+      "privilege": "TRIGGER",
+      "role": "authenticated",
+      "table": "holding_quotes"
+    },
+    {
+      "allowed": true,
+      "privilege": "TRUNCATE",
+      "role": "authenticated",
+      "table": "holding_quotes"
+    },
+    {
+      "allowed": true,
+      "privilege": "UPDATE",
+      "role": "authenticated",
+      "table": "holding_quotes"
+    },
+    {
+      "allowed": true,
+      "privilege": "DELETE",
+      "role": "service_role",
+      "table": "holding_quotes"
+    },
+    {
+      "allowed": true,
+      "privilege": "INSERT",
+      "role": "service_role",
+      "table": "holding_quotes"
+    },
+    {
+      "allowed": true,
+      "privilege": "REFERENCES",
+      "role": "service_role",
+      "table": "holding_quotes"
+    },
+    {
+      "allowed": true,
+      "privilege": "SELECT",
+      "role": "service_role",
+      "table": "holding_quotes"
+    },
+    {
+      "allowed": true,
+      "privilege": "TRIGGER",
+      "role": "service_role",
+      "table": "holding_quotes"
+    },
+    {
+      "allowed": true,
+      "privilege": "TRUNCATE",
+      "role": "service_role",
+      "table": "holding_quotes"
+    },
+    {
+      "allowed": true,
+      "privilege": "UPDATE",
+      "role": "service_role",
+      "table": "holding_quotes"
+    },
+    {
+      "allowed": false,
+      "privilege": "DELETE",
+      "role": "anon",
+      "table": "holdings"
+    },
+    {
+      "allowed": false,
+      "privilege": "INSERT",
+      "role": "anon",
+      "table": "holdings"
+    },
+    {
+      "allowed": false,
+      "privilege": "REFERENCES",
+      "role": "anon",
+      "table": "holdings"
+    },
+    {
+      "allowed": false,
+      "privilege": "SELECT",
+      "role": "anon",
+      "table": "holdings"
+    },
+    {
+      "allowed": false,
+      "privilege": "TRIGGER",
+      "role": "anon",
+      "table": "holdings"
+    },
+    {
+      "allowed": false,
+      "privilege": "TRUNCATE",
+      "role": "anon",
+      "table": "holdings"
+    },
+    {
+      "allowed": false,
+      "privilege": "UPDATE",
+      "role": "anon",
+      "table": "holdings"
+    },
+    {
+      "allowed": true,
+      "privilege": "DELETE",
+      "role": "authenticated",
+      "table": "holdings"
+    },
+    {
+      "allowed": true,
+      "privilege": "INSERT",
+      "role": "authenticated",
+      "table": "holdings"
+    },
+    {
+      "allowed": true,
+      "privilege": "REFERENCES",
+      "role": "authenticated",
+      "table": "holdings"
+    },
+    {
+      "allowed": true,
+      "privilege": "SELECT",
+      "role": "authenticated",
+      "table": "holdings"
+    },
+    {
+      "allowed": true,
+      "privilege": "TRIGGER",
+      "role": "authenticated",
+      "table": "holdings"
+    },
+    {
+      "allowed": true,
+      "privilege": "TRUNCATE",
+      "role": "authenticated",
+      "table": "holdings"
+    },
+    {
+      "allowed": true,
+      "privilege": "UPDATE",
+      "role": "authenticated",
+      "table": "holdings"
+    },
+    {
+      "allowed": true,
+      "privilege": "DELETE",
+      "role": "service_role",
+      "table": "holdings"
+    },
+    {
+      "allowed": true,
+      "privilege": "INSERT",
+      "role": "service_role",
+      "table": "holdings"
+    },
+    {
+      "allowed": true,
+      "privilege": "REFERENCES",
+      "role": "service_role",
+      "table": "holdings"
+    },
+    {
+      "allowed": true,
+      "privilege": "SELECT",
+      "role": "service_role",
+      "table": "holdings"
+    },
+    {
+      "allowed": true,
+      "privilege": "TRIGGER",
+      "role": "service_role",
+      "table": "holdings"
+    },
+    {
+      "allowed": true,
+      "privilege": "TRUNCATE",
+      "role": "service_role",
+      "table": "holdings"
+    },
+    {
+      "allowed": true,
+      "privilege": "UPDATE",
+      "role": "service_role",
+      "table": "holdings"
+    },
+    {
+      "allowed": false,
+      "privilege": "DELETE",
+      "role": "anon",
+      "table": "home_properties"
+    },
+    {
+      "allowed": false,
+      "privilege": "INSERT",
+      "role": "anon",
+      "table": "home_properties"
+    },
+    {
+      "allowed": false,
+      "privilege": "REFERENCES",
+      "role": "anon",
+      "table": "home_properties"
+    },
+    {
+      "allowed": false,
+      "privilege": "SELECT",
+      "role": "anon",
+      "table": "home_properties"
+    },
+    {
+      "allowed": false,
+      "privilege": "TRIGGER",
+      "role": "anon",
+      "table": "home_properties"
+    },
+    {
+      "allowed": false,
+      "privilege": "TRUNCATE",
+      "role": "anon",
+      "table": "home_properties"
+    },
+    {
+      "allowed": false,
+      "privilege": "UPDATE",
+      "role": "anon",
+      "table": "home_properties"
+    },
+    {
+      "allowed": true,
+      "privilege": "DELETE",
+      "role": "authenticated",
+      "table": "home_properties"
+    },
+    {
+      "allowed": true,
+      "privilege": "INSERT",
+      "role": "authenticated",
+      "table": "home_properties"
+    },
+    {
+      "allowed": true,
+      "privilege": "REFERENCES",
+      "role": "authenticated",
+      "table": "home_properties"
+    },
+    {
+      "allowed": true,
+      "privilege": "SELECT",
+      "role": "authenticated",
+      "table": "home_properties"
+    },
+    {
+      "allowed": true,
+      "privilege": "TRIGGER",
+      "role": "authenticated",
+      "table": "home_properties"
+    },
+    {
+      "allowed": true,
+      "privilege": "TRUNCATE",
+      "role": "authenticated",
+      "table": "home_properties"
+    },
+    {
+      "allowed": true,
+      "privilege": "UPDATE",
+      "role": "authenticated",
+      "table": "home_properties"
+    },
+    {
+      "allowed": true,
+      "privilege": "DELETE",
+      "role": "service_role",
+      "table": "home_properties"
+    },
+    {
+      "allowed": true,
+      "privilege": "INSERT",
+      "role": "service_role",
+      "table": "home_properties"
+    },
+    {
+      "allowed": true,
+      "privilege": "REFERENCES",
+      "role": "service_role",
+      "table": "home_properties"
+    },
+    {
+      "allowed": true,
+      "privilege": "SELECT",
+      "role": "service_role",
+      "table": "home_properties"
+    },
+    {
+      "allowed": true,
+      "privilege": "TRIGGER",
+      "role": "service_role",
+      "table": "home_properties"
+    },
+    {
+      "allowed": true,
+      "privilege": "TRUNCATE",
+      "role": "service_role",
+      "table": "home_properties"
+    },
+    {
+      "allowed": true,
+      "privilege": "UPDATE",
+      "role": "service_role",
+      "table": "home_properties"
+    },
+    {
+      "allowed": false,
+      "privilege": "DELETE",
+      "role": "anon",
+      "table": "income_sources"
+    },
+    {
+      "allowed": false,
+      "privilege": "INSERT",
+      "role": "anon",
+      "table": "income_sources"
+    },
+    {
+      "allowed": false,
+      "privilege": "REFERENCES",
+      "role": "anon",
+      "table": "income_sources"
+    },
+    {
+      "allowed": false,
+      "privilege": "SELECT",
+      "role": "anon",
+      "table": "income_sources"
+    },
+    {
+      "allowed": false,
+      "privilege": "TRIGGER",
+      "role": "anon",
+      "table": "income_sources"
+    },
+    {
+      "allowed": false,
+      "privilege": "TRUNCATE",
+      "role": "anon",
+      "table": "income_sources"
+    },
+    {
+      "allowed": false,
+      "privilege": "UPDATE",
+      "role": "anon",
+      "table": "income_sources"
+    },
+    {
+      "allowed": true,
+      "privilege": "DELETE",
+      "role": "authenticated",
+      "table": "income_sources"
+    },
+    {
+      "allowed": true,
+      "privilege": "INSERT",
+      "role": "authenticated",
+      "table": "income_sources"
+    },
+    {
+      "allowed": true,
+      "privilege": "REFERENCES",
+      "role": "authenticated",
+      "table": "income_sources"
+    },
+    {
+      "allowed": true,
+      "privilege": "SELECT",
+      "role": "authenticated",
+      "table": "income_sources"
+    },
+    {
+      "allowed": true,
+      "privilege": "TRIGGER",
+      "role": "authenticated",
+      "table": "income_sources"
+    },
+    {
+      "allowed": true,
+      "privilege": "TRUNCATE",
+      "role": "authenticated",
+      "table": "income_sources"
+    },
+    {
+      "allowed": true,
+      "privilege": "UPDATE",
+      "role": "authenticated",
+      "table": "income_sources"
+    },
+    {
+      "allowed": true,
+      "privilege": "DELETE",
+      "role": "service_role",
+      "table": "income_sources"
+    },
+    {
+      "allowed": true,
+      "privilege": "INSERT",
+      "role": "service_role",
+      "table": "income_sources"
+    },
+    {
+      "allowed": true,
+      "privilege": "REFERENCES",
+      "role": "service_role",
+      "table": "income_sources"
+    },
+    {
+      "allowed": true,
+      "privilege": "SELECT",
+      "role": "service_role",
+      "table": "income_sources"
+    },
+    {
+      "allowed": true,
+      "privilege": "TRIGGER",
+      "role": "service_role",
+      "table": "income_sources"
+    },
+    {
+      "allowed": true,
+      "privilege": "TRUNCATE",
+      "role": "service_role",
+      "table": "income_sources"
+    },
+    {
+      "allowed": true,
+      "privilege": "UPDATE",
+      "role": "service_role",
+      "table": "income_sources"
+    },
+    {
+      "allowed": false,
+      "privilege": "DELETE",
+      "role": "anon",
+      "table": "plan_settings"
+    },
+    {
+      "allowed": false,
+      "privilege": "INSERT",
+      "role": "anon",
+      "table": "plan_settings"
+    },
+    {
+      "allowed": false,
+      "privilege": "REFERENCES",
+      "role": "anon",
+      "table": "plan_settings"
+    },
+    {
+      "allowed": false,
+      "privilege": "SELECT",
+      "role": "anon",
+      "table": "plan_settings"
+    },
+    {
+      "allowed": false,
+      "privilege": "TRIGGER",
+      "role": "anon",
+      "table": "plan_settings"
+    },
+    {
+      "allowed": false,
+      "privilege": "TRUNCATE",
+      "role": "anon",
+      "table": "plan_settings"
+    },
+    {
+      "allowed": false,
+      "privilege": "UPDATE",
+      "role": "anon",
+      "table": "plan_settings"
+    },
+    {
+      "allowed": true,
+      "privilege": "DELETE",
+      "role": "authenticated",
+      "table": "plan_settings"
+    },
+    {
+      "allowed": true,
+      "privilege": "INSERT",
+      "role": "authenticated",
+      "table": "plan_settings"
+    },
+    {
+      "allowed": true,
+      "privilege": "REFERENCES",
+      "role": "authenticated",
+      "table": "plan_settings"
+    },
+    {
+      "allowed": true,
+      "privilege": "SELECT",
+      "role": "authenticated",
+      "table": "plan_settings"
+    },
+    {
+      "allowed": true,
+      "privilege": "TRIGGER",
+      "role": "authenticated",
+      "table": "plan_settings"
+    },
+    {
+      "allowed": true,
+      "privilege": "TRUNCATE",
+      "role": "authenticated",
+      "table": "plan_settings"
+    },
+    {
+      "allowed": true,
+      "privilege": "UPDATE",
+      "role": "authenticated",
+      "table": "plan_settings"
+    },
+    {
+      "allowed": true,
+      "privilege": "DELETE",
+      "role": "service_role",
+      "table": "plan_settings"
+    },
+    {
+      "allowed": true,
+      "privilege": "INSERT",
+      "role": "service_role",
+      "table": "plan_settings"
+    },
+    {
+      "allowed": true,
+      "privilege": "REFERENCES",
+      "role": "service_role",
+      "table": "plan_settings"
+    },
+    {
+      "allowed": true,
+      "privilege": "SELECT",
+      "role": "service_role",
+      "table": "plan_settings"
+    },
+    {
+      "allowed": true,
+      "privilege": "TRIGGER",
+      "role": "service_role",
+      "table": "plan_settings"
+    },
+    {
+      "allowed": true,
+      "privilege": "TRUNCATE",
+      "role": "service_role",
+      "table": "plan_settings"
+    },
+    {
+      "allowed": true,
+      "privilege": "UPDATE",
+      "role": "service_role",
+      "table": "plan_settings"
+    },
+    {
+      "allowed": false,
+      "privilege": "DELETE",
+      "role": "anon",
+      "table": "portfolio_snapshots"
+    },
+    {
+      "allowed": false,
+      "privilege": "INSERT",
+      "role": "anon",
+      "table": "portfolio_snapshots"
+    },
+    {
+      "allowed": false,
+      "privilege": "REFERENCES",
+      "role": "anon",
+      "table": "portfolio_snapshots"
+    },
+    {
+      "allowed": false,
+      "privilege": "SELECT",
+      "role": "anon",
+      "table": "portfolio_snapshots"
+    },
+    {
+      "allowed": false,
+      "privilege": "TRIGGER",
+      "role": "anon",
+      "table": "portfolio_snapshots"
+    },
+    {
+      "allowed": false,
+      "privilege": "TRUNCATE",
+      "role": "anon",
+      "table": "portfolio_snapshots"
+    },
+    {
+      "allowed": false,
+      "privilege": "UPDATE",
+      "role": "anon",
+      "table": "portfolio_snapshots"
+    },
+    {
+      "allowed": true,
+      "privilege": "DELETE",
+      "role": "authenticated",
+      "table": "portfolio_snapshots"
+    },
+    {
+      "allowed": true,
+      "privilege": "INSERT",
+      "role": "authenticated",
+      "table": "portfolio_snapshots"
+    },
+    {
+      "allowed": true,
+      "privilege": "REFERENCES",
+      "role": "authenticated",
+      "table": "portfolio_snapshots"
+    },
+    {
+      "allowed": true,
+      "privilege": "SELECT",
+      "role": "authenticated",
+      "table": "portfolio_snapshots"
+    },
+    {
+      "allowed": true,
+      "privilege": "TRIGGER",
+      "role": "authenticated",
+      "table": "portfolio_snapshots"
+    },
+    {
+      "allowed": true,
+      "privilege": "TRUNCATE",
+      "role": "authenticated",
+      "table": "portfolio_snapshots"
+    },
+    {
+      "allowed": true,
+      "privilege": "UPDATE",
+      "role": "authenticated",
+      "table": "portfolio_snapshots"
+    },
+    {
+      "allowed": true,
+      "privilege": "DELETE",
+      "role": "service_role",
+      "table": "portfolio_snapshots"
+    },
+    {
+      "allowed": true,
+      "privilege": "INSERT",
+      "role": "service_role",
+      "table": "portfolio_snapshots"
+    },
+    {
+      "allowed": true,
+      "privilege": "REFERENCES",
+      "role": "service_role",
+      "table": "portfolio_snapshots"
+    },
+    {
+      "allowed": true,
+      "privilege": "SELECT",
+      "role": "service_role",
+      "table": "portfolio_snapshots"
+    },
+    {
+      "allowed": true,
+      "privilege": "TRIGGER",
+      "role": "service_role",
+      "table": "portfolio_snapshots"
+    },
+    {
+      "allowed": true,
+      "privilege": "TRUNCATE",
+      "role": "service_role",
+      "table": "portfolio_snapshots"
+    },
+    {
+      "allowed": true,
+      "privilege": "UPDATE",
+      "role": "service_role",
+      "table": "portfolio_snapshots"
+    }
+  ],
+  "indexes": [
+    {
+      "definition": "CREATE UNIQUE INDEX accounts_pkey ON public.accounts USING btree (id)",
+      "name": "accounts_pkey",
+      "table": "accounts",
+      "valid": true
+    },
+    {
+      "definition": "CREATE UNIQUE INDEX accounts_user_id_account_type_key ON public.accounts USING btree (user_id, account_type)",
+      "name": "accounts_user_id_account_type_key",
+      "table": "accounts",
+      "valid": true
+    },
+    {
+      "definition": "CREATE INDEX budget_categories_account_id_idx ON public.budget_categories USING btree (account_id)",
+      "name": "budget_categories_account_id_idx",
+      "table": "budget_categories",
+      "valid": true
+    },
+    {
+      "definition": "CREATE UNIQUE INDEX budget_categories_account_name_idx ON public.budget_categories USING btree (account_id, lower(TRIM(BOTH FROM name)))",
+      "name": "budget_categories_account_name_idx",
+      "table": "budget_categories",
+      "valid": true
+    },
+    {
+      "definition": "CREATE UNIQUE INDEX budget_categories_pkey ON public.budget_categories USING btree (id)",
+      "name": "budget_categories_pkey",
+      "table": "budget_categories",
+      "valid": true
+    },
+    {
+      "definition": "CREATE INDEX holding_quotes_holding_as_of_idx ON public.holding_quotes USING btree (holding_id, as_of DESC)",
+      "name": "holding_quotes_holding_as_of_idx",
+      "table": "holding_quotes",
+      "valid": true
+    },
+    {
+      "definition": "CREATE UNIQUE INDEX holding_quotes_holding_id_as_of_key ON public.holding_quotes USING btree (holding_id, as_of)",
+      "name": "holding_quotes_holding_id_as_of_key",
+      "table": "holding_quotes",
+      "valid": true
+    },
+    {
+      "definition": "CREATE UNIQUE INDEX holding_quotes_pkey ON public.holding_quotes USING btree (id)",
+      "name": "holding_quotes_pkey",
+      "table": "holding_quotes",
+      "valid": true
+    },
+    {
+      "definition": "CREATE INDEX holdings_account_id_idx ON public.holdings USING btree (account_id)",
+      "name": "holdings_account_id_idx",
+      "table": "holdings",
+      "valid": true
+    },
+    {
+      "definition": "CREATE UNIQUE INDEX holdings_pkey ON public.holdings USING btree (id)",
+      "name": "holdings_pkey",
+      "table": "holdings",
+      "valid": true
+    },
+    {
+      "definition": "CREATE UNIQUE INDEX home_properties_pkey ON public.home_properties USING btree (id)",
+      "name": "home_properties_pkey",
+      "table": "home_properties",
+      "valid": true
+    },
+    {
+      "definition": "CREATE INDEX income_sources_account_id_idx ON public.income_sources USING btree (account_id)",
+      "name": "income_sources_account_id_idx",
+      "table": "income_sources",
+      "valid": true
+    },
+    {
+      "definition": "CREATE UNIQUE INDEX income_sources_pkey ON public.income_sources USING btree (id)",
+      "name": "income_sources_pkey",
+      "table": "income_sources",
+      "valid": true
+    },
+    {
+      "definition": "CREATE UNIQUE INDEX plan_settings_account_id_key ON public.plan_settings USING btree (account_id)",
+      "name": "plan_settings_account_id_key",
+      "table": "plan_settings",
+      "valid": true
+    },
+    {
+      "definition": "CREATE UNIQUE INDEX plan_settings_pkey ON public.plan_settings USING btree (id)",
+      "name": "plan_settings_pkey",
+      "table": "plan_settings",
+      "valid": true
+    },
+    {
+      "definition": "CREATE INDEX portfolio_snapshots_account_date_idx ON public.portfolio_snapshots USING btree (account_id, snapshot_date DESC)",
+      "name": "portfolio_snapshots_account_date_idx",
+      "table": "portfolio_snapshots",
+      "valid": true
+    },
+    {
+      "definition": "CREATE UNIQUE INDEX portfolio_snapshots_account_id_snapshot_date_key ON public.portfolio_snapshots USING btree (account_id, snapshot_date)",
+      "name": "portfolio_snapshots_account_id_snapshot_date_key",
+      "table": "portfolio_snapshots",
+      "valid": true
+    },
+    {
+      "definition": "CREATE UNIQUE INDEX portfolio_snapshots_pkey ON public.portfolio_snapshots USING btree (id)",
+      "name": "portfolio_snapshots_pkey",
+      "table": "portfolio_snapshots",
+      "valid": true
+    }
+  ],
+  "policies": [
+    {
+      "check": "(user_id = auth.uid())",
+      "command": "ALL",
+      "name": "Owners manage their brokerage account",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "public"
+      ],
+      "table": "accounts",
+      "using": "(user_id = auth.uid())"
+    },
+    {
+      "check": "(EXISTS ( SELECT 1\n   FROM accounts a\n  WHERE ((a.id = budget_categories.account_id) AND (a.user_id = auth.uid()))))",
+      "command": "ALL",
+      "name": "Owners manage their budget categories",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "public"
+      ],
+      "table": "budget_categories",
+      "using": "(EXISTS ( SELECT 1\n   FROM accounts a\n  WHERE ((a.id = budget_categories.account_id) AND (a.user_id = auth.uid()))))"
+    },
+    {
+      "check": "(EXISTS ( SELECT 1\n   FROM (holdings h\n     JOIN accounts a ON ((a.id = h.account_id)))\n  WHERE ((h.id = holding_quotes.holding_id) AND (a.user_id = auth.uid()))))",
+      "command": "ALL",
+      "name": "Owners read and write their holding quotes",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "public"
+      ],
+      "table": "holding_quotes",
+      "using": "(EXISTS ( SELECT 1\n   FROM (holdings h\n     JOIN accounts a ON ((a.id = h.account_id)))\n  WHERE ((h.id = holding_quotes.holding_id) AND (a.user_id = auth.uid()))))"
+    },
+    {
+      "check": "(EXISTS ( SELECT 1\n   FROM accounts a\n  WHERE ((a.id = holdings.account_id) AND (a.user_id = auth.uid()))))",
+      "command": "ALL",
+      "name": "Owners manage their brokerage holdings",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "public"
+      ],
+      "table": "holdings",
+      "using": "(EXISTS ( SELECT 1\n   FROM accounts a\n  WHERE ((a.id = holdings.account_id) AND (a.user_id = auth.uid()))))"
+    },
+    {
+      "check": "(EXISTS ( SELECT 1\n   FROM accounts a\n  WHERE ((a.id = home_properties.account_id) AND (a.user_id = auth.uid()))))",
+      "command": "ALL",
+      "name": "Owners manage their home properties",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "public"
+      ],
+      "table": "home_properties",
+      "using": "(EXISTS ( SELECT 1\n   FROM accounts a\n  WHERE ((a.id = home_properties.account_id) AND (a.user_id = auth.uid()))))"
+    },
+    {
+      "check": "(EXISTS ( SELECT 1\n   FROM accounts a\n  WHERE ((a.id = income_sources.account_id) AND (a.user_id = auth.uid()))))",
+      "command": "ALL",
+      "name": "Owners manage their income sources",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "public"
+      ],
+      "table": "income_sources",
+      "using": "(EXISTS ( SELECT 1\n   FROM accounts a\n  WHERE ((a.id = income_sources.account_id) AND (a.user_id = auth.uid()))))"
+    },
+    {
+      "check": "(EXISTS ( SELECT 1\n   FROM accounts a\n  WHERE ((a.id = plan_settings.account_id) AND (a.user_id = auth.uid()))))",
+      "command": "ALL",
+      "name": "Owners manage their plan settings",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "public"
+      ],
+      "table": "plan_settings",
+      "using": "(EXISTS ( SELECT 1\n   FROM accounts a\n  WHERE ((a.id = plan_settings.account_id) AND (a.user_id = auth.uid()))))"
+    },
+    {
+      "check": null,
+      "command": "SELECT",
+      "name": "Owners read their brokerage snapshots",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "public"
+      ],
+      "table": "portfolio_snapshots",
+      "using": "(EXISTS ( SELECT 1\n   FROM accounts a\n  WHERE ((a.id = portfolio_snapshots.account_id) AND (a.user_id = auth.uid()))))"
+    }
+  ],
+  "tables": [
+    {
+      "force_rls": false,
+      "name": "accounts",
+      "rls": true
+    },
+    {
+      "force_rls": false,
+      "name": "budget_categories",
+      "rls": true
+    },
+    {
+      "force_rls": false,
+      "name": "holding_quotes",
+      "rls": true
+    },
+    {
+      "force_rls": false,
+      "name": "holdings",
+      "rls": true
+    },
+    {
+      "force_rls": false,
+      "name": "home_properties",
+      "rls": true
+    },
+    {
+      "force_rls": false,
+      "name": "income_sources",
+      "rls": true
+    },
+    {
+      "force_rls": false,
+      "name": "plan_settings",
+      "rls": true
+    },
+    {
+      "force_rls": false,
+      "name": "portfolio_snapshots",
+      "rls": true
+    }
+  ],
+  "triggers": [
+    {
+      "definition": "CREATE TRIGGER accounts_updated_at BEFORE UPDATE ON public.accounts FOR EACH ROW EXECUTE FUNCTION set_updated_at()",
+      "enabled": "O",
+      "name": "accounts_updated_at",
+      "table": "accounts"
+    },
+    {
+      "definition": "CREATE TRIGGER budget_categories_updated_at BEFORE UPDATE ON public.budget_categories FOR EACH ROW EXECUTE FUNCTION set_updated_at()",
+      "enabled": "O",
+      "name": "budget_categories_updated_at",
+      "table": "budget_categories"
+    },
+    {
+      "definition": "CREATE TRIGGER holdings_updated_at BEFORE UPDATE ON public.holdings FOR EACH ROW EXECUTE FUNCTION set_updated_at()",
+      "enabled": "O",
+      "name": "holdings_updated_at",
+      "table": "holdings"
+    },
+    {
+      "definition": "CREATE TRIGGER home_properties_updated_at BEFORE UPDATE ON public.home_properties FOR EACH ROW EXECUTE FUNCTION set_updated_at()",
+      "enabled": "O",
+      "name": "home_properties_updated_at",
+      "table": "home_properties"
+    },
+    {
+      "definition": "CREATE TRIGGER income_sources_updated_at BEFORE UPDATE ON public.income_sources FOR EACH ROW EXECUTE FUNCTION set_updated_at()",
+      "enabled": "O",
+      "name": "income_sources_updated_at",
+      "table": "income_sources"
+    },
+    {
+      "definition": "CREATE TRIGGER plan_settings_updated_at BEFORE UPDATE ON public.plan_settings FOR EACH ROW EXECUTE FUNCTION set_updated_at()",
+      "enabled": "O",
+      "name": "plan_settings_updated_at",
+      "table": "plan_settings"
+    }
+  ]
+}

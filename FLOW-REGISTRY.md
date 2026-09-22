@@ -21,7 +21,7 @@
 
 ## Required acceptance gates
 
-- Reconcile the historical migration baseline and prove a clean rebuild. Current hosted anonymous and two-user table isolation passed on 2026-09-21; see the 0.2.7 receipt below.
+- Product-schema rebuild and migration-history parity verified on 2026-09-22 (0.2.8); hosted anonymous and two-user table isolation passed on 2026-09-21 (0.2.7). Hosted services and actual data backup/restore remain separate acceptance boundaries.
 - Verify a mutual fund, ETF and crypto quote through Twelve Data in the deployed protected route.
 - Verify provider failure retains the last successful quote and exposes its timestamp.
 - Verify one daily snapshot per Brokerage account and New York date, and a truthful point/line from every available date in the selected range.
@@ -211,3 +211,7 @@ Ten implemented canonical flows remain; no flow added. Home/history, Portfolio, 
 Ten implemented canonical flows unchanged. Add asset uses stable insert-only identity and a confirmed returned record; quote storage and asset/source/category/property deletion are bounded and account-context guarded. Empty deletion responses require a successful absence read before local removal; confirmed source/category/property deletes no longer depend on unrelated collection reloads. Timeout messages preserve recovery without claiming an uncertain write failed. Existing Acadia native dialogs and focus behavior are reused.
 
 Live acceptance: two disposable authenticated identities exercised all eight private tables in both directions. Own records remained accessible; foreign reads/updates/deletes/inserts and ownership reassignment were blocked, as were anonymous reads. Quote inner-join account filters isolated both users. Cleanup verified both accounts/dependent rows empty and both auth identities absent. This closes the two-user database isolation gate for the current deployed schema; email redemption, cross-device browser persistence, export, provider/scheduler and migration rebuild remain separate. Evidence: `automation/review/2026-09-21/reliability/`.
+
+## 2026-09-22 — database rebuild (0.2.8)
+
+Ten implemented canonical flows unchanged. Seven unique active migration versions match the hosted ledger. The consolidated bootstrap and six unchanged forward migrations rebuild all eight product tables with verified columns, constraints, indexes, policies, triggers, helper and permissions. Isolated PostgreSQL 17 acceptance covers two-user/anonymous boundaries, quote ownership joins, revisions, duplicate Add identity, property/date/budget constraints and acknowledged delete retry. No production schema, data or ledger changes were needed; a hosted push dry run is empty. Evidence: `automation/review/2026-09-22/migrations/`. Full hosted services and owner-data backup/restore are separate from this product-schema check.

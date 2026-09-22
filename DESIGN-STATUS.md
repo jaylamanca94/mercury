@@ -1,5 +1,7 @@
 # Mercury — Design Status
 
+2026-09-22: **0.2.8** is a database-rebuild readiness patch. Product flows, Acadia assets and UI are unchanged; no new visual acceptance is claimed. See `automation/review/2026-09-22/migrations/review.md`.
+
 2026-09-21: **0.2.7** closes remaining Add/quote/delete timeout and acknowledgement gaps using existing Acadia controls. Confirmed deletion updates locally and returns focus to a visible action. Live two-user database isolation passed; disposable identities and data were removed. See `automation/review/2026-09-21/reliability/review.md`.
 
 2026-09-21: **0.2.6** prevents silently incomplete collection reads and clearly labels unavailable Income totals/counts. The redundant Expenses scroll hint is removed. Published Acadia 0.3.5 runtime alignment is verified unchanged. Twenty route/viewport combinations fit from 320–1280px; phone keyboard retry at 200% text and dark appearance checked. Ten implemented canonical flows unchanged. See `automation/review/2026-09-21/review.md`.

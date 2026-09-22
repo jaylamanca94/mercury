@@ -194,3 +194,7 @@ Maintain root `FLOW-REGISTRY.md` as Mercury's authoritative canonical-flow recor
 ## Design Status
 
 Maintain root `DESIGN-STATUS.md` as Mercury's concise design telemetry. When asked for design status, report headline signals and exactly three next design opportunities, prioritized by user impact × affected active flows × current friction. Recommend user-facing design work only; keep engineering cleanup separate unless it materially changes the experience.
+
+## Database migration validation
+
+The reconciled active migration directory starts at `20260903004833_remote_baseline.sql` and matches the hosted ledger. Preserve applied files and the provenance archive; add future changes as unique fourteen-digit forward migrations. For database changes, run `npm run check:database` in addition to `npm run check`, review schema-contract differences, and inspect linked migration history plus a push dry run before applying new SQL. The rebuild command creates/removes only its own local cluster. Never use a linked/production reset to verify a rebuild; see `supabase/README.md` for scope and prerequisites.
