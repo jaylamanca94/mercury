@@ -58,7 +58,7 @@ test("Home composes a minimal Acadia dashboard", () => {
   assert.match(indexHtml, /id="net-worth-label"[^>]*>Net worth</);
   assert.match(indexHtml, /id="all-time-change-value"/);
   assert.match(indexHtml, /id="all-time-change-rate"/);
-  assert.match(indexHtml, /id="performance-context"[^>]*>Portfolio history</);
+  assert.match(indexHtml, /id="performance-context"[^>]*>Portfolio market movement</);
   assert.doesNotMatch(indexHtml, /id="home-planning-balance"|id="home-review-list"/);
   const graphCard = indexHtml.slice(indexHtml.indexOf('id="home-history-card"'), indexHtml.indexOf('aria-label="Investment summary"'));
   assert.doesNotMatch(graphCard, /id="all-time-change-value"|id="metric-change-value"/);
@@ -169,7 +169,7 @@ test("large currency display values use the shared compact format", () => {
   assert.match(homeSource, /function currentNetWorthCents\(summary\)/);
   assert.match(homeSource, /if \(!state\.propertiesAvailable \|\| summary\.rows\.length !== state\.holdings\.length\) return null/);
   assert.match(homeSource, /totalNetWorthCents\(summary\.totalMarketValueCents, state\.properties\.map\(propertyModel\)\)/);
-  assert.match(homeSource, /netWorthCents === null \? "Not set" : displayCurrency\(netWorthCents \/ 100\)/);
+  assert.match(homeSource, /netWorthCurrency\.format\(netWorthCents \/ 100\)/);
   assert.match(homeSource, /setMovement\("#metric-change-value", dayCents/);
   assert.match(homeSource, /setMovement\("#metric-change-rate", dayRate/);
   assert.match(homeSource, /function planningPosition/);
@@ -283,7 +283,7 @@ test("Plan provides one hero projection, four statistics and live scenario contr
   assert.match(indexHtml, /id="plan-assumptions-dialog"/);
   assert.match(indexHtml, /id="property-dialog"/);
   assert.match(indexHtml, /<script src="plan\.js\?v=20260914-change-cards-023"><\/script>/);
-  assert.match(indexHtml, /<script type="module" src="brokerage\.js\?v=20260921-confirmed-mutations"><\/script>/);
+  assert.match(indexHtml, /<script type="module" src="brokerage\.js\?v=20260922-home-market"><\/script>/);
   assert.match(homeSource, /function routePlan\(\)/);
   assert.match(homeSource, /function renderPlan\(summary\)/);
   assert.match(homeSource, /function renderPlanChart/);

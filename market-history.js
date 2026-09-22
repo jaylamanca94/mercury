@@ -8,7 +8,7 @@
 
   function summarizeMarketHistory(history, period = "1m", now = Date.now()) {
     const cutoff = new Date(now);
-    if (period === "1w") cutoff.setUTCDate(cutoff.getUTCDate() - 7);
+    if (period === "1w" || period === "1d") cutoff.setUTCDate(cutoff.getUTCDate() - 7);
     else {
       const day = cutoff.getUTCDate();
       cutoff.setUTCDate(1);
@@ -36,7 +36,7 @@
   // Current quantities are held constant: deposits, withdrawals and past trades
   // are not reconstructed from account-value snapshots.
   function summarizePortfolioMarketHistory(rows, historyById, period = "1w", now = Date.now()) {
-    const unavailable = reason => ({ changeCents: null, changeRate: null, startDate: null, endDate: null, sources: [], reason });
+    const unavailable = reason => ({ changeCents: null, changeRate: null, startDate: null, endDate: null, sources: [], points: [], reason });
     const investments = [];
     let cash = 0;
     for (const { asset, marketValueCents } of rows) {
@@ -56,16 +56,22 @@
       investments.push({ shares: asset.shares, dates, source: history.source || "Market history" });
     }
     if (!investments.length) return cash > 0
-      ? { changeCents: 0, changeRate: 0, startDate: null, endDate: null, sources: [], reason: "USD cash has no price movement; interest is excluded." }
+      ? { changeCents: 0, changeRate: 0, startDate: null, endDate: null, sources: [], points: [], reason: "USD cash has no price movement; interest is excluded." }
       : unavailable("No investments with a positive balance.");
-    const commonDates = [...investments[0].dates.keys()].filter(date => investments.every(item => item.dates.has(date))).sort();
+    let commonDates = [...investments[0].dates.keys()].filter(date => investments.every(item => item.dates.has(date))).sort();
     if (commonDates.length < 2) return unavailable("Two shared market dates are not available for every investment in this range.");
+    if (period === "1d") commonDates = commonDates.slice(-2);
     const startDate = commonDates[0], endDate = commonDates.at(-1);
     const baseline = cash + investments.reduce((sum, item) => sum + item.shares * item.dates.get(startDate), 0);
     const change = investments.reduce((sum, item) => sum + item.shares * (item.dates.get(endDate) - item.dates.get(startDate)), 0);
     const changeCents = Math.round(change * 100);
     if (!Number.isSafeInteger(changeCents) || !Number.isSafeInteger(Math.round(baseline * 100)) || baseline <= 0) return unavailable("Market values are outside the supported range.");
-    return { changeCents, changeRate: change / baseline, startDate, endDate,
+    const points = commonDates.map(date => {
+      const value = cash + investments.reduce((sum, item) => sum + item.shares * item.dates.get(date), 0);
+      return { date, changeRate: (value - baseline) / baseline, valueCents: Math.round(value * 100) };
+    });
+    if (points.some(point => !Number.isSafeInteger(point.valueCents) || !Number.isFinite(point.changeRate))) return unavailable("Market values are outside the supported range.");
+    return { changeCents, changeRate: change / baseline, startDate, endDate, points,
       sources: [...new Set(investments.map(item => item.source))], reason: "" };
   }
 

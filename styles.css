@@ -337,3 +337,12 @@ body:has(#portfolio-workspace:not([hidden])) { --acadia-shell-max-width: var(--a
     padding-block: calc(var(--acadia-space-1) / 2 - 1px);
   }
 }
+
+/* Home chart scope stays distinct from net worth; native view selection wraps. */
+#home-chart-heading { gap: var(--acadia-space-2); flex-wrap: wrap; }
+#home-chart-heading .acadia-cluster { flex-wrap: wrap; }
+#home-chart-heading .acadia-control { max-width: 100%; }
+#home-chart-heading > .acadia-field { min-width: 0; max-width: 100%; }
+#home-market-change.is-positive { color: var(--acadia-color-brand); }
+#home-market-change.is-danger { color: var(--acadia-status-danger-text); }
+#home-market-retry { align-self: flex-start; }

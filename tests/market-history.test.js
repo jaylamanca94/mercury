@@ -148,3 +148,44 @@ test('cash has zero price movement and stays in the portfolio starting-value den
   assert.equal(basket([{...cash,marketValueCents:null}],new Map(),'1w',now).changeCents,null);
   assert.equal(basket([basketRow('zero',0),cash],new Map(),'1w',now).changeCents,0);
 });
+
+test('Home series includes every shared observation and matches value-weighted Portfolio endpoints', () => {
+  const rows=[basketRow('large',9),basketRow('small',1)];
+  const histories=new Map([
+    ['large',history([point(20,100),point(10,110),point(0,120)])],
+    ['small',history([point(20,100),point(10,80),point(0,50)])],
+  ]);
+  const result=basket(rows,histories,'1m',now);
+  assert.deepEqual(result.points.map(p=>p.valueCents),[100000,107000,113000]);
+  assert.deepEqual(result.points.map(p=>p.changeRate),[0,.07,.13]);
+  assert.equal(result.changeRate,result.points.at(-1).changeRate);
+  assert.equal(result.changeCents,13000);
+  histories.set('small',history([point(20,100),point(0,50)]));
+  assert.equal(basket(rows,histories,'1m',now).points.length,2,'never interpolate a missing market date');
+});
+
+test('Home 1D uses latest two shared daily observations, including a weekend gap',()=>{
+  const rows=[basketRow('stock',1),basketRow('coin',2)];
+  const histories=new Map([
+    ['stock',history([point(7,50),point(3,100),point(0,110)])],
+    ['coin',history([point(7,30),point(3,50),point(1,200),point(0,60)])],
+  ]);
+  const result=basket(rows,histories,'1d',now);
+  assert.deepEqual(result.points.map(p=>p.date),['2026-09-11','2026-09-14']);
+  assert.equal(result.changeRate,.15);
+  assert.equal(result.changeCents,3000);
+  assert.equal(basket(rows,histories,'1d',now+14*day).points.length,0,'old daily data is not a current day change');
+});
+
+test('Home longer ranges retain genuine coverage; missing data never produces a partial line',()=>{
+  const rows=[basketRow('a',1),basketRow('b',1)];
+  const histories=new Map([
+    ['a',history([point(2000,10),point(1000,50),point(0,100)])],
+    ['b',history([point(1000,20),point(0,40)])],
+  ]);
+  const result=basket(rows,histories,'5y',now);
+  assert.equal(result.points.length,2);assert.equal(result.changeRate,1);
+  assert.equal(basket(rows,histories,'1m',now).points.length,0);
+  histories.delete('b');assert.equal(basket(rows,histories,'5y',now).points.length,0);
+  assert.equal(basket([{asset:{instrumentType:'cash'},marketValueCents:100}],new Map(),'1m',now).points.length,0);
+});
