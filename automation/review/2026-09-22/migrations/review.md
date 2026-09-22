@@ -26,3 +26,7 @@ Patch version 0.2.8 addresses environment reproducibility. Browser/application c
 This closes Mercury's product-schema rebuild gate. The fixture is not a full Supabase stack: hosted Auth/Storage services, extension lifecycle, email/redirect configuration, provider/scheduler operation, physical-device acceptance and actual owner-data backup/restore remain separate. The original live two-user API isolation evidence remains in the 0.2.7 receipt.
 
 Migration workflow references reviewed: [Supabase migrations](https://supabase.com/docs/guides/deployment/database-migrations) and [local development workflow](https://supabase.com/docs/guides/local-development/cli-workflows). Production history must only be repaired when a verified mismatch requires it; this reconciliation required none.
+
+## Publication receipt
+
+Release commit `6c7dbc7d70aeefe8cadb7a56eadf3c9ccc014247` is on `origin/main`; the Git-triggered [Vercel deployment](https://vercel.com/jayson-lamanca-s-projects/mercury/67ZYk32rE3iLScAQTyNGJSfUBFag) succeeded. Canonical production returned HTTP 200 and exact checkout bytes for `index.html`, `brokerage.js`, the 0.2.8 README and consolidated baseline; CSP and nosniff were present. See `production.json`. Vercel does not serve `package.json` (404), so the published README confirms the version. The publication receipt is committed separately; runtime and database files are unchanged by that receipt.

@@ -1,0 +1,34 @@
+[
+  {
+    "file": "index.html",
+    "status": 200,
+    "matches_local": true,
+    "sha256": "c93937669edfa847acf41595880e29ba7e16e3ae07526ecd33e813410f511d72",
+    "csp": true,
+    "nosniff": "nosniff"
+  },
+  {
+    "file": "brokerage.js",
+    "status": 200,
+    "matches_local": true,
+    "sha256": "1004887c8f7376429d202956e013bde7133f872382f6b53c2ece4250ffb18b6c",
+    "csp": true,
+    "nosniff": "nosniff"
+  },
+  {
+    "file": "README.md",
+    "status": 200,
+    "matches_local": true,
+    "sha256": "7fdb45437eb649b8aeb787e203387129ad480fc0578d89440a01a296cb0a8674",
+    "csp": true,
+    "nosniff": "nosniff"
+  },
+  {
+    "file": "supabase/migrations/20260903004833_remote_baseline.sql",
+    "status": 200,
+    "matches_local": true,
+    "sha256": "0492dd0e4d4466d3110181900edbefbaf409ff08423852a6307ad4c2d78f2753",
+    "csp": true,
+    "nosniff": "nosniff"
+  }
+]
