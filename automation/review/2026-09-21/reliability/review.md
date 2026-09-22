@@ -29,3 +29,7 @@ Screenshots: `delete-timeout-320.png`, `property-deleted-768.png`, `add-unconfir
 Patch release 0.2.7; validation complete before the authorised main commit/push. Production receipt is recorded after Git-triggered deployment.
 
 No schema changes were needed. Historical duplicate migration prefixes and clean rebuild remain the highest-priority release-readiness work. Real magic-link delivery/redemption, physical-device accessibility, provider/scheduler operation, export and cross-device browser persistence remain separate acceptance gates. A client deadline does not roll back a write that may already have committed; recovery copy and stable identity account for that uncertainty. Multi-collection reads are not a transactional snapshot.
+
+## Production receipt
+
+Release commit `19a7c88d158be5cfcd3bce2ca1cfb00d9788f6b5` was pushed to `origin/main` and remote SHA verified. Git-triggered Vercel deployment succeeded: https://vercel.com/jayson-lamanca-s-projects/mercury/2b6ReFYbGwdhEii1BbeWCMppDKED . Production `https://mercury-psi-six.vercel.app` returned HTTP 200 with exact local byte matches for index, controller, collection reader, product CSS, Acadia CSS and canonical Home icon. CSP and nosniff were present. Unauthenticated quote and snapshot endpoints returned 401. See `hosted-receipt.json`. This documentation receipt is committed separately after deployment verification; runtime files are unchanged.

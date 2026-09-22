@@ -1,0 +1,50 @@
+[
+  {
+    "file": "index.html",
+    "status": 200,
+    "matches_local": true,
+    "sha256": "c93937669edfa847acf41595880e29ba7e16e3ae07526ecd33e813410f511d72",
+    "nosniff": "nosniff",
+    "csp": true
+  },
+  {
+    "file": "brokerage.js",
+    "status": 200,
+    "matches_local": true,
+    "sha256": "1004887c8f7376429d202956e013bde7133f872382f6b53c2ece4250ffb18b6c",
+    "nosniff": "nosniff",
+    "csp": true
+  },
+  {
+    "file": "collection-read.js",
+    "status": 200,
+    "matches_local": true,
+    "sha256": "c9a64fbfbe1b0568a00cb443b096c760ce8b3ade62d14e2660394bfa78157d7a",
+    "nosniff": "nosniff",
+    "csp": true
+  },
+  {
+    "file": "styles.css",
+    "status": 200,
+    "matches_local": true,
+    "sha256": "4fd8778be816cfda18d51a79e5072fd1150d7cfd19a2ca03be1b9b28500b0238",
+    "nosniff": "nosniff",
+    "csp": true
+  },
+  {
+    "file": "acadia.css",
+    "status": 200,
+    "matches_local": true,
+    "sha256": "f93a16d0574790eebd36339065b3873445ef3ab18b58b844a83018eb6828b78a",
+    "nosniff": "nosniff",
+    "csp": true
+  },
+  {
+    "file": "assets/icons/house-solid.svg",
+    "status": 200,
+    "matches_local": true,
+    "sha256": "379fe9f56a3ece34226fb9728b8b76cfbaa8255fba3421a2cdd53616f41c612a",
+    "nosniff": "nosniff",
+    "csp": true
+  }
+]

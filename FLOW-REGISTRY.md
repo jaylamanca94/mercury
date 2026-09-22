@@ -21,7 +21,7 @@
 
 ## Required acceptance gates
 
-- Apply the migration and verify RLS with an unauthenticated user and a second authenticated user.
+- Reconcile the historical migration baseline and prove a clean rebuild. Current hosted anonymous and two-user table isolation passed on 2026-09-21; see the 0.2.7 receipt below.
 - Verify a mutual fund, ETF and crypto quote through Twelve Data in the deployed protected route.
 - Verify provider failure retains the last successful quote and exposes its timestamp.
 - Verify one daily snapshot per Brokerage account and New York date, and a truthful point/line from every available date in the selected range.
