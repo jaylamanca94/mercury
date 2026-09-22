@@ -198,3 +198,5 @@ Maintain root `DESIGN-STATUS.md` as Mercury's concise design telemetry. When ask
 ## Database migration validation
 
 The reconciled active migration directory starts at `20260903004833_remote_baseline.sql` and matches the hosted ledger. Preserve applied files and the provenance archive; add future changes as unique fourteen-digit forward migrations. For database changes, run `npm run check:database` in addition to `npm run check`, review schema-contract differences, and inspect linked migration history plus a push dry run before applying new SQL. The rebuild command creates/removes only its own local cluster. Never use a linked/production reset to verify a rebuild; see `supabase/README.md` for scope and prerequisites.
+
+For product-table, ownership, precision or recovery-tooling changes, also run `npm run check:restore`. Keep all fixtures synthetic and archives temporary. Follow `supabase/RECOVERY.md`; a local product-data drill is not evidence of hosted backup retention or complete Supabase recovery.

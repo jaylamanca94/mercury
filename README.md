@@ -48,6 +48,8 @@ Asset detail shows daily USD market prices per share or unit with 1M, 3M, 1Y and
 No package installation is needed for the dependency-free checks.
 
 - `npm test` — domain, quote-adapter, and snapshot behaviour.
+- `npm run check:database` — isolated PostgreSQL 17 schema rebuild and ownership/constraint acceptance.
+- `npm run check:restore` — synthetic eight-table backup/restore, exact record comparison and atomic failure checks. Both database commands require local PostgreSQL 17, Python 3 and Supabase CLI; see [recovery verification](supabase/RECOVERY.md).
 - `npm run check` — syntax checks followed by the test suite. Vercel runs this command as its build gate for Git-triggered preview and production publication; failed checks prevent the new deployment from publishing. The output directory is explicitly `.` because this static application serves the repository-root assets and has no generated `public` folder.
 
 ## Key files

@@ -1,0 +1,30 @@
+{
+  "postgres": "postgres (PostgreSQL) 17.11 (Homebrew)",
+  "versions": [
+    "20260903004833",
+    "20260903202800",
+    "20260907133000",
+    "20260914144500",
+    "20260914180000",
+    "20260914221500",
+    "20260914230000"
+  ],
+  "schema_objects": {
+    "grants": 168,
+    "tables": 8,
+    "columns": 87,
+    "indexes": 18,
+    "policies": 8,
+    "triggers": 6,
+    "functions": 1,
+    "constraints": 73
+  },
+  "schema_matches": true,
+  "contract_sha256": "f7d1e179b0c828ad7465e023ead312807c938c8d5cff44db4978acd549f908be",
+  "two_user_rls_constraints_revisions_deletes": "passed",
+  "anonymous_reads": "denied",
+  "second_migration_run": "unchanged",
+  "application_rows_after_checks": 0,
+  "scope": "Mercury schema on PostgreSQL 17 with a minimal Supabase auth/role fixture",
+  "temporary_cluster_removed": true
+}

@@ -1,0 +1,45 @@
+{
+  "verified_at": "2026-09-22T01:04:06.009273+00:00",
+  "postgres": "postgres (PostgreSQL) 17.11 (Homebrew)",
+  "scope": "Synthetic product-data restore into a migrated PostgreSQL 17 database with minimal auth/role fixtures",
+  "rows_by_table": {
+    "accounts": 2,
+    "holdings": 4,
+    "plan_settings": 2,
+    "holding_quotes": 1002,
+    "income_sources": 2,
+    "home_properties": 2,
+    "budget_categories": 2,
+    "portfolio_snapshots": 2
+  },
+  "total_rows": 1018,
+  "archive_tables": [
+    "accounts",
+    "budget_categories",
+    "holding_quotes",
+    "holdings",
+    "home_properties",
+    "income_sources",
+    "plan_settings",
+    "portfolio_snapshots"
+  ],
+  "archive_sha256": "7187cfc9b227805d46eefd6d8b267b5d5cd7f43f34b84fc6704f3b9546f0138e",
+  "source_rows_sha256": "fcbb35cc0d3ec0d708f7218ec5d0b33e88e24d915ee7c94bece38f588e32342e",
+  "restored_rows_sha256": "fcbb35cc0d3ec0d708f7218ec5d0b33e88e24d915ee7c94bece38f588e32342e",
+  "exact_all_column_comparison": "passed",
+  "schema_and_migration_ledger": "unchanged",
+  "missing_auth_identity_restore": "rejected; zero product rows",
+  "truncated_data_restore": "rejected; transaction rolled back; zero product rows",
+  "duplicate_restore": "rejected; restored records unchanged",
+  "restored_owner_visibility_and_revision_writes": "passed",
+  "two_user_rls_anonymous_access_constraints": "passed",
+  "source_removed_before_restore": true,
+  "production_access": "none",
+  "excludes": [
+    "hosted Auth credentials/sessions/email",
+    "Storage objects",
+    "managed backups/retention/PITR",
+    "production recovery time or data-loss guarantees"
+  ],
+  "temporary_clusters_and_archives_removed": true
+}

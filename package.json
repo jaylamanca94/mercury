@@ -4,7 +4,8 @@
     "check": "npm run check:syntax && npm test",
     "check:syntax": "node --check collection-read.js && node --check acadia-card-trend.mjs && node --check market-history.js && node --check dashboard.js && node --check brokerage.js && node --check portfolio.js && node --check income.js && node --check data/property-markets.js && node --check plan.js && node --check theme.js && node --check api/config.js && node --check api/lib/portfolio-auth.js && node --check api/lib/twelve-data.js && node --check api/portfolio/quotes.js && node --check api/portfolio/snapshot.js && node --check api/live-snapshot.js && node --check api/fred-snapshot.js",
     "test": "node --test",
-    "check:database": "python3 scripts/check-database-rebuild.py"
+    "check:database": "python3 scripts/check-database-rebuild.py",
+    "check:restore": "python3 scripts/check-database-restore.py"
   },
   "version": "0.2.8"
 }

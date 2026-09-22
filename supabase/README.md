@@ -4,6 +4,10 @@ The active `migrations/` directory now has seven unique versions matching the li
 
 The hosted ledger's first entry originally records only Base Plan, not a complete schema snapshot. The consolidated local bootstrap also includes the earlier/manual Brokerage, contribution, quote, Income, Property and Budget changes verified already present in production. No production migration was replayed, repaired or marked applied. Local/hosted versions match and `supabase db push --linked --dry-run` proposes no changes. Do not execute the baseline against existing tables or replay archived SQL.
 
+## Recovery checks
+
+Run `npm run check:restore` for the disposable eight-table backup/restore drill. It verifies exact record preservation, owner isolation and atomic failure handling; it never accesses a hosted database. See [the recovery procedure and remaining hosted acceptance gates](RECOVERY.md). This supplements the schema rebuild below.
+
 ## Rebuild and future migrations
 
 - New Supabase environment: provision its standard auth schema/roles, then apply the active migrations in order through the Supabase CLI. An empty environment needs the full baseline; existing linked Mercury already has that version recorded.
