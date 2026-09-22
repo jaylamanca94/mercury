@@ -1,0 +1,62 @@
+{
+  "observed_at": "2026-09-22T01:20:15.494061+00:00",
+  "project": "Mercury",
+  "status": "ACTIVE_HEALTHY",
+  "region": "us-east-1",
+  "postgres_version": "17.6.1.166",
+  "physical_backups_enabled": true,
+  "pitr_enabled": false,
+  "backups": [
+    {
+      "inserted_at": "2026-09-15T07:24:09.703Z",
+      "status": "COMPLETED",
+      "is_physical_backup": true
+    },
+    {
+      "inserted_at": "2026-09-16T07:29:22.346Z",
+      "status": "COMPLETED",
+      "is_physical_backup": true
+    },
+    {
+      "inserted_at": "2026-09-17T07:30:39.658Z",
+      "status": "COMPLETED",
+      "is_physical_backup": true
+    },
+    {
+      "inserted_at": "2026-09-18T07:29:02.564Z",
+      "status": "COMPLETED",
+      "is_physical_backup": true
+    },
+    {
+      "inserted_at": "2026-09-19T07:29:25.543Z",
+      "status": "COMPLETED",
+      "is_physical_backup": true
+    },
+    {
+      "inserted_at": "2026-09-20T07:29:29.111Z",
+      "status": "COMPLETED",
+      "is_physical_backup": true
+    },
+    {
+      "inserted_at": "2026-09-21T07:27:40.737Z",
+      "status": "COMPLETED",
+      "is_physical_backup": true
+    }
+  ],
+  "completed_backup_count": 7,
+  "latest_backup_age_hours": 17.88,
+  "retention_evidence": "Seven completed daily backups observed; dashboard identifies organisation as Pro; published Pro retention is seven days.",
+  "isolated_restore": {
+    "available": true,
+    "selected_backup_timestamp": "2026-09-21T07:27:40.737Z",
+    "same_organisation": true,
+    "same_region": true,
+    "monthly_compute_usd": 9.68,
+    "additional_monthly_disk_usd": 0,
+    "disk_sizing": "1.5x source disk",
+    "created": false,
+    "reason": "Automatic approval review requires explicit approval of paid project creation and full database/user copy."
+  },
+  "production_changes": "none",
+  "record_contents_downloaded": false
+}

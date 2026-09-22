@@ -29,7 +29,9 @@ Latest acceptance: [`automation/review/2026-09-22/recovery/restore.json`](../aut
 
 ## Hosted recovery remains a separate gate
 
-This drill establishes the product-data path. It does not establish that a recoverable hosted backup exists, its retention, point-in-time coverage, recovery time, recovery point, or full Supabase restoration. The existing private Brokerage export boundary is still deferred and covers fewer tables; it is not an all-product backup.
+Read-only inspection on **2026-09-22** verified seven completed physical daily backups (15–21 September), a healthy Pro project in `us-east-1`, and PITR disabled. The latest backup was dated **21 September, 07:27:40 UTC**. The observed inventory matches the documented seven-day Pro retention. The isolated restore confirmation quotes **$9.68/month** additional compute and **$0/month** additional disk, with a full database/user copy in the same organisation and region. Creation is pending explicit approval after automatic approval review blocked Continue; no restore project exists. See [hosted inspection and the prepared acceptance plan](../automation/review/2026-09-22/hosted-recovery/review.md). No hosted restore has passed yet.
+
+This drill establishes the product-data path. The separate hosted inspection above establishes the available backup metadata. Successful recovery, elapsed recovery time and full Supabase restoration still require the isolated hosted exercise. The existing private Brokerage export boundary is still deferred and covers fewer tables; it is not an all-product backup.
 
 Before relying on hosted recovery for real financial records:
 

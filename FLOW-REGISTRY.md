@@ -21,7 +21,7 @@
 
 ## Required acceptance gates
 
-- Product-schema rebuild and migration-history parity verified on 2026-09-22 (0.2.8); hosted anonymous and two-user table isolation passed on 2026-09-21 (0.2.7). A synthetic eight-table product-data backup/restore drill also passed on 2026-09-22; see `supabase/RECOVERY.md`. Hosted services, managed retention and real owner-data recovery remain separate acceptance boundaries.
+- Product-schema rebuild and migration-history parity verified on 2026-09-22 (0.2.8); hosted anonymous and two-user table isolation passed on 2026-09-21 (0.2.7). A synthetic eight-table product-data backup/restore drill also passed on 2026-09-22; see `supabase/RECOVERY.md`. Hosted backup inspection on 2026-09-22 confirms seven completed daily backups and PITR off; the isolated hosted restore awaits explicit approval of the quoted paid project/full-data copy. Hosted services and real owner-data recovery remain unproven; see `automation/review/2026-09-22/hosted-recovery/review.md`.
 - Verify a mutual fund, ETF and crypto quote through Twelve Data in the deployed protected route.
 - Verify provider failure retains the last successful quote and exposes its timestamp.
 - Verify one daily snapshot per Brokerage account and New York date, and a truthful point/line from every available date in the selected range.
