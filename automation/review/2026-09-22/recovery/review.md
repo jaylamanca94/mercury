@@ -22,3 +22,7 @@ References reviewed: official [PostgreSQL 17 pg_dump](https://www.postgresql.org
 ## Remaining release evidence
 
 Hosted backup availability/retention/PITR and a complete Supabase restore have not been verified. The highest-value next step is read-only inspection of the actual hosted backup inventory and recovery window, followed by a separate isolated managed-restore exercise. Real email/redirect, physical-device and provider/scheduler acceptance also remain open. This local result does not establish a production recovery-time or data-loss guarantee.
+
+## Publication
+
+Commit `532ecbb198948036cdf0aa22a9b1c3ea539d26c9` is on `origin/main`. Its Git-triggered [Vercel deployment](https://vercel.com/jayson-lamanca-s-projects/mercury/87t6LQ98sczzu6FXZ6sGHxbypM7b) succeeded. Canonical production returns HTTP 200 and exact checkout bytes for the app document/controller, README and recovery runbook, with CSP and nosniff headers. See `production.json`. This receipt is committed separately; it changes no runtime or recovery code.

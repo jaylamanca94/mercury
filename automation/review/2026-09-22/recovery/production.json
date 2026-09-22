@@ -1,0 +1,34 @@
+[
+  {
+    "file": "index.html",
+    "status": 200,
+    "matches_local": true,
+    "sha256": "c93937669edfa847acf41595880e29ba7e16e3ae07526ecd33e813410f511d72",
+    "csp": true,
+    "nosniff": "nosniff"
+  },
+  {
+    "file": "brokerage.js",
+    "status": 200,
+    "matches_local": true,
+    "sha256": "1004887c8f7376429d202956e013bde7133f872382f6b53c2ece4250ffb18b6c",
+    "csp": true,
+    "nosniff": "nosniff"
+  },
+  {
+    "file": "README.md",
+    "status": 200,
+    "matches_local": true,
+    "sha256": "a4a7b2009e56e99d7a7fbd33dbed39d8e844657e5b7900a441e3e6ae58477cc0",
+    "csp": true,
+    "nosniff": "nosniff"
+  },
+  {
+    "file": "supabase/RECOVERY.md",
+    "status": 200,
+    "matches_local": true,
+    "sha256": "84f9c556c829d3d075ea87f1154254555e46aebcac768aad29ea9585acfe1abc",
+    "csp": true,
+    "nosniff": "nosniff"
+  }
+]
