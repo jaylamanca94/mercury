@@ -15,7 +15,7 @@ const productReadme = fs.readFileSync(path.join(root, "PRODUCT-README.md"), "utf
 const personalFinancePivot = fs.readFileSync(path.join(root, "docs", "personal-finance-pivot.md"), "utf8");
 
 test("Home consumes canonical Acadia components with documented composition adapters", () => {
-  assert.match(styles, /^@import url\("acadia\.css\?v=20260923-1df9f588"\);/);
+  assert.match(styles, /^@import url\("acadia\.css\?v=20260923-6c3703d6"\);/);
   assert.match(acadiaStyles, /\.acadia-responsive-navbar/);
   assert.match(acadiaStyles, /\.acadia-card\.is-content/);
   assert.match(acadiaStyles, /\.acadia-dialog\.is-form-modal/);

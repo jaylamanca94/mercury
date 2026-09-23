@@ -1,28 +1,29 @@
-# Disclosure focus review — 2026-09-23
+# Page Header and menu focus — Mercury 0.2.14
 
-## Finding and decision
+## Change
 
-**P2: Portfolio filter and sort disclosures lose their keyboard focus indicator in forced colours.** Mercury remains at 0.2.13 with Acadia 0.4.8. Do not adopt Acadia 0.4.9 solely for this issue: its generic disclosure correction is overridden by the more specific Page Header sort-trigger focus rule.
+Portfolio investment filters, the tablet period picker and recurring sort now retain visible keyboard focus in forced colours. Menu items receive the same inset system-colour outline; pressed Page Header filters retain a separate underline. Mercury adopts the complete unchanged Acadia 0.4.10 stylesheet from released source `6c3703d680c1f8bed23348148570eb095f4a4b60`. The other twelve shared assets match that source byte for byte. Cache URLs, the vendor manifest and existing provenance assertion are updated.
 
-On the actual synthetic Portfolio route, `#portfolio-group-picker > summary` matches `:focus-visible` but computes `outline: none 0px` and `box-shadow: none`. The same condition affects the tablet period picker and recurring sort. The existing `.acadia-page-header-pattern-sort-trigger:focus-visible` rule sets `outline: 0`; its class and pseudo-class specificity exceeds the new `details > summary:focus-visible` rule. Forced colours suppress the remaining shadow.
+No local component override, financial calculation, provider, persistence, schema or cost change. Ten canonical flows remain. Ordinary menu focus continues to use its established background highlight; forced colours use the new 2px outline.
 
-A local 0.4.9 adoption candidate reproduced the same failed focus state (`rejected-049.json`). All candidate runtime, version, cache, provenance, test-pin and release-document changes were removed. No new product version or runtime change is justified by this rejected adoption. Acadia's released source was verified as `7d823c5b9e0ed96ec8b6a4c6b6163ac3856ef589`, annotated tag v0.4.9 (published 10:15:15 UTC), with successful Actions run 35847562576.
+## Reproduced defect and shared delivery
 
-## Evidence
+The previous Portfolio Filter investments summary matched `:focus-visible` with no visible outline or shadow. Acadia 0.4.9's generic summary correction was overridden by `.acadia-page-header-pattern-sort-trigger:focus-visible`, so its initial adoption was rejected. `current-048.json` records twelve synthetic route/viewport cases and 67 focused summaries, with seven missing-indicator observations. `rejected-049.json` records the failed candidate, and `filter-forced-before.png` confirms the visual defect.
 
-- `current-048.json`: 12 synthetic route/viewport cases, 67 focused disclosure observations across Portfolio, Income and Plan at 1280, 768, 390 and 320px. The 320px case uses 200% root text. Seven observations lack an indicator: Portfolio Filter investments at desktop/tablet, Portfolio period at tablet, and Sort recurring investments at all four widths.
-- Remaining visible tested summaries retain an indicator. Hidden disclosures are excluded. No document horizontal overflow was measured in these cases.
-- These are Chromium forced-colour computed-style and actual DOM-focus checks using isolated in-memory financial fixtures. They are not OS contrast-theme, Firefox, VoiceOver, physical-device or authenticated persistence acceptance.
-- The browser CLI screenshot command stalled after 25 seconds. The computed-style matrix completed after removing that capture step. A separate disposable headless Chromium capture subsequently succeeded; `filter-forced-before.png` was visually inspected and confirms the missing focus ring. Stalled task-owned browser sessions were closed.
-- Desktop Filter investments intentionally has the existing 32px fine-pointer compact target. The initial candidate script's blanket 44px assertion was invalid for that target; the missing focus outline is independently reproduced. No touch-target regression is asserted.
-- `npm run check` passed syntax and all 321 tests on the rejected stylesheet candidate. Its passing source tests did not establish browser acceptance; no financial, controller, database, recovery, provider or dependency change was made.
+The demonstrated shared need was routed to the existing Acadia task. Acadia independently reproduced it and released the specific Page Header correction alongside menu-item focus and selected-filter treatment. Its annotated v0.4.10 tag and exact-source CI run 35854203596 were verified. Upstream publication is recorded in Acadia's `docs/releases/0.4.10/receipt.json`. Earlier `preview-*` evidence remains explicitly pre-release; it is superseded for Mercury acceptance by the actual vendored-asset results below.
 
-## Shared correction and next acceptance
+## Verification
 
-The demonstrated reusable need was routed to the already-active **Acadia** task `01a0cdee-0a9a-78c0-a1f2-1d5465a61250` under the automation's existing authority. The request asks for a focused correction of the Page Header filter/sort focus selectors, canonical browser checks and normal shared release delivery; it explicitly leaves Mercury adoption to this task. Routing is not release evidence.
+- `npm run check`: syntax and all 321 tests pass. Vendor integrity checks cover all thirteen assets; no database or recovery check is warranted for stylesheet-only adoption.
+- `released-chromium/accepted-browser.json`: 16 cases across ordinary/forced colours, light/dark product themes, 1280/768/390px and 320px at 200% text; 84 focused summaries.
+- `released-firefox/accepted-browser.json`: eight cases and 42 summaries in a disposable Firefox contrast-preference profile. The browser's contrast palette takes precedence over product theme colours.
+- All tested disclosures retain focus; forced-colour outlines are solid 2px. Enter/Space toggles work. Investment-group, tablet-period and recurring-sort keyboard choices update their labels and return focus to their triggers.
+- Enabled property menu items retain visible focus; Escape closes the menu and restores its summary. Pressed visible Page Header filters retain underlines in forced colours. No action that changes or deletes a record was invoked.
+- No document horizontal overflow across the matrix. Existing 32px fine-pointer desktop/tablet filters are preserved; phone controls meet the existing 44px target. Desktop and enlarged-phone screenshots were inspected in both engines.
+- Source checks cannot substitute for browser acceptance: the rejected 0.4.9 candidate also passed 321 tests. Focus transitions must settle before style measurement. Browser CLI captures stalled; isolated headless Chromium and Firefox produced the accepted screenshots and closed after each run.
 
-Acadia independently confirmed the defect on its canonical Page Header and is preparing 0.4.10. Its proposed source was exercised through disposable browser request routing, without changing Mercury files or its pin. Chromium passed 16 theme/palette/viewport cases and 84 focused summaries. A disposable Firefox contrast preference passed eight cases and 42 summaries. Native Enter/Space toggles, group/period/recurring-sort keyboard choices, focus return and no-overflow checks passed in both engines. Desktop and 320px/200%-text screenshots were inspected. Focus transitions must settle before measuring final styles. Evidence is under `preview-chromium/`, `preview-firefox/` and `preview-source.json`; these are unpublished candidate results, not delivered-product acceptance.
+All records are synthetic and in memory. Browser contrast emulation/preferences do not establish operating-system contrast themes, stock Firefox, VoiceOver, physical-device acceptance or authenticated persistence. Existing real magic-link, deployed provider/scheduler and cross-device evidence remain separate priorities. Paid hosted restore stays deferred. No owner records, email or paid calls were used.
 
-After a corrected Acadia release exists, review its full CSS diff and adopt unchanged assets only if actual Mercury filters and sort controls retain focus in forced colours. Recheck native Enter/Space toggles, chosen group/period/sort behaviour, ordinary themes, responsive layouts and enlarged text before publishing. Preserve the released 0.2.13 runtime until that verification passes.
+## Delivery
 
-Existing real magic-link redemption, authenticated deployed provider/scheduler, cross-device persistence and physical accessibility remain separate acceptance priorities. Paid hosted restoration remains explicitly deferred. No owner data, emails, paid calls or new resources were used.
+Release publication and exact production verification are recorded after the authorised Git-triggered deployment. Previous Mercury main `7d213e5` is the rollback source; no migration is required.

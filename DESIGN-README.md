@@ -1,5 +1,9 @@
 # Mercury Design README
 
+## Page Header disclosure focus — 2026-09-23
+
+Mercury 0.2.14 adopts unchanged Acadia 0.4.10 assets from published `6c3703d6`. Portfolio filter, period and sort controls retain a 2px inset system-colour keyboard outline. Shared Action Menu items also retain visible focus, and pressed Page Header filters retain a separate underline. The shared fix explicitly covers Page Header filter/sort selectors, which overrode the generic 0.4.9 disclosure rule. Existing icon actions, navigation and accordions preserve their specialised focus rules. Shared reuse; no local override. Chromium palette emulation and Firefox contrast-profile evidence: `automation/review/2026-09-23/disclosure-colours/review.md`. OS contrast themes, VoiceOver and physical-device acceptance remain separate.
+
 ## Forced-colour navigation orientation — 2026-09-23
 
 Mercury 0.2.13 consumes unchanged Acadia 0.4.8 assets from published `1df9f588`. Desktop brand/destination/Profile focus receives a 2px inset system-colour outline. Selected tabs retain a 3px underline, independently of the focused control; this includes Asset range buttons using `is-active`. No local focus override is needed. Mercury does not compose Side Navigation, so its upstream width correction has no product impact. Ordinary themes, geometry and financial semantics remain unchanged. Shared reuse; browser evidence and platform limits: `automation/review/2026-09-23/navigation-colours/review.md`.

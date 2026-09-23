@@ -1,0 +1,702 @@
+{
+  "browser": "153.0",
+  "at": "2026-09-23T11:29:38.527Z",
+  "mechanism": "Firefox contrast preference; disposable profile",
+  "records": [
+    {
+      "width": 1280,
+      "textScale": 100,
+      "theme": "light",
+      "forcedColors": "active",
+      "controls": [
+        {
+          "label": "Filter investments",
+          "focus": true,
+          "outline": "solid",
+          "outlineWidth": "2px",
+          "offset": "-3px",
+          "shadow": "none",
+          "height": 32,
+          "keyboardToggle": true
+        },
+        {
+          "label": "Add recurring investment",
+          "focus": true,
+          "outline": "solid",
+          "outlineWidth": "2px",
+          "offset": "2px",
+          "shadow": "none",
+          "height": 44,
+          "keyboardToggle": true
+        },
+        {
+          "label": "Sort recurring investments",
+          "focus": true,
+          "outline": "solid",
+          "outlineWidth": "2px",
+          "offset": "-3px",
+          "shadow": "none",
+          "height": 44,
+          "keyboardToggle": true
+        },
+        {
+          "label": "Actions for Local demonstration property",
+          "focus": true,
+          "outline": "solid",
+          "outlineWidth": "2px",
+          "offset": "2px",
+          "shadow": "none",
+          "height": 44,
+          "keyboardToggle": true
+        },
+        {
+          "label": "Portfolio allocation",
+          "focus": true,
+          "outline": "solid",
+          "outlineWidth": "2px",
+          "offset": "-2px",
+          "shadow": "none",
+          "height": 64,
+          "keyboardToggle": true
+        }
+      ],
+      "menuControls": [
+        {
+          "text": "Edit property",
+          "focus": true,
+          "outline": "solid",
+          "width": "2px",
+          "shadow": "none"
+        },
+        {
+          "text": "Delete property",
+          "focus": true,
+          "outline": "solid",
+          "width": "2px",
+          "shadow": "none"
+        }
+      ],
+      "selectedFilters": [
+        {
+          "text": "1W",
+          "decoration": "underline"
+        }
+      ],
+      "geometry": {
+        "client": 1280,
+        "scroll": 1280,
+        "forced": true
+      }
+    },
+    {
+      "width": 768,
+      "textScale": 100,
+      "theme": "light",
+      "forcedColors": "active",
+      "controls": [
+        {
+          "label": "Filter investments",
+          "focus": true,
+          "outline": "solid",
+          "outlineWidth": "2px",
+          "offset": "-3px",
+          "shadow": "none",
+          "height": 32,
+          "keyboardToggle": true
+        },
+        {
+          "label": "Portfolio period",
+          "focus": true,
+          "outline": "solid",
+          "outlineWidth": "2px",
+          "offset": "-3px",
+          "shadow": "none",
+          "height": 32,
+          "keyboardToggle": true
+        },
+        {
+          "label": "Add recurring investment",
+          "focus": true,
+          "outline": "solid",
+          "outlineWidth": "2px",
+          "offset": "2px",
+          "shadow": "none",
+          "height": 44,
+          "keyboardToggle": true
+        },
+        {
+          "label": "Sort recurring investments",
+          "focus": true,
+          "outline": "solid",
+          "outlineWidth": "2px",
+          "offset": "-3px",
+          "shadow": "none",
+          "height": 44,
+          "keyboardToggle": true
+        },
+        {
+          "label": "Actions for Local demonstration property",
+          "focus": true,
+          "outline": "solid",
+          "outlineWidth": "2px",
+          "offset": "2px",
+          "shadow": "none",
+          "height": 44,
+          "keyboardToggle": true
+        },
+        {
+          "label": "Portfolio allocation",
+          "focus": true,
+          "outline": "solid",
+          "outlineWidth": "2px",
+          "offset": "-2px",
+          "shadow": "none",
+          "height": 64,
+          "keyboardToggle": true
+        }
+      ],
+      "menuControls": [
+        {
+          "text": "Edit property",
+          "focus": true,
+          "outline": "solid",
+          "width": "2px",
+          "shadow": "none"
+        },
+        {
+          "text": "Delete property",
+          "focus": true,
+          "outline": "solid",
+          "width": "2px",
+          "shadow": "none"
+        }
+      ],
+      "selectedFilters": [],
+      "geometry": {
+        "client": 768,
+        "scroll": 768,
+        "forced": true
+      }
+    },
+    {
+      "width": 390,
+      "textScale": 100,
+      "theme": "light",
+      "forcedColors": "active",
+      "controls": [
+        {
+          "label": "Portfolio actions",
+          "focus": true,
+          "outline": "solid",
+          "outlineWidth": "2px",
+          "offset": "2px",
+          "shadow": "none",
+          "height": 44,
+          "keyboardToggle": true
+        },
+        {
+          "label": "Add recurring investment",
+          "focus": true,
+          "outline": "solid",
+          "outlineWidth": "2px",
+          "offset": "2px",
+          "shadow": "none",
+          "height": 44,
+          "keyboardToggle": true
+        },
+        {
+          "label": "Sort recurring investments",
+          "focus": true,
+          "outline": "solid",
+          "outlineWidth": "2px",
+          "offset": "-3px",
+          "shadow": "none",
+          "height": 44,
+          "keyboardToggle": true
+        },
+        {
+          "label": "Actions for Local demonstration property",
+          "focus": true,
+          "outline": "solid",
+          "outlineWidth": "2px",
+          "offset": "2px",
+          "shadow": "none",
+          "height": 44,
+          "keyboardToggle": true
+        },
+        {
+          "label": "Portfolio allocation",
+          "focus": true,
+          "outline": "solid",
+          "outlineWidth": "2px",
+          "offset": "-2px",
+          "shadow": "none",
+          "height": 64,
+          "keyboardToggle": true
+        }
+      ],
+      "menuControls": [
+        {
+          "text": "Edit property",
+          "focus": true,
+          "outline": "solid",
+          "width": "2px",
+          "shadow": "none"
+        },
+        {
+          "text": "Delete property",
+          "focus": true,
+          "outline": "solid",
+          "width": "2px",
+          "shadow": "none"
+        }
+      ],
+      "selectedFilters": [
+        {
+          "text": "1W",
+          "decoration": "underline"
+        }
+      ],
+      "geometry": {
+        "client": 390,
+        "scroll": 390,
+        "forced": true
+      }
+    },
+    {
+      "width": 320,
+      "textScale": 200,
+      "theme": "light",
+      "forcedColors": "active",
+      "controls": [
+        {
+          "label": "Portfolio actions",
+          "focus": true,
+          "outline": "solid",
+          "outlineWidth": "2px",
+          "offset": "2px",
+          "shadow": "none",
+          "height": 88,
+          "keyboardToggle": true
+        },
+        {
+          "label": "Add recurring investment",
+          "focus": true,
+          "outline": "solid",
+          "outlineWidth": "2px",
+          "offset": "2px",
+          "shadow": "none",
+          "height": 130,
+          "keyboardToggle": true
+        },
+        {
+          "label": "Sort recurring investments",
+          "focus": true,
+          "outline": "solid",
+          "outlineWidth": "2px",
+          "offset": "-3px",
+          "shadow": "none",
+          "height": 88,
+          "keyboardToggle": true
+        },
+        {
+          "label": "Actions for Local demonstration property",
+          "focus": true,
+          "outline": "solid",
+          "outlineWidth": "2px",
+          "offset": "2px",
+          "shadow": "none",
+          "height": 88,
+          "keyboardToggle": true
+        },
+        {
+          "label": "Portfolio allocation",
+          "focus": true,
+          "outline": "solid",
+          "outlineWidth": "2px",
+          "offset": "-2px",
+          "shadow": "none",
+          "height": 256,
+          "keyboardToggle": true
+        }
+      ],
+      "menuControls": [
+        {
+          "text": "Edit property",
+          "focus": true,
+          "outline": "solid",
+          "width": "2px",
+          "shadow": "none"
+        },
+        {
+          "text": "Delete property",
+          "focus": true,
+          "outline": "solid",
+          "width": "2px",
+          "shadow": "none"
+        }
+      ],
+      "selectedFilters": [
+        {
+          "text": "1W",
+          "decoration": "underline"
+        }
+      ],
+      "geometry": {
+        "client": 320,
+        "scroll": 320,
+        "forced": true
+      }
+    },
+    {
+      "width": 1280,
+      "textScale": 100,
+      "theme": "dark",
+      "forcedColors": "active",
+      "controls": [
+        {
+          "label": "Filter investments",
+          "focus": true,
+          "outline": "solid",
+          "outlineWidth": "2px",
+          "offset": "-3px",
+          "shadow": "none",
+          "height": 32,
+          "keyboardToggle": true
+        },
+        {
+          "label": "Add recurring investment",
+          "focus": true,
+          "outline": "solid",
+          "outlineWidth": "2px",
+          "offset": "2px",
+          "shadow": "none",
+          "height": 44,
+          "keyboardToggle": true
+        },
+        {
+          "label": "Sort recurring investments",
+          "focus": true,
+          "outline": "solid",
+          "outlineWidth": "2px",
+          "offset": "-3px",
+          "shadow": "none",
+          "height": 44,
+          "keyboardToggle": true
+        },
+        {
+          "label": "Actions for Local demonstration property",
+          "focus": true,
+          "outline": "solid",
+          "outlineWidth": "2px",
+          "offset": "2px",
+          "shadow": "none",
+          "height": 44,
+          "keyboardToggle": true
+        },
+        {
+          "label": "Portfolio allocation",
+          "focus": true,
+          "outline": "solid",
+          "outlineWidth": "2px",
+          "offset": "-2px",
+          "shadow": "none",
+          "height": 64,
+          "keyboardToggle": true
+        }
+      ],
+      "menuControls": [
+        {
+          "text": "Edit property",
+          "focus": true,
+          "outline": "solid",
+          "width": "2px",
+          "shadow": "none"
+        },
+        {
+          "text": "Delete property",
+          "focus": true,
+          "outline": "solid",
+          "width": "2px",
+          "shadow": "none"
+        }
+      ],
+      "selectedFilters": [
+        {
+          "text": "1W",
+          "decoration": "underline"
+        }
+      ],
+      "geometry": {
+        "client": 1280,
+        "scroll": 1280,
+        "forced": true
+      }
+    },
+    {
+      "width": 768,
+      "textScale": 100,
+      "theme": "dark",
+      "forcedColors": "active",
+      "controls": [
+        {
+          "label": "Filter investments",
+          "focus": true,
+          "outline": "solid",
+          "outlineWidth": "2px",
+          "offset": "-3px",
+          "shadow": "none",
+          "height": 32,
+          "keyboardToggle": true
+        },
+        {
+          "label": "Portfolio period",
+          "focus": true,
+          "outline": "solid",
+          "outlineWidth": "2px",
+          "offset": "-3px",
+          "shadow": "none",
+          "height": 32,
+          "keyboardToggle": true
+        },
+        {
+          "label": "Add recurring investment",
+          "focus": true,
+          "outline": "solid",
+          "outlineWidth": "2px",
+          "offset": "2px",
+          "shadow": "none",
+          "height": 44,
+          "keyboardToggle": true
+        },
+        {
+          "label": "Sort recurring investments",
+          "focus": true,
+          "outline": "solid",
+          "outlineWidth": "2px",
+          "offset": "-3px",
+          "shadow": "none",
+          "height": 44,
+          "keyboardToggle": true
+        },
+        {
+          "label": "Actions for Local demonstration property",
+          "focus": true,
+          "outline": "solid",
+          "outlineWidth": "2px",
+          "offset": "2px",
+          "shadow": "none",
+          "height": 44,
+          "keyboardToggle": true
+        },
+        {
+          "label": "Portfolio allocation",
+          "focus": true,
+          "outline": "solid",
+          "outlineWidth": "2px",
+          "offset": "-2px",
+          "shadow": "none",
+          "height": 64,
+          "keyboardToggle": true
+        }
+      ],
+      "menuControls": [
+        {
+          "text": "Edit property",
+          "focus": true,
+          "outline": "solid",
+          "width": "2px",
+          "shadow": "none"
+        },
+        {
+          "text": "Delete property",
+          "focus": true,
+          "outline": "solid",
+          "width": "2px",
+          "shadow": "none"
+        }
+      ],
+      "selectedFilters": [],
+      "geometry": {
+        "client": 768,
+        "scroll": 768,
+        "forced": true
+      }
+    },
+    {
+      "width": 390,
+      "textScale": 100,
+      "theme": "dark",
+      "forcedColors": "active",
+      "controls": [
+        {
+          "label": "Portfolio actions",
+          "focus": true,
+          "outline": "solid",
+          "outlineWidth": "2px",
+          "offset": "2px",
+          "shadow": "none",
+          "height": 44,
+          "keyboardToggle": true
+        },
+        {
+          "label": "Add recurring investment",
+          "focus": true,
+          "outline": "solid",
+          "outlineWidth": "2px",
+          "offset": "2px",
+          "shadow": "none",
+          "height": 44,
+          "keyboardToggle": true
+        },
+        {
+          "label": "Sort recurring investments",
+          "focus": true,
+          "outline": "solid",
+          "outlineWidth": "2px",
+          "offset": "-3px",
+          "shadow": "none",
+          "height": 44,
+          "keyboardToggle": true
+        },
+        {
+          "label": "Actions for Local demonstration property",
+          "focus": true,
+          "outline": "solid",
+          "outlineWidth": "2px",
+          "offset": "2px",
+          "shadow": "none",
+          "height": 44,
+          "keyboardToggle": true
+        },
+        {
+          "label": "Portfolio allocation",
+          "focus": true,
+          "outline": "solid",
+          "outlineWidth": "2px",
+          "offset": "-2px",
+          "shadow": "none",
+          "height": 64,
+          "keyboardToggle": true
+        }
+      ],
+      "menuControls": [
+        {
+          "text": "Edit property",
+          "focus": true,
+          "outline": "solid",
+          "width": "2px",
+          "shadow": "none"
+        },
+        {
+          "text": "Delete property",
+          "focus": true,
+          "outline": "solid",
+          "width": "2px",
+          "shadow": "none"
+        }
+      ],
+      "selectedFilters": [
+        {
+          "text": "1W",
+          "decoration": "underline"
+        }
+      ],
+      "geometry": {
+        "client": 390,
+        "scroll": 390,
+        "forced": true
+      }
+    },
+    {
+      "width": 320,
+      "textScale": 200,
+      "theme": "dark",
+      "forcedColors": "active",
+      "controls": [
+        {
+          "label": "Portfolio actions",
+          "focus": true,
+          "outline": "solid",
+          "outlineWidth": "2px",
+          "offset": "2px",
+          "shadow": "none",
+          "height": 88,
+          "keyboardToggle": true
+        },
+        {
+          "label": "Add recurring investment",
+          "focus": true,
+          "outline": "solid",
+          "outlineWidth": "2px",
+          "offset": "2px",
+          "shadow": "none",
+          "height": 130,
+          "keyboardToggle": true
+        },
+        {
+          "label": "Sort recurring investments",
+          "focus": true,
+          "outline": "solid",
+          "outlineWidth": "2px",
+          "offset": "-3px",
+          "shadow": "none",
+          "height": 88,
+          "keyboardToggle": true
+        },
+        {
+          "label": "Actions for Local demonstration property",
+          "focus": true,
+          "outline": "solid",
+          "outlineWidth": "2px",
+          "offset": "2px",
+          "shadow": "none",
+          "height": 88,
+          "keyboardToggle": true
+        },
+        {
+          "label": "Portfolio allocation",
+          "focus": true,
+          "outline": "solid",
+          "outlineWidth": "2px",
+          "offset": "-2px",
+          "shadow": "none",
+          "height": 256,
+          "keyboardToggle": true
+        }
+      ],
+      "menuControls": [
+        {
+          "text": "Edit property",
+          "focus": true,
+          "outline": "solid",
+          "width": "2px",
+          "shadow": "none"
+        },
+        {
+          "text": "Delete property",
+          "focus": true,
+          "outline": "solid",
+          "width": "2px",
+          "shadow": "none"
+        }
+      ],
+      "selectedFilters": [
+        {
+          "text": "1W",
+          "decoration": "underline"
+        }
+      ],
+      "geometry": {
+        "client": 320,
+        "scroll": 320,
+        "forced": true
+      }
+    }
+  ],
+  "keyboardSelections": {
+    "investmentGroup": true,
+    "tabletPeriod": true,
+    "recurringSort": true
+  }
+}

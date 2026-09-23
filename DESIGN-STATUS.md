@@ -1,12 +1,10 @@
 # Mercury — Design Status
 
-**Current review: 2026-09-23 — 0.2.13.** Ten canonical flows remain. Acadia 0.4.8 preserves desktop navigation focus and separates tab selection from focus in forced colours. No local component override. Browser evidence: `automation/review/2026-09-23/navigation-colours/review.md`; OS contrast themes, VoiceOver and physical-device acceptance remain separate.
-
-**Open P2 — disclosure focus:** Portfolio filter, tablet period and recurring-sort summaries still lose their focus indicator in forced colours. Acadia 0.4.9 does not correct the more specific sort-trigger rule; adoption rejected and shared correction routed to the active Acadia task. Evidence: `automation/review/2026-09-23/disclosure-colours/review.md`.
+**Current review: 2026-09-23 — 0.2.14.** Ten canonical flows remain. Acadia 0.4.10 restores Portfolio filter, period and sort focus in forced colours. Shared reuse; no local override. Chromium and Firefox evidence: `automation/review/2026-09-23/disclosure-colours/review.md`; OS contrast themes, VoiceOver and physical-device acceptance remain separate.
 
 Current next design opportunities (all older lists below are historical):
 1. Complete real magic-link arrival/redemption and expired-session recovery in a browser.
-2. Adopt and verify a shared correction for Portfolio disclosure focus in forced colours.
+2. Simplify concurrent-edit review while preserving the original draft and explicit owner choice.
 3. Check long phone forms and keyboard clearance with VoiceOver on a physical device.
 
 ## Previous evidence

@@ -242,3 +242,7 @@ Ten implemented canonical flows unchanged. Sign-in, recovery actions and record 
 ## 2026-09-23 — navigation orientation (0.2.13)
 
 Ten canonical flows unchanged. Shared Acadia 0.4.8 makes desktop brand/destination/Profile focus visible in forced colours and gives selected Home/Portfolio/Income/Asset tabs a separate underline. Routing, keyboard activation, recovery and financial semantics are unchanged. Evidence and platform limits: `automation/review/2026-09-23/navigation-colours/review.md`.
+
+## 2026-09-23 — Page Header disclosure focus (0.2.14)
+
+Ten canonical flows unchanged. Shared Acadia 0.4.10 restores visible forced-colour keyboard focus on Portfolio filters, tablet period and sort disclosures. Native toggles, selection, routing and financial semantics remain unchanged. Evidence: `automation/review/2026-09-23/disclosure-colours/review.md`.

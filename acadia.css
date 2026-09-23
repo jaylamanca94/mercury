@@ -914,6 +914,13 @@ details > summary:focus-visible {
   outline: 0;
 }
 
+@media (forced-colors: active) {
+  details > summary:focus-visible {
+    outline: 2px solid Highlight;
+    outline-offset: -3px;
+  }
+}
+
 .acadia-skip-link {
   background: var(--acadia-surface-layer-base);
   border: 1px solid var(--acadia-color-border-strong);
@@ -1158,6 +1165,22 @@ details > summary:focus-visible {
 .acadia-page-header-pattern-sort-option:focus-visible {
   box-shadow: var(--acadia-focus-ring);
   outline: 0;
+}
+
+@media (forced-colors: active) {
+  .acadia-page-header-pattern-filter:focus-visible,
+  .acadia-page-header-pattern-sort-trigger:focus-visible,
+  .acadia-page-header-pattern-sort-option:focus-visible {
+    outline: 2px solid Highlight;
+    outline-offset: -3px;
+  }
+
+  .acadia-page-header-pattern-filter[aria-pressed="true"],
+  .acadia-page-header-pattern-sort-option[aria-checked="true"] {
+    text-decoration-line: underline;
+    text-decoration-thickness: 3px;
+    text-underline-offset: 0.18em;
+  }
 }
 
 .acadia-page-header-pattern-sort {
@@ -2094,6 +2117,13 @@ main [id] {
 .acadia-chrome .acadia-nav-item:focus-visible {
   border-radius: var(--acadia-radius-sm);
   box-shadow: var(--acadia-focus-ring);
+}
+
+@media (forced-colors: active) {
+  .acadia-chrome .acadia-nav-item:focus-visible {
+    outline: 2px solid Highlight;
+    outline-offset: -3px;
+  }
 }
 
 .acadia-chrome .acadia-nav-item[aria-current="page"],
@@ -3503,6 +3533,14 @@ main [id] {
   outline: 0;
 }
 
+@media (forced-colors: active) {
+  .acadia-action-menu-item:not(:disabled):focus-visible,
+  .acadia-account-menu-item:focus-visible {
+    outline: 2px solid Highlight;
+    outline-offset: -3px;
+  }
+}
+
 .acadia-action-menu-item.is-danger,
 .acadia-account-menu-item.is-danger {
   color: var(--acadia-status-danger-text);
@@ -4240,6 +4278,13 @@ main [id] {
 .acadia-reference-fold > summary:focus-visible {
   background: var(--acadia-interaction-hover-bg);
   outline: 0;
+}
+
+@media (forced-colors: active) {
+  .acadia-reference-fold > summary:focus-visible {
+    outline: 2px solid Highlight;
+    outline-offset: -3px;
+  }
 }
 
 .acadia-reference-fold > summary::-webkit-details-marker {
