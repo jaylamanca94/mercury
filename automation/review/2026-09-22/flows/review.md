@@ -89,3 +89,9 @@ Real magic-link delivery/redemption and expired-session browser recovery; deploy
 ![Expenses](18-expenses-saved.png)
 ![Plan readiness](19-plan-readiness.png)
 ![Saved Plan](20-plan-saved.png)
+
+## Publication receipt — 23 September, 00:08 UTC
+
+Code commit `32278da852614cf6d43ea995e1a1adab15679593` was pushed to `origin/main`; remote exact SHA verified. [Vercel deployment](https://vercel.com/jayson-lamanca-s-projects/mercury/C3UqGhdJebPG3RNY6Rtd1JkzmTgR) reports success. Eight canonical public files return HTTP 200 and match the released local bytes (`production.json`); CSP and `nosniff` are present. Quote and snapshot endpoints reject unauthenticated requests with 401. A fresh production phone session shows the fixed Profile menu above the dock. No production email was sent. Local review tabs were closed, viewport overrides reset, and local appearance restored to System. Final local error log was empty.
+
+![Published phone Profile](21-production-phone-profile.png)
