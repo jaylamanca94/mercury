@@ -1,0 +1,38 @@
+{
+  "at": "2026-09-23T11:32:13.444Z",
+  "signedOut": {
+    "url": "https://mercury-psi-six.vercel.app/?verify=459a636",
+    "authVisible": true,
+    "profileKeyboard": true
+  },
+  "syntheticProduction": {
+    "url": "https://mercury-psi-six.vercel.app/?mode=income&verify=459a636#portfolio",
+    "mocked": "Auth/data adapter and quote responses only; HTML/CSS/controller served by production; no owner records or persistence",
+    "checks": [
+      {
+        "viewport": 1280,
+        "textScale": 100,
+        "label": "Filter investments",
+        "focus": true,
+        "outline": "solid",
+        "width": "2px"
+      },
+      {
+        "viewport": 768,
+        "textScale": 100,
+        "label": "Portfolio period",
+        "focus": true,
+        "outline": "solid",
+        "width": "2px"
+      },
+      {
+        "viewport": 320,
+        "textScale": 200,
+        "label": "Sort recurring investments",
+        "focus": true,
+        "outline": "solid",
+        "width": "2px"
+      }
+    ]
+  }
+}

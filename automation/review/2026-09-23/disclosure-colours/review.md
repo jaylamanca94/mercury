@@ -26,4 +26,8 @@ All records are synthetic and in memory. Browser contrast emulation/preferences 
 
 ## Delivery
 
-Release publication and exact production verification are recorded after the authorised Git-triggered deployment. Previous Mercury main `7d213e5` is the rollback source; no migration is required.
+Release `459a636188067e1ecfa81115fe1a3f336f118fbd` was pushed to origin/main. Vercel reported success at `https://vercel.com/jayson-lamanca-s-projects/mercury/Dy6Qoob27ynfaWxgZ5WRnCy9wm9c`. Six canonical production files match local bytes exactly with CSP/nosniff headers (`production.json`).
+
+A fresh signed-out production browser verified the new stylesheet chain and Profile Enter/Escape focus recovery. A separate production-asset browser replaced only its auth/data adapter and quote responses with synthetic in-memory fixtures. The deployed investment filter, tablet period and enlarged-phone recurring sort retain solid 2px focus and native Enter/Space toggles; the desktop capture was inspected (`live-browser.json`, `production-synthetic-filter.png`). This verifies delivered assets and interaction, not real-account authentication or persistence.
+
+Previous Mercury main `7d213e5` remains the rollback source; no migration is required.
