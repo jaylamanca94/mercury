@@ -1,0 +1,12 @@
+{
+  "active": "Home",
+  "auth": true,
+  "css": "https://mercury-psi-six.vercel.app/styles.css?v=20260923-navigation-colours",
+  "focus": true,
+  "forced": true,
+  "offset": "-3px",
+  "outline": "solid",
+  "url": "https://mercury-psi-six.vercel.app/?verify=3cbcbaa",
+  "width": "2px",
+  "profileKeyboardPassed": true
+}
