@@ -654,7 +654,6 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
     $("#portfolio-holdings-grid").hidden = !hasRows;
     $("#portfolio-holdings-table-wrap").hidden = !hasRows;
     $("#portfolio-holdings-object-list").hidden = !hasRows;
-    $("#portfolio-table-help").hidden = !hasRows;
   }
   function selectPortfolioView(view, { focus = false } = {}) {
     if (!["cards", "table"].includes(view)) return;
@@ -3395,29 +3394,69 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
     if (!state.client) return;
     const send = $("#send-magic-link");
     if (send.disabled) return;
+    const client = state.client;
+    const current = () => state.client === client && !authReloadPending;
     send.disabled = true;
     send.textContent = "Sending…";
     setText("#auth-message", "Sending your sign-in link…");
     try {
-      const { error } = await state.client.auth.signInWithOtp({
+      const { error } = await readWithDeadline(() => client.auth.signInWithOtp({
         email: $("#email").value.trim(),
         options: { emailRedirectTo: window.location.origin },
-      });
+      }));
+      if (!current()) return;
       if (error) throw error;
       setText("#auth-message", "Check your email for a sign-in link. If it does not arrive, check spam or try again.");
     } catch (error) {
-      setText("#auth-message", error.message || "The link could not be sent. Check your connection and try again.");
+      if (current()) setText("#auth-message", error.message === "Read timed out"
+        ? "Sending could not be confirmed. Check your email before trying again."
+        : error.message || "The link could not be sent. Check your connection and try again.");
     } finally {
-      send.disabled = false;
-      send.textContent = "Send magic link";
+      if (current()) {
+        send.disabled = false;
+        send.textContent = "Send magic link";
+      }
     }
   });
+  let signOutPending = false;
+  async function signOut() {
+    if (signOutPending || !state.client || authReloadPending) return;
+    const client = state.client;
+    const current = () => state.client === client && !authReloadPending;
+    const controls = document.querySelectorAll("[data-sign-out]");
+    const status = message => document.querySelectorAll("[data-sign-out-status]").forEach(element => {
+      element.textContent = message;
+      element.hidden = !message;
+    });
+    signOutPending = true;
+    controls.forEach(control => {
+      control.setAttribute("aria-disabled", "true");
+      control.textContent = "Signing out…";
+    });
+    status("");
+    try {
+      const { error } = await readWithDeadline(() => client.auth.signOut());
+      if (!current()) return;
+      if (error) throw error;
+      window.location.reload();
+    } catch {
+      if (current()) status("Sign out could not be confirmed. Try again.");
+    } finally {
+      if (current()) {
+        signOutPending = false;
+        controls.forEach(control => {
+          control.setAttribute("aria-disabled", "false");
+          control.textContent = "Sign out";
+        });
+      }
+    }
+  }
   document.querySelectorAll("[data-sign-out]").forEach((control) => {
-    control.addEventListener("click", () => leaveWorkspace(async () => {
-      const { error } = await state.client.auth.signOut();
-      if (error) { setText("#data-status", error.message || "Sign out failed. Try again."); return; }
-      if (!authReloadPending) window.location.reload();
-    }));
+    control.addEventListener("click", event => {
+      // Keep the account menu and its recovery status visible while signing out.
+      event.preventDefault();
+      if (!signOutPending) leaveWorkspace(signOut);
+    });
   });
   $("#portfolio-add-asset").addEventListener("click", openQuickAdd);
   $("#portfolio-phone-add-asset").addEventListener("click", openQuickAdd);

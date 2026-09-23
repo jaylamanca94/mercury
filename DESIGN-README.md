@@ -1,5 +1,16 @@
 # Mercury Design README
 
+## Authentication and Profile recovery — 2026-09-22
+
+0.2.10 bounds magic-link sending and sign-out to ten seconds. Reuse the existing Acadia field hint/status region and action-menu controls; retain the email, describe an unconfirmed outcome, and offer retry. Keep Profile open while sign-out is pending or fails. `aria-disabled` retains keyboard focus while the single-flight guard prevents duplicate requests.
+
+Mercury embeds Profile inside its scrolling navigation and fixed phone dock. A placement-only adapter removes clipping while an account menu is open, lifts navigation above page content using the dock stacking level, and positions the phone menu above its trigger with bounded width/height and scrolling for enlarged text. Surfaces, controls, typography, touch targets and focus remain canonical Acadia. This is a product composition adapter; vendored CSS is unchanged.
+
+Portfolio removes the unconditional scroll hint, matching Expenses; the responsive table retains its labelled, keyboard-focusable region.
+
+All 13 vendor files are byte-identical to published Acadia 0.4.2 `c660e2073d78906ea708edfc47e451ba292611be`. The optional React maps change and documentation refinements require no Mercury runtime migration. Current evidence: `automation/review/2026-09-22/flows/review.md`.
+
+
 ## Complete-data recovery and Acadia review — 2026-09-21
 
 Income uses **Unavailable** for unknown summary amounts and source/category counts after a failed read; reserve zero counts for a confirmed empty collection. Retry preserves independently loaded data and restores the summary focus. The Expenses table no longer always tells people to scroll; it retains Acadia's responsive Table/Object List anatomy, region label and keyboard access. These are product copy/composition refinements, with no new shared primitive or CSS exception.

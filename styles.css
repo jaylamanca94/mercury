@@ -8,6 +8,29 @@
   }
 }
 
+/* Placement adapter: keep Profile above page content and outside scrolling
+   navigation tracks. The bottom-dock disclosure opens upwards. Acadia owns
+   the menu surface, controls, spacing, focus and touch targets. */
+.acadia-responsive-navbar:has(.acadia-action-menu[open]) {
+  position: relative;
+  z-index: 1040;
+}
+
+.acadia-navbar-links:has(> .acadia-action-menu[open]),
+.acadia-tablet-navigation:has(> .acadia-action-menu[open]) {
+  overflow: visible;
+}
+
+.acadia-mobile-tabbar > .acadia-action-menu > .acadia-action-menu-panel {
+  bottom: calc(100% + var(--acadia-space-1));
+  top: auto;
+  box-sizing: border-box;
+  min-width: 0;
+  width: min(18rem, calc(100vw - 3rem));
+  max-height: calc(100dvh - var(--acadia-mobile-dock-clearance) - var(--acadia-space-2));
+  overflow-y: auto;
+}
+
 /* Acadia d5408dd gives direct form children width plus focus-ring padding.
    Include that padding in the declared width to avoid horizontal dialog scroll.
    Remove when the canonical form sizing includes border-box. */

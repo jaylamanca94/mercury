@@ -1,6 +1,6 @@
 # Mercury Flow Registry
 
-> **10 implemented canonical flows; all have design and automated coverage at varying depths. One deferred export boundary. Initial account failures now offer visible retry; optional property failures remain local to Property. No flows added. Remote and physical-device acceptance gaps remain below.**
+> **10 implemented canonical flows; all have design and automated coverage at varying depths. One deferred export boundary. Authentication requests now recover from stalls and Profile menus stay visible across navigation breakpoints. Initial account failures offer visible retry; optional property failures remain local to Property. No flows added. Remote and physical-device acceptance gaps remain below.**
 
 **Last reviewed:** 2026-09-22
 
@@ -221,3 +221,8 @@ Ten implemented canonical flows unchanged. Seven unique active migration version
 Ten canonical flows remain; Understand current position changes from a default snapshot chart to a default 1M current-holdings price chart with recorded balances retained as a secondary view. Net worth gains two decimals at million scale and exact accessible currency. The line aggregates current shares across every common observed date, using starting-value weights and constant cash. Property, cash flows, dividends and historical ownership are excluded. The portfolio filter never changes Home's scope. The chart shows real dates and uses 5Y rather than All for provider history; 1D explicitly means the latest two common daily observations.
 
 Coverage includes: complete/loading/failure/retry, manual or missing shares, missing/one-point/non-USD history, cash-only/zero balances, daily market-calendar differences, range changes, saved history zero/one/many dates, keyboard controls, Home/Portfolio cache reuse, account/route replacement, desktop/tablet/phone and enlarged text. No persistence or API change. Automated and browser evidence, live public price-source freshness and delivery receipt: `automation/home-market/2026-09-22/review.md`.
+
+
+## 2026-09-22 — Authentication and Profile recovery (0.2.10)
+
+Ten implemented canonical flows remain. Sign-in and sign-out add bounded pending, unconfirmed timeout, visible retry and stale-reply rejection. Profile no longer clips inside desktop/tablet navigation or opens below the phone viewport. Existing menu, native appearance select, status hints, draft-discard protection and keyboard focus are retained. No schema or financial semantics change. Evidence and per-flow limits: `automation/review/2026-09-22/flows/review.md`.

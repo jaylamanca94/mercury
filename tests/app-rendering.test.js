@@ -117,7 +117,7 @@ test("Mercury composes the complete Acadia responsive Navbar", () => {
   assert.match(indexHtml, /class="acadia-mobile-tab" href="#income" data-nav-page="income" aria-label="Income"/);
   assert.match(indexHtml, /class="acadia-mobile-tab" href="#plan" data-nav-page="plan" aria-label="Plan"/);
   assert.equal((indexHtml.match(/data-account-label/g) || []).length, 3);
-  assert.equal((indexHtml.match(/data-sign-out/g) || []).length, 3);
+  assert.equal((indexHtml.match(/data-sign-out(?=[\s>])/g) || []).length, 3);
   assert.doesNotMatch(indexHtml, /fa-circle-user[^>]*acadia-icon[^>]*><\/i><\/summary><div id="account-menu"/);
   assert.match(indexHtml, /class="[^"]*acadia-mobile-dock-safe-area/);
   assert.match(homeSource, /document\.querySelectorAll\("\[data-nav-page\]"\)/);
@@ -283,7 +283,7 @@ test("Plan provides one hero projection, four statistics and live scenario contr
   assert.match(indexHtml, /id="plan-assumptions-dialog"/);
   assert.match(indexHtml, /id="property-dialog"/);
   assert.match(indexHtml, /<script src="plan\.js\?v=20260914-change-cards-023"><\/script>/);
-  assert.match(indexHtml, /<script type="module" src="brokerage\.js\?v=20260922-home-market"><\/script>/);
+  assert.match(indexHtml, /<script type="module" src="brokerage\.js\?v=20260922-auth-recovery-3"><\/script>/);
   assert.match(homeSource, /function routePlan\(\)/);
   assert.match(homeSource, /function renderPlan\(summary\)/);
   assert.match(homeSource, /function renderPlanChart/);

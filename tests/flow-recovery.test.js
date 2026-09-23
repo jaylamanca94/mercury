@@ -18,7 +18,7 @@ function controller() {
     });
     return nodes.get(selector);
   }
-  const document = {body: node("body"),querySelector:node, querySelectorAll:()=>[], activeElement:null, listeners:{}, addEventListener(type, callback) { this.listeners[type] = callback; }};
+  const document = {body: node("body"),querySelector:node, querySelectorAll:selector=>selector === "[data-sign-out]" ? [node("#test-sign-out")] : selector === "[data-sign-out-status]" ? [node("#test-sign-out-status")] : [], activeElement:null, listeners:{}, addEventListener(type, callback) { this.listeners[type] = callback; }};
   const window = {
     MercuryCollectionRead: require('../collection-read'),
     MercuryMarketHistory: require('../market-history'),
@@ -34,7 +34,7 @@ function controller() {
     fetch:async()=>({ok:false,json:async()=>({error:'provider unavailable'})}),
   });
   const source = fs.readFileSync(require.resolve('../brokerage.js'),'utf8').replace(/^import .*;\n/, '').replace('  initialise();',
-    '  window.testController = {renderHome,recordEditor,saveEditorRecord,openIncomeSourceDialog,saveIncomeSource,openBudgetCategoryDialog,saveBudgetCategory,saveAssetDetails,renderPortfolioFilters,renderPortfolioMarketChange,selectPortfolioMarketPeriod,renderPortfolioMarketCharts,currentNetWorthCents,holdingAllocationMarkup,editPlanScenario,savePlanScenario,planProjection,observeAuthSession,sessionToken,editIncomeSource,saveInlineIncomeSource,cancelInlineIncomeSource,incomeSourceDrafts,syncPortfolioMarketHistory,clearPortfolioMarketHistory,portfolioMarketHistory,renderRecurringInvestments,loadMarketHistory,renderMarketHistory,clearMarketHistory,initialise,loadData,readWithDeadline,retryPlanSettings,openPlanAssumptionsDialog,savePlanAssumptions,retryProperties,hydrateProviderMetrics,ensurePlanSettings,state,render,renderHomeChanges,renderHomeGrowth,renderIncomeRecovery,retryIncomeData,missingIncomeYieldRows,renderIncomeYieldRecovery,renderPlan,renderQuickQuotePreview,refreshCurrentAssetPrice,restorePortfolioAssetFocus,renderHistory,renderAsset,canQuote,lookupQuote,saveQuickAsset,navigateToAsset,navigateBackFromAsset,routeAssetId,openFormDialog,hasPendingWrite,hasUnsavedWork,matchingPortfolioHoldingRows,sortHoldingRows,holdingValueLabel,renderPortfolioView,renderPortfolioSummary,detailHolding,openPropertyDialog,saveProperty};');
+    '  window.testController = {signOut,renderHome,recordEditor,saveEditorRecord,openIncomeSourceDialog,saveIncomeSource,openBudgetCategoryDialog,saveBudgetCategory,saveAssetDetails,renderPortfolioFilters,renderPortfolioMarketChange,selectPortfolioMarketPeriod,renderPortfolioMarketCharts,currentNetWorthCents,holdingAllocationMarkup,editPlanScenario,savePlanScenario,planProjection,observeAuthSession,sessionToken,editIncomeSource,saveInlineIncomeSource,cancelInlineIncomeSource,incomeSourceDrafts,syncPortfolioMarketHistory,clearPortfolioMarketHistory,portfolioMarketHistory,renderRecurringInvestments,loadMarketHistory,renderMarketHistory,clearMarketHistory,initialise,loadData,readWithDeadline,retryPlanSettings,openPlanAssumptionsDialog,savePlanAssumptions,retryProperties,hydrateProviderMetrics,ensurePlanSettings,state,render,renderHomeChanges,renderHomeGrowth,renderIncomeRecovery,retryIncomeData,missingIncomeYieldRows,renderIncomeYieldRecovery,renderPlan,renderQuickQuotePreview,refreshCurrentAssetPrice,restorePortfolioAssetFocus,renderHistory,renderAsset,canQuote,lookupQuote,saveQuickAsset,navigateToAsset,navigateBackFromAsset,routeAssetId,openFormDialog,hasPendingWrite,hasUnsavedWork,matchingPortfolioHoldingRows,sortHoldingRows,holdingValueLabel,renderPortfolioView,renderPortfolioSummary,detailHolding,openPropertyDialog,saveProperty};');
   vm.runInContext(source,context);
   const api=window.testController;
   api.state.client={auth:{onAuthStateChange(callback){ window.authChanged = callback; return {data:{subscription:{unsubscribe(){}}}}; },getSession:async()=>({data:{session:{access_token:'isolated-test'}}})}};
@@ -2165,4 +2165,78 @@ test('a late Home market response cannot update a replacement account or a depar
     assert.equal(node('#home-market-change').textContent,'replacement surface');
     api.clearPortfolioMarketHistory();
   }
+});
+
+test('stalled magic-link sends unlock after the deadline and ignore late success during a retry', async () => {
+  const {api,node,context}=controller(); let expire,finish,calls=0;
+  context.setTimeout=callback=>{expire=callback;return 1};context.clearTimeout=()=>{};
+  api.state.client.auth.signInWithOtp=()=>{calls++;return new Promise(resolve=>{finish=resolve})};
+  node('#email').value='audit@example.invalid';
+  const submit=node('#magic-link-form').listeners.submit;
+  const pending=submit({preventDefault(){}});await new Promise(setImmediate);
+  const finishOld=finish;expire();await pending;
+  assert.equal(node('#send-magic-link').disabled,false);
+  assert.match(node('#auth-message').textContent,/could not be confirmed.*Check your email/);
+  assert.equal(node('#email').value,'audit@example.invalid');
+  const retry=submit({preventDefault(){}});await new Promise(setImmediate);
+  finishOld({});await new Promise(setImmediate);
+  assert.equal(node('#send-magic-link').disabled,true);
+  assert.equal(node('#auth-message').textContent,'Sending your sign-in link…');
+  finish({});await retry;
+  assert.equal(calls,2);assert.match(node('#auth-message').textContent,/Check your email for a sign-in link/);
+});
+
+test('magic-link replies cannot update a replaced authentication context', async () => {
+  const {api,node}=controller();let finish;
+  api.state.client.auth.signInWithOtp=()=>new Promise(resolve=>{finish=resolve});
+  const pending=node('#magic-link-form').listeners.submit({preventDefault(){}});
+  await new Promise(setImmediate);api.state.client={auth:{}};finish({});await pending;
+  assert.equal(node('#auth-message').textContent,'Sending your sign-in link…');
+});
+
+test('sign-out is single flight, retains focus, releases stalled requests and ignores late completion', async () => {
+  const {api,node,context,window,document}=controller();let expire,finish,calls=0;
+  context.setTimeout=callback=>{expire=callback;return 1};context.clearTimeout=()=>{};
+  api.state.client.auth.signOut=()=>{calls++;return new Promise(resolve=>{finish=resolve})};
+  document.activeElement=node('#test-sign-out');
+  const pending=api.signOut();await new Promise(setImmediate);await api.signOut();
+  assert.equal(calls,1);assert.equal(node('#test-sign-out').getAttribute('aria-disabled'),'true');
+  assert.equal(node('#test-sign-out').disabled,false);
+  expire();await pending;
+  assert.equal(node('#test-sign-out').getAttribute('aria-disabled'),'false');
+  assert.equal(node('#test-sign-out-status').hidden,false);
+  assert.match(node('#test-sign-out-status').textContent,/could not be confirmed/);
+  assert.equal(document.activeElement,node('#test-sign-out'));
+  finish({});await new Promise(setImmediate);assert.equal(window.reloads,undefined);
+  api.state.client.auth.signOut=async()=>({});await api.signOut();assert.equal(window.reloads,1);
+  assert.equal(node('#test-sign-out-status').hidden,true);
+});
+
+test('sign-out handles thrown and returned failures without claiming success', async () => {
+  for(const thrown of [true,false]) {
+    const {api,node,window}=controller();
+    api.state.client.auth.signOut=async()=>{if(thrown)throw new Error('Offline');return {error:{message:'Offline'}}};
+    await api.signOut();
+    assert.equal(window.reloads,undefined);assert.equal(node('#test-sign-out').textContent,'Sign out');
+    assert.match(node('#test-sign-out-status').textContent,/could not be confirmed/);
+  }
+});
+
+test('a confirmed auth change owns sign-out reload and stale completion cannot reload again', async () => {
+  const {api,node,window}=controller();let finish;
+  api.observeAuthSession({user:{id:'owner'}});
+  api.state.client.auth.signOut=()=>new Promise(resolve=>{finish=resolve});
+  const pending=api.signOut();await new Promise(setImmediate);
+  api.observeAuthSession(null);finish({});await pending;
+  assert.equal(window.reloads,1);assert.equal(node('#test-sign-out-status').textContent,'');
+});
+
+test('sign-out action keeps its menu open for visible pending and error feedback', async () => {
+  const {api,node}=controller();let prevented=false,finish;
+  api.state.client.auth.signOut=()=>new Promise(resolve=>{finish=resolve});
+  node('#test-sign-out').listeners.click({preventDefault(){prevented=true}});
+  await new Promise(setImmediate);
+  assert.equal(prevented,true);assert.equal(node('#test-sign-out').textContent,'Signing out…');
+  finish({error:{message:'Offline'}});await new Promise(setImmediate);
+  assert.equal(node('#test-sign-out-status').hidden,false);
 });

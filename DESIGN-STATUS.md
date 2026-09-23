@@ -1,5 +1,15 @@
 # Mercury — Design Status
 
+**Current review: 2026-09-22 — 0.2.10.** Ten canonical flows remain. Stalled authentication now recovers after ten seconds, and Profile is visible above page content across desktop/tablet/phone. Acadia 0.4.2 assets are verified unchanged. See `automation/review/2026-09-22/flows/review.md` for current screenshots, flow checks and acceptance limits.
+
+Current next design opportunities (all older lists below are historical):
+1. Complete real magic-link arrival/redemption and expired-session recovery in a browser.
+2. Simplify concurrent-edit review while preserving the original draft and explicit owner choice.
+3. Check long phone forms and keyboard clearance with VoiceOver on a physical device.
+
+## Previous evidence
+
+
 2026-09-22: **0.2.8** is a database-rebuild readiness patch. Product flows, Acadia assets and UI are unchanged; no new visual acceptance is claimed. See `automation/review/2026-09-22/migrations/review.md`.
 
 2026-09-21: **0.2.7** closes remaining Add/quote/delete timeout and acknowledgement gaps using existing Acadia controls. Confirmed deletion updates locally and returns focus to a visible action. Live two-user database isolation passed; disposable identities and data were removed. See `automation/review/2026-09-21/reliability/review.md`.
@@ -7,9 +17,9 @@
 2026-09-21: **0.2.6** prevents silently incomplete collection reads and clearly labels unavailable Income totals/counts. The redundant Expenses scroll hint is removed. Published Acadia 0.3.5 runtime alignment is verified unchanged. Twenty route/viewport combinations fit from 320–1280px; phone keyboard retry at 200% text and dark appearance checked. Ten implemented canonical flows unchanged. See `automation/review/2026-09-21/review.md`.
 
 
-**Current review: 2026-09-18.** Mercury 0.2.5 adopts published Acadia `2b80572` unchanged and makes stale-save recovery consistent across asset, source-detail, category and property editing. Current desktop/tablet/phone and 200% text evidence: `automation/review/2026-09-18/review.md`. Ten implemented flows; no new feature.
+**Historical review: 2026-09-18.** Mercury 0.2.5 adopts published Acadia `2b80572` unchanged and makes stale-save recovery consistent across asset, source-detail, category and property editing. Current desktop/tablet/phone and 200% text evidence: `automation/review/2026-09-18/review.md`. Ten implemented flows; no new feature.
 
-Current next design opportunities (supersede historical lists below):
+Historical next design opportunities:
 1. Simplify conflict review further without discarding or silently merging a private draft; the current safe close/reopen path is explicit but takes extra steps.
 2. Completed in 0.2.6: removed the redundant desktop Expenses scroll hint.
 3. Review the tablet Asset editor’s empty side column to improve use of space at intermediate widths.

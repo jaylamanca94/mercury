@@ -1,0 +1,122 @@
+[
+  {
+    "clientWidth": 305,
+    "route": "home",
+    "scrollWidth": 305,
+    "viewport": 320
+  },
+  {
+    "clientWidth": 305,
+    "route": "#portfolio",
+    "scrollWidth": 305,
+    "viewport": 320
+  },
+  {
+    "clientWidth": 305,
+    "route": "#income",
+    "scrollWidth": 305,
+    "viewport": 320
+  },
+  {
+    "clientWidth": 305,
+    "route": "#income/budget",
+    "scrollWidth": 305,
+    "viewport": 320
+  },
+  {
+    "clientWidth": 305,
+    "route": "#plan",
+    "scrollWidth": 305,
+    "viewport": 320
+  },
+  {
+    "clientWidth": 375,
+    "route": "home",
+    "scrollWidth": 375,
+    "viewport": 390
+  },
+  {
+    "clientWidth": 375,
+    "route": "#portfolio",
+    "scrollWidth": 375,
+    "viewport": 390
+  },
+  {
+    "clientWidth": 375,
+    "route": "#income",
+    "scrollWidth": 375,
+    "viewport": 390
+  },
+  {
+    "clientWidth": 375,
+    "route": "#income/budget",
+    "scrollWidth": 375,
+    "viewport": 390
+  },
+  {
+    "clientWidth": 375,
+    "route": "#plan",
+    "scrollWidth": 375,
+    "viewport": 390
+  },
+  {
+    "clientWidth": 753,
+    "route": "home",
+    "scrollWidth": 753,
+    "viewport": 768
+  },
+  {
+    "clientWidth": 753,
+    "route": "#portfolio",
+    "scrollWidth": 753,
+    "viewport": 768
+  },
+  {
+    "clientWidth": 753,
+    "route": "#income",
+    "scrollWidth": 753,
+    "viewport": 768
+  },
+  {
+    "clientWidth": 768,
+    "route": "#income/budget",
+    "scrollWidth": 768,
+    "viewport": 768
+  },
+  {
+    "clientWidth": 753,
+    "route": "#plan",
+    "scrollWidth": 753,
+    "viewport": 768
+  },
+  {
+    "clientWidth": 1265,
+    "route": "home",
+    "scrollWidth": 1265,
+    "viewport": 1280
+  },
+  {
+    "clientWidth": 1265,
+    "route": "#portfolio",
+    "scrollWidth": 1265,
+    "viewport": 1280
+  },
+  {
+    "clientWidth": 1265,
+    "route": "#income",
+    "scrollWidth": 1265,
+    "viewport": 1280
+  },
+  {
+    "clientWidth": 1280,
+    "route": "#income/budget",
+    "scrollWidth": 1280,
+    "viewport": 1280
+  },
+  {
+    "clientWidth": 1265,
+    "route": "#plan",
+    "scrollWidth": 1265,
+    "viewport": 1280
+  }
+]
