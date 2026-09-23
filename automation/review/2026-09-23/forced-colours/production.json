@@ -1,0 +1,55 @@
+{
+  "commit": "28940d3441cc8c9fa9df21f35315b38f399e2b68",
+  "verifiedAt": "2026-09-23T09:16:38.473470+00:00",
+  "url": "https://mercury-psi-six.vercel.app",
+  "checks": [
+    {
+      "file": "index.html",
+      "status": 200,
+      "matchesLocal": true,
+      "sha256": "f9bc1e31b3bd03dec3a2d25f289ebb903c01283a11318dc7454e40f86e596cd0",
+      "csp": true,
+      "nosniff": "nosniff"
+    },
+    {
+      "file": "styles.css",
+      "status": 200,
+      "matchesLocal": true,
+      "sha256": "79e550c4d33f52886350bf35738d2a2cd2ebd946e13c9b6efdb6606bec75c55d",
+      "csp": true,
+      "nosniff": "nosniff"
+    },
+    {
+      "file": "acadia.css",
+      "status": 200,
+      "matchesLocal": true,
+      "sha256": "5acf836b891d55db4277283388371b9e5c7dbf88e949d72a892a207c10b38b0c",
+      "csp": true,
+      "nosniff": "nosniff"
+    },
+    {
+      "file": "acadia-vendor.json",
+      "status": 200,
+      "matchesLocal": true,
+      "sha256": "e0bb51683767c80523694516111ff6d536940de6825c6d2874392cab95bb52b6",
+      "csp": true,
+      "nosniff": "nosniff"
+    },
+    {
+      "file": "README.md",
+      "status": 200,
+      "matchesLocal": true,
+      "sha256": "28a78ab65b7eabb8b8335e7e19774095dbe9607916d2746cfa6709a7b69736d2",
+      "csp": true,
+      "nosniff": "nosniff"
+    },
+    {
+      "file": "brokerage.js",
+      "status": 200,
+      "matchesLocal": true,
+      "sha256": "9144d054933765e74bedf602c3a8be7dbfb5c4c1a52f8b5ef219ef22bfdd5148",
+      "csp": true,
+      "nosniff": "nosniff"
+    }
+  ]
+}

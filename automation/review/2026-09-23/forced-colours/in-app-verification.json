@@ -1,0 +1,25 @@
+{
+  "production": {
+    "url": "https://mercury-psi-six.vercel.app",
+    "stylesheet": "styles.css?v=20260923-forced-colours",
+    "keyboardSequence": "Email -> Tab -> Send magic link",
+    "focusVisible": true,
+    "focusShadowVisible": true,
+    "emailSent": false
+  },
+  "localPhone": {
+    "url": "http://127.0.0.1:8857/?mode=income&text=large#income",
+    "width": 320,
+    "height": 900,
+    "rootFontPx": 32,
+    "theme": "System dark",
+    "dialogOpen": true,
+    "dialogHidden": false,
+    "pageOverflow": false,
+    "dialogOverflow": false,
+    "keyboardAddReachable": true,
+    "escapeReturnFocus": "add-income",
+    "screenshots": "Directly inspected in task; not exported"
+  },
+  "forcedProductionAcceptance": false
+}
