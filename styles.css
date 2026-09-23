@@ -362,10 +362,20 @@ body:has(#portfolio-workspace:not([hidden])) { --acadia-shell-max-width: var(--a
 }
 
 /* Home chart scope stays distinct from net worth; native view selection wraps. */
-#home-chart-heading { gap: var(--acadia-space-2); flex-wrap: wrap; }
+#home-chart-heading { display: flex; align-items: center; gap: var(--acadia-space-2); flex-wrap: wrap; }
 #home-chart-heading .acadia-cluster { flex-wrap: wrap; }
 #home-chart-heading .acadia-control { max-width: 100%; }
 #home-chart-heading > .acadia-field { min-width: 0; max-width: 100%; }
 #home-market-change.is-positive { color: var(--acadia-color-brand); }
 #home-market-change.is-danger { color: var(--acadia-status-danger-text); }
 #home-market-retry { align-self: flex-start; }
+
+/* Financial disclosures reuse Acadia; cap padding for narrow enlarged-text views. */
+#main-content {
+  --acadia-accordion-padding: min(var(--acadia-space-3), 4vw);
+  --acadia-accordion-padding-mobile: min(var(--acadia-space-2), 4vw);
+  --acadia-accordion-gap: min(var(--acadia-space-2), 3vw);
+}
+#home-chart-heading > .acadia-cluster { flex: 1 1 20rem; min-width: 0; }
+#home-chart-heading > .acadia-field { flex: 0 1 18rem; }
+#home-chart-heading .acadia-page-header-pattern-tools { margin-inline-start: 0; }

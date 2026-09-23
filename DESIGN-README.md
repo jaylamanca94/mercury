@@ -1,5 +1,18 @@
 # Mercury Design README
 
+## Financial information and edit confidence — 2026-09-23
+
+Mercury 0.2.15 adopts the audit's financial-information interaction patterns while retaining the private tracking scope and unchanged Acadia 0.4.10 assets. See [delivery and validation](automation/financial-ux/2026-09-23/review.md).
+
+- Give every financial figure an explicit scope, unit, period and status (recorded, estimated or projected). Home net worth includes property equity; investment price movement and recorded investment value exclude it. Historical growth is an annual illustration, not a forecast. Plan labels projected net worth with the selected date and labels the ownership groups Current holdings.
+- Put period controls beside the module they affect. Home market 1W/1M/1Y carries into Portfolio. Unsupported 1D/5Y or recorded-value views retain the last Portfolio period with a visible explanation until the user selects a period. Asset Back restores the originating view, selected group/period, focused record and scroll position; ordinary visits still default to Cards.
+- Compact figures require a touch- and keyboard-accessible path to exact amounts and meaning. Reuse Acadia native accordions and existing action menus; source/date labels distinguish quote observations from record edits. Comparison tables and asset details show exact currency; small unit prices retain fractional precision. Holding card movements explicitly say Price change and / share or / unit.
+- Show filter boundaries and denominators: group share is of investments; holding rings are of net worth; Recurring says All investments when a group filter is active. Annual dividend estimates and annual source totals remain annual regardless of the Income summary period. Planned investing is a visible part of reconciliation.
+- Inline previews compare original form values with drafts for asset, property, source and Plan settings edits. Source amount/cadence previews compare annual equivalents. Plan scenarios compare saved and draft projections and annual inputs, with an explicit Saved plan / Unsaved changes / Saving state. Previews never write records. Existing pending, failed, conflicting and unconfirmed-save semantics remain authoritative.
+- Use neutral styling for hypothetical growth. Retain existing directional styling for measured changes. Keep empty and unavailable data distinct from zero.
+
+Composition adapters only: Acadia accordion padding/gap tokens are bounded by viewport width, preserving typography, touch targets and focus treatment at enlarged text; Home chart heading/tools wrap within their module. Opening Plan assumptions focuses and scrolls to its summary, not the centre of a potentially very tall panel. No new Acadia primitive, chart library, provider, schema or API usage.
+
 ## Page Header disclosure focus — 2026-09-23
 
 Mercury 0.2.14 adopts unchanged Acadia 0.4.10 assets from published `6c3703d6`. Portfolio filter, period and sort controls retain a 2px inset system-colour keyboard outline. Shared Action Menu items also retain visible focus, and pressed Page Header filters retain a separate underline. The shared fix explicitly covers Page Header filter/sort selectors, which overrode the generic 0.4.9 disclosure rule. Existing icon actions, navigation and accordions preserve their specialised focus rules. Shared reuse; no local override. Chromium palette emulation and Firefox contrast-profile evidence: `automation/review/2026-09-23/disclosure-colours/review.md`. OS contrast themes, VoiceOver and physical-device acceptance remain separate.

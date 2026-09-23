@@ -58,7 +58,7 @@ test("Home composes a minimal Acadia dashboard", () => {
   assert.match(indexHtml, /id="net-worth-label"[^>]*>Net worth</);
   assert.match(indexHtml, /id="all-time-change-value"/);
   assert.match(indexHtml, /id="all-time-change-rate"/);
-  assert.match(indexHtml, /id="performance-context"[^>]*>Portfolio market movement</);
+  assert.match(indexHtml, /id="performance-context"[^>]*>Investment price movement</);
   assert.doesNotMatch(indexHtml, /id="home-planning-balance"|id="home-review-list"/);
   const graphCard = indexHtml.slice(indexHtml.indexOf('id="home-history-card"'), indexHtml.indexOf('aria-label="Investment summary"'));
   assert.doesNotMatch(graphCard, /id="all-time-change-value"|id="metric-change-value"/);
@@ -177,7 +177,7 @@ test("large currency display values use the shared compact format", () => {
   assert.match(homeSource, /row\.distributionYieldRate/);
   assert.match(homeSource, /annual_dividend_cents/);
   assert.match(homeSource, /valueBadge\(valueCents\)[\s\S]*displayCurrency/);
-  assert.match(homeSource, /setText\("#asset-total-value", row \? displayCurrency/);
+  assert.match(homeSource, /setText\("#asset-total-value", row \? exactMoney/);
 });
 
 test("Home leaves Portfolio target status to the Portfolio workspace", () => {
@@ -283,7 +283,7 @@ test("Plan provides one hero projection, four statistics and live scenario contr
   assert.match(indexHtml, /id="plan-assumptions-dialog"/);
   assert.match(indexHtml, /id="property-dialog"/);
   assert.match(indexHtml, /<script src="plan\.js\?v=20260914-change-cards-023"><\/script>/);
-  assert.match(indexHtml, /<script type="module" src="brokerage\.js\?v=20260922-auth-recovery-3"><\/script>/);
+  assert.match(indexHtml, /<script type="module" src="brokerage\.js\?v=20260923-financial-clarity-1"><\/script>/);
   assert.match(homeSource, /function routePlan\(\)/);
   assert.match(homeSource, /function renderPlan\(summary\)/);
   assert.match(homeSource, /function renderPlanChart/);
@@ -372,7 +372,7 @@ test("Portfolio investments switch between shared Cards and Table presentations"
   assert.match(portfolioWorkspace, /id="portfolio-holdings-table" class="acadia-table is-compact"/);
   assert.match(portfolioWorkspace, /id="portfolio-holdings-table-body"/);
   assert.match(portfolioWorkspace, /id="portfolio-holdings-object-list" class="acadia-table-mobile acadia-object-list"/);
-  ["Asset", "Price", "Shares", "Return", "Yield", "Value", "Updated"].forEach((label) => {
+  ["Asset", "Price", "Shares", "Return", "Yield", "Value", "Record updated"].forEach((label) => {
     assert.match(portfolioWorkspace, new RegExp(`>${label}(?: |<)`));
   });
   assert.match(portfolioWorkspace, /<th scope="col" aria-label="Actions"><\/th>/);

@@ -1,5 +1,9 @@
 # Mercury Product
 
+## Financial UX clarity — 2026-09-23
+
+Version 0.2.15 implements the Vanguard/Robinhood-pattern audit: clear financial scope and units, progressive exact-value detail, period/navigation continuity and inline edit previews. It does not add trading, advice, success predictions, connections or data providers. Existing valuation, income and projection calculations remain authoritative. No database migration, provider usage increase, subscription or licence cost is introduced. Interaction standards live in `DESIGN-README.md`; delivery evidence is in `automation/financial-ux/2026-09-23/review.md`. The older implementation entries below record their historical state; the newer clarity labels and disclosures supersede hover-only exact-value access.
+
 ## Income Figma implementation — 2026-09-14
 
 - Reference: section `129:4938`, desktop `202:11644`, tablet `203:12261`, phone `203:12765`. Four summary cards precede Dividends and Sources. Desktop uses two equal sections; tablet and phone stack them. Phone stacks summary cards and source fields.

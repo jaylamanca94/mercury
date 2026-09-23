@@ -34,7 +34,7 @@ function controller() {
     fetch:async()=>({ok:false,json:async()=>({error:'provider unavailable'})}),
   });
   const source = fs.readFileSync(require.resolve('../brokerage.js'),'utf8').replace(/^import .*;\n/, '').replace('  initialise();',
-    '  window.testController = {signOut,renderHome,recordEditor,saveEditorRecord,openIncomeSourceDialog,saveIncomeSource,openBudgetCategoryDialog,saveBudgetCategory,saveAssetDetails,renderPortfolioFilters,renderPortfolioMarketChange,selectPortfolioMarketPeriod,renderPortfolioMarketCharts,currentNetWorthCents,holdingAllocationMarkup,editPlanScenario,savePlanScenario,planProjection,observeAuthSession,sessionToken,editIncomeSource,saveInlineIncomeSource,cancelInlineIncomeSource,incomeSourceDrafts,syncPortfolioMarketHistory,clearPortfolioMarketHistory,portfolioMarketHistory,renderRecurringInvestments,loadMarketHistory,renderMarketHistory,clearMarketHistory,initialise,loadData,readWithDeadline,retryPlanSettings,openPlanAssumptionsDialog,savePlanAssumptions,retryProperties,hydrateProviderMetrics,ensurePlanSettings,state,render,renderHomeChanges,renderHomeGrowth,renderIncomeRecovery,retryIncomeData,missingIncomeYieldRows,renderIncomeYieldRecovery,renderPlan,renderQuickQuotePreview,refreshCurrentAssetPrice,restorePortfolioAssetFocus,renderHistory,renderAsset,canQuote,lookupQuote,saveQuickAsset,navigateToAsset,navigateBackFromAsset,routeAssetId,openFormDialog,hasPendingWrite,hasUnsavedWork,matchingPortfolioHoldingRows,sortHoldingRows,holdingValueLabel,renderPortfolioView,renderPortfolioSummary,detailHolding,openPropertyDialog,saveProperty};');
+    '  window.testController = {carryHomePeriod,formChangePreview,holdingValueDetails,renderPortfolioTable,signOut,renderHome,recordEditor,saveEditorRecord,openIncomeSourceDialog,saveIncomeSource,openBudgetCategoryDialog,saveBudgetCategory,saveAssetDetails,renderPortfolioFilters,renderPortfolioMarketChange,selectPortfolioMarketPeriod,renderPortfolioMarketCharts,currentNetWorthCents,holdingAllocationMarkup,editPlanScenario,savePlanScenario,planProjection,observeAuthSession,sessionToken,editIncomeSource,saveInlineIncomeSource,cancelInlineIncomeSource,incomeSourceDrafts,syncPortfolioMarketHistory,clearPortfolioMarketHistory,portfolioMarketHistory,renderRecurringInvestments,loadMarketHistory,renderMarketHistory,clearMarketHistory,initialise,loadData,readWithDeadline,retryPlanSettings,openPlanAssumptionsDialog,savePlanAssumptions,retryProperties,hydrateProviderMetrics,ensurePlanSettings,state,render,renderHomeChanges,renderHomeGrowth,renderIncomeRecovery,retryIncomeData,missingIncomeYieldRows,renderIncomeYieldRecovery,renderPlan,renderQuickQuotePreview,refreshCurrentAssetPrice,restorePortfolioAssetFocus,renderHistory,renderAsset,canQuote,lookupQuote,saveQuickAsset,navigateToAsset,navigateBackFromAsset,routeAssetId,openFormDialog,hasPendingWrite,hasUnsavedWork,matchingPortfolioHoldingRows,sortHoldingRows,holdingValueLabel,renderPortfolioView,renderPortfolioSummary,detailHolding,openPropertyDialog,saveProperty};');
   vm.runInContext(source,context);
   const api=window.testController;
   api.state.client={auth:{onAuthStateChange(callback){ window.authChanged = callback; return {data:{subscription:{unsubscribe(){}}}}; },getSession:async()=>({data:{session:{access_token:'isolated-test'}}})}};
@@ -525,7 +525,7 @@ test('selected Portfolio group keeps its complete value and explains incomplete 
   assert.equal(node('#portfolio-summary-investments').textContent,'$295,000.00');
   assert.equal(node('#portfolio-current-total').textContent,'$295k');
   assert.equal(node('#portfolio-holdings-count').textContent,'1 asset');
-  assert.equal(node('#portfolio-group-share').textContent,'59% of portfolio');
+  assert.equal(node('#portfolio-group-share').textContent,'59% of investments');
   assert.equal(node('#portfolio-valuation-status').hidden,true);
 });
 
@@ -984,7 +984,7 @@ test('Home growth automatically uses historical returns and ignores manual retur
   assert.equal(summary.totalExpectedAnnualGrowthCents,500000);
   api.renderHomeGrowth(summary);
   assert.equal(node('#home-growth').textContent,'$700');
-  assert.equal(node('#home-growth-context').textContent,'Based on historical returns · Not a forecast');
+  assert.equal(node('#home-growth-context').textContent,'Illustrative annual amount');
   api.renderHomeGrowth(require('../portfolio').summarizePortfolio(assets.map(a=>({...a,expectedAnnualReturnRate:null}))));
   assert.equal(node('#home-growth').textContent,'$700');
   for(const rate of [0,-0.05]) {
@@ -1713,7 +1713,7 @@ test('card footers show signed unit-price movement and preserve fractional chang
     api.portfolioMarketHistory.set(holding.id,{data:{source:'Test source',currency:'USD',points:[{time:now-86400000,price:first},{time:now,price:last}]}});
     api.renderPortfolioMarketCharts();
     assert.ok(slot.innerHTML.includes(`>${rate}</strong>`),slot.innerHTML);
-    assert.ok(slot.innerHTML.includes(`>${amount}</span>`),slot.innerHTML);
+    assert.ok(slot.innerHTML.includes(`>${amount} / share</span>`),slot.innerHTML);
     assert.ok(slot.innerHTML.includes(`is-${tone}`));
     assert.match(slot.innerHTML,/per share or unit/);
     assert.match(slot.innerHTML,/Test source/);
@@ -2239,4 +2239,86 @@ test('sign-out action keeps its menu open for visible pending and error feedback
   assert.equal(prevented,true);assert.equal(node('#test-sign-out').textContent,'Signing out…');
   finish({error:{message:'Offline'}});await new Promise(setImmediate);
   assert.equal(node('#test-sign-out-status').hidden,false);
+});
+
+
+test('Home hands compatible market periods to Portfolio and explains unsupported views', () => {
+  const {api,node,window}=controller();
+  window.location.hash='';
+  for (const period of ['1w','1m','1y']) {
+    api.state.homeChartView='market'; api.state.performancePeriod=period;
+    api.carryHomePeriod(); api.renderPortfolioMarketCharts();
+    assert.equal(node('#portfolio-period-label').textContent,period.toUpperCase());
+    assert.equal(node('#portfolio-period-handoff').hidden,true);
+  }
+  for (const [view,period,label] of [['market','1d','1D'],['market','all','5Y'],['recorded','all','Recorded investment value']]) {
+    api.state.homeChartView=view; api.state.performancePeriod=period;api.carryHomePeriod();
+    assert.equal(node('#portfolio-period-handoff').hidden,false);
+    assert.ok(node('#portfolio-period-handoff').textContent.includes(label));
+    assert.match(node('#portfolio-period-handoff').textContent,/Showing 1Y market prices/);
+  }
+  api.selectPortfolioMarketPeriod('1m');assert.equal(node('#portfolio-period-handoff').hidden,true);
+});
+
+test('Table asset return restores the visible origin, scroll and view', () => {
+  const {api,node,window,document}=editableAsset();
+  let created=0;document.createElement=()=>node('created-'+created++);
+  window.location.hash='#portfolio';api.render();api.state.portfolioView='table';
+  window.scrollY=740;let scroll,focused=false;
+  window.scrollTo=options=>{scroll=options.top};
+  const hidden={dataset:{openAssetId:'test'},getClientRects:()=>[],focus(){throw new Error('Hidden table focused')}};
+  const visible={dataset:{openAssetId:'test'},getClientRects:()=>[{}],focus(options){focused=options.preventScroll}};
+  document.querySelectorAll=selector=>selector==='#portfolio-table-panel [data-open-asset-id]'?[hidden,visible]:[];
+  api.navigateToAsset('test');window.location.hash='#asset/test';api.render();
+  window.location.hash='#portfolio';api.render();
+  assert.equal(api.state.portfolioView,'table');assert.equal(focused,true);assert.equal(scroll,740);
+});
+
+test('Change previews use opening values, exact money, accessible labels and escaped text', () => {
+  const {api}=controller();
+  const form={elements:[{name:'currentValue',labels:[{textContent:'Current market value'}]}, {name:'frequency',labels:[{textContent:'Frequency'}],options:[{value:'weekly',textContent:'Weekly'},{value:'monthly',textContent:'Monthly'}]}, {name:'name',labels:[{textContent:'Name'}]}]};
+  const baseline=JSON.stringify([['currentValue','451000.25'],['frequency','weekly'],['name','Original']]);
+  const draft=JSON.stringify([['currentValue','451100.75'],['frequency','monthly'],['name','<script>']]);
+  const preview=api.formChangePreview(form,baseline,draft);
+  assert.match(preview,/Current market value/);assert.match(preview,/\$451,000.25 → \$451,100.75/);
+  assert.match(preview,/Weekly → Monthly/);assert.match(preview,/&lt;script&gt;/);assert.doesNotMatch(preview,/<script>/);
+  assert.equal(api.formChangePreview(form,baseline,baseline),'');
+});
+
+test('Plan draft preview compares saved and draft projections without altering saved inputs', () => {
+  const {api,node,getRemote}=planEditorFixture();const saved=JSON.stringify(getRemote());
+  api.editPlanScenario('weeklyInvestmentCents','125.50');
+  assert.equal(node('#plan-change-preview').hidden,false);assert.equal(node('#plan-draft-state').textContent,'Unsaved changes');
+  assert.match(node('#plan-change-preview-content').innerHTML,/Annual investing · saved → draft/);
+  assert.match(node('#plan-change-preview-content').innerHTML,/\$6,526.00/);
+  assert.equal(JSON.stringify(getRemote()),saved);
+  node('#plan-scenario-cancel').listeners.click();
+  assert.equal(node('#plan-change-preview').hidden,true);assert.equal(node('#plan-draft-state').textContent,'Saved plan');
+});
+
+test('Unavailable financial values stay unavailable in exact-value disclosures', () => {
+  const {api,node}=controller();api.state.configured=true;api.state.account={id:'account'};
+  api.state.propertiesAvailable=false;api.state.holdings=[{id:'unvalued'}];
+  api.renderHome({rows:[],totalMarketValueCents:0,totalEstimatedAnnualGrowthCents:0,totalEstimatedAnnualIncomeCents:0,warnings:[]});
+  assert.match(node('#home-value-details').innerHTML,/Net worth · current records<\/span><strong>Unavailable/);
+  assert.match(node('#home-value-details').innerHTML,/Property equity<\/span><strong>Unavailable/);
+  assert.match(node('#home-value-details').innerHTML,/Estimated annual dividends[\s\S]*Unavailable/);
+});
+
+
+test('Value disclosure preserves fractional prices and never invents quote freshness', () => {
+  const {api}=controller();
+  api.state.holdings=[{id:'tiny',updated_at:'2026-09-20T00:00:00Z'}];
+  api.state.quotes=[{holding_id:'tiny',price_cents:0.0021,source:'Provider',as_of:null}];
+  const html=api.holdingValueDetails({asset:{id:'tiny',valuationBasis:'shares-and-price',shares:100,unitPriceCents:0.0021,quoteSource:'Provider',quoteAsOf:null},marketValueCents:0});
+  assert.match(html,/\$0.000021/);assert.match(html,/Price as of<\/span><strong>Date unavailable/);
+  assert.doesNotMatch(html,/9\/20/);
+});
+
+test('Plan assumptions shortcut places keyboard focus at the visible disclosure heading', () => {
+  const {node}=controller();const summary=node('#plan-projection-assumptions summary');let focus,scroll;
+  summary.focus=options=>{focus=options};summary.scrollIntoView=options=>{scroll=options};
+  node('#plan-show-assumptions').listeners.click();
+  assert.equal(node('#plan-projection-assumptions').open,true);
+  assert.equal(focus.preventScroll,true);assert.equal(scroll.block,'start');
 });
