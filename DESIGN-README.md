@@ -1,5 +1,9 @@
 # Mercury Design README
 
+## Forced-colour keyboard focus — 2026-09-23
+
+Mercury 0.2.12 consumes unchanged Acadia 0.4.7 assets from published `03e977b8`. Buttons, native fields and icon actions retain the shared system-colour focus outline when forced palettes suppress shadows. Local styles introduce no focus override. Light/dark geometry and financial semantics are unchanged. This is shared reuse, not a Mercury-specific primitive. Browser palette emulation is distinct from OS high-contrast and assistive-technology acceptance; evidence: `automation/review/2026-09-23/forced-colours/review.md`.
+
 ## Authentication and Profile recovery — 2026-09-22
 
 0.2.10 bounds magic-link sending and sign-out to ten seconds. Reuse the existing Acadia field hint/status region and action-menu controls; retain the email, describe an unconfirmed outcome, and offer retry. Keep Profile open while sign-out is pending or fails. `aria-disabled` retains keyboard focus while the single-flight guard prevents duplicate requests.

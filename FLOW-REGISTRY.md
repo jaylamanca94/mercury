@@ -233,3 +233,8 @@ Ten implemented canonical flows remain. Sign-in and sign-out add bounded pending
 Ten implemented canonical flows remain. Retrieve/refresh an automatic quote now preserves the provider's last quoted minute (or opening-bar Unix timestamp when unavailable), independently of server timezone. Explicit timezone-bearing ISO dates remain compatible. Missing, ambiguous, malformed and future dates reject the new response through existing retry/manual-entry recovery; they never become the retrieval time. Previously stored records remain unchanged.
 
 321 automated checks pass, including provider date precedence, strict invalid-date rejection and protected endpoint failure → successful retry → preserved cached timestamp. Public Twelve Data demo data independently confirms the date-only/Unix fields and corrected last-minute result. Deployed authenticated fund/ETF/crypto coverage and actual scheduler execution remain open; see `automation/review/2026-09-22/quote-time/review.md`.
+
+
+## 2026-09-23 — forced-colour focus (0.2.12)
+
+Ten implemented canonical flows unchanged. Sign-in, recovery actions and record editors reuse Acadia 0.4.7 system-colour outlines so focused controls remain visible when shadows are suppressed. No loading, saving, permission or calculation behaviour changes. Required coverage: keyboard Email → Send magic link, recovery Retry, editor fields/selects/actions and Escape return focus, phone/tablet/desktop containment, enlarged text and ordinary light/dark regression. Evidence: `automation/review/2026-09-23/forced-colours/review.md`.

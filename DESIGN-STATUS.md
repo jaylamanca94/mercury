@@ -1,6 +1,6 @@
 # Mercury — Design Status
 
-**Current review: 2026-09-22 — 0.2.10.** Ten canonical flows remain. Stalled authentication now recovers after ten seconds, and Profile is visible above page content across desktop/tablet/phone. Acadia 0.4.2 assets are verified unchanged. See `automation/review/2026-09-22/flows/review.md` for current screenshots, flow checks and acceptance limits.
+**Current review: 2026-09-23 — 0.2.12.** Ten canonical flows remain. Acadia 0.4.7 preserves keyboard focus on shared buttons, fields and icon actions in forced-colour palettes. Local adapters have no conflicting focus override. Browser-emulated palette and responsive evidence is in `automation/review/2026-09-23/forced-colours/review.md`; OS contrast themes, VoiceOver and physical-device acceptance remain separate.
 
 Current next design opportunities (all older lists below are historical):
 1. Complete real magic-link arrival/redemption and expired-session recovery in a browser.

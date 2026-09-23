@@ -7,5 +7,5 @@
     "check:database": "python3 scripts/check-database-rebuild.py",
     "check:restore": "python3 scripts/check-database-restore.py"
   },
-  "version": "0.2.11"
+  "version": "0.2.12"
 }

@@ -5269,6 +5269,23 @@ select.acadia-control {
   opacity: var(--acadia-disabled-opacity);
 }
 
+/* Forced palettes remove box shadows, including the usual focus ring. */
+@media (forced-colors: active) {
+  .acadia-button:focus-visible,
+  .acadia-control:focus,
+  .acadia-range:focus-visible,
+  .acadia-icon-action:focus-visible,
+  .acadia-icon-button:focus-visible {
+    outline: 2px solid Highlight;
+    outline-offset: 2px;
+  }
+
+  /* Keep the slider's extent visible as well as its focused thumb. */
+  .acadia-range::-webkit-slider-runnable-track { background: ButtonText; }
+  .acadia-range::-moz-range-track { background: ButtonText; }
+  .acadia-range::-moz-range-progress { background: Highlight; }
+}
+
 .acadia-range[aria-invalid="true"]::-webkit-slider-thumb {
   background: var(--acadia-status-danger-text);
 }
@@ -6301,6 +6318,21 @@ select.acadia-control {
 
   .acadia-checklist-item-meta {
     grid-column: 2;
+  }
+}
+
+/* Preserve task-reading width before allocating space to a secondary action. */
+@container (max-width: 16rem) {
+  .acadia-checklist-item {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .acadia-checklist-item-label {
+    column-gap: var(--acadia-space-1);
+  }
+
+  .acadia-checklist-item-action {
+    justify-self: end;
   }
 }
 
