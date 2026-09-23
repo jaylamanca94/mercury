@@ -1,5 +1,9 @@
 # Mercury Design README
 
+## Forced-colour navigation orientation — 2026-09-23
+
+Mercury 0.2.13 consumes unchanged Acadia 0.4.8 assets from published `1df9f588`. Desktop brand/destination/Profile focus receives a 2px inset system-colour outline. Selected tabs retain a 3px underline, independently of the focused control; this includes Asset range buttons using `is-active`. No local focus override is needed. Mercury does not compose Side Navigation, so its upstream width correction has no product impact. Ordinary themes, geometry and financial semantics remain unchanged. Shared reuse; browser evidence and platform limits: `automation/review/2026-09-23/navigation-colours/review.md`.
+
 ## Forced-colour keyboard focus — 2026-09-23
 
 Mercury 0.2.12 consumes unchanged Acadia 0.4.7 assets from published `03e977b8`. Buttons, native fields and icon actions retain the shared system-colour focus outline when forced palettes suppress shadows. Local styles introduce no focus override. Light/dark geometry and financial semantics are unchanged. This is shared reuse, not a Mercury-specific primitive. Browser palette emulation is distinct from OS high-contrast and assistive-technology acceptance; evidence: `automation/review/2026-09-23/forced-colours/review.md`.

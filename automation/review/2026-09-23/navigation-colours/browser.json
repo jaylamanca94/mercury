@@ -1,0 +1,1202 @@
+[
+  {
+    "client": 1280,
+    "controls": [
+      {
+        "focus": true,
+        "height": 44,
+        "label": "Mercury",
+        "offset": "-3px",
+        "outline": "solid",
+        "outlineWidth": "2px"
+      },
+      {
+        "focus": true,
+        "height": 46,
+        "label": "Home",
+        "offset": "-3px",
+        "outline": "solid",
+        "outlineWidth": "2px"
+      },
+      {
+        "focus": true,
+        "height": 46,
+        "label": "Portfolio",
+        "offset": "-3px",
+        "outline": "solid",
+        "outlineWidth": "2px"
+      },
+      {
+        "focus": true,
+        "height": 46,
+        "label": "Income",
+        "offset": "-3px",
+        "outline": "solid",
+        "outlineWidth": "2px"
+      },
+      {
+        "focus": true,
+        "height": 46,
+        "label": "Plan",
+        "offset": "-3px",
+        "outline": "solid",
+        "outlineWidth": "2px"
+      },
+      {
+        "focus": true,
+        "height": 44,
+        "label": "Profile",
+        "offset": "-3px",
+        "outline": "solid",
+        "outlineWidth": "2px"
+      }
+    ],
+    "forced": true,
+    "scroll": 1280,
+    "tabs": [
+      {
+        "decoration": "underline",
+        "id": "income-month-tab",
+        "selected": "true"
+      },
+      {
+        "decoration": "none",
+        "id": "income-year-tab",
+        "selected": "false"
+      },
+      {
+        "decoration": "underline",
+        "id": "income-overview-tab",
+        "selected": "true"
+      },
+      {
+        "decoration": "none",
+        "id": "income-budget-tab",
+        "selected": "false"
+      }
+    ],
+    "width": 1280,
+    "theme": "light",
+    "textScale": 100,
+    "keyboardPeriodSwitch": true
+  },
+  {
+    "client": 768,
+    "controls": [
+      {
+        "focus": true,
+        "height": 44,
+        "label": "Home",
+        "offset": "-3px",
+        "outline": "solid",
+        "outlineWidth": "2px"
+      },
+      {
+        "focus": true,
+        "height": 44,
+        "label": "Portfolio",
+        "offset": "-3px",
+        "outline": "solid",
+        "outlineWidth": "2px"
+      },
+      {
+        "focus": true,
+        "height": 44,
+        "label": "Income",
+        "offset": "-3px",
+        "outline": "solid",
+        "outlineWidth": "2px"
+      },
+      {
+        "focus": true,
+        "height": 44,
+        "label": "Plan",
+        "offset": "-3px",
+        "outline": "solid",
+        "outlineWidth": "2px"
+      },
+      {
+        "focus": true,
+        "height": 44,
+        "label": "Profile",
+        "offset": "-3px",
+        "outline": "solid",
+        "outlineWidth": "2px"
+      }
+    ],
+    "forced": true,
+    "scroll": 768,
+    "tabs": [
+      {
+        "decoration": "underline",
+        "id": "income-month-tab",
+        "selected": "true"
+      },
+      {
+        "decoration": "none",
+        "id": "income-year-tab",
+        "selected": "false"
+      },
+      {
+        "decoration": "underline",
+        "id": "income-overview-tab",
+        "selected": "true"
+      },
+      {
+        "decoration": "none",
+        "id": "income-budget-tab",
+        "selected": "false"
+      }
+    ],
+    "width": 768,
+    "theme": "light",
+    "textScale": 100,
+    "keyboardPeriodSwitch": true
+  },
+  {
+    "client": 390,
+    "controls": [
+      {
+        "focus": true,
+        "height": 48,
+        "label": "Home",
+        "offset": "-4px",
+        "outline": "solid",
+        "outlineWidth": "2px"
+      },
+      {
+        "focus": true,
+        "height": 48,
+        "label": "Portfolio",
+        "offset": "-4px",
+        "outline": "solid",
+        "outlineWidth": "2px"
+      },
+      {
+        "focus": true,
+        "height": 48,
+        "label": "Income",
+        "offset": "-4px",
+        "outline": "solid",
+        "outlineWidth": "2px"
+      },
+      {
+        "focus": true,
+        "height": 48,
+        "label": "Plan",
+        "offset": "-4px",
+        "outline": "solid",
+        "outlineWidth": "2px"
+      },
+      {
+        "focus": true,
+        "height": 48,
+        "label": "Profile account actions",
+        "offset": "-4px",
+        "outline": "solid",
+        "outlineWidth": "2px"
+      }
+    ],
+    "forced": true,
+    "scroll": 390,
+    "tabs": [
+      {
+        "decoration": "underline",
+        "id": "income-month-tab",
+        "selected": "true"
+      },
+      {
+        "decoration": "none",
+        "id": "income-year-tab",
+        "selected": "false"
+      },
+      {
+        "decoration": "underline",
+        "id": "income-overview-tab",
+        "selected": "true"
+      },
+      {
+        "decoration": "none",
+        "id": "income-budget-tab",
+        "selected": "false"
+      }
+    ],
+    "width": 390,
+    "theme": "light",
+    "textScale": 100,
+    "keyboardPeriodSwitch": true
+  },
+  {
+    "client": 320,
+    "controls": [
+      {
+        "focus": true,
+        "height": 96,
+        "label": "Home",
+        "offset": "-4px",
+        "outline": "solid",
+        "outlineWidth": "2px"
+      },
+      {
+        "focus": true,
+        "height": 96,
+        "label": "Portfolio",
+        "offset": "-4px",
+        "outline": "solid",
+        "outlineWidth": "2px"
+      },
+      {
+        "focus": true,
+        "height": 96,
+        "label": "Income",
+        "offset": "-4px",
+        "outline": "solid",
+        "outlineWidth": "2px"
+      },
+      {
+        "focus": true,
+        "height": 96,
+        "label": "Plan",
+        "offset": "-4px",
+        "outline": "solid",
+        "outlineWidth": "2px"
+      },
+      {
+        "focus": true,
+        "height": 96,
+        "label": "Profile account actions",
+        "offset": "-4px",
+        "outline": "solid",
+        "outlineWidth": "2px"
+      }
+    ],
+    "forced": true,
+    "scroll": 320,
+    "tabs": [
+      {
+        "decoration": "underline",
+        "id": "income-month-tab",
+        "selected": "true"
+      },
+      {
+        "decoration": "none",
+        "id": "income-year-tab",
+        "selected": "false"
+      },
+      {
+        "decoration": "underline",
+        "id": "income-overview-tab",
+        "selected": "true"
+      },
+      {
+        "decoration": "none",
+        "id": "income-budget-tab",
+        "selected": "false"
+      }
+    ],
+    "width": 320,
+    "theme": "light",
+    "textScale": 200,
+    "keyboardPeriodSwitch": true
+  },
+  {
+    "client": 1280,
+    "controls": [
+      {
+        "focus": true,
+        "height": 44,
+        "label": "Mercury",
+        "offset": "-3px",
+        "outline": "solid",
+        "outlineWidth": "2px"
+      },
+      {
+        "focus": true,
+        "height": 46,
+        "label": "Home",
+        "offset": "-3px",
+        "outline": "solid",
+        "outlineWidth": "2px"
+      },
+      {
+        "focus": true,
+        "height": 46,
+        "label": "Portfolio",
+        "offset": "-3px",
+        "outline": "solid",
+        "outlineWidth": "2px"
+      },
+      {
+        "focus": true,
+        "height": 46,
+        "label": "Income",
+        "offset": "-3px",
+        "outline": "solid",
+        "outlineWidth": "2px"
+      },
+      {
+        "focus": true,
+        "height": 46,
+        "label": "Plan",
+        "offset": "-3px",
+        "outline": "solid",
+        "outlineWidth": "2px"
+      },
+      {
+        "focus": true,
+        "height": 44,
+        "label": "Profile",
+        "offset": "-3px",
+        "outline": "solid",
+        "outlineWidth": "2px"
+      }
+    ],
+    "forced": true,
+    "scroll": 1280,
+    "tabs": [
+      {
+        "decoration": "underline",
+        "id": "income-month-tab",
+        "selected": "true"
+      },
+      {
+        "decoration": "none",
+        "id": "income-year-tab",
+        "selected": "false"
+      },
+      {
+        "decoration": "underline",
+        "id": "income-overview-tab",
+        "selected": "true"
+      },
+      {
+        "decoration": "none",
+        "id": "income-budget-tab",
+        "selected": "false"
+      }
+    ],
+    "width": 1280,
+    "theme": "dark",
+    "textScale": 100,
+    "keyboardPeriodSwitch": true
+  },
+  {
+    "client": 768,
+    "controls": [
+      {
+        "focus": true,
+        "height": 44,
+        "label": "Home",
+        "offset": "-3px",
+        "outline": "solid",
+        "outlineWidth": "2px"
+      },
+      {
+        "focus": true,
+        "height": 44,
+        "label": "Portfolio",
+        "offset": "-3px",
+        "outline": "solid",
+        "outlineWidth": "2px"
+      },
+      {
+        "focus": true,
+        "height": 44,
+        "label": "Income",
+        "offset": "-3px",
+        "outline": "solid",
+        "outlineWidth": "2px"
+      },
+      {
+        "focus": true,
+        "height": 44,
+        "label": "Plan",
+        "offset": "-3px",
+        "outline": "solid",
+        "outlineWidth": "2px"
+      },
+      {
+        "focus": true,
+        "height": 44,
+        "label": "Profile",
+        "offset": "-3px",
+        "outline": "solid",
+        "outlineWidth": "2px"
+      }
+    ],
+    "forced": true,
+    "scroll": 768,
+    "tabs": [
+      {
+        "decoration": "underline",
+        "id": "income-month-tab",
+        "selected": "true"
+      },
+      {
+        "decoration": "none",
+        "id": "income-year-tab",
+        "selected": "false"
+      },
+      {
+        "decoration": "underline",
+        "id": "income-overview-tab",
+        "selected": "true"
+      },
+      {
+        "decoration": "none",
+        "id": "income-budget-tab",
+        "selected": "false"
+      }
+    ],
+    "width": 768,
+    "theme": "dark",
+    "textScale": 100,
+    "keyboardPeriodSwitch": true
+  },
+  {
+    "client": 390,
+    "controls": [
+      {
+        "focus": true,
+        "height": 48,
+        "label": "Home",
+        "offset": "-4px",
+        "outline": "solid",
+        "outlineWidth": "2px"
+      },
+      {
+        "focus": true,
+        "height": 48,
+        "label": "Portfolio",
+        "offset": "-4px",
+        "outline": "solid",
+        "outlineWidth": "2px"
+      },
+      {
+        "focus": true,
+        "height": 48,
+        "label": "Income",
+        "offset": "-4px",
+        "outline": "solid",
+        "outlineWidth": "2px"
+      },
+      {
+        "focus": true,
+        "height": 48,
+        "label": "Plan",
+        "offset": "-4px",
+        "outline": "solid",
+        "outlineWidth": "2px"
+      },
+      {
+        "focus": true,
+        "height": 48,
+        "label": "Profile account actions",
+        "offset": "-4px",
+        "outline": "solid",
+        "outlineWidth": "2px"
+      }
+    ],
+    "forced": true,
+    "scroll": 390,
+    "tabs": [
+      {
+        "decoration": "underline",
+        "id": "income-month-tab",
+        "selected": "true"
+      },
+      {
+        "decoration": "none",
+        "id": "income-year-tab",
+        "selected": "false"
+      },
+      {
+        "decoration": "underline",
+        "id": "income-overview-tab",
+        "selected": "true"
+      },
+      {
+        "decoration": "none",
+        "id": "income-budget-tab",
+        "selected": "false"
+      }
+    ],
+    "width": 390,
+    "theme": "dark",
+    "textScale": 100,
+    "keyboardPeriodSwitch": true
+  },
+  {
+    "client": 320,
+    "controls": [
+      {
+        "focus": true,
+        "height": 96,
+        "label": "Home",
+        "offset": "-4px",
+        "outline": "solid",
+        "outlineWidth": "2px"
+      },
+      {
+        "focus": true,
+        "height": 96,
+        "label": "Portfolio",
+        "offset": "-4px",
+        "outline": "solid",
+        "outlineWidth": "2px"
+      },
+      {
+        "focus": true,
+        "height": 96,
+        "label": "Income",
+        "offset": "-4px",
+        "outline": "solid",
+        "outlineWidth": "2px"
+      },
+      {
+        "focus": true,
+        "height": 96,
+        "label": "Plan",
+        "offset": "-4px",
+        "outline": "solid",
+        "outlineWidth": "2px"
+      },
+      {
+        "focus": true,
+        "height": 96,
+        "label": "Profile account actions",
+        "offset": "-4px",
+        "outline": "solid",
+        "outlineWidth": "2px"
+      }
+    ],
+    "forced": true,
+    "scroll": 320,
+    "tabs": [
+      {
+        "decoration": "underline",
+        "id": "income-month-tab",
+        "selected": "true"
+      },
+      {
+        "decoration": "none",
+        "id": "income-year-tab",
+        "selected": "false"
+      },
+      {
+        "decoration": "underline",
+        "id": "income-overview-tab",
+        "selected": "true"
+      },
+      {
+        "decoration": "none",
+        "id": "income-budget-tab",
+        "selected": "false"
+      }
+    ],
+    "width": 320,
+    "theme": "dark",
+    "textScale": 200,
+    "keyboardPeriodSwitch": true
+  },
+  {
+    "client": 1280,
+    "controls": [
+      {
+        "focus": true,
+        "height": 44,
+        "label": "Mercury",
+        "offset": "1px",
+        "outline": "none",
+        "outlineWidth": "0px"
+      },
+      {
+        "focus": true,
+        "height": 46,
+        "label": "Home",
+        "offset": "1px",
+        "outline": "none",
+        "outlineWidth": "0px"
+      },
+      {
+        "focus": true,
+        "height": 46,
+        "label": "Portfolio",
+        "offset": "1px",
+        "outline": "none",
+        "outlineWidth": "0px"
+      },
+      {
+        "focus": true,
+        "height": 46,
+        "label": "Income",
+        "offset": "1px",
+        "outline": "none",
+        "outlineWidth": "0px"
+      },
+      {
+        "focus": true,
+        "height": 46,
+        "label": "Plan",
+        "offset": "1px",
+        "outline": "none",
+        "outlineWidth": "0px"
+      },
+      {
+        "focus": true,
+        "height": 44,
+        "label": "Profile",
+        "offset": "0px",
+        "outline": "none",
+        "outlineWidth": "0px"
+      }
+    ],
+    "forced": false,
+    "scroll": 1280,
+    "tabs": [
+      {
+        "decoration": "none",
+        "id": "income-month-tab",
+        "selected": "true"
+      },
+      {
+        "decoration": "none",
+        "id": "income-year-tab",
+        "selected": "false"
+      },
+      {
+        "decoration": "none",
+        "id": "income-overview-tab",
+        "selected": "true"
+      },
+      {
+        "decoration": "none",
+        "id": "income-budget-tab",
+        "selected": "false"
+      }
+    ],
+    "width": 1280,
+    "theme": "light",
+    "textScale": 100,
+    "keyboardPeriodSwitch": true
+  },
+  {
+    "client": 768,
+    "controls": [
+      {
+        "focus": true,
+        "height": 44,
+        "label": "Home",
+        "offset": "-3px",
+        "outline": "solid",
+        "outlineWidth": "2px"
+      },
+      {
+        "focus": true,
+        "height": 44,
+        "label": "Portfolio",
+        "offset": "-3px",
+        "outline": "solid",
+        "outlineWidth": "2px"
+      },
+      {
+        "focus": true,
+        "height": 44,
+        "label": "Income",
+        "offset": "-3px",
+        "outline": "solid",
+        "outlineWidth": "2px"
+      },
+      {
+        "focus": true,
+        "height": 44,
+        "label": "Plan",
+        "offset": "-3px",
+        "outline": "solid",
+        "outlineWidth": "2px"
+      },
+      {
+        "focus": true,
+        "height": 44,
+        "label": "Profile",
+        "offset": "-3px",
+        "outline": "solid",
+        "outlineWidth": "2px"
+      }
+    ],
+    "forced": false,
+    "scroll": 768,
+    "tabs": [
+      {
+        "decoration": "none",
+        "id": "income-month-tab",
+        "selected": "true"
+      },
+      {
+        "decoration": "none",
+        "id": "income-year-tab",
+        "selected": "false"
+      },
+      {
+        "decoration": "none",
+        "id": "income-overview-tab",
+        "selected": "true"
+      },
+      {
+        "decoration": "none",
+        "id": "income-budget-tab",
+        "selected": "false"
+      }
+    ],
+    "width": 768,
+    "theme": "light",
+    "textScale": 100,
+    "keyboardPeriodSwitch": true
+  },
+  {
+    "client": 390,
+    "controls": [
+      {
+        "focus": true,
+        "height": 48,
+        "label": "Home",
+        "offset": "-4px",
+        "outline": "solid",
+        "outlineWidth": "2px"
+      },
+      {
+        "focus": true,
+        "height": 48,
+        "label": "Portfolio",
+        "offset": "-4px",
+        "outline": "solid",
+        "outlineWidth": "2px"
+      },
+      {
+        "focus": true,
+        "height": 48,
+        "label": "Income",
+        "offset": "-4px",
+        "outline": "solid",
+        "outlineWidth": "2px"
+      },
+      {
+        "focus": true,
+        "height": 48,
+        "label": "Plan",
+        "offset": "-4px",
+        "outline": "solid",
+        "outlineWidth": "2px"
+      },
+      {
+        "focus": true,
+        "height": 48,
+        "label": "Profile account actions",
+        "offset": "-4px",
+        "outline": "solid",
+        "outlineWidth": "2px"
+      }
+    ],
+    "forced": false,
+    "scroll": 390,
+    "tabs": [
+      {
+        "decoration": "none",
+        "id": "income-month-tab",
+        "selected": "true"
+      },
+      {
+        "decoration": "none",
+        "id": "income-year-tab",
+        "selected": "false"
+      },
+      {
+        "decoration": "none",
+        "id": "income-overview-tab",
+        "selected": "true"
+      },
+      {
+        "decoration": "none",
+        "id": "income-budget-tab",
+        "selected": "false"
+      }
+    ],
+    "width": 390,
+    "theme": "light",
+    "textScale": 100,
+    "keyboardPeriodSwitch": true
+  },
+  {
+    "client": 320,
+    "controls": [
+      {
+        "focus": true,
+        "height": 96,
+        "label": "Home",
+        "offset": "-4px",
+        "outline": "solid",
+        "outlineWidth": "2px"
+      },
+      {
+        "focus": true,
+        "height": 96,
+        "label": "Portfolio",
+        "offset": "-4px",
+        "outline": "solid",
+        "outlineWidth": "2px"
+      },
+      {
+        "focus": true,
+        "height": 96,
+        "label": "Income",
+        "offset": "-4px",
+        "outline": "solid",
+        "outlineWidth": "2px"
+      },
+      {
+        "focus": true,
+        "height": 96,
+        "label": "Plan",
+        "offset": "-4px",
+        "outline": "solid",
+        "outlineWidth": "2px"
+      },
+      {
+        "focus": true,
+        "height": 96,
+        "label": "Profile account actions",
+        "offset": "-4px",
+        "outline": "solid",
+        "outlineWidth": "2px"
+      }
+    ],
+    "forced": false,
+    "scroll": 320,
+    "tabs": [
+      {
+        "decoration": "none",
+        "id": "income-month-tab",
+        "selected": "true"
+      },
+      {
+        "decoration": "none",
+        "id": "income-year-tab",
+        "selected": "false"
+      },
+      {
+        "decoration": "none",
+        "id": "income-overview-tab",
+        "selected": "true"
+      },
+      {
+        "decoration": "none",
+        "id": "income-budget-tab",
+        "selected": "false"
+      }
+    ],
+    "width": 320,
+    "theme": "light",
+    "textScale": 200,
+    "keyboardPeriodSwitch": true
+  },
+  {
+    "client": 1280,
+    "controls": [
+      {
+        "focus": true,
+        "height": 44,
+        "label": "Mercury",
+        "offset": "1px",
+        "outline": "none",
+        "outlineWidth": "0px"
+      },
+      {
+        "focus": true,
+        "height": 46,
+        "label": "Home",
+        "offset": "1px",
+        "outline": "none",
+        "outlineWidth": "0px"
+      },
+      {
+        "focus": true,
+        "height": 46,
+        "label": "Portfolio",
+        "offset": "1px",
+        "outline": "none",
+        "outlineWidth": "0px"
+      },
+      {
+        "focus": true,
+        "height": 46,
+        "label": "Income",
+        "offset": "1px",
+        "outline": "none",
+        "outlineWidth": "0px"
+      },
+      {
+        "focus": true,
+        "height": 46,
+        "label": "Plan",
+        "offset": "1px",
+        "outline": "none",
+        "outlineWidth": "0px"
+      },
+      {
+        "focus": true,
+        "height": 44,
+        "label": "Profile",
+        "offset": "0px",
+        "outline": "none",
+        "outlineWidth": "0px"
+      }
+    ],
+    "forced": false,
+    "scroll": 1280,
+    "tabs": [
+      {
+        "decoration": "none",
+        "id": "income-month-tab",
+        "selected": "true"
+      },
+      {
+        "decoration": "none",
+        "id": "income-year-tab",
+        "selected": "false"
+      },
+      {
+        "decoration": "none",
+        "id": "income-overview-tab",
+        "selected": "true"
+      },
+      {
+        "decoration": "none",
+        "id": "income-budget-tab",
+        "selected": "false"
+      }
+    ],
+    "width": 1280,
+    "theme": "dark",
+    "textScale": 100,
+    "keyboardPeriodSwitch": true
+  },
+  {
+    "client": 768,
+    "controls": [
+      {
+        "focus": true,
+        "height": 44,
+        "label": "Home",
+        "offset": "-3px",
+        "outline": "solid",
+        "outlineWidth": "2px"
+      },
+      {
+        "focus": true,
+        "height": 44,
+        "label": "Portfolio",
+        "offset": "-3px",
+        "outline": "solid",
+        "outlineWidth": "2px"
+      },
+      {
+        "focus": true,
+        "height": 44,
+        "label": "Income",
+        "offset": "-3px",
+        "outline": "solid",
+        "outlineWidth": "2px"
+      },
+      {
+        "focus": true,
+        "height": 44,
+        "label": "Plan",
+        "offset": "-3px",
+        "outline": "solid",
+        "outlineWidth": "2px"
+      },
+      {
+        "focus": true,
+        "height": 44,
+        "label": "Profile",
+        "offset": "-3px",
+        "outline": "solid",
+        "outlineWidth": "2px"
+      }
+    ],
+    "forced": false,
+    "scroll": 768,
+    "tabs": [
+      {
+        "decoration": "none",
+        "id": "income-month-tab",
+        "selected": "true"
+      },
+      {
+        "decoration": "none",
+        "id": "income-year-tab",
+        "selected": "false"
+      },
+      {
+        "decoration": "none",
+        "id": "income-overview-tab",
+        "selected": "true"
+      },
+      {
+        "decoration": "none",
+        "id": "income-budget-tab",
+        "selected": "false"
+      }
+    ],
+    "width": 768,
+    "theme": "dark",
+    "textScale": 100,
+    "keyboardPeriodSwitch": true
+  },
+  {
+    "client": 390,
+    "controls": [
+      {
+        "focus": true,
+        "height": 48,
+        "label": "Home",
+        "offset": "-4px",
+        "outline": "solid",
+        "outlineWidth": "2px"
+      },
+      {
+        "focus": true,
+        "height": 48,
+        "label": "Portfolio",
+        "offset": "-4px",
+        "outline": "solid",
+        "outlineWidth": "2px"
+      },
+      {
+        "focus": true,
+        "height": 48,
+        "label": "Income",
+        "offset": "-4px",
+        "outline": "solid",
+        "outlineWidth": "2px"
+      },
+      {
+        "focus": true,
+        "height": 48,
+        "label": "Plan",
+        "offset": "-4px",
+        "outline": "solid",
+        "outlineWidth": "2px"
+      },
+      {
+        "focus": true,
+        "height": 48,
+        "label": "Profile account actions",
+        "offset": "-4px",
+        "outline": "solid",
+        "outlineWidth": "2px"
+      }
+    ],
+    "forced": false,
+    "scroll": 390,
+    "tabs": [
+      {
+        "decoration": "none",
+        "id": "income-month-tab",
+        "selected": "true"
+      },
+      {
+        "decoration": "none",
+        "id": "income-year-tab",
+        "selected": "false"
+      },
+      {
+        "decoration": "none",
+        "id": "income-overview-tab",
+        "selected": "true"
+      },
+      {
+        "decoration": "none",
+        "id": "income-budget-tab",
+        "selected": "false"
+      }
+    ],
+    "width": 390,
+    "theme": "dark",
+    "textScale": 100,
+    "keyboardPeriodSwitch": true
+  },
+  {
+    "client": 320,
+    "controls": [
+      {
+        "focus": true,
+        "height": 96,
+        "label": "Home",
+        "offset": "-4px",
+        "outline": "solid",
+        "outlineWidth": "2px"
+      },
+      {
+        "focus": true,
+        "height": 96,
+        "label": "Portfolio",
+        "offset": "-4px",
+        "outline": "solid",
+        "outlineWidth": "2px"
+      },
+      {
+        "focus": true,
+        "height": 96,
+        "label": "Income",
+        "offset": "-4px",
+        "outline": "solid",
+        "outlineWidth": "2px"
+      },
+      {
+        "focus": true,
+        "height": 96,
+        "label": "Plan",
+        "offset": "-4px",
+        "outline": "solid",
+        "outlineWidth": "2px"
+      },
+      {
+        "focus": true,
+        "height": 96,
+        "label": "Profile account actions",
+        "offset": "-4px",
+        "outline": "solid",
+        "outlineWidth": "2px"
+      }
+    ],
+    "forced": false,
+    "scroll": 320,
+    "tabs": [
+      {
+        "decoration": "none",
+        "id": "income-month-tab",
+        "selected": "true"
+      },
+      {
+        "decoration": "none",
+        "id": "income-year-tab",
+        "selected": "false"
+      },
+      {
+        "decoration": "none",
+        "id": "income-overview-tab",
+        "selected": "true"
+      },
+      {
+        "decoration": "none",
+        "id": "income-budget-tab",
+        "selected": "false"
+      }
+    ],
+    "width": 320,
+    "theme": "dark",
+    "textScale": 200,
+    "keyboardPeriodSwitch": true
+  }
+]

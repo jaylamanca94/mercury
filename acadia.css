@@ -2339,6 +2339,14 @@ main [id] {
   box-shadow: var(--acadia-focus-ring);
 }
 
+@media (forced-colors: active) {
+  .acadia-navbar-brand:focus-visible,
+  .acadia-navbar-link:focus-visible {
+    outline: 2px solid Highlight;
+    outline-offset: -3px;
+  }
+}
+
 .acadia-navbar-actions {
   align-items: center;
   color: var(--acadia-navbar-color-text);
@@ -2480,6 +2488,7 @@ main [id] {
 
 .acadia-side-nav {
   --acadia-side-nav-width: 18rem;
+  box-sizing: border-box;
   align-content: start;
   background: color-mix(
     in srgb,
@@ -2506,6 +2515,7 @@ main [id] {
   gap: 0.5rem;
   min-height: var(--acadia-target-size-compact);
   min-width: 0;
+  overflow-wrap: anywhere;
   padding: 0.25rem 0.625rem;
   text-decoration: none;
 }
@@ -2789,6 +2799,22 @@ main [id] {
   border-color: var(--acadia-color-brand-border);
   box-shadow: none;
   color: var(--acadia-color-action-ink);
+}
+
+@media (forced-colors: active) {
+  .acadia-side-nav-brand:focus-visible,
+  .acadia-side-nav-link:focus-visible,
+  .acadia-side-nav-disclosure > summary:focus-visible {
+    outline: 2px solid Highlight;
+    outline-offset: -3px;
+  }
+
+  .acadia-side-nav-link[aria-current="page"],
+  .acadia-side-nav-link.is-active:not([aria-current]) {
+    text-decoration: underline;
+    text-decoration-thickness: 3px;
+    text-underline-offset: 0.2em;
+  }
 }
 
 .acadia-footer {
@@ -6688,7 +6714,13 @@ select.acadia-control {
 }
 
 @media (forced-colors: active) {
-  .acadia-tab[aria-selected="true"] { outline: 1px solid Highlight; outline-offset: -3px; }
+  /* Keep selection separate from focus, including manual activation. */
+  .acadia-tab[aria-selected="true"],
+  .acadia-tab.is-active:not([aria-selected]) {
+    text-decoration: underline;
+    text-decoration-thickness: 3px;
+    text-underline-offset: 0.2em;
+  }
   .acadia-tab:focus-visible { outline: 2px solid Highlight; }
 }
 

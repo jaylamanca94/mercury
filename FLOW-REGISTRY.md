@@ -238,3 +238,7 @@ Ten implemented canonical flows remain. Retrieve/refresh an automatic quote now 
 ## 2026-09-23 — forced-colour focus (0.2.12)
 
 Ten implemented canonical flows unchanged. Sign-in, recovery actions and record editors reuse Acadia 0.4.7 system-colour outlines so focused controls remain visible when shadows are suppressed. No loading, saving, permission or calculation behaviour changes. Required coverage: keyboard Email → Send magic link, recovery Retry, editor fields/selects/actions and Escape return focus, phone/tablet/desktop containment, enlarged text and ordinary light/dark regression. Evidence: `automation/review/2026-09-23/forced-colours/review.md`.
+
+## 2026-09-23 — navigation orientation (0.2.13)
+
+Ten canonical flows unchanged. Shared Acadia 0.4.8 makes desktop brand/destination/Profile focus visible in forced colours and gives selected Home/Portfolio/Income/Asset tabs a separate underline. Routing, keyboard activation, recovery and financial semantics are unchanged. Evidence and platform limits: `automation/review/2026-09-23/navigation-colours/review.md`.

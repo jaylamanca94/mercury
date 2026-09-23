@@ -20,7 +20,7 @@ Mercury is a private personal finance workspace. Its first shipped product surfa
 
 ## Release state
 
-Current: **0.2.12** — Keyboard focus on shared buttons and form controls remains visible in forced-colour palettes. Adopts the unchanged Acadia 0.4.7 stylesheet, with no financial, persistence or workflow changes. Browser emulation is separate from operating-system high-contrast acceptance.
+Current: **0.2.13** — Desktop navigation retains visible keyboard focus and selected tabs retain a separate underline in forced-colour palettes. Adopts unchanged Acadia 0.4.8 assets. Financial, persistence and workflow behaviour remain unchanged; browser emulation is separate from operating-system high-contrast acceptance.
 
 Previous: **0.2.11** — Automatic quote dates prefer the provider’s last quoted minute, then its opening-bar Unix timestamp. Explicit timezone-bearing dates remain supported; missing, ambiguous, invalid or future dates use existing retry/manual-valuation recovery. Retrieval time is never substituted for a quote date. Existing saved quotes are not rewritten.
 

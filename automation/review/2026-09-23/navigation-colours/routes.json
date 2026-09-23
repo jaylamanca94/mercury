@@ -1,0 +1,35 @@
+[
+  {
+    "client": 1280,
+    "decoration": "underline",
+    "focus": true,
+    "id": "performance-1m-tab",
+    "outline": "2px",
+    "pressed": null,
+    "scroll": 1280,
+    "selected": "true",
+    "text": "1M"
+  },
+  {
+    "client": 1280,
+    "decoration": "underline",
+    "focus": true,
+    "id": "portfolio-cards-tab",
+    "outline": "2px",
+    "pressed": null,
+    "scroll": 1280,
+    "selected": "true",
+    "text": "Cards"
+  },
+  {
+    "client": 1280,
+    "decoration": "underline",
+    "focus": true,
+    "id": "",
+    "outline": "2px",
+    "pressed": "true",
+    "scroll": 1280,
+    "selected": null,
+    "text": "1M"
+  }
+]

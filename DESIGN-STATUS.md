@@ -1,6 +1,6 @@
 # Mercury — Design Status
 
-**Current review: 2026-09-23 — 0.2.12.** Ten canonical flows remain. Acadia 0.4.7 preserves keyboard focus on shared buttons, fields and icon actions in forced-colour palettes. Local adapters have no conflicting focus override. Browser-emulated palette and responsive evidence is in `automation/review/2026-09-23/forced-colours/review.md`; OS contrast themes, VoiceOver and physical-device acceptance remain separate.
+**Current review: 2026-09-23 — 0.2.13.** Ten canonical flows remain. Acadia 0.4.8 preserves desktop navigation focus and separates tab selection from focus in forced colours. No local component override. Browser evidence: `automation/review/2026-09-23/navigation-colours/review.md`; OS contrast themes, VoiceOver and physical-device acceptance remain separate.
 
 Current next design opportunities (all older lists below are historical):
 1. Complete real magic-link arrival/redemption and expired-session recovery in a browser.
