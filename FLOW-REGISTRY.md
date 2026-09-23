@@ -226,3 +226,10 @@ Coverage includes: complete/loading/failure/retry, manual or missing shares, mis
 ## 2026-09-22 — Authentication and Profile recovery (0.2.10)
 
 Ten implemented canonical flows remain. Sign-in and sign-out add bounded pending, unconfirmed timeout, visible retry and stale-reply rejection. Profile no longer clips inside desktop/tablet navigation or opens below the phone viewport. Existing menu, native appearance select, status hints, draft-discard protection and keyboard focus are retained. No schema or financial semantics change. Evidence and per-flow limits: `automation/review/2026-09-22/flows/review.md`.
+
+
+## 2026-09-22 — Provider quote dates (0.2.11)
+
+Ten implemented canonical flows remain. Retrieve/refresh an automatic quote now preserves the provider's last quoted minute (or opening-bar Unix timestamp when unavailable), independently of server timezone. Explicit timezone-bearing ISO dates remain compatible. Missing, ambiguous, malformed and future dates reject the new response through existing retry/manual-entry recovery; they never become the retrieval time. Previously stored records remain unchanged.
+
+321 automated checks pass, including provider date precedence, strict invalid-date rejection and protected endpoint failure → successful retry → preserved cached timestamp. Public Twelve Data demo data independently confirms the date-only/Unix fields and corrected last-minute result. Deployed authenticated fund/ETF/crypto coverage and actual scheduler execution remain open; see `automation/review/2026-09-22/quote-time/review.md`.

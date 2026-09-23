@@ -20,7 +20,9 @@ Mercury is a private personal finance workspace. Its first shipped product surfa
 
 ## Release state
 
-Current: **0.2.10** — Sign-in and sign-out requests recover from stalls after ten seconds with explicit unconfirmed-outcome feedback. Profile menus remain visible and usable across desktop, tablet and phone, including the phone dock. Existing Acadia primitives and unchanged 0.4.2 assets are reused. No financial calculations, data schema, provider contracts or additional features change.
+Current: **0.2.11** — Automatic quote dates prefer the provider’s last quoted minute, then its opening-bar Unix timestamp. Explicit timezone-bearing dates remain supported; missing, ambiguous, invalid or future dates use existing retry/manual-valuation recovery. Retrieval time is never substituted for a quote date. Existing saved quotes are not rewritten.
+
+Previous: **0.2.10** — Sign-in and sign-out requests recover from stalls after ten seconds with explicit unconfirmed-outcome feedback. Profile menus remain visible and usable across desktop, tablet and phone, including the phone dock. Existing Acadia primitives and unchanged 0.4.2 assets are reused. No financial calculations, data schema, provider contracts or additional features change.
 
 Previous: **0.2.9** — Home leads with net worth at two decimal places for million-scale values and a 1M portfolio market-movement chart. The chart reuses Portfolio's constant-current-share calculation, weighted by starting market value, on shared observed dates. Recorded investment value remains available through Chart view. No persistence, provider, forecast or personal-return model is added; see the Home market movement contract below.
 

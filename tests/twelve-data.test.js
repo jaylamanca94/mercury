@@ -14,6 +14,29 @@ test("maps a Twelve Data quote into Mercury's cent-based quote contract", () => 
   assert.deepEqual(quote, { symbol: "VT", priceCents: 12625, priorCloseCents: 12560, asOf: "2026-08-30T20:00:00.000Z", source: "Twelve Data" });
 });
 
+test("quote time prefers the provider's last quoted minute over its opening bar and local date", () => {
+  const quote = _internals.mapQuote({ close: "126.25", datetime: "2026-09-01",
+    timestamp: 1788269400, last_quote_at: 1788292800 }, "VT");
+  assert.equal(quote.asOf, "2026-09-01T20:00:00.000Z");
+});
+
+test("quote time preserves unambiguous provider bar timestamps and explicit UTC offsets", () => {
+  assert.equal(_internals.mapQuote({ close: "126.25", timestamp: 1768204680,
+    datetime: "2026-01-12 07:58:00" }, "VT").asOf, "2026-01-12T07:58:00.000Z");
+  assert.equal(_internals.mapQuote({ close: "126.25", datetime: "2026-09-01T16:00:00-04:00" }, "VT").asOf,
+    "2026-09-01T20:00:00.000Z");
+});
+
+test("missing, ambiguous, malformed and future quote dates never become retrieval time", () => {
+  for (const fields of [{}, { datetime: "2026-09-01" }, { datetime: "2026-09-01 16:00:00" },
+    { datetime: "invalid" }, { datetime: "2026-13-01T20:00:00Z" }, { datetime: "2026-02-30T20:00:00Z" },
+    { datetime: "2026-09-01T24:00:00Z" }, { datetime: "2999-01-01T00:00:00Z" },
+    ...[0, -1, "1788292800", false, NaN, Infinity, 1788292800.5, 1788292800000].map(timestamp => ({ timestamp })),
+    { last_quote_at: "invalid", timestamp: 1788292800 }]) {
+    assert.throws(() => _internals.mapQuote({ close: "126.25", ...fields }, "VT"), /no usable quote time/);
+  }
+});
+
 test("calculates a distribution yield from a provider annual dividend and the current quote", () => {
   const distribution = _internals.mapDistribution({
     statistics: {
@@ -211,7 +234,7 @@ test("provider prices reject blanks, nulls, booleans and unsafe cent values with
   for (const price of [null, undefined, "", "   ", false, true, [], {}, "1e100"]) {
     assert.throws(() => _internals.mapQuote({ price }, "VT"), /no usable price/);
   }
-  assert.equal(_internals.mapQuote({ price: "0" }, "VT").priceCents, 0);
+  assert.equal(_internals.mapQuote({ price: "0", datetime: "2026-09-01T20:00:00Z" }, "VT").priceCents, 0);
 });
 
 function timedProvider(t, fetcher) {

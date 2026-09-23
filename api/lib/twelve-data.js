@@ -45,6 +45,26 @@ function dollarsToCents(value, field) {
   return Math.round(amount * 100);
 }
 
+function quoteAsOf(payload) {
+  // Twelve Data's datetime can be exchange-local or date-only. Its Unix fields
+  // are unambiguous: prefer the last quoted minute, then the bar timestamp.
+  const timestamp = payload.last_quote_at ?? payload.timestamp;
+  let time = NaN;
+  if (timestamp !== undefined && timestamp !== null) {
+    if (Number.isSafeInteger(timestamp)) time = timestamp * 1000;
+  } else if (typeof payload.datetime === "string"
+    && /^\d{4}-\d{2}-\d{2}T(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d{1,3})?(?:Z|[+-](?:[01]\d|2[0-3]):[0-5]\d)$/.test(payload.datetime)) {
+    const date = new Date(`${payload.datetime.slice(0, 10)}T00:00:00Z`);
+    if (Number.isFinite(date.getTime()) && date.toISOString().slice(0, 10) === payload.datetime.slice(0, 10)) {
+      time = Date.parse(payload.datetime);
+    }
+  }
+  if (!Number.isFinite(time) || time <= 0 || time > Date.now()) {
+    throw new Error("Twelve Data returned no usable quote time. Try again or enter a manual valuation.");
+  }
+  return new Date(time).toISOString();
+}
+
 function mapQuote(payload, symbol) {
   if (payload.code || payload.status === "error") throw new Error(payload.message || "Twelve Data could not quote this symbol.");
   return {
@@ -54,7 +74,7 @@ function mapQuote(payload, symbol) {
       payload.previous_close === undefined || payload.previous_close === null || payload.previous_close === ""
         ? null
         : dollarsToCents(payload.previous_close, "previous close"),
-    asOf: payload.datetime ? new Date(payload.datetime).toISOString() : new Date().toISOString(),
+    asOf: quoteAsOf(payload),
     source: "Twelve Data",
   };
 }

@@ -64,6 +64,37 @@ test("authentication distinguishes rejected sessions from upstream outages and i
   assert.equal((await currentUser(request())).id, ownerId);
 });
 
+test("protected quote recovery rejects undated prices and caches only the corrected provider time", async (t) => {
+  const oldKey = process.env.TWELVE_DATA_API_KEY;
+  process.env.TWELVE_DATA_API_KEY = "test-key";
+  t.after(() => {
+    if (oldKey === undefined) delete process.env.TWELVE_DATA_API_KEY;
+    else process.env.TWELVE_DATA_API_KEY = oldKey;
+  });
+  let providerCalls = 0;
+  let payload = { close: "100" };
+  setup(t, async (url) => {
+    if (String(url).endsWith("/auth/v1/user")) return json({ id: ownerId });
+    assert.equal(new URL(url).pathname, "/quote");
+    providerCalls++;
+    return json(payload);
+  });
+  const req = { ...request(), query: { symbol: "TIMECHECK/USD", instrumentType: "crypto" } };
+  const missing = response();
+  await quotes(req, missing);
+  assert.equal(missing.code, 422);
+  assert.match(missing.body.error, /no usable quote time/);
+  payload = { close: "100", datetime: "2026-09-01", last_quote_at: 1788292800 };
+  const retried = response();
+  await quotes(req, retried);
+  assert.equal(retried.code, 200);
+  assert.equal(retried.body.asOf, "2026-09-01T20:00:00.000Z");
+  const cached = response();
+  await quotes(req, cached);
+  assert.equal(cached.body.asOf, retried.body.asOf);
+  assert.equal(providerCalls, 2);
+});
+
 test("incomplete valuations leave existing daily history untouched", async (t) => {
   const writes = [];
   setup(t, async (url, options) => {
