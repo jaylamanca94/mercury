@@ -1,0 +1,53 @@
+{
+  "commit": "6c622b3405804d3ea8e4d1fcde5b2242779b2aa3",
+  "checks": [
+    {
+      "file": "README.md",
+      "status": 200,
+      "matches_local": true,
+      "sha256": "29ac31548c14a4abb79b0e5c5673a7c1da5717f4f962837b6afdbc652f99bda8",
+      "csp": true,
+      "nosniff": "nosniff"
+    },
+    {
+      "file": "index.html",
+      "status": 200,
+      "matches_local": true,
+      "sha256": "69d09b7dbf982f27aac452771dfbf49516f055cc7d8f741106b85661c0710222",
+      "csp": true,
+      "nosniff": "nosniff"
+    },
+    {
+      "file": "brokerage.js",
+      "status": 200,
+      "matches_local": true,
+      "sha256": "9144d054933765e74bedf602c3a8be7dbfb5c4c1a52f8b5ef219ef22bfdd5148",
+      "csp": true,
+      "nosniff": "nosniff"
+    },
+    {
+      "file": "acadia.css",
+      "status": 200,
+      "matches_local": true,
+      "sha256": "f93a16d0574790eebd36339065b3873445ef3ab18b58b844a83018eb6828b78a",
+      "csp": true,
+      "nosniff": "nosniff"
+    },
+    {
+      "file": "styles.css",
+      "status": 200,
+      "matches_local": true,
+      "sha256": "6631728427fdf6ecfebfd8bcd8a18c5b6329ecf22258a7a31da34198d22cc274",
+      "csp": true,
+      "nosniff": "nosniff"
+    },
+    {
+      "endpoint": "api/portfolio/quotes?symbol=AAPL&instrumentType=stock",
+      "status": 401
+    },
+    {
+      "endpoint": "api/portfolio/snapshot",
+      "status": 401
+    }
+  ]
+}

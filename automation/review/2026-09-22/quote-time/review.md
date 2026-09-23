@@ -25,4 +25,4 @@ The Vercel connector returns an empty project inventory and deployment 404; the 
 
 ## Delivery
 
-Pending authorised commit/push and exact revision deployment verification.
+Implementation `6c622b3405804d3ea8e4d1fcde5b2242779b2aa3` is on `origin/main`. GitHub's Vercel status reports successful production deployment [7L8AR31hJ4jtJ2RrmfvrVo6SJ3W3](https://vercel.com/jayson-lamanca-s-projects/mercury/7L8AR31hJ4jtJ2RrmfvrVo6SJ3W3). Five canonical production files match the released bytes, including the 0.2.11 README, with CSP/nosniff; protected quote/snapshot routes return 401. The browser's direct Portfolio route remains gated on sign-in. See `production.json`. This verifies release identity and public access protection, not an authenticated production quote lookup or scheduler invocation.
