@@ -1,0 +1,5 @@
+{
+  "status": "Unpublished Acadia 0.4.10 candidate; not adopted",
+  "cssSha256": "fa9dd552e438840f02db3055d2b31df90e7dc51d04098ae5ba2abe9c9be456b9",
+  "note": "Reverify exact released source and actual vendored assets before publishing Mercury."
+}

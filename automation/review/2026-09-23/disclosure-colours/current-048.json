@@ -1,0 +1,804 @@
+[
+  {
+    "route": "portfolio",
+    "width": 1280,
+    "textScale": 100,
+    "controls": [
+      {
+        "focus": true,
+        "forced": true,
+        "height": 32,
+        "label": "Filter investments",
+        "outline": "none",
+        "shadow": "none",
+        "width": "0px",
+        "visibleIndicator": false
+      },
+      {
+        "focus": true,
+        "forced": true,
+        "height": 44,
+        "label": "Add recurring investment",
+        "outline": "solid",
+        "shadow": "none",
+        "width": "2px",
+        "visibleIndicator": true
+      },
+      {
+        "focus": true,
+        "forced": true,
+        "height": 44,
+        "label": "Sort recurring investments",
+        "outline": "none",
+        "shadow": "none",
+        "width": "0px",
+        "visibleIndicator": false
+      },
+      {
+        "focus": true,
+        "forced": true,
+        "height": 44,
+        "label": "Actions for Local demonstration property",
+        "outline": "solid",
+        "shadow": "none",
+        "width": "2px",
+        "visibleIndicator": true
+      },
+      {
+        "focus": true,
+        "forced": true,
+        "height": 64,
+        "label": "Portfolio allocation",
+        "outline": "solid",
+        "shadow": "none",
+        "width": "2px",
+        "visibleIndicator": true
+      }
+    ],
+    "geometry": {
+      "client": 1280,
+      "scroll": 1280
+    }
+  },
+  {
+    "route": "portfolio",
+    "width": 768,
+    "textScale": 100,
+    "controls": [
+      {
+        "focus": true,
+        "forced": true,
+        "height": 32,
+        "label": "Filter investments",
+        "outline": "none",
+        "shadow": "none",
+        "width": "0px",
+        "visibleIndicator": false
+      },
+      {
+        "focus": true,
+        "forced": true,
+        "height": 32,
+        "label": "Portfolio period",
+        "outline": "none",
+        "shadow": "none",
+        "width": "0px",
+        "visibleIndicator": false
+      },
+      {
+        "focus": true,
+        "forced": true,
+        "height": 44,
+        "label": "Add recurring investment",
+        "outline": "solid",
+        "shadow": "none",
+        "width": "2px",
+        "visibleIndicator": true
+      },
+      {
+        "focus": true,
+        "forced": true,
+        "height": 44,
+        "label": "Sort recurring investments",
+        "outline": "none",
+        "shadow": "none",
+        "width": "0px",
+        "visibleIndicator": false
+      },
+      {
+        "focus": true,
+        "forced": true,
+        "height": 44,
+        "label": "Actions for Local demonstration property",
+        "outline": "solid",
+        "shadow": "none",
+        "width": "2px",
+        "visibleIndicator": true
+      },
+      {
+        "focus": true,
+        "forced": true,
+        "height": 64,
+        "label": "Portfolio allocation",
+        "outline": "solid",
+        "shadow": "none",
+        "width": "2px",
+        "visibleIndicator": true
+      }
+    ],
+    "geometry": {
+      "client": 768,
+      "scroll": 768
+    }
+  },
+  {
+    "route": "portfolio",
+    "width": 390,
+    "textScale": 100,
+    "controls": [
+      {
+        "focus": true,
+        "forced": true,
+        "height": 44,
+        "label": "Portfolio actions",
+        "outline": "solid",
+        "shadow": "none",
+        "width": "2px",
+        "visibleIndicator": true
+      },
+      {
+        "focus": true,
+        "forced": true,
+        "height": 44,
+        "label": "Portfolio actions",
+        "outline": "solid",
+        "shadow": "none",
+        "width": "2px",
+        "visibleIndicator": true
+      },
+      {
+        "focus": true,
+        "forced": true,
+        "height": 44,
+        "label": "Sort recurring investments",
+        "outline": "none",
+        "shadow": "none",
+        "width": "0px",
+        "visibleIndicator": false
+      },
+      {
+        "focus": true,
+        "forced": true,
+        "height": 44,
+        "label": "Actions for Local demonstration property",
+        "outline": "solid",
+        "shadow": "none",
+        "width": "2px",
+        "visibleIndicator": true
+      },
+      {
+        "focus": true,
+        "forced": true,
+        "height": 64,
+        "label": "Portfolio allocation",
+        "outline": "solid",
+        "shadow": "none",
+        "width": "2px",
+        "visibleIndicator": true
+      }
+    ],
+    "geometry": {
+      "client": 390,
+      "scroll": 390
+    }
+  },
+  {
+    "route": "portfolio",
+    "width": 320,
+    "textScale": 200,
+    "controls": [
+      {
+        "focus": true,
+        "forced": true,
+        "height": 88,
+        "label": "Portfolio actions",
+        "outline": "solid",
+        "shadow": "none",
+        "width": "2px",
+        "visibleIndicator": true
+      },
+      {
+        "focus": true,
+        "forced": true,
+        "height": 88,
+        "label": "Portfolio actions",
+        "outline": "solid",
+        "shadow": "none",
+        "width": "2px",
+        "visibleIndicator": true
+      },
+      {
+        "focus": true,
+        "forced": true,
+        "height": 88,
+        "label": "Sort recurring investments",
+        "outline": "none",
+        "shadow": "none",
+        "width": "0px",
+        "visibleIndicator": false
+      },
+      {
+        "focus": true,
+        "forced": true,
+        "height": 88,
+        "label": "Actions for Local demonstration property",
+        "outline": "solid",
+        "shadow": "none",
+        "width": "2px",
+        "visibleIndicator": true
+      },
+      {
+        "focus": true,
+        "forced": true,
+        "height": 256,
+        "label": "Portfolio allocation",
+        "outline": "solid",
+        "shadow": "none",
+        "width": "2px",
+        "visibleIndicator": true
+      }
+    ],
+    "geometry": {
+      "client": 320,
+      "scroll": 320
+    }
+  },
+  {
+    "route": "income",
+    "width": 1280,
+    "textScale": 100,
+    "controls": [
+      {
+        "focus": true,
+        "forced": true,
+        "height": 44,
+        "label": "Find or sort dividends",
+        "outline": "solid",
+        "shadow": "none",
+        "width": "2px",
+        "visibleIndicator": true
+      },
+      {
+        "focus": true,
+        "forced": true,
+        "height": 44,
+        "label": "Actions for VXUS",
+        "outline": "solid",
+        "shadow": "none",
+        "width": "2px",
+        "visibleIndicator": true
+      },
+      {
+        "focus": true,
+        "forced": true,
+        "height": 44,
+        "label": "Actions for VFIAX",
+        "outline": "solid",
+        "shadow": "none",
+        "width": "2px",
+        "visibleIndicator": true
+      },
+      {
+        "focus": true,
+        "forced": true,
+        "height": 44,
+        "label": "Actions for VSMAX",
+        "outline": "solid",
+        "shadow": "none",
+        "width": "2px",
+        "visibleIndicator": true
+      },
+      {
+        "focus": true,
+        "forced": true,
+        "height": 44,
+        "label": "Find income sources",
+        "outline": "solid",
+        "shadow": "none",
+        "width": "2px",
+        "visibleIndicator": true
+      },
+      {
+        "focus": true,
+        "forced": true,
+        "height": 44,
+        "label": "Actions for Cadmus",
+        "outline": "solid",
+        "shadow": "none",
+        "width": "2px",
+        "visibleIndicator": true
+      }
+    ],
+    "geometry": {
+      "client": 1280,
+      "scroll": 1280
+    }
+  },
+  {
+    "route": "income",
+    "width": 768,
+    "textScale": 100,
+    "controls": [
+      {
+        "focus": true,
+        "forced": true,
+        "height": 44,
+        "label": "Find or sort dividends",
+        "outline": "solid",
+        "shadow": "none",
+        "width": "2px",
+        "visibleIndicator": true
+      },
+      {
+        "focus": true,
+        "forced": true,
+        "height": 44,
+        "label": "Actions for VXUS",
+        "outline": "solid",
+        "shadow": "none",
+        "width": "2px",
+        "visibleIndicator": true
+      },
+      {
+        "focus": true,
+        "forced": true,
+        "height": 44,
+        "label": "Actions for VFIAX",
+        "outline": "solid",
+        "shadow": "none",
+        "width": "2px",
+        "visibleIndicator": true
+      },
+      {
+        "focus": true,
+        "forced": true,
+        "height": 44,
+        "label": "Actions for VSMAX",
+        "outline": "solid",
+        "shadow": "none",
+        "width": "2px",
+        "visibleIndicator": true
+      },
+      {
+        "focus": true,
+        "forced": true,
+        "height": 44,
+        "label": "Find income sources",
+        "outline": "solid",
+        "shadow": "none",
+        "width": "2px",
+        "visibleIndicator": true
+      },
+      {
+        "focus": true,
+        "forced": true,
+        "height": 44,
+        "label": "Actions for Cadmus",
+        "outline": "solid",
+        "shadow": "none",
+        "width": "2px",
+        "visibleIndicator": true
+      }
+    ],
+    "geometry": {
+      "client": 768,
+      "scroll": 768
+    }
+  },
+  {
+    "route": "income",
+    "width": 390,
+    "textScale": 100,
+    "controls": [
+      {
+        "focus": true,
+        "forced": true,
+        "height": 44,
+        "label": "Find or sort dividends",
+        "outline": "solid",
+        "shadow": "none",
+        "width": "2px",
+        "visibleIndicator": true
+      },
+      {
+        "focus": true,
+        "forced": true,
+        "height": 44,
+        "label": "Actions for VXUS",
+        "outline": "solid",
+        "shadow": "none",
+        "width": "2px",
+        "visibleIndicator": true
+      },
+      {
+        "focus": true,
+        "forced": true,
+        "height": 44,
+        "label": "Actions for VFIAX",
+        "outline": "solid",
+        "shadow": "none",
+        "width": "2px",
+        "visibleIndicator": true
+      },
+      {
+        "focus": true,
+        "forced": true,
+        "height": 44,
+        "label": "Actions for VSMAX",
+        "outline": "solid",
+        "shadow": "none",
+        "width": "2px",
+        "visibleIndicator": true
+      },
+      {
+        "focus": true,
+        "forced": true,
+        "height": 44,
+        "label": "Find income sources",
+        "outline": "solid",
+        "shadow": "none",
+        "width": "2px",
+        "visibleIndicator": true
+      },
+      {
+        "focus": true,
+        "forced": true,
+        "height": 44,
+        "label": "Actions for Cadmus",
+        "outline": "solid",
+        "shadow": "none",
+        "width": "2px",
+        "visibleIndicator": true
+      }
+    ],
+    "geometry": {
+      "client": 390,
+      "scroll": 390
+    }
+  },
+  {
+    "route": "income",
+    "width": 320,
+    "textScale": 200,
+    "controls": [
+      {
+        "focus": true,
+        "forced": true,
+        "height": 88,
+        "label": "Find or sort dividends",
+        "outline": "solid",
+        "shadow": "none",
+        "width": "2px",
+        "visibleIndicator": true
+      },
+      {
+        "focus": true,
+        "forced": true,
+        "height": 88,
+        "label": "Actions for VXUS",
+        "outline": "solid",
+        "shadow": "none",
+        "width": "2px",
+        "visibleIndicator": true
+      },
+      {
+        "focus": true,
+        "forced": true,
+        "height": 88,
+        "label": "Actions for VFIAX",
+        "outline": "solid",
+        "shadow": "none",
+        "width": "2px",
+        "visibleIndicator": true
+      },
+      {
+        "focus": true,
+        "forced": true,
+        "height": 88,
+        "label": "Actions for VSMAX",
+        "outline": "solid",
+        "shadow": "none",
+        "width": "2px",
+        "visibleIndicator": true
+      },
+      {
+        "focus": true,
+        "forced": true,
+        "height": 88,
+        "label": "Find income sources",
+        "outline": "solid",
+        "shadow": "none",
+        "width": "2px",
+        "visibleIndicator": true
+      },
+      {
+        "focus": true,
+        "forced": true,
+        "height": 88,
+        "label": "Actions for Cadmus",
+        "outline": "solid",
+        "shadow": "none",
+        "width": "2px",
+        "visibleIndicator": true
+      }
+    ],
+    "geometry": {
+      "client": 320,
+      "scroll": 320
+    }
+  },
+  {
+    "route": "plan",
+    "width": 1280,
+    "textScale": 100,
+    "controls": [
+      {
+        "focus": true,
+        "forced": true,
+        "height": 44,
+        "label": "Brokerage actions",
+        "outline": "solid",
+        "shadow": "none",
+        "width": "2px",
+        "visibleIndicator": true
+      },
+      {
+        "focus": true,
+        "forced": true,
+        "height": 44,
+        "label": "Crypto actions",
+        "outline": "solid",
+        "shadow": "none",
+        "width": "2px",
+        "visibleIndicator": true
+      },
+      {
+        "focus": true,
+        "forced": true,
+        "height": 44,
+        "label": "Retirement actions",
+        "outline": "solid",
+        "shadow": "none",
+        "width": "2px",
+        "visibleIndicator": true
+      },
+      {
+        "focus": true,
+        "forced": true,
+        "height": 44,
+        "label": "Property actions",
+        "outline": "solid",
+        "shadow": "none",
+        "width": "2px",
+        "visibleIndicator": true
+      },
+      {
+        "focus": true,
+        "forced": true,
+        "height": 64,
+        "label": "Projection assumptions",
+        "outline": "solid",
+        "shadow": "none",
+        "width": "2px",
+        "visibleIndicator": true
+      }
+    ],
+    "geometry": {
+      "client": 1280,
+      "scroll": 1280
+    }
+  },
+  {
+    "route": "plan",
+    "width": 768,
+    "textScale": 100,
+    "controls": [
+      {
+        "focus": true,
+        "forced": true,
+        "height": 44,
+        "label": "Brokerage actions",
+        "outline": "solid",
+        "shadow": "none",
+        "width": "2px",
+        "visibleIndicator": true
+      },
+      {
+        "focus": true,
+        "forced": true,
+        "height": 44,
+        "label": "Crypto actions",
+        "outline": "solid",
+        "shadow": "none",
+        "width": "2px",
+        "visibleIndicator": true
+      },
+      {
+        "focus": true,
+        "forced": true,
+        "height": 44,
+        "label": "Retirement actions",
+        "outline": "solid",
+        "shadow": "none",
+        "width": "2px",
+        "visibleIndicator": true
+      },
+      {
+        "focus": true,
+        "forced": true,
+        "height": 44,
+        "label": "Property actions",
+        "outline": "solid",
+        "shadow": "none",
+        "width": "2px",
+        "visibleIndicator": true
+      },
+      {
+        "focus": true,
+        "forced": true,
+        "height": 64,
+        "label": "Projection assumptions",
+        "outline": "solid",
+        "shadow": "none",
+        "width": "2px",
+        "visibleIndicator": true
+      }
+    ],
+    "geometry": {
+      "client": 768,
+      "scroll": 768
+    }
+  },
+  {
+    "route": "plan",
+    "width": 390,
+    "textScale": 100,
+    "controls": [
+      {
+        "focus": true,
+        "forced": true,
+        "height": 44,
+        "label": "Plan actions",
+        "outline": "solid",
+        "shadow": "none",
+        "width": "2px",
+        "visibleIndicator": true
+      },
+      {
+        "focus": true,
+        "forced": true,
+        "height": 44,
+        "label": "Brokerage actions",
+        "outline": "solid",
+        "shadow": "none",
+        "width": "2px",
+        "visibleIndicator": true
+      },
+      {
+        "focus": true,
+        "forced": true,
+        "height": 44,
+        "label": "Crypto actions",
+        "outline": "solid",
+        "shadow": "none",
+        "width": "2px",
+        "visibleIndicator": true
+      },
+      {
+        "focus": true,
+        "forced": true,
+        "height": 44,
+        "label": "Retirement actions",
+        "outline": "solid",
+        "shadow": "none",
+        "width": "2px",
+        "visibleIndicator": true
+      },
+      {
+        "focus": true,
+        "forced": true,
+        "height": 44,
+        "label": "Property actions",
+        "outline": "solid",
+        "shadow": "none",
+        "width": "2px",
+        "visibleIndicator": true
+      },
+      {
+        "focus": true,
+        "forced": true,
+        "height": 64,
+        "label": "Projection assumptions",
+        "outline": "solid",
+        "shadow": "none",
+        "width": "2px",
+        "visibleIndicator": true
+      }
+    ],
+    "geometry": {
+      "client": 390,
+      "scroll": 390
+    }
+  },
+  {
+    "route": "plan",
+    "width": 320,
+    "textScale": 200,
+    "controls": [
+      {
+        "focus": true,
+        "forced": true,
+        "height": 88,
+        "label": "Plan actions",
+        "outline": "solid",
+        "shadow": "none",
+        "width": "2px",
+        "visibleIndicator": true
+      },
+      {
+        "focus": true,
+        "forced": true,
+        "height": 88,
+        "label": "Brokerage actions",
+        "outline": "solid",
+        "shadow": "none",
+        "width": "2px",
+        "visibleIndicator": true
+      },
+      {
+        "focus": true,
+        "forced": true,
+        "height": 88,
+        "label": "Crypto actions",
+        "outline": "solid",
+        "shadow": "none",
+        "width": "2px",
+        "visibleIndicator": true
+      },
+      {
+        "focus": true,
+        "forced": true,
+        "height": 88,
+        "label": "Retirement actions",
+        "outline": "solid",
+        "shadow": "none",
+        "width": "2px",
+        "visibleIndicator": true
+      },
+      {
+        "focus": true,
+        "forced": true,
+        "height": 88,
+        "label": "Property actions",
+        "outline": "solid",
+        "shadow": "none",
+        "width": "2px",
+        "visibleIndicator": true
+      },
+      {
+        "focus": true,
+        "forced": true,
+        "height": 256,
+        "label": "Projection assumptions",
+        "outline": "solid",
+        "shadow": "none",
+        "width": "2px",
+        "visibleIndicator": true
+      }
+    ],
+    "geometry": {
+      "client": 320,
+      "scroll": 320
+    }
+  }
+]

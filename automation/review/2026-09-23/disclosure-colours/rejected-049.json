@@ -1,0 +1,10 @@
+{
+  "focus": true,
+  "forced": true,
+  "height": 32,
+  "label": "Filter investments",
+  "outline": "none",
+  "shadow": "none",
+  "width": "0px",
+  "stylesheet": "http://127.0.0.1:8857/styles.css?v=20260923-disclosure-colours"
+}
