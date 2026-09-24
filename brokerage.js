@@ -4,11 +4,9 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
   "use strict";
 
   const {
-    PERFORMANCE_PERIODS,
     VALUATION_BASES,
     calculateQuotePreviewValueCents,
     normalizeContributionPlan,
-    summarizePerformance,
     summarizePortfolio,
   } = window.MercuryPortfolio;
   const {
@@ -37,7 +35,7 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
     totalNetWorthCents,
     weeklyEquivalentRecurringContributionCents,
   } = window.MercuryPlan;
-  const { holdingAssetTypeLabel, investmentGroup, summarizeInvestmentGroups, summarizeHomeGroups, summarizePlanningPosition, summarizeHoldingAllocation, summarizeNetWorthAllocation, summarizeDashboardHistory, summarizeAllTimeChange } = window.MercuryDashboard;
+  const { holdingAssetTypeLabel, investmentGroup, summarizeInvestmentGroups, summarizeHomeGroups, summarizePlanningPosition, summarizeHoldingAllocation, summarizeNetWorthAllocation, summarizeHomeBalanceHistory, summarizeAllTimeChange } = window.MercuryDashboard;
   const { summarizeMarketHistory, summarizePortfolioMarketHistory } = window.MercuryMarketHistory;
   const $ = (selector) => document.querySelector(selector);
   const currency = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 });
@@ -50,15 +48,12 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
   const millionCurrency = new Intl.NumberFormat("en-US", {
     style: "currency", currency: "USD", notation: "compact", maximumFractionDigits: 1,
   });
-  const netWorthCurrency = new Intl.NumberFormat("en-US", {
-    style: "currency", currency: "USD", notation: "compact", minimumFractionDigits: 2, maximumFractionDigits: 2,
-  });
   const preciseCurrency = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", minimumFractionDigits: 2, maximumFractionDigits: 2 });
   const percentage = new Intl.NumberFormat("en-US", { style: "percent", maximumFractionDigits: 2 });
   const wholePercentage = new Intl.NumberFormat("en-US", { style: "percent", maximumFractionDigits: 0 });
   const state = {
     client: null, user: null, account: null, accounts: [], holdings: [], quotes: [], snapshots: [], incomeSources: [], incomeSourcesAvailable: true, budgetCategories: [], budgetCategoriesAvailable: true, planSettings: null, properties: [], propertiesAvailable: true, planDataAvailable: true,
-    startupStatus: null, startupMessage: "", startupRequestId: 0, dataRequestId: 0, metricsRequestId: 0, propertyReloadPending: false, planReloadPending: false, incomeReloadPending: false, incomeReloadFailed: false, providerMetrics: {}, providerMetricsPending: new Set(), configured: false, pendingQuote: null, quoteTimer: null, quoteRequestId: 0, portfolioFilter: "all", portfolioView: "cards", recurringSort: "value", propertySort: "value", homeChartView: "market", performancePeriod: "1m", incomePeriod: "month", incomeDividendSort: "value", planHorizon: 1, planSelectedYear: 1, incomeSourceDialogId: null, incomeSourceDeleteId: null, budgetCategoryDialogId: null, budgetCategoryDeleteId: null, propertyDialogId: null, propertyDeleteId: null,
+    startupStatus: null, startupMessage: "", startupRequestId: 0, dataRequestId: 0, metricsRequestId: 0, propertyReloadPending: false, planReloadPending: false, incomeReloadPending: false, incomeReloadFailed: false, providerMetrics: {}, providerMetricsPending: new Set(), configured: false, pendingQuote: null, quoteTimer: null, quoteRequestId: 0, portfolioFilter: "all", portfolioView: "cards", recurringSort: "value", propertySort: "value", performancePeriod: "ytd", incomePeriod: "month", incomeDividendSort: "value", planHorizon: 1, planSelectedYear: 1, incomeSourceDialogId: null, incomeSourceDeleteId: null, budgetCategoryDialogId: null, budgetCategoryDeleteId: null, propertyDialogId: null, propertyDeleteId: null,
   };
   let authSubscription = null;
   let observedAuthUserId;
@@ -184,7 +179,7 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
     try { return decodeURIComponent(match[1]); } catch { return match[1]; }
   }
   function routeHome() { return !routePortfolio() && !routeIncome() && !routePlan() && !routeAssetId(); }
-  function marketHistoryRoute() { return routePortfolio() || (routeHome() && state.homeChartView === "market"); }
+  function marketHistoryRoute() { return routePortfolio(); }
   function routePortfolio() { return window.location.hash === "#portfolio"; }
   function routeIncome() { return ["#income", "#income/budget"].includes(window.location.hash); }
   function routePlan() { return window.location.hash === "#plan"; }
@@ -318,15 +313,12 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
   function renderPerformancePeriods() {
     document.querySelectorAll("[data-performance-period]").forEach((control) => {
       const period = control.dataset.performancePeriod;
-      const hasHistory = state.homeChartView === "market" || summarizeDashboardHistory(state.snapshots, period).recordedDays > 0;
       const isActive = state.performancePeriod === period;
-      control.disabled = !hasHistory;
+      control.disabled = false;
       control.classList.toggle("is-active", isActive);
       control.setAttribute("aria-selected", String(isActive));
-      control.tabIndex = isActive && hasHistory ? 0 : -1;
+      control.tabIndex = isActive ? 0 : -1;
     });
-    setText("#performance-all-tab", state.homeChartView === "market" ? "5Y" : "All");
-    $("#performance-periods").setAttribute("aria-label", state.homeChartView === "market" ? "Market movement range" : "Recorded value range");
     const activeTab = document.querySelector(`[data-performance-period="${state.performancePeriod}"]`);
     $("#history-panel").setAttribute("aria-labelledby", activeTab.id);
   }
@@ -350,53 +342,45 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
     event.preventDefault();
     selectPerformancePeriod(enabledTabs[nextIndex].dataset.performancePeriod, { focus: true });
   }
-  function movementCurrency(value) {
-    return `${value > 0 ? "Up" : value < 0 ? "Down" : "No change"} ${displayCurrency(Math.abs(value) / 100)}`;
-  }
-  function renderHistory() {
-    if (state.homeChartView === "market") return renderHomeMarketHistory();
-    setText("#performance-context", "Recorded investment value");
-    setText("#history-scope", "Investments only · Includes deposits and withdrawals · Uses saved valuations");
-    $("#home-market-change").hidden = true;
-    $("#home-market-retry").hidden = true;
-    const trend = $("#history-trend");
-    const performance = summarizeDashboardHistory(state.snapshots, state.performancePeriod);
+  function renderHistory(currentValueCents = null) {
+    const today = new Intl.DateTimeFormat("en-CA", { timeZone: "America/New_York", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date());
+    const performance = summarizeHomeBalanceHistory(state.snapshots, currentValueCents, {
+      period: state.performancePeriod, today,
+    });
     renderPerformancePeriods();
+    const trend = $("#history-trend"), endpoints = $("#history-endpoints");
+    const periodLabel = { ytd: "year to date", "1y": "past year", all: "since first record" }[state.performancePeriod];
+    const interval = performance.fullPeriod ? periodLabel : `since ${historyDateLabel(performance.startDate || today)}`;
+    const hasChange = performance.changeCents !== null;
+    setMovement("#home-period-change", performance.changeCents, value => `${value > 0 ? "+" : ""}${preciseCurrency.format(value / 100)}`);
+    setMovement("#home-period-rate", performance.changeRate, displaySignedPercentage, { hideWhenUnavailable: true });
+    setText("#home-period-caption", hasChange ? `value change ${interval}` : performance.currentAvailable ? "Value change available after another recorded day" : "Complete investment values unavailable");
+    $("#home-period-change").hidden = !hasChange;
     $("#history-building").hidden = performance.showTrend;
-    trend.hidden = !performance.showTrend;
-    setText("#history-building", "Your history will appear after the first recorded value.");
-    const endpoints = $("#history-endpoints");
-    endpoints.hidden = !performance.showTrend;
+    trend.hidden = endpoints.hidden = !performance.showTrend;
+    trend.replaceChildren(); endpoints.replaceChildren();
+    setText("#history-building", "Add the missing valuations in Portfolio to see your balance history.");
+    const explanation = "Includes deposits, withdrawals and changes in holdings or saved prices; this is value change, not investment return. Property equity is excluded. Past points are saved daily valuations; the final point uses current holdings and their latest saved prices or manual values. Prices are not live. Lines connect available observations; missing dates are not backfilled.";
     if (!performance.showTrend) {
-      trend.replaceChildren();
-      endpoints.replaceChildren();
-      trend.setAttribute("aria-label", "Portfolio value history unavailable");
-      setText("#history-summary", "No recorded portfolio values in this range.");
+      trend.setAttribute("aria-label", "Investment value history unavailable");
+      setText("#history-summary", `Complete investment values are unavailable. ${explanation}`);
       return performance;
     }
-    const values = performance.snapshots.map((point) => point.totalValueCents / 100);
-    const endpoint = (date, value) => `<span class="acadia-cluster"><span>${escapeHtml(displayCurrency(value))}</span><time datetime="${date}">${historyDateLabel(date)}</time></span>`;
-    endpoints.innerHTML = endpoint(performance.startDate, values[0])
-      + (values.length > 1 ? endpoint(performance.endDate, values.at(-1)) : "");
+    const values = performance.snapshots.map(point => point.totalValueCents / 100);
+    const endpoint = date => `<time datetime="${date}">${historyDateLabel(date)}</time>`;
+    endpoints.innerHTML = endpoint(performance.startDate) + (values.length > 1 ? '<span>Current</span>' : "");
     if (values.length === 1) {
       trend.innerHTML = '<svg class="acadia-card-trend-chart is-primary" viewBox="0 0 100 100" aria-hidden="true"><circle class="acadia-card-trend-point" cx="50" cy="50" r="2.5"></circle></svg>';
-      const summary = `First recorded portfolio value: ${preciseCurrency.format(values[0])} on ${historyDateLabel(performance.startDate)}. A line will appear with the next recorded value. Property equity is excluded.`;
-      trend.setAttribute("aria-label", summary);
-      setText("#history-summary", summary);
+      const summary = `Current investment value: ${preciseCurrency.format(values[0])}. A line will appear after another recorded day. ${explanation}`;
+      trend.setAttribute("aria-label", summary); setText("#history-summary", summary);
       return performance;
     }
-    const minimum = Math.min(...values), maximum = Math.max(...values);
-    const range = maximum - minimum;
-    const points = values.map((value, index) => ({
-      x: performance.positions[index] * 10,
-      y: range ? 96 - ((value - minimum) / range) * 84 : 50,
-    }));
-    const linePath = buildCardTrendPath(points);
-    const areaPath = `${linePath} L 1000 100 L 0 100 Z`;
-    trend.innerHTML = `<svg class="acadia-card-trend-chart is-primary" viewBox="0 0 1000 100" preserveAspectRatio="none" aria-hidden="true"><polyline class="acadia-card-trend-baseline" points="0,${points[0].y} 1000,${points[0].y}"></polyline><path class="acadia-card-trend-area" d="${areaPath}"></path><path class="acadia-card-trend-line" d="${linePath}"></path></svg>`;
-    const summary = `${movementCurrency(performance.changeCents)}${performance.changeRate === null ? "" : ` (${displaySignedPercentage(performance.changeRate)})`} from ${historyDateLabel(performance.startDate)} to ${historyDateLabel(performance.endDate)}. Recorded portfolio value ${preciseCurrency.format(values[0])} to ${preciseCurrency.format(values.at(-1))}. Value changes include contributions and withdrawals; property equity is excluded.`;
-    trend.setAttribute("aria-label", summary);
-    setText("#history-summary", summary);
+    const minimum = Math.min(...values), range = Math.max(...values) - minimum;
+    const points = values.map((value, index) => ({ x: performance.positions[index] * 10, y: range ? 94 - ((value - minimum) / range) * 84 : 50 }));
+    const linePath = points.map((point, index) => `${index ? "L" : "M"} ${point.x} ${point.y}`).join(" ");
+    trend.innerHTML = `<svg class="acadia-card-trend-chart is-primary" viewBox="0 0 1000 100" preserveAspectRatio="none" aria-hidden="true"><polyline class="acadia-card-trend-baseline" points="0,${points[0].y} 1000,${points[0].y}"></polyline><path class="acadia-card-trend-area" d="${linePath} L 1000 100 L 0 100 Z"></path><path class="acadia-card-trend-line" d="${linePath}"></path></svg>`;
+    const summary = `${preciseCurrency.format(values[0])} on ${historyDateLabel(performance.startDate)} to ${preciseCurrency.format(values.at(-1))} currently. ${performance.changeCents > 0 ? "Up" : performance.changeCents < 0 ? "Down" : "No change"} ${preciseCurrency.format(Math.abs(performance.changeCents) / 100)}${performance.changeRate === null ? ". Percentage unavailable from a zero starting value" : ` (${displaySignedPercentage(performance.changeRate)})`}. ${explanation}`;
+    trend.setAttribute("aria-label", summary); setText("#history-summary", summary);
     return performance;
   }
 
@@ -534,11 +518,10 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
   }
   function carryHomePeriod() {
     if (!routeHome()) return;
-    const compatible = state.homeChartView === "market" && ["1w", "1m", "1y"].includes(state.performancePeriod);
-    if (compatible) portfolioMarketPeriod = state.performancePeriod;
+    if (state.performancePeriod === "1y") portfolioMarketPeriod = "1y";
     const notice = $("#portfolio-period-handoff");
-    notice.hidden = compatible;
-    notice.textContent = compatible ? "" : `Showing ${portfolioMarketPeriod.toUpperCase()} market prices. ${state.homeChartView === "recorded" ? "Recorded investment value" : state.performancePeriod === "all" ? "5Y" : state.performancePeriod.toUpperCase()} is available on Home; Portfolio supports 1W, 1M, 6M and 1Y market prices.`;
+    notice.hidden = false;
+    notice.textContent = `Showing ${portfolioMarketPeriod.toUpperCase()} price changes for current holdings. Home shows your investment balance history.`;
   }
   function openHomeGroup(id) {
     leaveWorkspace(() => {
@@ -852,47 +835,6 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
     node.innerHTML = allocation.rows.length ? `<div class="acadia-chart-list">${allocation.rows.map((row) => `<div class="acadia-card-progress"><div class="acadia-card-progress-heading"><span>${escapeHtml(row.name)}</span><span class="acadia-cluster">${escapeHtml(planningValue(row.valueCents))}<span>${percentage.format(row.allocationRate)}</span></span></div><progress value="${row.valueCents}" max="${allocation.totalValueCents}" aria-label="${escapeHtml(row.name)}: ${percentage.format(row.allocationRate)} of valued investments"></progress></div>`).join("")}</div><p class="acadia-text-muted">${coverage}</p>` : `<p class="acadia-text-muted">No investment value to allocate.${allocation.unvaluedCount ? ` ${coverage}` : ""}</p>`;
     return allocation;
   }
-  function renderHomeGrowth(summary) {
-    const missingValuations = summary.rows.length !== state.holdings.length;
-    const available = state.configured && Boolean(state.account) && !missingValuations;
-    const loading = available && state.providerMetricsPending.size > 0;
-    const growth = available && !loading ? summary.totalEstimatedAnnualGrowthCents : null;
-    setMovement("#home-growth-rate", growth !== null && summary.totalMarketValueCents > 0 ? growth / summary.totalMarketValueCents : null, value => percentage.format(value), { hideWhenUnavailable: true });
-    setMovement("#home-growth", growth, value => displayCurrency(value / 100));
-    $("#home-growth-context").classList.remove("acadia-sr-only");
-    ["#home-growth", "#home-growth-rate"].forEach(id => $(id).classList.remove("is-positive", "is-danger"));
-    setText("#home-growth", loading ? "Loading…" : growth === null ? "Unavailable" : displayCurrency(growth / 100));
-    setText("#home-growth-context", !state.configured || !state.account ? "Portfolio data unavailable"
-      : missingValuations ? "Incomplete valuation coverage"
-      : loading ? "Loading historical returns…"
-      : !state.holdings.length ? "Add investments to see an estimate"
-      : growth === null ? "Historical returns unavailable for some assets"
-      : "Illustrative annual amount");
-  }
-
-  function renderHomeChanges(summary) {
-    const complete = state.configured && Boolean(state.account) && summary.rows.length === state.holdings.length;
-    const lifetime = summarizeAllTimeChange(state.snapshots, complete ? summary.totalMarketValueCents : null);
-    setMovement("#all-time-change-value", lifetime.changeCents, displaySignedCurrency);
-    setMovement("#all-time-change-rate", lifetime.changeRate, value => percentage.format(value), { hideWhenUnavailable: true });
-    setText("#all-time-change-context", !complete ? "Complete investment values unavailable"
-      : !lifetime.startDate ? "Awaiting first recorded value"
-      : lifetime.changeRate === null ? "Percentage unavailable from $0" : "");
-    $("#all-time-change-context").hidden = complete && Number.isFinite(lifetime.changeCents) && Number.isFinite(lifetime.changeRate);
-    const dayCents = complete ? summary.totalDayChangeCents : null;
-    const dayRate = complete ? summary.totalDayChangeRate : null;
-    setMovement("#metric-change-value", dayCents, displaySignedCurrency);
-    setMovement("#metric-change-rate", dayRate, value => percentage.format(value), { hideWhenUnavailable: true });
-    setText("#day-change-context", !complete ? "Complete investment values unavailable"
-      : dayCents === null ? "Previous close unavailable for some investments"
-      : dayRate === null ? "Percentage unavailable from $0"
-      : "");
-    $("#day-change-context").hidden = complete && Number.isFinite(dayCents) && Number.isFinite(dayRate);
-    for (const [selector, value] of [["#all-time-change-value", lifetime.changeCents], ["#metric-change-value", dayCents]]) {
-      $(selector).title = value === null ? "Change unavailable" : `${value > 0 ? "+" : ""}${preciseCurrency.format(value / 100)}${selector === "#all-time-change-value" ? " · Includes deposits and withdrawals" : ""}`;
-    }
-  }
-
   function renderHome(summary) {
     $("#home-workspace").hidden = false;
     $("#portfolio-workspace").hidden = true;
@@ -901,25 +843,21 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
     $("#asset-workspace").hidden = true;
     setActiveNavigation("home");
     const netWorthCents = currentNetWorthCents(summary);
-    setText("#metric-value", netWorthCents === null ? "Not set" : Math.abs(netWorthCents) >= 100_000_000 ? netWorthCurrency.format(netWorthCents / 100).toLowerCase() : displayCurrency(netWorthCents / 100));
-    $("#metric-value").title = netWorthCents === null ? "Complete valuations are unavailable" : preciseCurrency.format(netWorthCents / 100);
+    const estimatesComplete = state.configured && Boolean(state.account) && summary.rows.length === state.holdings.length;
+    const investmentValueCents = estimatesComplete ? summary.totalMarketValueCents : null;
+    setText("#metric-value", investmentValueCents === null ? "Unavailable" : preciseCurrency.format(investmentValueCents / 100));
+    $("#metric-value").title = investmentValueCents === null ? "Complete valuations are unavailable" : preciseCurrency.format(investmentValueCents / 100);
     $("#metric-value").setAttribute("aria-label", $("#metric-value").title);
     const missingValuations = state.holdings.length - summary.rows.length;
-    $("#home-valuation-status").hidden = netWorthCents !== null;
+    $("#home-valuation-status").hidden = investmentValueCents !== null;
     setText("#home-valuation-status", missingValuations
-      ? `${missingValuations} ${missingValuations === 1 ? "asset needs" : "assets need"} a valuation. Review Portfolio.`
-      : !state.propertiesAvailable ? "Property values unavailable" : "Account values unavailable");
-    const estimatesComplete = state.configured && Boolean(state.account) && summary.rows.length === state.holdings.length;
+      ? `${missingValuations} ${missingValuations === 1 ? "asset needs" : "assets need"} a valuation. Review Portfolio.` : "Account values unavailable");
     const passive = estimatesComplete && state.providerMetricsPending.size === 0 ? summary.totalEstimatedAnnualIncomeCents : null;
-    renderHomeGrowth(summary);
-    setMovement("#home-passive-rate", passive !== null && summary.totalMarketValueCents > 0 ? passive / summary.totalMarketValueCents : null, value => percentage.format(value), { hideWhenUnavailable: true });
-    setMovement("#home-passive-income", passive, value => displayCurrency(value / 100));
-    $("#home-passive-context").classList.toggle("acadia-sr-only", passive !== null);
-    setText("#home-passive-income", passive === null ? "Not set" : displayCurrency(passive / 100));
-    setText("#home-passive-context", missingValuations ? "Incomplete valuation coverage" : state.providerMetricsPending.size ? "Loading dividend estimates…" : passive === null ? "Incomplete dividend coverage" : "Estimated from saved yields");
-    if (state.homeChartView === "market") syncPortfolioMarketHistory(portfolioHoldingRows(summary));
-    else renderHistory();
-    renderHomeChanges(summary);
+    const quoteDates = summary.rows.map(row => row.asset?.quoteAsOf).filter(date => date && Number.isFinite(Date.parse(date))).sort((a, b) => Date.parse(a) - Date.parse(b)).map(historyDateLabel);
+    setText("#history-scope", quoteDates.length
+      ? `Saved valuations · Prices as of ${quoteDates[0]}${quoteDates[0] === quoteDates.at(-1) ? "" : ` – ${quoteDates.at(-1)}`}`
+      : "Based on saved valuations");
+    renderHistory(investmentValueCents);
     const lifetime = summarizeAllTimeChange(state.snapshots, estimatesComplete ? summary.totalMarketValueCents : null);
     $("#home-value-details").innerHTML = valueRows([
       ["Net worth · current records", exactMoney(netWorthCents)],
@@ -1691,48 +1629,7 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
     }
   }
   function renderActiveMarketHistory() {
-    if (routeHome()) renderHistory();
-    else if (routePortfolio()) renderPortfolioMarketCharts();
-  }
-  function renderHomeMarketHistory() {
-    renderPerformancePeriods();
-    setText("#performance-context", "Investment price movement");
-    $("#home-market-change").hidden = false;
-    const histories = new Map([...portfolioMarketHistory].filter(([, entry]) => !entry.pending && !entry.error).map(([id, entry]) => [id, entry.data]));
-    const needsHistory = portfolioMarketRows.filter(row => row.asset.instrumentType !== "cash" && row.asset.shares !== 0 && row.asset.symbol);
-    const loading = needsHistory.some(row => !portfolioMarketHistory.has(row.asset.id) || portfolioMarketHistory.get(row.asset.id).pending);
-    const failed = needsHistory.some(row => portfolioMarketHistory.get(row.asset.id)?.error);
-    const result = summarizePortfolioMarketHistory(portfolioMarketRows, histories, state.performancePeriod === "all" ? "5y" : state.performancePeriod);
-    const available = !loading && !failed && result.points.length > 1;
-    const trend = $("#history-trend"), endpoints = $("#history-endpoints");
-    setMovement("#home-market-change", loading || failed ? null : result.changeRate, displaySignedPercentage);
-    if (loading) setText("#home-market-change", "Loading…");
-    const status = loading ? "Loading market history…" : failed ? "Market history unavailable for some investments. Retry to calculate the portfolio." : result.reason;
-    $("#history-building").hidden = available;
-    setText("#history-building", status);
-    trend.hidden = endpoints.hidden = !available;
-    trend.replaceChildren(); endpoints.replaceChildren();
-    const scope = "Based on current holdings · Price change only · Excludes dividends and property";
-    const dates = result.startDate ? `${historyDateLabel(result.startDate)} – ${historyDateLabel(result.endDate)}` : "";
-    setText("#history-scope", available ? `${scope} · ${result.sources.join(", ")} · Daily prices${state.performancePeriod === "1d" ? " · Latest two shared market dates" : ""}` : scope);
-    const description = available ? `${displaySignedPercentage(result.changeRate)} from ${dates}. Current share counts held constant, weighted by starting market value; not your personal historical return. ${scope}. Latest shared observation ${historyDateLabel(result.endDate)}.` : status;
-    $("#home-market-change").title = description;
-    trend.setAttribute("aria-label", description);
-    setText("#history-summary", description);
-    const retry = $("#home-market-retry"), wasFocused = document.activeElement === retry;
-    retry.hidden = !failed && !(wasFocused && loading);
-    retry.setAttribute("aria-disabled", String(loading));
-    retry.textContent = loading ? "Retrying…" : "Retry market history";
-    if (wasFocused && retry.hidden) $("#home-market-change").focus();
-    if (!available) return result;
-    const endpoint = point => `<span class="acadia-cluster"><span>${escapeHtml(displaySignedPercentage(point.changeRate))}</span><time datetime="${point.date}">${historyDateLabel(point.date)}</time></span>`;
-    endpoints.innerHTML = endpoint(result.points[0]) + endpoint(result.points.at(-1));
-    const values = result.points.map(point => point.changeRate), minimum = Math.min(...values), span = Math.max(...values) - minimum;
-    const start = Date.parse(result.startDate), duration = Date.parse(result.endDate) - start;
-    const geometry = result.points.map(point => ({ x: (Date.parse(point.date) - start) / duration * 1000, y: span ? 94 - (point.changeRate - minimum) / span * 84 : 50 }));
-    const path = buildCardTrendPath(geometry);
-    trend.innerHTML = `<svg class="acadia-card-trend-chart ${result.changeRate < 0 ? "is-negative" : result.changeRate > 0 ? "is-primary" : "is-neutral"}" viewBox="0 0 1000 100" preserveAspectRatio="none" aria-hidden="true"><path class="acadia-card-trend-area" d="${path} L 1000 100 L 0 100 Z"></path><polyline class="acadia-card-trend-baseline" points="0,${geometry[0].y} 1000,${geometry[0].y}"></polyline><path class="acadia-card-trend-line" d="${path}"></path></svg>`;
-    return result;
+    if (routePortfolio()) renderPortfolioMarketCharts();
   }
   function renderPortfolioMarketChange() {
     const histories = new Map([...portfolioMarketHistory].filter(([, entry]) => !entry.pending && !entry.error).map(([id, entry]) => [id, entry.data]));
@@ -3451,17 +3348,6 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
     }
   }
 
-  $("#home-chart-view").addEventListener("change", event => {
-    state.homeChartView = event.target.value === "recorded" ? "recorded" : "market";
-    state.performancePeriod = state.homeChartView === "market" ? "1m" : "all";
-    render();
-  });
-  $("#home-market-retry").addEventListener("click", () => {
-    if ($("#home-market-retry").getAttribute("aria-disabled") === "true") return;
-    for (const [id, entry] of portfolioMarketHistory) if (entry.error) portfolioMarketHistory.delete(id);
-    pumpPortfolioMarketHistory();
-    renderHistory();
-  });
   $("#portfolio-market-retry").addEventListener("click", () => {
     if ($("#portfolio-market-retry").getAttribute("aria-disabled") === "true") return;
     for (const [id, entry] of portfolioMarketHistory) if (entry.error) portfolioMarketHistory.delete(id);

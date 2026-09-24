@@ -12,7 +12,7 @@
     <link rel="preload" href="fonts/Syncopate-Regular.ttf" as="font" type="font/ttf" crossorigin>
     <link rel="preload" href="fonts/Syncopate-Bold.ttf" as="font" type="font/ttf" crossorigin>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" referrerpolicy="no-referrer">
-    <link rel="stylesheet" href="styles.css?v=20260923-financial-clarity-4">
+    <link rel="stylesheet" href="styles.css?v=20260923-home-balance-1">
   </head>
   <body class="acadia-app">
     <a class="acadia-skip-link" href="#main-content">Skip to content</a>
@@ -33,29 +33,18 @@
       <section id="home-workspace" class="acadia-stack" hidden>
         <h1 class="acadia-sr-only">Home</h1>
         <p id="data-status" class="acadia-sr-only" role="status" aria-live="polite">Loading your Brokerage account…</p>
-            <article id="home-history-card" class="acadia-stack" aria-labelledby="net-worth-label">
-              <div class="acadia-page-header-pattern"><div class="acadia-page-header-pattern-section"><div class="acadia-field"><div class="acadia-cluster"><strong id="metric-value" class="acadia-heading-large">—</strong><span id="net-worth-label" class="acadia-body">Net worth</span></div><small id="home-valuation-status" class="acadia-text-muted" hidden></small></div></div></div>
-              <div id="history-panel" class="acadia-field" role="tabpanel" aria-labelledby="performance-1m-tab" tabindex="0">
-                <div id="home-chart-heading" class="acadia-page-header-pattern-section">
-                  <div class="acadia-cluster"><h2 id="performance-context" class="acadia-page-header-pattern-section-title">Investment price movement</h2><strong id="home-market-change" class="acadia-lead" tabindex="-1">—</strong></div>
-                  <div class="acadia-page-header-pattern-tools"><div id="performance-periods" class="acadia-tabs" role="tablist" aria-label="Market movement range"><button id="performance-1d-tab" class="acadia-tab" type="button" role="tab" data-performance-period="1d" aria-controls="history-panel" aria-selected="false" tabindex="-1">1D</button><button id="performance-1w-tab" class="acadia-tab" type="button" role="tab" data-performance-period="1w" aria-controls="history-panel" aria-selected="false" tabindex="-1">1W</button><button id="performance-1m-tab" class="acadia-tab is-active" type="button" role="tab" data-performance-period="1m" aria-controls="history-panel" aria-selected="true" tabindex="0">1M</button><button id="performance-1y-tab" class="acadia-tab" type="button" role="tab" data-performance-period="1y" aria-controls="history-panel" aria-selected="false" tabindex="-1">1Y</button><button id="performance-all-tab" class="acadia-tab" type="button" role="tab" data-performance-period="all" aria-controls="history-panel" aria-selected="false" tabindex="-1">5Y</button></div></div><label class="acadia-field"><span class="acadia-sr-only">Chart view</span><select id="home-chart-view" class="acadia-control"><option value="market">Market prices</option><option value="recorded">Recorded investment value</option></select></label>
-                </div>
-                <small id="history-building" class="acadia-text-muted">Your history will appear after the first recorded value.</small>
-                <div id="history-trend" class="acadia-card-trend" role="img" aria-label="Portfolio value history unavailable" hidden></div>
-                <div id="history-endpoints" class="acadia-card-trend-axis" hidden></div>
-                <small id="history-scope" class="acadia-text-muted">Based on current holdings · Price change only</small>
-                <button id="home-market-retry" class="acadia-button acadia-button-quiet" type="button" hidden>Retry market history</button>
-                <details class="acadia-accordion-item"><summary class="acadia-accordion-summary">How this is calculated</summary><div class="acadia-accordion-panel"><p id="history-summary" aria-live="polite"></p></div></details>
-              </div>
-            </article>
-        <p id="home-change-scope" class="acadia-sr-only">Investment summary. All-time value change includes deposits and withdrawals; property is excluded.</p>
-        <section id="home-statistics" class="acadia-grid acadia-insight-grid" aria-label="Investment summary" aria-describedby="home-change-scope">
-          <article class="acadia-card is-content"><div class="acadia-field"><div class="acadia-card-metric-value-row"><strong id="metric-change-value" class="acadia-lead">—</strong><span id="metric-change-rate" class="acadia-body acadia-text-muted" hidden>—</span></div><span class="acadia-text-muted">Day change</span><small id="day-change-context" class="acadia-text-muted" hidden></small></div></article>
-          <article class="acadia-card is-content"><div class="acadia-field"><div class="acadia-card-metric-value-row"><strong id="all-time-change-value" class="acadia-lead">—</strong><span id="all-time-change-rate" class="acadia-body acadia-text-muted" hidden>—</span></div><span class="acadia-text-muted">Change since first record</span><small id="all-time-change-context" class="acadia-text-muted" hidden></small></div></article>
-          <article class="acadia-card is-content" aria-describedby="home-growth-context" title="Based on historical returns · Not a forecast"><div class="acadia-field"><div class="acadia-card-metric-value-row"><strong id="home-growth" class="acadia-lead">—</strong><span id="home-growth-rate" class="acadia-body acadia-text-muted" title="Estimated annual growth as a share of investment value" hidden>—</span></div><span class="acadia-text-muted">Growth at historical rates</span><small id="home-growth-context" class="acadia-text-muted">Based on historical returns · Not a forecast</small></div></article>
-          <article class="acadia-card is-content" aria-describedby="home-passive-context" title="Estimated annual dividends from saved or provider yields"><div class="acadia-field"><div class="acadia-card-metric-value-row"><strong id="home-passive-income" class="acadia-lead">—</strong><span id="home-passive-rate" class="acadia-body acadia-text-muted" title="Estimated annual dividends as a share of investment value" hidden>—</span></div><span class="acadia-text-muted">Estimated annual dividends</span><small id="home-passive-context" class="acadia-text-muted">Estimated from saved yields</small></div></article>
-        </section>
-        <details class="acadia-accordion-item"><summary class="acadia-accordion-summary">Values and calculations</summary><div id="home-value-details" class="acadia-accordion-panel acadia-stack"></div></details>
+        <article id="home-history-card" class="acadia-stack" aria-labelledby="investment-value-label">
+          <div class="acadia-field"><span id="investment-value-label" class="acadia-body acadia-text-muted">Investment value</span><strong id="metric-value" class="acadia-heading-large">—</strong><small id="home-valuation-status" class="acadia-text-muted" hidden></small></div>
+          <div id="history-panel" class="acadia-field" role="tabpanel" aria-labelledby="performance-ytd-tab" tabindex="0">
+            <div id="home-period-summary" class="acadia-cluster" aria-live="polite" aria-atomic="true"><strong id="home-period-change" class="acadia-lead" hidden>—</strong><strong id="home-period-rate" class="acadia-body" hidden>—</strong><span id="home-period-caption" class="acadia-text-muted"></span></div>
+            <small id="history-scope" class="acadia-text-muted">Based on saved valuations</small>
+            <small id="history-building" class="acadia-text-muted" hidden></small>
+            <div id="history-trend" class="acadia-card-trend" role="img" aria-label="Investment value history unavailable" hidden></div>
+            <div id="history-endpoints" class="acadia-card-trend-axis" hidden></div>
+          </div>
+          <div id="performance-periods" class="acadia-tabs" role="tablist" aria-label="Investment value period"><button id="performance-ytd-tab" class="acadia-tab is-active" type="button" role="tab" data-performance-period="ytd" aria-controls="history-panel" aria-selected="true" tabindex="0">YTD</button><button id="performance-1y-tab" class="acadia-tab" type="button" role="tab" data-performance-period="1y" aria-controls="history-panel" aria-selected="false" tabindex="-1">1Y</button><button id="performance-all-tab" class="acadia-tab" type="button" role="tab" data-performance-period="all" aria-controls="history-panel" aria-selected="false" tabindex="-1">All</button></div>
+          <details class="acadia-accordion-item"><summary class="acadia-accordion-summary">Values and calculations</summary><div class="acadia-accordion-panel acadia-stack"><p id="history-summary"></p><div id="home-value-details" class="acadia-stack"></div></div></details>
+        </article>
         <section class="acadia-stack acadia-page-header-pattern" aria-labelledby="holdings-title">
           <div class="acadia-page-header-pattern-section"><div class="acadia-page-header-pattern-meta"><h2 id="holdings-title" class="acadia-page-header-pattern-section-title acadia-heading-small">Portfolio</h2><span id="holdings-count" style="color: var(--acadia-color-brand)">0 assets</span></div><div class="acadia-cluster"><a class="acadia-button acadia-button-quiet" href="#portfolio" id="home-view-portfolio" aria-label="View portfolio">View portfolio<i class="fa-solid fa-chevron-right acadia-icon" aria-hidden="true"></i></a><button id="home-add-asset" class="acadia-button acadia-button-quiet" type="button"><i class="fa-solid fa-plus acadia-icon" aria-hidden="true"></i> Add asset</button></div></div>
           <div id="holdings-grid" class="acadia-grid acadia-insight-grid" role="list" aria-live="polite"></div>
@@ -266,8 +255,8 @@
     <script src="income.js?v=20260904-budget-v1"></script>
     <script src="data/property-markets.js?v=534e9fd3224c"></script>
     <script src="plan.js?v=20260914-change-cards-023"></script>
-    <script src="dashboard.js?v=20260916-asset-types"></script>
+    <script src="dashboard.js?v=20260923-home-balance-1"></script>
     <script src="market-history.js?v=20260922-home-market"></script>
-  <script type="module" src="brokerage.js?v=20260923-financial-clarity-1"></script>
+  <script type="module" src="brokerage.js?v=20260923-home-balance-1"></script>
   </body>
 </html>

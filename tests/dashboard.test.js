@@ -221,3 +221,31 @@ test('asset-card types use available classifications without guessing unknown sy
   assert.equal(assetTypeLabel({symbol:'constructor',allocationCategory:'constructor',instrumentType:'constructor'}),'Unclassified');
   assert.equal(assetTypeLabel(), 'Unclassified');
 });
+
+const balanceHistory = require('../dashboard').summarizeHomeBalanceHistory;
+const record = (date, cents, at) => ({ snapshot_date: date, total_value_cents: cents, recorded_at: at });
+test('Home balance periods share one current endpoint without manufacturing earlier history', () => {
+  const records = [record('2024-01-01',50000),record('2025-09-23',80000),record('2025-12-31',100000),record('2026-09-23',120000),record('2027-01-01',900000)];
+  const original = JSON.stringify(records);
+  for (const [period,baseline,change,rate] of [['ytd','2025-12-31',-1000,-.01],['1y','2025-09-23',19000,19000/80000],['all','2024-01-01',49000,.98]]) {
+    const result = balanceHistory(records,99000,{period,today:'2026-09-23'});
+    assert.equal(result.startDate,baseline);assert.equal(result.endDate,'2026-09-23');
+    assert.equal(result.latestValueCents,99000);assert.equal(result.changeCents,change);assert.equal(result.changeRate,rate);
+    assert.equal(result.fullPeriod,true);
+    assert.equal(result.snapshots.filter(p=>p.snapshotDate==='2026-09-23').length,1);
+  }
+  assert.equal(JSON.stringify(records),original,'rendering never rewrites saved history');
+});
+test('Home shows actual available intervals, date spacing, duplicates, missing and zero baselines', () => {
+  const records=[record('2025-01-01',100),record('2026-09-01',100,'2026-09-01T12:00:00Z'),record('2026-09-01',200,'2026-09-01T13:00:00Z'),record('2026-09-02',300)];
+  const options={period:'ytd',today:'2026-09-11'};
+  const result=balanceHistory(records,400,options);
+  assert.equal(result.startDate,'2026-09-01');assert.equal(result.fullPeriod,false);
+  assert.equal(result.changeCents,200);assert.deepEqual(result.positions,[0,10,100]);
+  const first=balanceHistory([],400,options);assert.equal(first.recordedDays,1);assert.equal(first.changeCents,null);
+  const zero=balanceHistory([record('2025-12-31',0)],400,options);assert.equal(zero.changeCents,400);assert.equal(zero.changeRate,null);
+  for (const current of [null,NaN,-1]) {const unavailable=balanceHistory(records,current,options);assert.equal(unavailable.changeCents,null);assert.equal(unavailable.showTrend,false)}
+  const leap=balanceHistory([record('2023-02-28',100)],200,{period:'1y',today:'2024-02-29'});
+  assert.equal(leap.boundary,'2023-02-28');assert.equal(leap.fullPeriod,true);
+  assert.equal(balanceHistory([record('2025-12-31',100)],100,options).changeRate,0);
+});

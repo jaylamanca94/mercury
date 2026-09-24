@@ -131,6 +131,29 @@ function summarizeDashboardHistory(snapshots, period = "all") {
     positions: dates.map((date) => duration ? ((date - dates[0]) / duration) * 100 : 0) };
 }
 
+// Home uses dated investment records plus the current saved valuation. Never rebuild
+// past ownership from today's quantities or pretend a deposit is investment return.
+function summarizeHomeBalanceHistory(snapshots, currentValueCents, { period = "ytd", today } = {}) {
+  if (!["ytd", "1y", "all"].includes(period)) throw new Error("Unsupported Home period");
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(today || "") || !Number.isFinite(Date.parse(today))) throw new Error("A current date is required");
+  const currentAvailable = Number.isSafeInteger(currentValueCents) && currentValueCents >= 0;
+  const records = snapshots.filter(point => point.snapshot_date <= today && (!currentAvailable || point.snapshot_date !== today));
+  if (currentAvailable) records.push({ snapshot_date: today, total_value_cents: currentValueCents });
+  let boundary = null;
+  if (period === "ytd") boundary = `${Number(today.slice(0, 4)) - 1}-12-31`;
+  if (period === "1y") {
+    const date = new Date(`${today}T12:00:00Z`), month = date.getUTCMonth();
+    date.setUTCFullYear(date.getUTCFullYear() - 1);
+    if (date.getUTCMonth() !== month) date.setUTCDate(0);
+    boundary = date.toISOString().slice(0, 10);
+  }
+  const result = summarizeDashboardHistory(records.filter(point => !boundary || point.snapshot_date >= boundary));
+  return { ...result, currentAvailable, boundary, fullPeriod: period === "all" || result.startDate === boundary,
+    showTrend: currentAvailable && result.showTrend,
+    changeCents: currentAvailable ? result.changeCents : null,
+    changeRate: currentAvailable ? result.changeRate : null };
+}
+
 // The lifetime baseline is the first recorded investment value, independent of chart range.
 function summarizeAllTimeChange(snapshots, currentValueCents) {
   const first = summarizeDashboardHistory(snapshots, "all").snapshots[0];
@@ -140,6 +163,6 @@ function summarizeAllTimeChange(snapshots, currentValueCents) {
     changeRate: available && first.totalValueCents > 0 ? changeCents / first.totalValueCents : null };
 }
 
-const dashboardContract = { HISTORY_MINIMUM_DAYS, holdingAssetTypeLabel, investmentGroup, summarizeInvestmentGroups, summarizeHomeGroups, summarizePlanningPosition, summarizeHoldingAllocation, summarizeNetWorthAllocation, summarizeDashboardHistory, summarizeAllTimeChange };
+const dashboardContract = { HISTORY_MINIMUM_DAYS, holdingAssetTypeLabel, investmentGroup, summarizeInvestmentGroups, summarizeHomeGroups, summarizePlanningPosition, summarizeHoldingAllocation, summarizeNetWorthAllocation, summarizeDashboardHistory, summarizeHomeBalanceHistory, summarizeAllTimeChange };
 if (typeof module !== "undefined") module.exports = dashboardContract;
 if (typeof window !== "undefined") window.MercuryDashboard = dashboardContract;

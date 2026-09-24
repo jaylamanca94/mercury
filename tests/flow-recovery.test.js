@@ -34,7 +34,7 @@ function controller() {
     fetch:async()=>({ok:false,json:async()=>({error:'provider unavailable'})}),
   });
   const source = fs.readFileSync(require.resolve('../brokerage.js'),'utf8').replace(/^import .*;\n/, '').replace('  initialise();',
-    '  window.testController = {carryHomePeriod,formChangePreview,holdingValueDetails,renderPortfolioTable,signOut,renderHome,recordEditor,saveEditorRecord,openIncomeSourceDialog,saveIncomeSource,openBudgetCategoryDialog,saveBudgetCategory,saveAssetDetails,renderPortfolioFilters,renderPortfolioMarketChange,selectPortfolioMarketPeriod,renderPortfolioMarketCharts,currentNetWorthCents,holdingAllocationMarkup,editPlanScenario,savePlanScenario,planProjection,observeAuthSession,sessionToken,editIncomeSource,saveInlineIncomeSource,cancelInlineIncomeSource,incomeSourceDrafts,syncPortfolioMarketHistory,clearPortfolioMarketHistory,portfolioMarketHistory,renderRecurringInvestments,loadMarketHistory,renderMarketHistory,clearMarketHistory,initialise,loadData,readWithDeadline,retryPlanSettings,openPlanAssumptionsDialog,savePlanAssumptions,retryProperties,hydrateProviderMetrics,ensurePlanSettings,state,render,renderHomeChanges,renderHomeGrowth,renderIncomeRecovery,retryIncomeData,missingIncomeYieldRows,renderIncomeYieldRecovery,renderPlan,renderQuickQuotePreview,refreshCurrentAssetPrice,restorePortfolioAssetFocus,renderHistory,renderAsset,canQuote,lookupQuote,saveQuickAsset,navigateToAsset,navigateBackFromAsset,routeAssetId,openFormDialog,hasPendingWrite,hasUnsavedWork,matchingPortfolioHoldingRows,sortHoldingRows,holdingValueLabel,renderPortfolioView,renderPortfolioSummary,detailHolding,openPropertyDialog,saveProperty};');
+    '  window.testController = {carryHomePeriod,formChangePreview,holdingValueDetails,renderPortfolioTable,signOut,renderHome,recordEditor,saveEditorRecord,openIncomeSourceDialog,saveIncomeSource,openBudgetCategoryDialog,saveBudgetCategory,saveAssetDetails,renderPortfolioFilters,renderPortfolioMarketChange,selectPortfolioMarketPeriod,renderPortfolioMarketCharts,currentNetWorthCents,holdingAllocationMarkup,editPlanScenario,savePlanScenario,planProjection,observeAuthSession,sessionToken,editIncomeSource,saveInlineIncomeSource,cancelInlineIncomeSource,incomeSourceDrafts,syncPortfolioMarketHistory,clearPortfolioMarketHistory,portfolioMarketHistory,renderRecurringInvestments,loadMarketHistory,renderMarketHistory,clearMarketHistory,initialise,loadData,readWithDeadline,retryPlanSettings,openPlanAssumptionsDialog,savePlanAssumptions,retryProperties,hydrateProviderMetrics,ensurePlanSettings,state,render,renderIncomeRecovery,retryIncomeData,missingIncomeYieldRows,renderIncomeYieldRecovery,renderPlan,renderQuickQuotePreview,refreshCurrentAssetPrice,restorePortfolioAssetFocus,renderHistory,renderAsset,canQuote,lookupQuote,saveQuickAsset,navigateToAsset,navigateBackFromAsset,routeAssetId,openFormDialog,hasPendingWrite,hasUnsavedWork,matchingPortfolioHoldingRows,sortHoldingRows,holdingValueLabel,renderPortfolioView,renderPortfolioSummary,detailHolding,openPropertyDialog,saveProperty};');
   vm.runInContext(source,context);
   const api=window.testController;
   api.state.client={auth:{onAuthStateChange(callback){ window.authChanged = callback; return {data:{subscription:{unsubscribe(){}}}}; },getSession:async()=>({data:{session:{access_token:'isolated-test'}}})}};
@@ -546,26 +546,22 @@ test('a missing quote can be repaired with manual price or total value, without 
   assert.equal(api.detailHolding(holding).manual_price_cents,null);
 });
 
-test('Home shows sparse history immediately and clears it when records are unavailable',()=>{
-  const {api,node}=controller();api.state.homeChartView='recorded';api.state.performancePeriod='all';
+test('Home renders a first current point, sparse observations, zero baselines and missing values honestly',()=>{
+  const {api,node}=controller();api.state.performancePeriod='all';
   node('#history-trend').replaceChildren=()=>{node('#history-trend').innerHTML=''};
-  const snapshots=Array.from({length:30},(_,i)=>({snapshot_date:new Date(Date.UTC(2026,7,i+1)).toISOString().slice(0,10),total_value_cents:100000+i*100}));
-  for(const [records,expected] of [[snapshots.slice(0,1),true],[snapshots.slice(0,2),true],[snapshots.slice(0,11),true],[snapshots,true],[[],false]]) {
-    api.state.snapshots=records;
-    api.renderHistory();
-    assert.equal(node('#history-trend').hidden,!expected);
-    assert.equal(node('#history-building').hidden,expected);
-    assert.equal(node('#history-endpoints').hidden,!expected);
-    if(!expected)assert.equal(node('#history-trend').innerHTML,'');
-    else if(records.length===1) {
-      assert.match(node('#history-trend').innerHTML,/<circle/);
-      assert.doesNotMatch(node('#history-trend').innerHTML,/polyline|polygon/);
-      assert.match(node('#history-summary').textContent,/First recorded portfolio value/);
-    } else {
-      assert.match(node('#history-trend').innerHTML,/<path class="acadia-card-trend-line" d="M [^"]* C /);
-      assert.match(node('#history-endpoints').innerHTML,/datetime=/);
-    }
-  }
+  api.renderHistory(125000);
+  assert.match(node('#history-trend').innerHTML,/<circle/);
+  assert.equal(node('#home-period-change').hidden,true);
+  api.state.snapshots=[{snapshot_date:'2026-01-01',total_value_cents:0}];
+  api.renderHistory(125000);
+  assert.match(node('#history-trend').innerHTML,/<path class="acadia-card-trend-line" d="M [^"]* L /);
+  assert.equal(node('#home-period-change').textContent,'+$1,250.00');
+  assert.equal(node('#home-period-rate').hidden,true);
+  assert.match(node('#history-summary').textContent,/Percentage unavailable/);
+  api.renderHistory(null);
+  assert.equal(node('#history-trend').hidden,true);
+  assert.equal(node('#history-trend').innerHTML,'');
+  assert.equal(node('#home-period-change').hidden,true);
 });
 
 test('Portfolio asset entry focuses its task and restores the originating card or recurring action',()=>{
@@ -969,84 +965,6 @@ test('View all investments clears the group and returns focus to its picker',()=
   assert.equal(api.state.portfolioFilter,'all');
   assert.equal(api.state.portfolioView,'table');
   assert.equal(focused,true);
-});
-
-test('Home growth automatically uses historical returns and ignores manual return assumptions',()=>{
-  const {api,node}=controller();
-  api.state.configured=true;api.state.account={id:'account'};
-  const assets=[
-    {id:'a',symbol:'A',assetType:'Fund',valuationBasis:'manual-value',manualValueCents:750000,historicalAnnualizedReturnRate:0.08,expectedAnnualReturnRate:0.5},
-    {id:'b',symbol:'B',assetType:'Fund',valuationBasis:'manual-value',manualValueCents:250000,historicalAnnualizedReturnRate:0.04,expectedAnnualReturnRate:0.5},
-  ];
-  api.state.holdings=assets;
-  const summary=require('../portfolio').summarizePortfolio(assets);
-  assert.equal(summary.totalEstimatedAnnualGrowthCents,70000);
-  assert.equal(summary.totalExpectedAnnualGrowthCents,500000);
-  api.renderHomeGrowth(summary);
-  assert.equal(node('#home-growth').textContent,'$700');
-  assert.equal(node('#home-growth-context').textContent,'Illustrative annual amount');
-  api.renderHomeGrowth(require('../portfolio').summarizePortfolio(assets.map(a=>({...a,expectedAnnualReturnRate:null}))));
-  assert.equal(node('#home-growth').textContent,'$700');
-  for(const rate of [0,-0.05]) {
-    api.renderHomeGrowth(require('../portfolio').summarizePortfolio(assets.map(a=>({...a,historicalAnnualizedReturnRate:rate}))));
-    assert.equal(node('#home-growth').textContent,rate===0?'$0':'-$500');
-  }
-});
-
-test('Home growth withholds incomplete history and valuations and recovers after loading',()=>{
-  const {api,node}=controller();
-  api.state.configured=true;api.state.account={id:'account'};api.state.holdings=[{id:'a'},{id:'b'}];
-  const complete={rows:[{},{}],totalEstimatedAnnualGrowthCents:12300};
-  api.state.providerMetricsPending.add('a');api.renderHomeGrowth(complete);
-  assert.equal(node('#home-growth').textContent,'Loading…');
-  api.state.providerMetricsPending.clear();api.renderHomeGrowth(complete);
-  assert.equal(node('#home-growth').textContent,'$123');
-  api.renderHomeGrowth({...complete,totalMarketValueCents:123000});
-  assert.equal(node('#home-growth-rate').textContent,'10%');
-  api.renderHomeGrowth({...complete,totalMarketValueCents:0});
-  assert.equal(node('#home-growth-rate').hidden,true);
-  api.renderHomeGrowth({...complete,totalEstimatedAnnualGrowthCents:null});
-  assert.equal(node('#home-growth').textContent,'Unavailable');
-  assert.equal(node('#home-growth-rate').hidden,true);
-  assert.match(node('#home-growth-context').textContent,/Historical returns unavailable/);
-  api.renderHomeGrowth({...complete,rows:[{}]});
-  assert.equal(node('#home-growth').textContent,'Unavailable');
-  assert.equal(node('#home-growth-context').textContent,'Incomplete valuation coverage');
-  api.state.holdings=[];api.renderHomeGrowth({rows:[],totalEstimatedAnnualGrowthCents:null});
-  assert.equal(node('#home-growth-context').textContent,'Add investments to see an estimate');
-  api.state.account=null;api.renderHomeGrowth(complete);
-  assert.equal(node('#home-growth').textContent,'Unavailable');
-  assert.equal(node('#home-growth-context').textContent,'Portfolio data unavailable');
-});
-
-
-test('Home lifetime and day changes stay independent of chart range and recover from missing valuations',()=>{
-  const {api,node}=controller();
-  api.state.configured=true; api.state.account={id:'test'}; api.state.holdings=[{id:'test'}];
-  api.state.snapshots=[{snapshot_date:'2025-01-01',total_value_cents:100000},{snapshot_date:'2026-09-01',total_value_cents:120000}];
-  const summary={rows:[{}],totalMarketValueCents:110000,totalDayChangeCents:-1000,totalDayChangeRate:-1000/111000};
-  for(const period of ['all','3m','6m','1y']) {
-    api.state.performancePeriod=period; api.renderHomeChanges(summary);
-    assert.equal(node('#all-time-change-value').textContent,'+$100');
-    assert.equal(node('#all-time-change-rate').textContent,'10%');
-    assert.equal(node('#metric-change-value').textContent,'-$10');
-    assert.equal(node('#metric-change-rate').textContent,'-0.9%');
-    assert.equal(node('#day-change-context').hidden,true);
-    assert.equal(node('#all-time-change-context').hidden,true);
-    assert.equal(node('#all-time-change-context').textContent,'');
-  }
-  api.renderHomeChanges({...summary,rows:[]});
-  assert.equal(node('#all-time-change-value').textContent,'—');
-  assert.equal(node('#all-time-change-rate').hidden,true);
-  assert.equal(node('#metric-change-value').textContent,'—');
-  api.renderHomeChanges({...summary,totalDayChangeCents:null,totalDayChangeRate:null});
-  assert.equal(node('#all-time-change-value').textContent,'+$100');
-  assert.equal(node('#metric-change-rate').hidden,true);
-  assert.match(node('#day-change-context').textContent,/Previous close unavailable/);
-  api.state.snapshots=[];api.renderHomeChanges(summary);
-  assert.equal(node('#all-time-change-value').textContent,'—');
-  assert.match(node('#all-time-change-context').textContent,/Awaiting first/);
-  assert.equal(node('#metric-change-value').textContent,'-$10');
 });
 
 function readFixture(view, read) {
@@ -2109,60 +2027,45 @@ test('an empty quote acknowledgement never claims that an uncertain price was no
   assert.doesNotMatch(node('#asset-detail-status').textContent,/No automatic price has been saved/);
 });
 
-test('Home defaults to weighted monthly market movement and shares fetched history with Portfolio',async()=>{
-  const {api,node,window,context}=editableAsset();api.clearMarketHistory();
-  window.location.hash='';api.state.account={id:'test-account'};
-  assert.equal(api.state.homeChartView,'market');assert.equal(api.state.performancePeriod,'1m');
-  const base=api.state.holdings[0];
-  api.state.holdings=[{...base,id:'a',symbol:'AAA',instrument_type:'stock'},{...base,id:'b',symbol:'BBB',instrument_type:'crypto'}];
-  const rows=api.state.holdings.map((h,i)=>({asset:{id:h.id,symbol:h.symbol,shares:i?1:9,instrumentType:h.instrument_type,valuationBasis:'shares-and-price'}}));
-  let calls=0,fail=true;const now=Date.now();
-  context.fetch=async url=>{calls++;const b=url.includes('BBB');return {ok:!(b&&fail),json:async()=>({currency:'USD',source:'Test prices',points:[{time:now-20*86400000,price:100},{time:now,price:b?50:120}]})}};
-  api.syncPortfolioMarketHistory(rows);
-  assert.equal(node('#home-market-change').textContent,'Loading…');
-  await new Promise(resolve=>setImmediate(resolve));
-  assert.equal(node('#history-trend').hidden,true);assert.equal(node('#home-market-retry').hidden,false);
-  fail=false;node('#home-market-retry').listeners.click();await new Promise(resolve=>setImmediate(resolve));
-  assert.equal(calls,3,'retry fetches only the failed holding');
-  assert.equal(node('#home-market-change').textContent,'+13%');
-  assert.equal(node('#history-trend').hidden,false);
-  assert.match(node('#history-summary').textContent,/not your personal historical return/);
-  api.state.portfolioFilter='retirement';api.renderHistory();assert.equal(node('#home-market-change').textContent,'+13%','Home stays unfiltered');
-  api.state.homeChartView='recorded';api.state.performancePeriod='all';
-  api.state.snapshots=[{snapshot_date:'2026-09-01',total_value_cents:100},{snapshot_date:'2026-09-22',total_value_cents:200}];
-  api.renderHistory();assert.equal(node('#home-market-change').hidden,true);assert.match(node('#history-scope').textContent,/Includes deposits/);
-  window.location.hash='#portfolio';api.syncPortfolioMarketHistory(rows);await new Promise(resolve=>setImmediate(resolve));assert.equal(calls,3);
-  window.location.hash='';api.state.homeChartView='market';api.state.performancePeriod='1m';api.syncPortfolioMarketHistory(rows);
-  assert.equal(node('#home-market-change').textContent,'+13%');assert.equal(calls,3);
-  api.clearPortfolioMarketHistory();
-});
-
-test('Home renders two decimal places at million scale and preserves exact accessible net worth',()=>{
-  const {api,node,window}=controller();window.location.hash='';
-  Object.assign(api.state,{configured:true,user:{id:'owner'},account:{id:'test'},homeChartView:'recorded',holdings:[],properties:[]});
-  const summary={rows:[],totalMarketValueCents:123456789,totalEstimatedAnnualIncomeCents:0,totalEstimatedAnnualGrowthCents:0,warnings:[]};
+test('Home value history uses current complete investments and never requests a price-only history', async () => {
+  const {api,node,window,context}=controller();window.location.hash='';
+  Object.assign(api.state,{configured:true,user:{id:'owner'},account:{id:'test'},holdings:[],properties:[]});
+  let requests=0;context.fetch=async()=>{requests++;throw new Error('No market request expected')};
+  assert.equal(api.state.performancePeriod,'ytd');
+  api.state.snapshots=[{snapshot_date:'2025-12-31',total_value_cents:100000000}];
+  const summary={rows:[],totalMarketValueCents:99000000,totalEstimatedAnnualIncomeCents:0,totalEstimatedAnnualGrowthCents:0,warnings:[]};
   api.renderHome(summary);
-  assert.equal(node('#metric-value').textContent,'$1.23m');
-  assert.equal(node('#metric-value').title,'$1,234,567.89');
-  api.renderHome({...summary,totalMarketValueCents:120000000});
-  assert.equal(node('#metric-value').textContent,'$1.20m');
-  api.renderHome({...summary,totalMarketValueCents:99999900});
-  assert.equal(node('#metric-value').textContent,'$1m');
+  assert.equal(node('#metric-value').textContent,'$990,000.00');
+  assert.equal(node('#home-period-change').textContent,'-$10,000.00');
+  assert.equal(node('#home-period-rate').textContent,'-1%');
+  assert.match(node('#history-summary').textContent,/\$990,000.00 currently/);
+  assert.match(node('#history-summary').textContent,/not investment return/);
+  assert.equal(node('#home-period-caption').textContent,'value change year to date');
+  api.renderHome({...summary,totalMarketValueCents:101000000});
+  assert.equal(node('#metric-value').textContent,'$1,010,000.00');
+  assert.equal(node('#home-period-change').textContent,'+$10,000.00');
+  api.state.propertiesAvailable=false;api.renderHome(summary);
+  assert.equal(node('#metric-value').textContent,'$990,000.00','property does not affect investment value');
+  api.state.holdings=[{id:'missing'}];api.renderHome(summary);
+  assert.equal(node('#metric-value').textContent,'Unavailable');
+  assert.equal(node('#history-trend').hidden,true);
+  assert.equal(node('#home-period-change').hidden,true);
+  await new Promise(setImmediate);assert.equal(requests,0);
 });
 
-test('a late Home market response cannot update a replacement account or a departed route',async()=>{
+test('a late Portfolio market response cannot update a replacement account or Home',async()=>{
   for(const replaced of ['account','route']) {
     const {api,node,window,context}=editableAsset();api.clearMarketHistory();
-    window.location.hash='';api.state.account={id:'test-account'};
+    window.location.hash='#portfolio';api.state.account={id:'test-account'};
     const holding=api.state.holdings[0];holding.symbol='AAA';holding.instrument_type='stock';
     const rows=[{asset:{id:holding.id,symbol:'AAA',shares:2,instrumentType:'stock',valuationBasis:'shares-and-price'}}];
     let finish;context.fetch=()=>new Promise(resolve=>{finish=resolve});
     api.syncPortfolioMarketHistory(rows);await new Promise(resolve=>setImmediate(resolve));
-    if(replaced==='account')api.state.account={id:'replacement'};else window.location.hash='#income';
-    node('#home-market-change').textContent='replacement surface';
+    if(replaced==='account')api.state.account={id:'replacement'};else window.location.hash='';
+    node('#portfolio-period-change').textContent='replacement surface';
     finish({ok:true,json:async()=>({currency:'USD',points:[{time:Date.now()-86400000,price:100},{time:Date.now(),price:110}]})});
     await new Promise(resolve=>setImmediate(resolve));
-    assert.equal(node('#home-market-change').textContent,'replacement surface');
+    assert.equal(node('#portfolio-period-change').textContent,'replacement surface');
     api.clearPortfolioMarketHistory();
   }
 });
@@ -2242,20 +2145,15 @@ test('sign-out action keeps its menu open for visible pending and error feedback
 });
 
 
-test('Home hands compatible market periods to Portfolio and explains unsupported views', () => {
-  const {api,node,window}=controller();
-  window.location.hash='';
-  for (const period of ['1w','1m','1y']) {
-    api.state.homeChartView='market'; api.state.performancePeriod=period;
-    api.carryHomePeriod(); api.renderPortfolioMarketCharts();
-    assert.equal(node('#portfolio-period-label').textContent,period.toUpperCase());
-    assert.equal(node('#portfolio-period-handoff').hidden,true);
-  }
-  for (const [view,period,label] of [['market','1d','1D'],['market','all','5Y'],['recorded','all','Recorded investment value']]) {
-    api.state.homeChartView=view; api.state.performancePeriod=period;api.carryHomePeriod();
+test('Home to Portfolio explains the different measure and preserves the one-year range', () => {
+  const {api,node,window}=controller();window.location.hash='';
+  api.state.performancePeriod='1y';api.carryHomePeriod();api.renderPortfolioMarketCharts();
+  assert.equal(node('#portfolio-period-label').textContent,'1Y');
+  for (const period of ['ytd','all']) {
+    api.state.performancePeriod=period;api.carryHomePeriod();
     assert.equal(node('#portfolio-period-handoff').hidden,false);
-    assert.ok(node('#portfolio-period-handoff').textContent.includes(label));
-    assert.match(node('#portfolio-period-handoff').textContent,/Showing 1Y market prices/);
+    assert.match(node('#portfolio-period-handoff').textContent,/Showing 1Y price changes/);
+    assert.match(node('#portfolio-period-handoff').textContent,/Home shows your investment balance history/);
   }
   api.selectPortfolioMarketPeriod('1m');assert.equal(node('#portfolio-period-handoff').hidden,true);
 });

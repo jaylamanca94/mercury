@@ -55,23 +55,16 @@ test("Home composes a minimal Acadia dashboard", () => {
   assert.match(indexHtml, /class="acadia-responsive-navbar"/);
   assert.match(indexHtml, /class="acadia-dashboard-layout"/);
   assert.match(indexHtml, /id="metric-value"/);
-  assert.match(indexHtml, /id="net-worth-label"[^>]*>Net worth</);
-  assert.match(indexHtml, /id="all-time-change-value"/);
-  assert.match(indexHtml, /id="all-time-change-rate"/);
-  assert.match(indexHtml, /id="performance-context"[^>]*>Investment price movement</);
-  assert.doesNotMatch(indexHtml, /id="home-planning-balance"|id="home-review-list"/);
-  const graphCard = indexHtml.slice(indexHtml.indexOf('id="home-history-card"'), indexHtml.indexOf('aria-label="Investment summary"'));
-  assert.doesNotMatch(graphCard, /id="all-time-change-value"|id="metric-change-value"/);
-  const summaryCard = indexHtml.slice(indexHtml.indexOf('aria-label="Investment summary"'), indexHtml.indexOf('aria-labelledby="holdings-title"'));
-  for (const id of ['all-time-change-value', 'metric-change-value', 'home-growth', 'home-passive-income']) assert.ok(summaryCard.includes(`id="${id}"`));
-  assert.match(indexHtml, /id="home-growth"/);
-  assert.match(indexHtml, /id="home-passive-income"/);
+  assert.match(indexHtml, /id="investment-value-label"[^>]*>Investment value</);
+  assert.match(indexHtml, /id="home-period-change"/);
+  assert.match(indexHtml, /id="home-period-rate"/);
+  assert.doesNotMatch(indexHtml, /id="home-chart-view"|id="home-market-change"|id="home-statistics"/);
   assert.match(indexHtml, />Estimated annual income</);
   assert.match(indexHtml, /id="holdings-title"[^>]*>Portfolio</);
   assert.doesNotMatch(indexHtml, />Dashboard</);
   assert.doesNotMatch(indexHtml, /id="holding-search"|id="holding-sort"|id="holding-filters"/);
   assert.match(indexHtml, /id="performance-periods" class="acadia-tabs" role="tablist"/);
-  assert.match(indexHtml, /data-performance-period="1d"[\s\S]*data-performance-period="1w"[\s\S]*data-performance-period="1m"[\s\S]*data-performance-period="1y"[\s\S]*data-performance-period="all"/);
+  assert.match(indexHtml, /data-performance-period="ytd"[\s\S]*data-performance-period="1y"[\s\S]*data-performance-period="all"/);
   assert.match(indexHtml, /id="history-panel"[^>]*role="tabpanel"/);
   assert.match(indexHtml, /id="home-history-card" class="acadia-stack"/);
   assert.doesNotMatch(homeSource, /classList\.toggle\("is-dashboard-trend"/);
@@ -144,9 +137,9 @@ test("Home uses genuine performance history and grouped portfolio destinations",
   assert.match(homeSource, /market value/);
   assert.match(homeSource, /mortgage/);
   assert.doesNotMatch(homeSource, /holdingFilter|holdingSort|matchingHoldingRows|renderHoldingFilters/);
-  assert.match(homeSource, /summarizePerformance/);
+  assert.match(homeSource, /summarizeHomeBalanceHistory/);
   assert.match(homeSource, /data-performance-period/);
-  assert.match(homeSource, /control\.disabled = !hasHistory/);
+  assert.match(homeSource, /control\.disabled = false/);
   assert.match(homeSource, /function handlePerformancePeriodKeydown\(event\)/);
   assert.match(homeSource, /\["ArrowRight", "ArrowDown"\]/);
   assert.match(homeSource, /event\.key === "Home"/);
@@ -154,7 +147,6 @@ test("Home uses genuine performance history and grouped portfolio destinations",
   assert.match(homeSource, /historyDateLabel\(performance\.startDate\)/);
   assert.doesNotMatch(homeSource, /S&P 500/);
   assert.match(homeSource, /summary\.totalDayChangeCents/);
-  assert.match(homeSource, /summary\.totalDayChangeRate/);
   assert.match(homeSource, /Last successful quote remains in place/);
 });
 
@@ -169,9 +161,7 @@ test("large currency display values use the shared compact format", () => {
   assert.match(homeSource, /function currentNetWorthCents\(summary\)/);
   assert.match(homeSource, /if \(!state\.propertiesAvailable \|\| summary\.rows\.length !== state\.holdings\.length\) return null/);
   assert.match(homeSource, /totalNetWorthCents\(summary\.totalMarketValueCents, state\.properties\.map\(propertyModel\)\)/);
-  assert.match(homeSource, /netWorthCurrency\.format\(netWorthCents \/ 100\)/);
-  assert.match(homeSource, /setMovement\("#metric-change-value", dayCents/);
-  assert.match(homeSource, /setMovement\("#metric-change-rate", dayRate/);
+  assert.match(homeSource, /preciseCurrency\.format\(investmentValueCents \/ 100\)/);
   assert.match(homeSource, /function planningPosition/);
   assert.match(homeSource, /summarizePlanningPosition/);
   assert.match(homeSource, /row\.distributionYieldRate/);
@@ -283,7 +273,7 @@ test("Plan provides one hero projection, four statistics and live scenario contr
   assert.match(indexHtml, /id="plan-assumptions-dialog"/);
   assert.match(indexHtml, /id="property-dialog"/);
   assert.match(indexHtml, /<script src="plan\.js\?v=20260914-change-cards-023"><\/script>/);
-  assert.match(indexHtml, /<script type="module" src="brokerage\.js\?v=20260923-financial-clarity-1"><\/script>/);
+  assert.match(indexHtml, /<script type="module" src="brokerage\.js\?v=20260923-home-balance-1"><\/script>/);
   assert.match(homeSource, /function routePlan\(\)/);
   assert.match(homeSource, /function renderPlan\(summary\)/);
   assert.match(homeSource, /function renderPlanChart/);
