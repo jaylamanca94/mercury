@@ -757,6 +757,15 @@
       "type": "uuid"
     },
     {
+      "default": null,
+      "generated": "",
+      "identity": "",
+      "name": "property_equity_cents",
+      "not_null": false,
+      "table": "portfolio_snapshots",
+      "type": "bigint"
+    },
+    {
       "default": "now()",
       "generated": "",
       "identity": "",
@@ -1356,8 +1365,24 @@
     {
       "deferrable": false,
       "deferred": false,
+      "definition": "CHECK (((property_equity_cents IS NULL) OR (((total_value_cents + property_equity_cents) >= '-9007199254740991'::bigint) AND ((total_value_cents + property_equity_cents) <= '9007199254740991'::bigint))))",
+      "name": "portfolio_snapshots_net_worth_safe_check",
+      "table": "portfolio_snapshots",
+      "validated": true
+    },
+    {
+      "deferrable": false,
+      "deferred": false,
       "definition": "PRIMARY KEY (id)",
       "name": "portfolio_snapshots_pkey",
+      "table": "portfolio_snapshots",
+      "validated": true
+    },
+    {
+      "deferrable": false,
+      "deferred": false,
+      "definition": "CHECK (((property_equity_cents >= '-9007199254740991'::bigint) AND (property_equity_cents <= '9007199254740991'::bigint)))",
+      "name": "portfolio_snapshots_property_equity_safe_check",
       "table": "portfolio_snapshots",
       "validated": true
     },

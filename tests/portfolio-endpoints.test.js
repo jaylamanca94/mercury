@@ -127,6 +127,7 @@ test("owner snapshots use their account filter and upsert a complete cent-safe v
       { id: "manual", valuation_basis: "manual-value", manual_value_cents: 2500 },
       { id: "quoted", valuation_basis: "shares-and-price", shares: "1.5", manual_price_cents: null },
     ]);
+    if (url.includes("/home_properties?")) { assert.match(url, new RegExp(`account_id=eq.${accountId}`)); return json([{id:"property",current_value_cents:5000,mortgage_balance_cents:3000}]); }
     if (url.includes("/holding_quotes?")) return json([{ id: "quote", holding_id: "quoted", price_cents: 101, as_of: "2026-09-07T20:00:00Z" }]);
     assert.match(url, /portfolio_snapshots\?on_conflict=account_id,snapshot_date/);
     assert.equal(options.method, "POST");
@@ -139,6 +140,7 @@ test("owner snapshots use their account filter and upsert a complete cent-safe v
   assert.equal(result.code, 200);
   assert.equal(writes.length, 1);
   assert.equal(writes[0][0].total_value_cents, 2652);
+  assert.equal(writes[0][0].property_equity_cents, 2000);
   assert.equal(writes[0][0].account_id, accountId);
 });
 
@@ -167,6 +169,7 @@ test("snapshots read every quote page and use the newest quote beyond the API ca
     if(url.endsWith('/auth/v1/user'))return json({id:ownerId});
     if(url.includes('/accounts?'))return json([{id:accountId}]);
     if(url.includes('/holdings?'))return json([{id:'asset',valuation_basis:'shares-and-price',shares:2}]);
+    if(url.includes('/home_properties?'))return json([]);
     if(url.includes('/holding_quotes?')) {
       assert.match(url,new RegExp(`holdings.account_id=eq.${accountId}`));
       assert.match(url,/holdings!inner\(account_id\)/);

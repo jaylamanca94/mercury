@@ -1,5 +1,11 @@
 # Mercury Design README
 
+## Property-inclusive balance — 2026-09-23
+
+0.2.17 keeps the streamlined Home composition and labels its primary balance Net worth. Add current investments and property equity (saved property value minus mortgage debt); use the same full scope for the graph and dollar/percentage changes. Values and calculations explains the components and retains explicitly investment-only secondary comparisons. Group cards are unchanged.
+
+A historical point requires both an investment total and observed property equity. Do not add today's equity to earlier investment records. A missing historic property component is unknown, not zero: display the current net-worth point and history-building caption until comparable records exist. Missing current properties also withhold the headline/change/line and point to Portfolio recovery. Negative equity/net worth are valid; a non-positive baseline has no percentage. No CSS or Acadia changes. Evidence: [property-inclusive Home validation](automation/home-net-worth/2026-09-23/review.md). This supersedes the investment-only scope described for 0.2.16 below.
+
 ## One Home balance — 2026-09-23
 
 0.2.16 supersedes the previous Home market/recorded chart composition. The founder's Vanguard screenshot supplies the hierarchy and interaction model, not branding or sample financial data. Lead with an exact investment balance, then a single dollar/percentage value-change row, a quiet saved-price date line, observed value history and YTD / 1Y / All tabs. Place one Values and calculations disclosure before the existing portfolio groups. The former four summary cards become exact rows inside that disclosure. Keep property equity and current net worth there; never attach their labels to investment-only history.
@@ -14,7 +20,7 @@ Evidence and limitations: [Home balance validation](automation/home-balance/2026
 
 Mercury 0.2.15 adopts the audit's financial-information interaction patterns while retaining the private tracking scope and unchanged Acadia 0.4.10 assets. See [delivery and validation](automation/financial-ux/2026-09-23/review.md).
 
-- Give every financial figure an explicit scope, unit, period and status (recorded, estimated or projected). Home investment value excludes property equity; the calculation disclosure includes complete net worth. Historical growth is an annual illustration, not a forecast. Plan labels projected net worth with the selected date and labels the ownership groups Current holdings.
+- Give every financial figure an explicit scope, unit, period and status (recorded, estimated or projected). Home net worth includes property equity; the disclosure separates its investment and property components. Historical growth is an annual illustration, not a forecast. Plan labels projected net worth with the selected date and labels the ownership groups Current holdings.
 - Put period controls beside the module they affect. Home 1Y carries into Portfolio; YTD and All retain its last market period, with a visible explanation of the different measure. Asset Back restores the originating view, selected group/period, focused record and scroll position; ordinary visits still default to Cards.
 - Compact figures require a touch- and keyboard-accessible path to exact amounts and meaning. Reuse Acadia native accordions and existing action menus; source/date labels distinguish quote observations from record edits. Comparison tables and asset details show exact currency; small unit prices retain fractional precision. Holding card movements explicitly say Price change and / share or / unit.
 - Show filter boundaries and denominators: group share is of investments; holding rings are of net worth; Recurring says All investments when a group filter is active. Annual dividend estimates and annual source totals remain annual regardless of the Income summary period. Planned investing is a visible part of reconciliation.

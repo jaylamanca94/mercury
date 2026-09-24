@@ -12,7 +12,7 @@
     <link rel="preload" href="fonts/Syncopate-Regular.ttf" as="font" type="font/ttf" crossorigin>
     <link rel="preload" href="fonts/Syncopate-Bold.ttf" as="font" type="font/ttf" crossorigin>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" referrerpolicy="no-referrer">
-    <link rel="stylesheet" href="styles.css?v=20260923-home-balance-1">
+    <link rel="stylesheet" href="styles.css?v=20260923-net-worth-1">
   </head>
   <body class="acadia-app">
     <a class="acadia-skip-link" href="#main-content">Skip to content</a>
@@ -33,16 +33,16 @@
       <section id="home-workspace" class="acadia-stack" hidden>
         <h1 class="acadia-sr-only">Home</h1>
         <p id="data-status" class="acadia-sr-only" role="status" aria-live="polite">Loading your Brokerage account…</p>
-        <article id="home-history-card" class="acadia-stack" aria-labelledby="investment-value-label">
-          <div class="acadia-field"><span id="investment-value-label" class="acadia-body acadia-text-muted">Investment value</span><strong id="metric-value" class="acadia-heading-large">—</strong><small id="home-valuation-status" class="acadia-text-muted" hidden></small></div>
+        <article id="home-history-card" class="acadia-stack" aria-labelledby="net-worth-label">
+          <div class="acadia-field"><span id="net-worth-label" class="acadia-body acadia-text-muted">Net worth</span><strong id="metric-value" class="acadia-heading-large">—</strong><small id="home-valuation-status" class="acadia-text-muted" hidden></small></div>
           <div id="history-panel" class="acadia-field" role="tabpanel" aria-labelledby="performance-ytd-tab" tabindex="0">
             <div id="home-period-summary" class="acadia-cluster" aria-live="polite" aria-atomic="true"><strong id="home-period-change" class="acadia-lead" hidden>—</strong><strong id="home-period-rate" class="acadia-body" hidden>—</strong><span id="home-period-caption" class="acadia-text-muted"></span></div>
-            <small id="history-scope" class="acadia-text-muted">Based on saved valuations</small>
+            <small id="history-scope" class="acadia-text-muted">Investments + property equity · Saved valuations</small>
             <small id="history-building" class="acadia-text-muted" hidden></small>
-            <div id="history-trend" class="acadia-card-trend" role="img" aria-label="Investment value history unavailable" hidden></div>
+            <div id="history-trend" class="acadia-card-trend" role="img" aria-label="Net worth history unavailable" hidden></div>
             <div id="history-endpoints" class="acadia-card-trend-axis" hidden></div>
           </div>
-          <div id="performance-periods" class="acadia-tabs" role="tablist" aria-label="Investment value period"><button id="performance-ytd-tab" class="acadia-tab is-active" type="button" role="tab" data-performance-period="ytd" aria-controls="history-panel" aria-selected="true" tabindex="0">YTD</button><button id="performance-1y-tab" class="acadia-tab" type="button" role="tab" data-performance-period="1y" aria-controls="history-panel" aria-selected="false" tabindex="-1">1Y</button><button id="performance-all-tab" class="acadia-tab" type="button" role="tab" data-performance-period="all" aria-controls="history-panel" aria-selected="false" tabindex="-1">All</button></div>
+          <div id="performance-periods" class="acadia-tabs" role="tablist" aria-label="Net worth period"><button id="performance-ytd-tab" class="acadia-tab is-active" type="button" role="tab" data-performance-period="ytd" aria-controls="history-panel" aria-selected="true" tabindex="0">YTD</button><button id="performance-1y-tab" class="acadia-tab" type="button" role="tab" data-performance-period="1y" aria-controls="history-panel" aria-selected="false" tabindex="-1">1Y</button><button id="performance-all-tab" class="acadia-tab" type="button" role="tab" data-performance-period="all" aria-controls="history-panel" aria-selected="false" tabindex="-1">All</button></div>
           <details class="acadia-accordion-item"><summary class="acadia-accordion-summary">Values and calculations</summary><div class="acadia-accordion-panel acadia-stack"><p id="history-summary"></p><div id="home-value-details" class="acadia-stack"></div></div></details>
         </article>
         <section class="acadia-stack acadia-page-header-pattern" aria-labelledby="holdings-title">
@@ -255,8 +255,8 @@
     <script src="income.js?v=20260904-budget-v1"></script>
     <script src="data/property-markets.js?v=534e9fd3224c"></script>
     <script src="plan.js?v=20260914-change-cards-023"></script>
-    <script src="dashboard.js?v=20260923-home-balance-1"></script>
+    <script src="dashboard.js?v=20260923-net-worth-1"></script>
     <script src="market-history.js?v=20260922-home-market"></script>
-  <script type="module" src="brokerage.js?v=20260923-home-balance-1"></script>
+  <script type="module" src="brokerage.js?v=20260923-net-worth-1"></script>
   </body>
 </html>

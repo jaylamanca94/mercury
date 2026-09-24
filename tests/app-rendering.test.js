@@ -55,7 +55,7 @@ test("Home composes a minimal Acadia dashboard", () => {
   assert.match(indexHtml, /class="acadia-responsive-navbar"/);
   assert.match(indexHtml, /class="acadia-dashboard-layout"/);
   assert.match(indexHtml, /id="metric-value"/);
-  assert.match(indexHtml, /id="investment-value-label"[^>]*>Investment value</);
+  assert.match(indexHtml, /id="net-worth-label"[^>]*>Net worth</);
   assert.match(indexHtml, /id="home-period-change"/);
   assert.match(indexHtml, /id="home-period-rate"/);
   assert.doesNotMatch(indexHtml, /id="home-chart-view"|id="home-market-change"|id="home-statistics"/);
@@ -161,7 +161,7 @@ test("large currency display values use the shared compact format", () => {
   assert.match(homeSource, /function currentNetWorthCents\(summary\)/);
   assert.match(homeSource, /if \(!state\.propertiesAvailable \|\| summary\.rows\.length !== state\.holdings\.length\) return null/);
   assert.match(homeSource, /totalNetWorthCents\(summary\.totalMarketValueCents, state\.properties\.map\(propertyModel\)\)/);
-  assert.match(homeSource, /preciseCurrency\.format\(investmentValueCents \/ 100\)/);
+  assert.match(homeSource, /preciseCurrency\.format\(netWorthCents \/ 100\)/);
   assert.match(homeSource, /function planningPosition/);
   assert.match(homeSource, /summarizePlanningPosition/);
   assert.match(homeSource, /row\.distributionYieldRate/);
@@ -273,7 +273,7 @@ test("Plan provides one hero projection, four statistics and live scenario contr
   assert.match(indexHtml, /id="plan-assumptions-dialog"/);
   assert.match(indexHtml, /id="property-dialog"/);
   assert.match(indexHtml, /<script src="plan\.js\?v=20260914-change-cards-023"><\/script>/);
-  assert.match(indexHtml, /<script type="module" src="brokerage\.js\?v=20260923-home-balance-1"><\/script>/);
+  assert.match(indexHtml, /<script type="module" src="brokerage\.js\?v=20260923-net-worth-1"><\/script>/);
   assert.match(homeSource, /function routePlan\(\)/);
   assert.match(homeSource, /function renderPlan\(summary\)/);
   assert.match(homeSource, /function renderPlanChart/);

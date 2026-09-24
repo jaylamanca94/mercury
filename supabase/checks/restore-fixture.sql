@@ -31,8 +31,8 @@ begin
         case when g % 2 = 0 then 0 else null end, 'Synthetic recovery fixture',
         saved_at + g * interval '1 minute', 123, 0.012345, saved_at
       from generate_series(1, case when n = 1 then 1001 else 1 end) g;
-    insert into public.portfolio_snapshots (id, account_id, snapshot_date, total_value_cents, recorded_at)
-      values (holding, account, '2024-02-29', 9007199254740991, saved_at);
+    insert into public.portfolio_snapshots (id, account_id, snapshot_date, total_value_cents, property_equity_cents, recorded_at)
+      values (holding, account, '2024-02-29', 9007199254740991, case when n = 1 then -1 else null end, saved_at);
     insert into public.income_sources (id, account_id, name, income_type, amount_cents, frequency, created_at, updated_at)
       values (holding, account, 'Synthetic income', 'contract', 123457, 'twiceMonthly', saved_at, saved_at);
     insert into public.budget_categories (id, account_id, name, monthly_amount_cents, created_at, updated_at)

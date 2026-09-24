@@ -143,4 +143,28 @@ begin
 end;
 $$;
 reset role;
+-- New net worth coverage remains nullable for legacy records; negative equity is valid.
+do $$
+begin
+  if exists (select 1 from public.portfolio_snapshots where property_equity_cents is not null) then
+    raise exception 'Legacy snapshots unexpectedly gained property coverage';
+  end if;
+  update public.portfolio_snapshots set property_equity_cents = -30000;
+  if exists (select 1 from public.portfolio_snapshots where total_value_cents + property_equity_cents <> -17655) then
+    raise exception 'Negative net worth was not preserved';
+  end if;
+  begin
+    update public.portfolio_snapshots set property_equity_cents = 9007199254740992;
+    raise exception 'Unsafe property equity accepted';
+  exception when check_violation then null;
+  end;
+  begin
+    update public.portfolio_snapshots set property_equity_cents = 9007199254740991;
+    raise exception 'Unsafe combined net worth accepted';
+  exception when check_violation then null;
+  end;
+  update public.portfolio_snapshots set property_equity_cents = 0;
+  update public.portfolio_snapshots set property_equity_cents = null;
+end;
+$$;
 rollback;

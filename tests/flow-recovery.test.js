@@ -552,7 +552,7 @@ test('Home renders a first current point, sparse observations, zero baselines an
   api.renderHistory(125000);
   assert.match(node('#history-trend').innerHTML,/<circle/);
   assert.equal(node('#home-period-change').hidden,true);
-  api.state.snapshots=[{snapshot_date:'2026-01-01',total_value_cents:0}];
+  api.state.snapshots=[{snapshot_date:'2026-01-01',total_value_cents:0,property_equity_cents:0}];
   api.renderHistory(125000);
   assert.match(node('#history-trend').innerHTML,/<path class="acadia-card-trend-line" d="M [^"]* L /);
   assert.equal(node('#home-period-change').textContent,'+$1,250.00');
@@ -2027,12 +2027,12 @@ test('an empty quote acknowledgement never claims that an uncertain price was no
   assert.doesNotMatch(node('#asset-detail-status').textContent,/No automatic price has been saved/);
 });
 
-test('Home value history uses current complete investments and never requests a price-only history', async () => {
+test('Home value history includes property equity and requires complete net worth and never requests a price-only history', async () => {
   const {api,node,window,context}=controller();window.location.hash='';
   Object.assign(api.state,{configured:true,user:{id:'owner'},account:{id:'test'},holdings:[],properties:[]});
   let requests=0;context.fetch=async()=>{requests++;throw new Error('No market request expected')};
   assert.equal(api.state.performancePeriod,'ytd');
-  api.state.snapshots=[{snapshot_date:'2025-12-31',total_value_cents:100000000}];
+  api.state.snapshots=[{snapshot_date:'2025-12-31',total_value_cents:100000000,property_equity_cents:0}];
   const summary={rows:[],totalMarketValueCents:99000000,totalEstimatedAnnualIncomeCents:0,totalEstimatedAnnualGrowthCents:0,warnings:[]};
   api.renderHome(summary);
   assert.equal(node('#metric-value').textContent,'$990,000.00');
@@ -2044,8 +2044,17 @@ test('Home value history uses current complete investments and never requests a 
   api.renderHome({...summary,totalMarketValueCents:101000000});
   assert.equal(node('#metric-value').textContent,'$1,010,000.00');
   assert.equal(node('#home-period-change').textContent,'+$10,000.00');
+  api.state.properties=[{id:'home',name:'Home',current_value_cents:50000000,mortgage_balance_cents:30000000}];
+  api.state.snapshots[0].property_equity_cents=20000000;
+  api.renderHome(summary);
+  assert.equal(node('#metric-value').textContent,'$1,190,000.00');
+  assert.equal(node('#home-period-change').textContent,'-$10,000.00');
+  assert.equal(node('#home-period-rate').textContent,'-0.83%');
+  assert.match(node('#history-summary').textContent,/\$1,190,000.00 currently/);
   api.state.propertiesAvailable=false;api.renderHome(summary);
-  assert.equal(node('#metric-value').textContent,'$990,000.00','property does not affect investment value');
+  assert.equal(node('#metric-value').textContent,'Unavailable');
+  assert.equal(node('#history-trend').hidden,true);
+  assert.match(node('#home-valuation-status').textContent,/Property values unavailable/);
   api.state.holdings=[{id:'missing'}];api.renderHome(summary);
   assert.equal(node('#metric-value').textContent,'Unavailable');
   assert.equal(node('#history-trend').hidden,true);
@@ -2153,7 +2162,7 @@ test('Home to Portfolio explains the different measure and preserves the one-yea
     api.state.performancePeriod=period;api.carryHomePeriod();
     assert.equal(node('#portfolio-period-handoff').hidden,false);
     assert.match(node('#portfolio-period-handoff').textContent,/Showing 1Y price changes/);
-    assert.match(node('#portfolio-period-handoff').textContent,/Home shows your investment balance history/);
+    assert.match(node('#portfolio-period-handoff').textContent,/Home shows your net worth history/);
   }
   api.selectPortfolioMarketPeriod('1m');assert.equal(node('#portfolio-period-handoff').hidden,true);
 });

@@ -131,13 +131,17 @@ function summarizeDashboardHistory(snapshots, period = "all") {
     positions: dates.map((date) => duration ? ((date - dates[0]) / duration) * 100 : 0) };
 }
 
-// Home uses dated investment records plus the current saved valuation. Never rebuild
-// past ownership from today's quantities or pretend a deposit is investment return.
+// Net worth history requires observed investment AND property equity values.
+// Legacy investment-only records are not a complete net worth baseline.
 function summarizeHomeBalanceHistory(snapshots, currentValueCents, { period = "ytd", today } = {}) {
   if (!["ytd", "1y", "all"].includes(period)) throw new Error("Unsupported Home period");
   if (!/^\d{4}-\d{2}-\d{2}$/.test(today || "") || !Number.isFinite(Date.parse(today))) throw new Error("A current date is required");
-  const currentAvailable = Number.isSafeInteger(currentValueCents) && currentValueCents >= 0;
-  const records = snapshots.filter(point => point.snapshot_date <= today && (!currentAvailable || point.snapshot_date !== today));
+  const currentAvailable = Number.isSafeInteger(currentValueCents);
+  const complete = snapshots.filter(point => Number.isSafeInteger(point.property_equity_cents)
+    && Number.isSafeInteger(point.total_value_cents) && point.total_value_cents >= 0
+    && Number.isSafeInteger(point.total_value_cents + point.property_equity_cents));
+  const records = complete.filter(point => point.snapshot_date <= today && (!currentAvailable || point.snapshot_date !== today))
+    .map(point => ({ ...point, total_value_cents: point.total_value_cents + point.property_equity_cents }));
   if (currentAvailable) records.push({ snapshot_date: today, total_value_cents: currentValueCents });
   let boundary = null;
   if (period === "ytd") boundary = `${Number(today.slice(0, 4)) - 1}-12-31`;
@@ -147,7 +151,23 @@ function summarizeHomeBalanceHistory(snapshots, currentValueCents, { period = "y
     if (date.getUTCMonth() !== month) date.setUTCDate(0);
     boundary = date.toISOString().slice(0, 10);
   }
-  const result = summarizeDashboardHistory(records.filter(point => !boundary || point.snapshot_date >= boundary));
+  const unique = new Map();
+  for (const point of records.filter(point => !boundary || point.snapshot_date >= boundary)) {
+    const previous = unique.get(point.snapshot_date);
+    if (!previous || String(point.recorded_at || "") >= String(previous.recorded_at || "")) unique.set(point.snapshot_date, point);
+  }
+  const points = [...unique.values()].sort((a, b) => a.snapshot_date.localeCompare(b.snapshot_date))
+    .map(point => ({ snapshotDate: point.snapshot_date, totalValueCents: point.total_value_cents }));
+  const dates = points.map(point => Date.parse(`${point.snapshotDate}T12:00:00Z`));
+  const duration = dates.length > 1 ? dates.at(-1) - dates[0] : 0;
+  const change = points.length > 1 ? points.at(-1).totalValueCents - points[0].totalValueCents : null;
+  const result = { snapshots: points, startDate: points[0]?.snapshotDate ?? null, endDate: points.at(-1)?.snapshotDate ?? null,
+    latestValueCents: points.at(-1)?.totalValueCents ?? null, changeCents: Number.isSafeInteger(change) ? change : null,
+    changeRate: Number.isSafeInteger(change) && points[0].totalValueCents > 0 ? change / points[0].totalValueCents : null,
+    recordedDays: points.length, showTrend: points.length > 0,
+    positions: dates.map(date => duration ? (date - dates[0]) / duration * 100 : 0),
+    missingPropertyHistory: snapshots.some(point => point.property_equity_cents == null && point.snapshot_date <= today) };
+
   return { ...result, currentAvailable, boundary, fullPeriod: period === "all" || result.startDate === boundary,
     showTrend: currentAvailable && result.showTrend,
     changeCents: currentAvailable ? result.changeCents : null,

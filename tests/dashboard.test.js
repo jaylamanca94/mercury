@@ -223,7 +223,7 @@ test('asset-card types use available classifications without guessing unknown sy
 });
 
 const balanceHistory = require('../dashboard').summarizeHomeBalanceHistory;
-const record = (date, cents, at) => ({ snapshot_date: date, total_value_cents: cents, recorded_at: at });
+const record = (date, cents, at) => ({ snapshot_date: date, total_value_cents: cents, property_equity_cents: 0, recorded_at: at });
 test('Home balance periods share one current endpoint without manufacturing earlier history', () => {
   const records = [record('2024-01-01',50000),record('2025-09-23',80000),record('2025-12-31',100000),record('2026-09-23',120000),record('2027-01-01',900000)];
   const original = JSON.stringify(records);
@@ -244,8 +244,25 @@ test('Home shows actual available intervals, date spacing, duplicates, missing a
   assert.equal(result.changeCents,200);assert.deepEqual(result.positions,[0,10,100]);
   const first=balanceHistory([],400,options);assert.equal(first.recordedDays,1);assert.equal(first.changeCents,null);
   const zero=balanceHistory([record('2025-12-31',0)],400,options);assert.equal(zero.changeCents,400);assert.equal(zero.changeRate,null);
-  for (const current of [null,NaN,-1]) {const unavailable=balanceHistory(records,current,options);assert.equal(unavailable.changeCents,null);assert.equal(unavailable.showTrend,false)}
+  for (const current of [null,NaN,Number.MAX_SAFE_INTEGER+1]) {const unavailable=balanceHistory(records,current,options);assert.equal(unavailable.changeCents,null);assert.equal(unavailable.showTrend,false)}
   const leap=balanceHistory([record('2023-02-28',100)],200,{period:'1y',today:'2024-02-29'});
   assert.equal(leap.boundary,'2023-02-28');assert.equal(leap.fullPeriod,true);
   assert.equal(balanceHistory([record('2025-12-31',100)],100,options).changeRate,0);
+});
+
+
+test('Home net worth requires historical property equity, preserves debt and uses the full baseline', () => {
+  const records = [
+    {snapshot_date:'2024-12-31',total_value_cents:100000000},
+    {snapshot_date:'2025-12-31',total_value_cents:100000000,property_equity_cents:20000000},
+  ];
+  const result=balanceHistory(records,119000000,{period:'all',today:'2026-09-23'});
+  assert.equal(result.startDate,'2025-12-31');assert.equal(result.changeCents,-1000000);
+  assert.equal(result.changeRate,-1000000/120000000);assert.equal(result.missingPropertyHistory,true);
+  const legacy=balanceHistory(records.slice(0,1),119000000,{period:'all',today:'2026-09-23'});
+  assert.equal(legacy.recordedDays,1);assert.equal(legacy.changeCents,null);
+  const negative=balanceHistory([{snapshot_date:'2025-12-31',total_value_cents:100,property_equity_cents:-200}],-50,{period:'ytd',today:'2026-09-23'});
+  assert.equal(negative.snapshots[0].totalValueCents,-100);assert.equal(negative.changeCents,50);assert.equal(negative.changeRate,null);assert.equal(negative.showTrend,true);
+  const missing=balanceHistory(records,null,{period:'all',today:'2026-09-23'});
+  assert.equal(missing.showTrend,false);assert.equal(missing.changeCents,null);
 });

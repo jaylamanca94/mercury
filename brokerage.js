@@ -354,16 +354,16 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
     const hasChange = performance.changeCents !== null;
     setMovement("#home-period-change", performance.changeCents, value => `${value > 0 ? "+" : ""}${preciseCurrency.format(value / 100)}`);
     setMovement("#home-period-rate", performance.changeRate, displaySignedPercentage, { hideWhenUnavailable: true });
-    setText("#home-period-caption", hasChange ? `value change ${interval}` : performance.currentAvailable ? "Value change available after another recorded day" : "Complete investment values unavailable");
+    setText("#home-period-caption", hasChange ? `value change ${interval}` : performance.currentAvailable ? "Net worth history is building" : "Complete net worth unavailable");
     $("#home-period-change").hidden = !hasChange;
     $("#history-building").hidden = performance.showTrend;
     trend.hidden = endpoints.hidden = !performance.showTrend;
     trend.replaceChildren(); endpoints.replaceChildren();
-    setText("#history-building", "Add the missing valuations in Portfolio to see your balance history.");
-    const explanation = "Includes deposits, withdrawals and changes in holdings or saved prices; this is value change, not investment return. Property equity is excluded. Past points are saved daily valuations; the final point uses current holdings and their latest saved prices or manual values. Prices are not live. Lines connect available observations; missing dates are not backfilled.";
+    setText("#history-building", "Review investment and property valuations in Portfolio to see your net worth history.");
+    const explanation = "Includes deposits, withdrawals and changes in holdings or saved prices; this is value change, not investment return. Property equity is the saved property value minus its mortgage balance. Past points require both investment and property records; the final point uses current holdings and property equity. Older investment-only records are excluded. Prices are not live. Lines connect available observations; missing dates are not backfilled.";
     if (!performance.showTrend) {
-      trend.setAttribute("aria-label", "Investment value history unavailable");
-      setText("#history-summary", `Complete investment values are unavailable. ${explanation}`);
+      trend.setAttribute("aria-label", "Net worth history unavailable");
+      setText("#history-summary", `Complete net worth is unavailable. ${explanation}`);
       return performance;
     }
     const values = performance.snapshots.map(point => point.totalValueCents / 100);
@@ -371,7 +371,7 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
     endpoints.innerHTML = endpoint(performance.startDate) + (values.length > 1 ? '<span>Current</span>' : "");
     if (values.length === 1) {
       trend.innerHTML = '<svg class="acadia-card-trend-chart is-primary" viewBox="0 0 100 100" aria-hidden="true"><circle class="acadia-card-trend-point" cx="50" cy="50" r="2.5"></circle></svg>';
-      const summary = `Current investment value: ${preciseCurrency.format(values[0])}. A line will appear after another recorded day. ${explanation}`;
+      const summary = `Current net worth: ${preciseCurrency.format(values[0])}. A line will appear after another recorded day. ${explanation}`;
       trend.setAttribute("aria-label", summary); setText("#history-summary", summary);
       return performance;
     }
@@ -379,7 +379,7 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
     const points = values.map((value, index) => ({ x: performance.positions[index] * 10, y: range ? 94 - ((value - minimum) / range) * 84 : 50 }));
     const linePath = points.map((point, index) => `${index ? "L" : "M"} ${point.x} ${point.y}`).join(" ");
     trend.innerHTML = `<svg class="acadia-card-trend-chart is-primary" viewBox="0 0 1000 100" preserveAspectRatio="none" aria-hidden="true"><polyline class="acadia-card-trend-baseline" points="0,${points[0].y} 1000,${points[0].y}"></polyline><path class="acadia-card-trend-area" d="${linePath} L 1000 100 L 0 100 Z"></path><path class="acadia-card-trend-line" d="${linePath}"></path></svg>`;
-    const summary = `${preciseCurrency.format(values[0])} on ${historyDateLabel(performance.startDate)} to ${preciseCurrency.format(values.at(-1))} currently. ${performance.changeCents > 0 ? "Up" : performance.changeCents < 0 ? "Down" : "No change"} ${preciseCurrency.format(Math.abs(performance.changeCents) / 100)}${performance.changeRate === null ? ". Percentage unavailable from a zero starting value" : ` (${displaySignedPercentage(performance.changeRate)})`}. ${explanation}`;
+    const summary = `${preciseCurrency.format(values[0])} on ${historyDateLabel(performance.startDate)} to ${preciseCurrency.format(values.at(-1))} currently. ${performance.changeCents > 0 ? "Up" : performance.changeCents < 0 ? "Down" : "No change"} ${preciseCurrency.format(Math.abs(performance.changeCents) / 100)}${performance.changeRate === null ? ". Percentage unavailable from a zero or negative starting value" : ` (${displaySignedPercentage(performance.changeRate)})`}. ${explanation}`;
     trend.setAttribute("aria-label", summary); setText("#history-summary", summary);
     return performance;
   }
@@ -521,7 +521,7 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
     if (state.performancePeriod === "1y") portfolioMarketPeriod = "1y";
     const notice = $("#portfolio-period-handoff");
     notice.hidden = false;
-    notice.textContent = `Showing ${portfolioMarketPeriod.toUpperCase()} price changes for current holdings. Home shows your investment balance history.`;
+    notice.textContent = `Showing ${portfolioMarketPeriod.toUpperCase()} price changes for current holdings. Home shows your net worth history, including property equity.`;
   }
   function openHomeGroup(id) {
     leaveWorkspace(() => {
@@ -842,29 +842,29 @@ import { buildCardTrendPath } from "./acadia-card-trend.mjs";
     $("#plan-workspace").hidden = true;
     $("#asset-workspace").hidden = true;
     setActiveNavigation("home");
-    const netWorthCents = currentNetWorthCents(summary);
+    const currentTotal = state.configured && state.account ? currentNetWorthCents(summary) : null;
+    const netWorthCents = Number.isSafeInteger(currentTotal) ? currentTotal : null;
     const estimatesComplete = state.configured && Boolean(state.account) && summary.rows.length === state.holdings.length;
-    const investmentValueCents = estimatesComplete ? summary.totalMarketValueCents : null;
-    setText("#metric-value", investmentValueCents === null ? "Unavailable" : preciseCurrency.format(investmentValueCents / 100));
-    $("#metric-value").title = investmentValueCents === null ? "Complete valuations are unavailable" : preciseCurrency.format(investmentValueCents / 100);
+    setText("#metric-value", netWorthCents === null ? "Unavailable" : preciseCurrency.format(netWorthCents / 100));
+    $("#metric-value").title = netWorthCents === null ? "Complete valuations are unavailable" : preciseCurrency.format(netWorthCents / 100);
     $("#metric-value").setAttribute("aria-label", $("#metric-value").title);
     const missingValuations = state.holdings.length - summary.rows.length;
-    $("#home-valuation-status").hidden = investmentValueCents !== null;
+    $("#home-valuation-status").hidden = netWorthCents !== null;
     setText("#home-valuation-status", missingValuations
-      ? `${missingValuations} ${missingValuations === 1 ? "asset needs" : "assets need"} a valuation. Review Portfolio.` : "Account values unavailable");
+      ? `${missingValuations} ${missingValuations === 1 ? "asset needs" : "assets need"} a valuation. Review Portfolio.` : !state.propertiesAvailable ? "Property values unavailable. Review Portfolio to retry." : "Account values unavailable");
     const passive = estimatesComplete && state.providerMetricsPending.size === 0 ? summary.totalEstimatedAnnualIncomeCents : null;
     const quoteDates = summary.rows.map(row => row.asset?.quoteAsOf).filter(date => date && Number.isFinite(Date.parse(date))).sort((a, b) => Date.parse(a) - Date.parse(b)).map(historyDateLabel);
     setText("#history-scope", quoteDates.length
-      ? `Saved valuations · Prices as of ${quoteDates[0]}${quoteDates[0] === quoteDates.at(-1) ? "" : ` – ${quoteDates.at(-1)}`}`
-      : "Based on saved valuations");
-    renderHistory(investmentValueCents);
+      ? `Includes property equity · Prices as of ${quoteDates[0]}${quoteDates[0] === quoteDates.at(-1) ? "" : ` – ${quoteDates.at(-1)}`}`
+      : "Investments + property equity · Saved valuations");
+    renderHistory(netWorthCents);
     const lifetime = summarizeAllTimeChange(state.snapshots, estimatesComplete ? summary.totalMarketValueCents : null);
     $("#home-value-details").innerHTML = valueRows([
       ["Net worth · current records", exactMoney(netWorthCents)],
       ["Investments", exactMoney(estimatesComplete ? summary.totalMarketValueCents : null)],
       ["Property equity", exactMoney(state.propertiesAvailable ? totalPropertyEquity() : null)],
       ["Day change · investments", exactMoney(estimatesComplete ? summary.totalDayChangeCents : null)],
-      [`Change since ${lifetime.startDate ? historyDateLabel(lifetime.startDate) : "first record"} · includes deposits and withdrawals`, exactMoney(lifetime.changeCents)],
+      [`Change since ${lifetime.startDate ? historyDateLabel(lifetime.startDate) : "first record"} · investments, including deposits and withdrawals`, exactMoney(lifetime.changeCents)],
       ["Growth at historical rates · annual illustration, not a forecast", exactMoney(estimatesComplete && !state.providerMetricsPending.size ? summary.totalEstimatedAnnualGrowthCents : null)],
       ["Estimated annual dividends · current values × saved or provider yields", exactMoney(passive)],
     ]);

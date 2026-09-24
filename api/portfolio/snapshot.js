@@ -45,6 +45,17 @@ function totalValueCents(holdings, quotes) {
   }, 0);
 }
 
+function propertyEquityCents(properties) {
+  return properties.reduce((total, property) => {
+    const { current_value_cents: value, mortgage_balance_cents: debt } = property;
+    if (![value, debt].every(amount => Number.isSafeInteger(amount) && amount >= 0)
+      || !Number.isSafeInteger(total + (value - debt))) {
+      throw new Error("History was not updated because a property has a missing or invalid valuation or mortgage balance. Review Portfolio and try again.");
+    }
+    return total + (value - debt);
+  }, 0);
+}
+
 async function supabase(path, { method = "GET", body, signal = AbortSignal.timeout(10000) } = {}) {
   if (method === "GET") {
     const result = await readCompleteCollection(async (from, to) => {
@@ -79,11 +90,14 @@ async function recordAccountSnapshot(account) {
   const quotes = holdings.length
     ? await supabase(`holding_quotes?holdings.account_id=eq.${account.id}&select=id,holding_id,price_cents,as_of,holdings!inner(account_id)`)
     : [];
+  const properties = await supabase(`home_properties?account_id=eq.${account.id}&select=id,current_value_cents,mortgage_balance_cents`);
+  const equity = propertyEquityCents(properties);
   const total = totalValueCents(holdings, quotes);
+  if (!Number.isSafeInteger(total + equity)) throw new Error("History was not updated because net worth exceeds the supported amount.");
   const snapshotDate = newYorkDate();
   const created = await supabase("portfolio_snapshots?on_conflict=account_id,snapshot_date", {
     method: "POST",
-    body: [{ account_id: account.id, snapshot_date: snapshotDate, total_value_cents: total, recorded_at: new Date().toISOString() }],
+    body: [{ account_id: account.id, snapshot_date: snapshotDate, total_value_cents: total, property_equity_cents: equity, recorded_at: new Date().toISOString() }],
   });
   return created[0];
 }
@@ -113,4 +127,4 @@ module.exports = async function handler(request, response) {
   }
 };
 
-module.exports._internals = { isAfterMarketClose, latestQuotes, newYorkDate, totalValueCents };
+module.exports._internals = { isAfterMarketClose, latestQuotes, newYorkDate, totalValueCents, propertyEquityCents, recordAccountSnapshot };
